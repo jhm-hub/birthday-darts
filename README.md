@@ -4,13 +4,17 @@ A browser game for Faith's streams: enter a viewer's name, press once per dart, 
 
 **Play and configure:** https://jhm-hub.github.io/birthday-darts/
 
+**Simple stream setup:** https://jhm-hub.github.io/birthday-darts/setup.html
+
 ## Playing
 
-1. Select or create a game. Set its dollar amounts, relative odds and number of darts, then save.
+1. Select or create a game. Set its dollar amounts, relative odds and number of darts. The editor preview updates immediately, including unsaved changes. Use **Throw demo dart** and **Reset demo** to test it, then save.
 2. Choose **Open controls**, enter an optional viewer name, and click **Throw dart**. Space also throws when you aren't typing in a field.
 3. Click once for each subsequent dart. The final total stays visible for five seconds, then the display clears for the next viewer.
 
 Birthday balloons stay popped. Each dollar amount can win once per round; matching balloons are marked won and the remaining weights are recalculated. The round ends after its configured dart count or when all eligible amounts are won. The classic board allows repeat amounts. Changes to settings apply to the next round.
+
+The editor demo is a separate, disposable game with sound off initially. It uses the real animation and weighted rules, but has no storage or stream connection. Editing a value resets that demo to the latest draft; it cannot change an active live round. Invalid or unfinished values disable demo throws until corrected.
 
 ## Showing it on stream
 
