@@ -22,7 +22,10 @@ export function buildBalloonFX(container,palette){
  for(let i=0;i<8;i++){
   const angle=-Math.PI/2+i*Math.PI/4,edge=angle-Math.PI/8,end=angle+Math.PI/8;
   const clip=svg('clipPath',{id:'pop-shard-'+i});
-  clip.append(svg('path',{d:`M44 48 L${44+140*Math.cos(edge)} ${48+140*Math.sin(edge)} L${44+140*Math.cos(end)} ${48+140*Math.sin(end)} Z`}));defs.append(clip);
+  // Jagged inner tears leave curved rubber scraps, not eight solid pie wedges.
+  const inner=15+(i%3)*4,points=[[edge,140],[end,140],[end,inner+5],[angle+.16,inner+1],[angle+.05,inner+7],[angle-.1,inner-3],[edge,inner+2]];
+  const contour=points.map(([a,r])=>[Math.round((44+r*Math.cos(a))/2)*2,Math.round((48+r*Math.sin(a))/2)*2].join(' '));
+  clip.append(svg('path',{d:'M'+contour.join(' L')+'Z'}));defs.append(clip);
   const shard=svg('g',{class:'pop-shard'}),cut=svg('g',{'clip-path':`url(#pop-shard-${i})`});
   cut.append(svg('use',{href:'#pop-balloon-art'}));shard.append(cut);art.append(shard);
  }
