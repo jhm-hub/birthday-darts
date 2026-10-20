@@ -1,1 +1,66 @@
-{"name":"Faith — Hybrid D prototype","idle":"./assets/faith-hybrid.png","throwStudy":"./assets/faith-throw-study.png","sheetWidth":1774,"sheetHeight":887,"frameHeight":800,"frameTop":44,"bodyAnchorX":236,"frames":[{"x":44,"width":365,"anchor":233},{"x":469,"width":383,"anchor":660},{"x":903,"width":453,"anchor":1083},{"x":1356,"width":418,"anchor":1509}],"note":"First-pass four-pose throw study. Arm continuity needs refinement before final animation. Original approved character and previous options remain in Concepts."}
+{
+  "name": "Faith \u2014 eight-cel throw v2",
+  "idle": "./assets/faith-hybrid.png",
+  "throwStudy": "./assets/faith-throw-eight-cels-v2.png",
+  "sheetWidth": 1536,
+  "sheetHeight": 1024,
+  "frameHeight": 478,
+  "bodyAnchorX": 102,
+  "idleFrame": 0,
+  "frames": [
+    {
+      "x": 120,
+      "y": 24,
+      "width": 253,
+      "anchor": 242
+    },
+    {
+      "x": 480,
+      "y": 24,
+      "width": 250,
+      "anchor": 599
+    },
+    {
+      "x": 830,
+      "y": 24,
+      "width": 274,
+      "anchor": 974
+    },
+    {
+      "x": 1208,
+      "y": 24,
+      "width": 319,
+      "anchor": 1335
+    },
+    {
+      "x": 97,
+      "y": 519,
+      "width": 335,
+      "anchor": 239
+    },
+    {
+      "x": 470,
+      "y": 519,
+      "width": 295,
+      "anchor": 599
+    },
+    {
+      "x": 840,
+      "y": 519,
+      "width": 270,
+      "anchor": 976
+    },
+    {
+      "x": 1215,
+      "y": 519,
+      "width": 267,
+      "anchor": 1352
+    }
+  ],
+  "release": {
+    "frame": 4,
+    "x": 420,
+    "y": 621
+  },
+  "note": "Eight transparent poses, aligned to the front boot. Original art and four-pose configuration are retained as character-legacy.json. No changes to timing or game rules."
+}

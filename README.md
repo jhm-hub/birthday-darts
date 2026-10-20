@@ -52,6 +52,14 @@ The local server prints its address. `dist/` is a static site with relative asse
 
 Automated checks cover weighted draws, exact-cent totals, birthday prize removal, animation timing, independent widgets, round persistence, simultaneous throws, settings import/export and pairing proofs. Browser checks cover controls/display pairing and recovery. Physical OBS/Streamlabs audio routing must be tested in the actual streaming setup.
 
+## Animation art and review
+
+The October 20 animation pass uses eight registered character cels: ready, aim, anticipation, acceleration, release, follow-through, recovery and reset. The flying dart starts at the release hand. Balloon hits retain the 320 ms reading beat, with elastic compression, eight stepped rupture cels, shaded pieces cut from the actual balloon art, and fluttering pixel confetti. All effects sample the shared shot clock; reconnecting does not replay or award a hit. Reduced motion removes confetti and reduces deformation and travel.
+
+To inspect individual poses and impact stages locally, run `node scripts/review-motion.mjs` after building, then open `review-motion.html` on the local server. This review page is excluded from the normal production build.
+
+The original sprite, four-pose atlas and configuration remain in `public/assets/` and `public/character-legacy.json`. Commit `dbdd6b8a9854ce674bb84b6a28cba63a0ad2cc8c` preserves the complete previous renderer and timing for a full rollback. The v2 PNG was created with the built-in image-generation tool using the approved sprite as reference; it retains its generated alpha channel. The pixel balloon rupture artwork is authored in `src/balloon-fx.js`.
+
 ## Credits
 
 The approved Faith sprite, balloon art, party props and original synthesized pop sound are retained from the local prototype. Fredoka is bundled under the SIL Open Font License; see `public/fonts/`. Third-party library notices are in `public/THIRD-PARTY-NOTICES.txt` and the generated bundle license file.

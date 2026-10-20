@@ -1,4 +1,6 @@
-import {balloonPopAt,BALLOON_HIT_HOLD_MS,BALLOON_POP_FADE_MS,BALLOON_BURST_MS} from './balloon-timing.js';
+import {balloonPopAt} from './balloon-timing.js';
+import {balloonDeformation} from './motion.js';
+import {buildBalloonFX,animateBalloonFX} from './balloon-fx.js';
 import {balloonPixelLayers} from './balloon-art.js';
 import {birthdayCake,birthdayGifts} from './party-props.js';
 const palette=['#ee659e','#a48adc','#66bdac','#efbd62','#75afd8','#d783c0','#d59a71','#94ba73'];
@@ -32,8 +34,7 @@ export function buildBalloons(container,outcomes,money){
    if(width>68){const size=28*68/width;text.style.fontSize=size+'px';text.setAttribute('y',50+size/4);}
   }
  });
- const burst=document.createElement('div');burst.className='balloon-burst';burst.setAttribute('aria-hidden','true');
- for(let i=0;i<32;i++){const piece=document.createElement('i');piece.style.background=palette[i%palette.length];piece.dataset.angle=2*Math.PI*i/32;piece.dataset.speed=50+(i%5)*20;burst.append(piece);}container.append(burst);
+ buildBalloonFX(container,palette);
  buildPartyDecor(container);
 }
 export function animateBalloons(container,round,count,time,motion=true){
@@ -46,18 +47,18 @@ export function animateBalloons(container,round,count,time,motion=true){
  const labels=container.querySelector('.prize-labels'),ribbons=container.querySelector('.bouquet-ribbons');
  for(let i=0;i<balloonSlots(count).length;i++){
   const item=container.children[i],label=labels.children[i],old=popped.get(i),isHit=focused&&i===hit,used=won.has(Number(item.dataset.outcome))&&!old;
-  const point=balloonPoint(i,count,isHit?shot.landAt:time,motion);let scale=1,alpha=used?.2:1;
-  if(old){const age=time-balloonPopAt(old);if(age<0){scale=motion?1+.1*(1+age/BALLOON_HIT_HOLD_MS):1;alpha=1;}else{const u=Math.min(1,age/BALLOON_POP_FADE_MS);scale=motion?1.1+.2*u:1;alpha=1-u;}}
+  const point=balloonPoint(i,count,isHit?shot.landAt:time,motion);
+  const deformation=balloonDeformation(old?time-balloonPopAt(old):-Infinity,motion);let alpha=used?.2:deformation.alpha;
   if(focused&&!isHit)alpha*=.38;
-  const gone=!!old&&time>=balloonPopAt(old)+BALLOON_POP_FADE_MS;
+  const gone=!!old&&time>=balloonPopAt(old);
   item.classList.toggle('is-hit-focus',isHit);item.classList.toggle('is-popped',gone);item.setAttribute('aria-hidden',String(gone||used));
   label.classList.toggle('is-used',used);label.classList.toggle('is-hit-focus',isHit);
-  item.style.transform=`translate(${Math.round(point.x-44)}px,${Math.round(point.y-48)}px) scale(${scale*point.scale})`;item.style.opacity=alpha;
-  label.style.transform=item.style.transform;label.style.opacity=alpha;
+  item.style.transform=`translate(${Math.round(point.x-44)}px,${Math.round(point.y-48)}px) scale(${deformation.x*point.scale},${deformation.y*point.scale})`;item.style.opacity=alpha;
+  label.style.transform=`translate(${Math.round(point.x-44)}px,${Math.round(point.y-48)}px) scale(${point.scale})`;label.style.opacity=alpha;
   const knotY=point.y+point.scale*49,ribbon=ribbons.children[i];ribbon.setAttribute('d',`M${point.x} ${knotY} Q${point.x+(550-point.x)*.1} ${Math.max(knotY+10,365)} 550 420`);ribbon.style.opacity=alpha*.6;
  }
- const burst=container.querySelector('.balloon-burst'),active=elapsed>=0&&elapsed<BALLOON_BURST_MS;burst.style.display=active?'block':'none';
- if(active){const origin=balloonPoint(hit,count,shot.landAt,motion),u=elapsed/BALLOON_BURST_MS;burst.style.left=origin.x+'px';burst.style.top=origin.y+'px';for(const piece of burst.children){const angle=Number(piece.dataset.angle),speed=Number(piece.dataset.speed),travel=motion?1:.3,x=Math.cos(angle)*speed*u*travel,y=(Math.sin(angle)*speed*u+60*u*u)*travel;piece.style.transform=`translate(${x}px,${y}px) rotate(${u*180+angle*50}deg)`;piece.style.opacity=Math.min(1,(1-u)*1.6);}}
+ const origin=shot?balloonPoint(hit,count,shot.landAt,motion):null;
+ animateBalloonFX(container,shot,origin,time,palette[shot?outcomeForShot(shot,count)%palette.length:0],motion);
 }
 
 function buildPartyDecor(container){

@@ -24,7 +24,11 @@
 @font-face{font-family:'Faith Candy';src:url('./fonts/Fredoka.ttf') format('truetype');font-weight:300 700;font-style:normal;font-display:block}
 .candy-amount{font:700 28px 'Faith Candy',sans-serif;fill:#fff1d8;stroke:#63364e;stroke-width:1.35px;paint-order:stroke fill;stroke-linejoin:round;filter:drop-shadow(0 1px 0 #b5627f)}
 .balloon-burst{position:absolute;z-index:6;pointer-events:none}
-.balloon-burst i{position:absolute;left:-3px;top:-4px;width:6px;height:9px;box-shadow:1px 1px #30163188}
+.pop-art{position:absolute;left:-96px;top:-96px;width:192px;height:192px;overflow:visible;shape-rendering:crispEdges}
+.pop-confetti i{position:absolute;left:-2px;top:-3px;width:4px;height:6px;box-shadow:1px 1px #30163188}
+.pop-confetti i:nth-child(3n){width:3px;height:8px}
+.balloon-impact{position:absolute;width:56px;height:56px;z-index:6;pointer-events:none;shape-rendering:crispEdges}
+.widget[data-theme=balloons] .throw-pop{z-index:7}
 .widget[data-theme=balloons]{height:540px}
 .widget[data-theme=balloons] .arcade-scene{height:423px}
 .widget[data-theme=balloons] .faith{top:50px}
