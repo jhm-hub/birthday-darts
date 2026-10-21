@@ -3,7 +3,7 @@ import {BALLOON_HIT_HOLD_MS,BALLOON_BURST_MS} from './balloon-timing.js';
 const clamp=x=>Math.max(0,Math.min(1,x));
 
 export function spriteLayout(config,index){
- const frame=config.frames[index],scale=298/config.frameHeight;
+ const frame=config.frames[index],scale=298/(frame.height||config.frameHeight);
  return {left:(config.bodyAnchorX-(frame.anchor-frame.x)*scale)+'px',width:frame.width*scale+'px',height:'298px',
   backgroundSize:config.sheetWidth*scale+'px '+config.sheetHeight*scale+'px',
   backgroundPosition:-frame.x*scale+'px '+(-frame.y*scale)+'px'};
@@ -11,7 +11,7 @@ export function spriteLayout(config,index){
 
 export function dartReleasePoint(config,balloons){
  if(!config)return {x:228,y:balloons?128:86};
- const release=config.release,frame=config.frames[release.frame],scale=298/config.frameHeight;
+ const release=config.release,frame=config.frames[release.frame],scale=298/(frame.height||config.frameHeight);
  return {x:37+config.bodyAnchorX+(release.x-frame.anchor)*scale,y:(balloons?50:8)+(release.y-frame.y)*scale};
 }
 
@@ -20,15 +20,25 @@ export function dartReleasePoint(config,balloons){
 export function throwCel(shot,time,motion=true){
  if(!shot||time<shot.startAt)return 0;
  const age=time-shot.releaseAt;
- if(!motion)return age>=0&&age<260?4:0;
- if(age<-350)return 0;
- if(age<-220)return 1;
- if(age<-75)return 2;
- if(age<0)return 3;
- if(age<105)return 4;
- if(age<290)return 5;
- if(age<475)return 6;
- if(age<650)return 7;
+ if(!motion)return age>=0&&age<260?8:0;
+ // The elbow leads, then the forearm unfolds. Exposure shortens toward
+ // release and lengthens on recovery; no rotated or stretched body parts.
+ if(age<-390)return 0;
+ if(age<-320)return 1;
+ if(age<-260)return 2;
+ if(age<-210)return 3;
+ if(age<-160)return 4;
+ if(age<-110)return 5;
+ if(age<-65)return 6;
+ if(age<0)return 7;
+ if(age<75)return 8;
+ if(age<170)return 9;
+ if(age<270)return 10;
+ if(age<390)return 11;
+ if(age<510)return 12;
+ if(age<620)return 13;
+ if(age<750)return 14;
+ if(age<870)return 15;
  return 0;
 }
 

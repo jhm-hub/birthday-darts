@@ -4,27 +4,30 @@ import {readFile} from 'node:fs/promises';
 import {throwCel,spriteLayout,dartReleasePoint,balloonDeformation,popCel,fragmentMotion,confettiMotion} from '../src/motion.js';
 import {BALLOON_BURST_MS} from '../src/balloon-timing.js';
 
-test('first and later throws expose all eight cels and release the dart on the empty-hand cel',()=>{
+test('first and later throws expose all sixteen painted cels and release on the empty-hand cel',()=>{
  for(const lead of [750,410]){
   const shot={startAt:1000,releaseAt:1000+lead},seen=new Set();
-  for(let t=1000;t<shot.releaseAt+800;t++)seen.add(throwCel(shot,t));
-  assert.deepEqual([...seen],[0,1,2,3,4,5,6,7]);
-  assert.equal(throwCel(shot,shot.releaseAt-1),3);
-  assert.equal(throwCel(shot,shot.releaseAt),4);
-  assert.equal(throwCel(shot,shot.releaseAt+650),0);
-  assert.equal(throwCel(shot,shot.releaseAt,false),4);
+  for(let t=1000;t<shot.releaseAt+900;t++)seen.add(throwCel(shot,t));
+  assert.deepEqual([...seen],Array.from({length:16},(_,i)=>i));
+  assert.equal(throwCel(shot,shot.releaseAt-1),7);
+  assert.equal(throwCel(shot,shot.releaseAt),8);
+  assert.equal(throwCel(shot,shot.releaseAt+870),0);
+  assert.equal(throwCel(shot,shot.releaseAt,false),8);
   assert.equal(throwCel(null,2000),0);
  }
 });
 
 test('atlas crops stay inside the sheet and the release point follows the registered hand',async()=>{
  const config=JSON.parse(await readFile(new URL('../public/character.json',import.meta.url),'utf8'));
- assert.equal(config.frames.length,8);
- for(let i=0;i<8;i++){
+ assert.equal(config.frames.length,16);
+ for(let i=0;i<16;i++){
   const f=config.frames[i];assert.ok(f.x>=0&&f.x+f.width<=config.sheetWidth);
-  assert.ok(f.y>=0&&f.y+config.frameHeight<=config.sheetHeight);
+  assert.ok(f.y>=0&&f.y+f.height<=config.sheetHeight);
   assert.ok(f.anchor>=f.x&&f.anchor<=f.x+f.width);
   assert.ok(!JSON.stringify(spriteLayout(config,i)).includes('NaN'));
+  assert.equal(spriteLayout(config,i).height,'298px');
+  const bytes=await readFile(new URL('../public/'+(f.image||config.throwStudy).replace('./',''),import.meta.url));
+  assert.equal(bytes.readUInt32BE(16),config.sheetWidth);assert.equal(bytes.readUInt32BE(20),config.sheetHeight);
  }
  const f=config.frames[config.release.frame];assert.ok(config.release.x>=f.x&&config.release.x<=f.x+f.width);
  const birthday=dartReleasePoint(config,true),classic=dartReleasePoint(config,false);

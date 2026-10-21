@@ -1,15 +1,15 @@
 import {connectDemo} from './demo-session.js';
 import {connectControl,connectDisplay} from './session.js';
 import {balloonPopAt} from './balloon-timing.js';
-import {throwCel,spriteLayout,dartReleasePoint} from './motion.js';
-import {createThrowRig,rigReleasePoint} from './throw-rig.js';
+import {throwCel,dartReleasePoint} from './motion.js';
+import {loadCharacterArt,createCharacterRenderer} from './sprite-renderer.js';
 import {buildBalloons,animateBalloons,balloonPoint,balloonSlotForShot} from './balloons.js';
 import {createPartyAudio} from './party-audio.js';
 const $=s=>document.querySelector(s),control=!document.documentElement.classList.contains('overlay-page'),demo=document.documentElement.classList.contains('demo-page');
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const money=c=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:c%100?2:0,maximumFractionDigits:2}).format(c/100);
 const colors=['#9980cf','#7eacca','#86c6b1','#e9b975','#f077a4','#b79add','#efc792','#f393af'];
-let session,rigRenderer=null;
+let session,characterRenderer=null;
 let widgetId=new URLSearchParams(location.search).get('id'),state=null,connected=false,pending=false,offset=0,config=null,artReady=false,boardKey='',historyKey='',raf,poseIndex=-2,errorMessage='';
 const clock=()=>Date.now()+offset;
 let previewSound=true;try{previewSound=localStorage.getItem('faith-birthday-preview-sound')!=='off';}catch{}
@@ -20,19 +20,15 @@ document.addEventListener('pointerdown',()=>{void partyAudio.unlock();},{once:tr
 function status(text){if(control)$('#status').textContent=text;}
 function size(){const screen=$('#screen'),anchor=$('#widget-anchor'),width=screen.clientWidth,height=screen.clientHeight,nativeHeight=(state?.round?.preset||state?.widget)?.theme==='balloons'?540:450;anchor.style.height=nativeHeight+'px';const scale=control?Math.min((width-24)/720,(height-24)/nativeHeight):Math.min(width/720,height/nativeHeight);anchor.style.transform='scale('+scale+')';{anchor.style.left=(width-720*scale)/2+'px';anchor.style.top=(height-nativeHeight*scale)/2+'px';}}
 new ResizeObserver(size).observe($('#screen'));
-fetch('./character.json?v=throw-v3').then(r=>r.json()).then(c=>{
+fetch('./character.json?v=throw-v4').then(r=>r.json()).then(c=>{
  config=c;$('#faith img').src=c.idle;
- const fallback=()=>{const image=new Image();image.onload=()=>{artReady=true;$('#sprite').style.backgroundImage='url('+c.throwStudy+')';poseIndex=-2;render();};image.src=c.throwStudy;};
- if(c.rig){const image=new Image();image.onload=()=>{artReady=true;rigRenderer=createThrowRig($('#sprite'),image,c.rig);poseIndex=-2;render();};image.onerror=fallback;image.src=c.rig.image;}
- else fallback();
+ loadCharacterArt(c).then(images=>{characterRenderer=createCharacterRenderer($('#sprite'),c,images);artReady=true;poseIndex=-2;render();}).catch(()=>{});
 }).catch(()=>{});
 function pose(index){
- if(rigRenderer){$('#faith img').style.display='none';$('#sprite').style.display='block';return;}
  if(index===poseIndex&&artReady)return;poseIndex=index;
  const idle=$('#faith img'),sprite=$('#sprite');
  if(!artReady){idle.style.display='';sprite.style.display='none';return;}
- idle.style.display='none';sprite.style.display='block';sprite.dataset.cel=index;
- Object.assign(sprite.style,spriteLayout(config,index));
+ idle.style.display='none';sprite.style.display='block';characterRenderer.draw(index);
 }
 function board(p){const theme=p.theme||'dartboard',key=JSON.stringify([theme,p.outcomes]);if(key===boardKey)return;boardKey=key;historyKey='';$('#widget').dataset.theme=theme;size();const brand=$('.arcade-brand'),accent=document.createElement('b');accent.textContent=theme==='balloons'?'FAITH!':'DARTS';brand.replaceChildren(document.createTextNode(theme==='balloons'?'HAPPY BIRTHDAY, ':'FAITH’S '),accent);if(control)$('#sound-toggle').hidden=theme!=='balloons';$('#target').replaceChildren();$('#balloons').replaceChildren();if(theme==='balloons'){buildBalloons($('#balloons'),p.outcomes,money);return;}const n=p.outcomes.length,indices=[...Array(2*n-1).keys()].map(i=>i<n?i:2*n-2-i),maxChars=Math.max(...p.outcomes.map(o=>money(o.amountCents).length)),font=Math.min(19,213/indices.length*.85,98/(maxChars*.62));$('#target').style.setProperty('--amount-size',font+'px');for(const i of indices){const band=document.createElement('div');band.className='band';band.dataset.amount=money(p.outcomes[i].amountCents);band.style.setProperty('--color',colors[i%colors.length]);$('#target').append(band);}}
 function visibleThrows(r,t){return r?.flight&&t>=(r.preset.theme==='balloons'?balloonPopAt(r.flight):r.flight.landAt)?[...r.throws,r.flight]:r?.throws||[];}
@@ -40,8 +36,8 @@ function history(r,p,t){const shots=visibleThrows(r,t),key=(r?.id||'')+':'+p.dar
 function receive(next){const old=state?.round;state=next;connected=control?session?.ready??false:true;offset=next.serverNow-Date.now();partyAudio.sync(next.round?.preset.theme==='balloons'?next.round.flight:null,clock());if(control){if(old&&!next.round)$('#viewer').value='';else if(next.round&&!old)$('#viewer').value=next.round.viewer;document.title=next.widget.name+' — Faith Darts';$('h1').textContent=next.widget.name;$('#manage-widgets').href='./index.html?id='+encodeURIComponent(widgetId);}cancelAnimationFrame(raf);render();window.dispatchEvent(new Event('widget-state'));}
 function render(){cancelAnimationFrame(raf);if(!state)return;const r=state.round,p=r?.preset||state.widget,t=clock(),finished=!!r?.hideAt,visible=demo||!!r&&(!r.hideAt||t<r.hideAt),balloons=p.theme==='balloons';board(p);history(r,p,t);if(balloons)animateBalloons($('#balloons'),r,p.outcomes.length,t,!reducedMotion.matches);$('#widget').classList.toggle('visible',visible);$('#widget').classList.toggle('finished',finished);$('#widget').setAttribute('aria-hidden',String(!visible));$('#reveal').setAttribute('aria-hidden',String(!finished||!visible));$('#player').textContent=r?.viewer||'';$('.name-line').hidden=!r?.viewer;$('#counter').textContent=r?(finished?r.throws.length:Math.min(p.darts,r.throws.length+(r.flight?1:0)))+' / '+(finished?r.throws.length:p.darts):p.darts+' DART'+(p.darts===1?'':'S');
  if(finished){const sum=r.throws.reduce((sum,s)=>sum+s.amountCents,0),formatted=money(sum);$('#reveal-name').textContent=r.viewer?r.viewer.toUpperCase()+'’S TOTAL':'ROUND TOTAL';$('#final-total').textContent=formatted;$('#final-total').style.fontSize=Math.min(108,290/(formatted.length*.62))+'px';$('#addition').textContent=r.throws.map(s=>money(s.amountCents)).join(' + ');}
- const f=r?.flight;if(rigRenderer)rigRenderer.draw(f,t,!reducedMotion.matches);for(const band of $('#target').children)band.classList.remove('lit');$('#dart').style.display='none';$('#throw-pop').style.opacity=0;
- if(f){pose(throwCel(f,t,!reducedMotion.matches));const target=balloons?balloonPoint(balloonSlotForShot(f,p.outcomes.length),p.outcomes.length,f.landAt,!reducedMotion.matches):{x:583,y:83+(f.bandIndex+.5+f.offset)*213/(2*p.outcomes.length-1)},start=rigRenderer?rigReleasePoint(config.rig,balloons):dartReleasePoint(artReady?config:null,balloons),cx=(start.x+target.x)/2,cy=Math.min(30,target.y-80);
+ const f=r?.flight;for(const band of $('#target').children)band.classList.remove('lit');$('#dart').style.display='none';$('#throw-pop').style.opacity=0;
+ if(f){pose(throwCel(f,t,!reducedMotion.matches));const target=balloons?balloonPoint(balloonSlotForShot(f,p.outcomes.length),p.outcomes.length,f.landAt,!reducedMotion.matches):{x:583,y:83+(f.bandIndex+.5+f.offset)*213/(2*p.outcomes.length-1)},start=dartReleasePoint(artReady?config:null,balloons),cx=(start.x+target.x)/2,cy=Math.min(30,target.y-80);
   if(t>=f.releaseAt&&t<f.landAt){const u=(t-f.releaseAt)/(f.landAt-f.releaseAt),x=(1-u)*(1-u)*start.x+2*(1-u)*u*cx+u*u*target.x,py=(1-u)*(1-u)*start.y+2*(1-u)*u*cy+u*u*target.y,dx=2*(1-u)*(cx-start.x)+2*u*(target.x-cx),dy=2*(1-u)*(cy-start.y)+2*u*(target.y-cy);$('#dart').style.display='block';$('#dart').style.left=x-31+'px';$('#dart').style.top=py-4+'px';$('#dart').style.transform='rotate('+Math.atan2(dy,dx)*180/Math.PI+'deg)';}
   if(balloons&&t>=f.landAt&&t<balloonPopAt(f)){
    $('#dart').style.display='block';$('#dart').style.left=target.x-31+'px';$('#dart').style.top=target.y-4+'px';$('#dart').style.transform='rotate(0deg)';
