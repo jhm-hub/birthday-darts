@@ -15,7 +15,7 @@ $('#pause').addEventListener('click',()=>{if(elapsed>=end)elapsed=shot.finishAt;
 $('#timeline').addEventListener('input',()=>{elapsed=Number($('#timeline').value);playing=false;syncButton();});
 function detail(source,target){const c=$(target),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.imageSmoothingEnabled=false;ctx.drawImage($(source+' canvas'),128,3,65,65,0,0,132,132);}
 try{
- const config=await fetch('./character.json?v=bratty-v10').then(r=>r.json()),images=await loadCharacterArt(config);
+ const config=await fetch('./character.json?v=bratty-v11').then(r=>r.json()),images=await loadCharacterArt(config);
  const before=createCharacterRenderer($('#before'),config,images),after=createCharacterRenderer($('#after'),config,images);
  before.draw(0);detail('#before','#before-face');
  for(const input of document.querySelectorAll('button,input'))input.disabled=false;

@@ -1,5 +1,6 @@
 import {characterFrameLayout} from './motion.js';
 import {matchFaceSkin} from './face-palette.js';
+import {restoreAtlasHair} from './atlas-hair.js';
 
 // Decode all painted atlases before play. Drawing into one persistent canvas
 // avoids a blank frame when CSS switches atlas URLs at the instant of release.
@@ -28,6 +29,7 @@ export async function loadCharacterArt(config){
    const band=mask.bands?.find(b=>row>=b.start&&row<b.end);
    if(silhouette[i]<mask.cutoff||(band&&pixels.data[i]<band.cutoff))pixels.data[i]=0;
   }
+  if(mask.preserveHair)restoreAtlasHair(pixels.data,silhouette,canvas.width,canvas.height,{...mask.preserveHair,cellHeight:mask.cellHeight,cutoff:mask.cutoff});
   c.putImageData(pixels,0,0);images.set(source,canvas);
  }
  const face=config.expressions;

@@ -1,5 +1,5 @@
 {
-  "name": "Faith \u2014 original-proportion Bratty Victory",
+  "name": "Faith \u2014 clean hair flick with consistent proportions",
   "idle": "./assets/faith-hybrid.png",
   "throwStudy": "./assets/faith-whole-body-v6.png",
   "sheetWidth": 1536,
@@ -344,7 +344,7 @@
     "tipOffsetX": 15,
     "tipOffsetY": -2
   },
-  "note": "Original wind-up, release and initial follow-through; six painted recovery poses return to the exact original idle. One common scale throughout. Feature-only facial overlays preserve reference skin shading and animate with eased transitions. Previous pass is character-consistent-v7.json. Final totals play one complete Bratty Victory celebration. Original throw/recovery/face metadata unchanged. Future variants share the round seed; prize RNG is independent. Previous config is character-recovery-v8.json. V10: local body-contour correction against the original ready sprite, retaining v9 cell/foot registration, timing and gestures. Previous celebration config: character-bratty-v9.json. Uniform rendering scale is unchanged.",
+  "note": "Original wind-up, release and initial follow-through; six painted recovery poses return to the exact original idle. One common scale throughout. Feature-only facial overlays preserve reference skin shading and animate with eased transitions. Previous pass is character-consistent-v7.json. Final totals play one complete Bratty Victory celebration. Original throw/recovery/face metadata unchanged. Future variants share the round seed; prize RNG is independent. Previous config is character-recovery-v8.json. V10: local body-contour correction against the original ready sprite, retaining v9 cell/foot registration, timing and gestures. Previous celebration config: character-bratty-v9.json. Uniform rendering scale is unchanged. V11: preserve the matching original painted head and copper hair through the body contour matte pass. Body below the hair extent, timing and registration unchanged. Previous config: character-proportions-v10.json.",
   "expressions": {
     "image": "./assets/faith-expressions-v7.png",
     "target": {
@@ -849,7 +849,13 @@
           "end": 214,
           "cutoff": 232
         }
-      ]
+      ],
+      "preserveHair": {
+        "headEnd": 64,
+        "hairEnd": 128,
+        "cellWidth": 256,
+        "hairRight": 115
+      }
     },
     "./assets/faith-bratty-bridge-v10.png": {
       "image": "./assets/faith-bratty-bridge-v9.png",
@@ -861,7 +867,13 @@
           "end": 214,
           "cutoff": 232
         }
-      ]
+      ],
+      "preserveHair": {
+        "headEnd": 64,
+        "hairEnd": 128,
+        "cellWidth": 256,
+        "hairRight": 115
+      }
     }
   }
 }
