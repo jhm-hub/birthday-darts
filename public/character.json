@@ -1,5 +1,5 @@
 {
-  "name": "Faith \u2014 painted sixteen-cel throw v4",
+  "name": "Faith \u2014 painted throw with compact recovery hand",
   "idle": "./assets/faith-hybrid.png",
   "throwStudy": "./assets/faith-painted-sixteen-v4.png",
   "sheetWidth": 1086,
@@ -81,12 +81,12 @@
       "image": "./assets/faith-painted-sixteen-v4-hands.png"
     },
     {
-      "x": 581,
-      "y": 731,
-      "width": 216,
-      "height": 343,
-      "anchor": 683.0,
-      "image": "./assets/faith-painted-sixteen-v4-hands.png"
+      "x": 590,
+      "y": 729,
+      "width": 200,
+      "height": 346,
+      "anchor": 690.5,
+      "image": "./assets/faith-compact-recovery-v5.png"
     },
     {
       "x": 853,

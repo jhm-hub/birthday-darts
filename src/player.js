@@ -20,7 +20,7 @@ document.addEventListener('pointerdown',()=>{void partyAudio.unlock();},{once:tr
 function status(text){if(control)$('#status').textContent=text;}
 function size(){const screen=$('#screen'),anchor=$('#widget-anchor'),width=screen.clientWidth,height=screen.clientHeight,nativeHeight=(state?.round?.preset||state?.widget)?.theme==='balloons'?540:450;anchor.style.height=nativeHeight+'px';const scale=control?Math.min((width-24)/720,(height-24)/nativeHeight):Math.min(width/720,height/nativeHeight);anchor.style.transform='scale('+scale+')';{anchor.style.left=(width-720*scale)/2+'px';anchor.style.top=(height-nativeHeight*scale)/2+'px';}}
 new ResizeObserver(size).observe($('#screen'));
-fetch('./character.json?v=throw-v4').then(r=>r.json()).then(c=>{
+fetch('./character.json?v=throw-v5').then(r=>r.json()).then(c=>{
  config=c;$('#faith img').src=c.idle;
  loadCharacterArt(c).then(images=>{characterRenderer=createCharacterRenderer($('#sprite'),c,images);artReady=true;poseIndex=-2;render();}).catch(()=>{});
 }).catch(()=>{});
