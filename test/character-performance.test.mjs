@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {characterPerformance,reactionTier,reactionExpression,REACTION_MS} from '../src/character-performance.js';
+import {characterPerformance,reactionTier,reactionExpression,facialMotion,REACTION_MS} from '../src/character-performance.js';
+import {THROW_RECOVERY_MS} from '../src/motion.js';
 const preset={theme:'balloons',outcomes:[{amountCents:1000},{amountCents:2500},{amountCents:5000}]};
 const flight={id:'test',amountCents:5000,startAt:1000,releaseAt:1750,landAt:2490,popAt:2810,finishAt:4240};
 
@@ -22,8 +23,8 @@ test('a prize reaction never starts before its pop and resumes at the same cel a
 });
 test('classic reactions finish recovery first and continue after the flight settles',()=>{
  const p={...preset,theme:'dartboard'},f={...flight,landAt:2310,finishAt:2750};delete f.popAt;
- assert.equal(characterPerformance({flight:f},p,2619).reaction,'');
- assert.equal(characterPerformance({flight:f},p,2620).reaction,'big-win');
+ assert.equal(characterPerformance({flight:f},p,2729).reaction,'');
+ assert.equal(characterPerformance({flight:f},p,2730).reaction,'big-win');
  const settled={throws:[{amountCents:5000,landAt:2310}]};
  assert.equal(characterPerformance(settled,p,2800).reaction,'big-win');
  assert.equal(characterPerformance(settled,p,4000).active,false);
@@ -40,12 +41,12 @@ test('impact and facial reactions never replace or truncate the throw body',()=>
   const p={...preset,theme},f={...flight,landAt:flight.releaseAt+(theme==='balloons'?740:560)};
   if(theme!=='balloons')delete f.popAt;
   const seen=new Set();
-  for(let time=f.startAt;time<f.releaseAt+870;time++){
+  for(let time=f.startAt;time<f.releaseAt+THROW_RECOVERY_MS;time++){
    const pose=characterPerformance({flight:f},p,time);seen.add(pose.cel);
    assert.equal(pose.expression,null);assert.equal(pose.reaction,'');
   }
   assert.equal(seen.size,24,'every full-body throw cel plays, including recovery after impact');
-  const start=theme==='balloons'?f.popAt:f.releaseAt+870;
+  const start=theme==='balloons'?f.popAt:f.releaseAt+THROW_RECOVERY_MS;
   for(let tier=0;tier<3;tier++)for(let age=0;age<REACTION_MS;age+=10){
    const pose=characterPerformance({flight:{...f,amountCents:p.outcomes[tier].amountCents}},p,start+age);
    assert.equal(pose.cel,0,'every win keeps the exact ready body');
@@ -53,4 +54,15 @@ test('impact and facial reactions never replace or truncate the throw body',()=>
   }
   assert.equal(characterPerformance({flight:f},p,start+REACTION_MS).cel,0);
  }
+});
+
+test('facial motion eases in, blinks and returns to the original face without a hard cut',()=>{
+ assert.equal(facialMotion(0).expressionStrength,0);assert.equal(facialMotion(REACTION_MS).expressionStrength,0);
+ assert.equal(facialMotion(300).expressionStrength,1);assert.equal(facialMotion(580).blink,1);
+ assert.equal(facialMotion(0).blink,0);assert.equal(facialMotion(900).blink,0);
+ for(let age=1;age<REACTION_MS;age++){
+  const p=facialMotion(age-1),n=facialMotion(age);
+  for(const key of ['expressionStrength','blink']){assert.ok(n[key]>=0&&n[key]<=1);assert.ok(Math.abs(n[key]-p[key])<.02);}
+ }
+ assert.deepEqual(facialMotion(580,false),{expressionStrength:1,blink:0});
 });

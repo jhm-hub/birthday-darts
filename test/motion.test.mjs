@@ -1,17 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {throwCel,spriteLayout,characterFrameLayout,dartReleasePoint,balloonDeformation,popCel,fragmentMotion,confettiMotion} from '../src/motion.js';
+import {THROW_RECOVERY_MS,throwCel,spriteLayout,characterFrameLayout,dartReleasePoint,balloonDeformation,popCel,fragmentMotion,confettiMotion} from '../src/motion.js';
 import {BALLOON_BURST_MS} from '../src/balloon-timing.js';
 
 test('first and later throws expose all twenty-four full-body cels and release on the empty-hand cel',()=>{
  for(const lead of [750,410]){
   const shot={startAt:1000,releaseAt:1000+lead},seen=new Set();
-  for(let t=1000;t<shot.releaseAt+900;t++)seen.add(throwCel(shot,t));
+  for(let t=1000;t<shot.releaseAt+THROW_RECOVERY_MS+30;t++)seen.add(throwCel(shot,t));
   assert.deepEqual([...seen],Array.from({length:24},(_,i)=>i));
   assert.equal(throwCel(shot,shot.releaseAt-1),7);
   assert.equal(throwCel(shot,shot.releaseAt),8);
-  assert.equal(throwCel(shot,shot.releaseAt+870),0);
+  assert.equal(throwCel(shot,shot.releaseAt+THROW_RECOVERY_MS),0);
   assert.equal(throwCel(shot,shot.releaseAt,false),8);
   assert.equal(throwCel(null,2000),0);
  }
@@ -59,10 +59,11 @@ test('particles sample deterministically, remain finite, finish cleanly and redu
  }
 });
 
-test('the approved throw art is unchanged and win overlays are confined inside its face',async()=>{
+test('the wind-up and release are unchanged and win overlays are confined inside its face',async()=>{
  const read=name=>readFile(new URL('../public/'+name,import.meta.url),'utf8').then(JSON.parse);
  const [config,previous]=await Promise.all([read('character.json'),read('character-full-body-v6.json')]);
- assert.deepEqual(config.frames,previous.frames.slice(0,24));
+ assert.deepEqual(config.frames.slice(0,18),previous.frames.slice(0,18));
+ assert.deepEqual(config.frames.at(-1),config.frames[0],'recovery ends on the exact idle cel');
  for(const key of ['bodyAnchorX','groundY','canvasWidth','canvasHeight','canvasOffsetX','canvasOffsetY'])assert.equal(config[key],previous[key]);
  const face=config.expressions;assert.equal(face.frames.length,6);
  const bytes=await readFile(new URL('../public/'+face.image.replace('./',''),import.meta.url));

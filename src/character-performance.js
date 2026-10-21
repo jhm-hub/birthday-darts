@@ -14,11 +14,13 @@ export function reactionTier(amountCents,outcomes){
 
 export function reactionExpression(tier,age,motion=true){
  if(age<0||age>=REACTION_MS)return null;
- if(!motion)return tier*2;
- // Only the painted facial features change. Start and finish on her
- // unchanged face so neither edge of a win swaps the character body.
- if(age<80||age>=1040)return null;
- return tier*2+(age>=530&&age<690?1:0);
+ return tier*2;
+}
+const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
+export function facialMotion(age,motion=true){
+ if(!motion)return {expressionStrength:1,blink:0};
+ return {expressionStrength:ease(age/180)*ease((REACTION_MS-age)/220),
+  blink:ease((age-470)/90)*(1-ease((age-620)/120))};
 }
 
 export function characterPerformance(round,preset,time,motion=true){
@@ -31,7 +33,7 @@ export function characterPerformance(round,preset,time,motion=true){
  const reactAt=Math.max(revealAt,releaseAt+THROW_RECOVERY_MS);
  if(Number.isFinite(reactAt)&&time>=reactAt&&time<reactAt+REACTION_MS){
   const tier=reactionTier(shot.amountCents,preset.outcomes);
-  return {cel:0,expression:reactionExpression(tier,time-reactAt,motion),heldDart:false,active:true,reaction:['pleased','happy','big-win'][tier]};
+  return {cel:0,expression:reactionExpression(tier,time-reactAt,motion),...facialMotion(time-reactAt,motion),heldDart:false,active:true,reaction:['pleased','happy','big-win'][tier]};
  }
  if(flight)return {cel:throwCel(flight,time,motion),expression:null,heldDart:time<flight.releaseAt,active:true,reaction:''};
  return idle;
