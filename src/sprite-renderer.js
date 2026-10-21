@@ -5,7 +5,7 @@ import {matchFaceSkin} from './face-palette.js';
 // avoids a blank frame when CSS switches atlas URLs at the instant of release.
 export async function loadCharacterArt(config){
  const allFrames=[...config.frames,...(config.celebrations||[]).flatMap(c=>c.frames)];
- const sources=[...new Set([config.throwStudy,...allFrames.map(f=>f.image),config.expressions?.image].filter(Boolean))];
+ const sources=[...new Set([config.throwStudy,...allFrames.map(f=>f.image),config.expressions?.image,...Object.values(config.alphaMasks||{}).map(m=>m.image)].filter(Boolean))];
  const images=new Map(await Promise.all(sources.map(async source=>{
   const image=new Image();image.src=source;await image.decode();return [source,image];
  })));
@@ -15,6 +15,19 @@ export async function loadCharacterArt(config){
   // Alpha test on newly painted cels removes the generator's faint matte
   // fringe when composited over a stream. Keep the source file untouched.
   for(let i=3;i<pixels.data.length;i+=4)if(pixels.data[i]<cutoff)pixels.data[i]=0;
+  c.putImageData(pixels,0,0);images.set(source,canvas);
+ }
+ // Local contour repaints retain their original pose. Constrain their matte
+ // to that pose's clean silhouette so generator haze cannot add body volume.
+ for(const [source,mask] of Object.entries(config.alphaMasks||{})){
+  const image=images.get(source),reference=images.get(mask.image),canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
+  const c=canvas.getContext('2d',{willReadFrequently:true});c.drawImage(reference,0,0);const silhouette=c.getImageData(0,0,canvas.width,canvas.height).data;
+  c.clearRect(0,0,canvas.width,canvas.height);c.drawImage(image,0,0);const pixels=c.getImageData(0,0,canvas.width,canvas.height);
+  for(let i=3;i<pixels.data.length;i+=4){
+   const row=Math.floor(i/4/canvas.width)%mask.cellHeight;
+   const band=mask.bands?.find(b=>row>=b.start&&row<b.end);
+   if(silhouette[i]<mask.cutoff||(band&&pixels.data[i]<band.cutoff))pixels.data[i]=0;
+  }
   c.putImageData(pixels,0,0);images.set(source,canvas);
  }
  const face=config.expressions;
