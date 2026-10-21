@@ -20,7 +20,7 @@ function previousPose(time){
 }
 function faceDetail(source,target){const c=$(target),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.imageSmoothingEnabled=false;ctx.drawImage($(source+' canvas'),132,7,57,61,0,0,132,141);}
 try{
- const [oldConfig,newConfig]=await Promise.all(['./character-consistent-v7.json','./character.json?v=recovery-v8'].map(url=>fetch(url).then(r=>r.json())));
+ const [oldConfig,newConfig]=await Promise.all(['./character-consistent-v7.json','./character.json?v=goddess-v12'].map(url=>fetch(url).then(r=>r.json())));
  const [oldImages,newImages]=await Promise.all([loadCharacterArt(oldConfig),loadCharacterArt(newConfig)]);
  before=createCharacterRenderer($('#before'),oldConfig,oldImages);after=createCharacterRenderer($('#after'),newConfig,newImages);
  for(const input of document.querySelectorAll('button,input'))input.disabled=false;$('#pause').disabled=true;

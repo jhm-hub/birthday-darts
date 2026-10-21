@@ -2,7 +2,7 @@ import {RESULT_HOLD_MS} from './widgets.js';
 
 // A round UUID is already random. Hashing it chooses a cosmetic performance
 // identically on every display, without consuming the prize random source.
-// Only finished animations belong in this list; one prototype currently ships.
+// Each complete performance owns its poses, timing and reduced-motion hold.
 export function chooseCelebration(roundId,variants){
  if(!variants?.length)return null;
  let seed=2166136261;

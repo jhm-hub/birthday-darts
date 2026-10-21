@@ -2,6 +2,15 @@ import {characterFrameLayout} from './motion.js';
 import {matchFaceSkin} from './face-palette.js';
 import {restoreAtlasHair} from './atlas-hair.js';
 
+function inPolygon(x,y,points){
+ let inside=false;
+ for(let i=0,j=points.length-1;i<points.length;j=i++){
+  const [ax,ay]=points[i],[bx,by]=points[j];
+  if((ay>y)!==(by>y)&&x<(bx-ax)*(y-ay)/(by-ay)+ax)inside=!inside;
+ }
+ return inside;
+}
+
 // Decode all painted atlases before play. Drawing into one persistent canvas
 // avoids a blank frame when CSS switches atlas URLs at the instant of release.
 export async function loadCharacterArt(config){
@@ -26,8 +35,16 @@ export async function loadCharacterArt(config){
   c.clearRect(0,0,canvas.width,canvas.height);c.drawImage(image,0,0);const pixels=c.getImageData(0,0,canvas.width,canvas.height);
   for(let i=3;i<pixels.data.length;i+=4){
    const row=Math.floor(i/4/canvas.width)%mask.cellHeight;
+   const col=(i-3)/4%canvas.width%(mask.cellWidth||256),region=mask.replaceRegion;
+   const replace=region&&col>=region.left&&col<region.right&&row>=region.top&&row<region.bottom&&(!region.polygon||inPolygon(col,row,region.polygon));
    const band=mask.bands?.find(b=>row>=b.start&&row<b.end);
-   if(silhouette[i]<mask.cutoff||(band&&pixels.data[i]<band.cutoff))pixels.data[i]=0;
+   if((!replace&&silhouette[i]<mask.cutoff)||(band&&pixels.data[i]<band.cutoff))pixels.data[i]=0;
+   // Keep the matching pose outside the local contour/gesture repaint.
+   // This protects the head, hair and body from unrelated redraw drift.
+   if((region&&!replace)||mask.preserveRows?.some(([start,end])=>row>=start&&row<end)){
+    for(let c=-3;c<=0;c++)pixels.data[i+c]=silhouette[i+c];
+    if(silhouette[i]<mask.cutoff)pixels.data[i]=0;
+   }
   }
   if(mask.preserveHair)restoreAtlasHair(pixels.data,silhouette,canvas.width,canvas.height,{...mask.preserveHair,cellHeight:mask.cellHeight,cutoff:mask.cutoff});
   c.putImageData(pixels,0,0);images.set(source,canvas);

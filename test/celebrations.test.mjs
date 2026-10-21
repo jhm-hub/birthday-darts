@@ -16,7 +16,7 @@ test('celebration starts only with the final total, never on an intermediate hit
  assert.equal(celebrationPerformance({...round,flight:shot},shot.finishAt,variants),null);
  assert.equal(celebrationPerformance({...round,throws:[]},shot.finishAt,variants),null);
  assert.equal(celebrationPerformance(round,shot.finishAt-1,variants),null);
- assert.equal(celebrationPerformance(round,shot.finishAt,variants).celebration,'bratty-victory');
+ assert.equal(celebrationPerformance(round,shot.finishAt,variants).celebration,chooseCelebration(round.id,variants).id);
  assert.equal(celebrationPerformance(round,round.hideAt,variants),null);
  assert.equal(celebrationPerformance(round,shot.finishAt,[]),null);
 });
@@ -39,20 +39,22 @@ test('reloads and paired displays share the exact celebration, without mutating 
 });
 
 test('all painted celebration cels play once and settle into the exact idle without a dart',()=>{
- const variant=variants[0],seen=new Set();
- for(let age=0;age<variant.duration;age++)seen.add(celebrationPerformance(round,shot.finishAt+age,variants).celebrationCel);
- assert.deepEqual([...seen],variant.frames.map((_,i)=>i));
- for(const age of [variant.duration,variant.duration+100,RESULT_HOLD_MS-1]){
-  const pose=celebrationPerformance(round,shot.finishAt+age,variants);
-  assert.equal(pose.celebrationCel,0);assert.equal(pose.heldDart,false);
+ for(const variant of variants){
+  const seen=new Set();
+  for(let age=0;age<variant.duration;age++)seen.add(celebrationPerformance(round,shot.finishAt+age,[variant]).celebrationCel);
+  assert.deepEqual([...seen],variant.frames.map((_,i)=>i));
+  for(const age of [variant.duration,variant.duration+100,RESULT_HOLD_MS-1]){
+   const pose=celebrationPerformance(round,shot.finishAt+age,[variant]);
+   assert.equal(pose.celebrationCel,0);assert.equal(pose.heldDart,false);
+  }
+  assert.deepEqual(variant.frames[0],config.frames[0]);assert.deepEqual(variant.frames.at(-1),config.frames[0]);
  }
- assert.deepEqual(variant.frames[0],config.frames[0]);assert.deepEqual(variant.frames.at(-1),config.frames[0]);
 });
 
 test('reduced motion holds one readable pose and never flicks or loops',()=>{
- for(let age=0;age<RESULT_HOLD_MS;age+=50){
-  const pose=celebrationPerformance(round,shot.finishAt+age,variants,false);
-  assert.equal(pose.celebrationCel,variants[0].reducedCel);assert.equal(pose.heldDart,false);
+ for(const variant of variants)for(let age=0;age<RESULT_HOLD_MS;age+=50){
+  const pose=celebrationPerformance(round,shot.finishAt+age,[variant],false);
+  assert.equal(pose.celebrationCel,variant.reducedCel);assert.equal(pose.heldDart,false);
  }
 });
 
@@ -65,8 +67,18 @@ test('the last throw completes before either theme begins its final celebration'
    assert.deepEqual(characterPerformance(active,p,t,true,variants),characterPerformance(active,p,t,true,[]));
   }
   const done={...round,preset:p,throws:[f],hideAt:f.finishAt+RESULT_HOLD_MS};
-  assert.equal(characterPerformance(done,p,f.finishAt,true,variants).celebration,'bratty-victory');
+  assert.equal(characterPerformance(done,p,f.finishAt,true,variants).celebration,chooseCelebration(done.id,variants).id);
  }
+});
+
+test('Goddess Moment joins the round selection while preserving the approved Bratty Victory',async()=>{
+ const before=JSON.parse(await readFile(new URL('../public/character-bratty-v11.json',import.meta.url),'utf8'));
+ assert.deepEqual(variants.find(v=>v.id==='bratty-victory'),before.celebrations[0]);
+ for(const [source,mask] of Object.entries(before.alphaMasks))assert.deepEqual(config.alphaMasks[source],mask);
+ assert.ok(variants.some(v=>v.id==='goddess-moment'));
+ const seen=new Set();
+ for(let i=0;i<100;i++)seen.add(chooseCelebration('viewer-'+i,variants).id);
+ assert.deepEqual(seen,new Set(['bratty-victory','goddess-moment']));
 });
 
 test('celebration art fits the same canvas at one common scale; existing throw and faces are unchanged',async()=>{
