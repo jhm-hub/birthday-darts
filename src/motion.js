@@ -10,8 +10,8 @@ export function spriteLayout(config,index){
   backgroundPosition:-frame.x*scale+'px '+(-frame.y*scale)+'px'};
 }
 
-export function characterFrameLayout(config,index){
- const f=config.frames[index],height=f.height||config.frameHeight,scale=f.scale||298/height;
+export function characterFrameLayout(config,index,frames=config.frames){
+ const f=frames[index],height=f.height||config.frameHeight,scale=f.scale||298/height;
  return {left:config.bodyAnchorX-(f.anchor-f.x)*scale,
   top:f.baseline===undefined?0:config.groundY-(f.baseline-f.y)*scale,
   width:f.width*scale,height:height*scale,scale};

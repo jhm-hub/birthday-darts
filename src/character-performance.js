@@ -1,5 +1,6 @@
 import {throwCel,THROW_RECOVERY_MS} from './motion.js';
 import {balloonPopAt} from './balloon-timing.js';
+import {celebrationPerformance} from './celebrations.js';
 
 export const REACTION_MS=1120;
 
@@ -23,7 +24,9 @@ export function facialMotion(age,motion=true){
   blink:ease((age-470)/90)*(1-ease((age-620)/120))};
 }
 
-export function characterPerformance(round,preset,time,motion=true){
+export function characterPerformance(round,preset,time,motion=true,celebrations=[]){
+ const celebration=celebrationPerformance(round,time,celebrations,motion);
+ if(celebration)return celebration;
  const flight=round?.flight,shot=flight||round?.throws?.at(-1);
  const idle={cel:0,expression:null,heldDart:true,active:false,reaction:''};
  if(!shot)return idle;

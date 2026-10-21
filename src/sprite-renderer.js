@@ -4,7 +4,8 @@ import {matchFaceSkin} from './face-palette.js';
 // Decode all painted atlases before play. Drawing into one persistent canvas
 // avoids a blank frame when CSS switches atlas URLs at the instant of release.
 export async function loadCharacterArt(config){
- const sources=[...new Set([config.throwStudy,...config.frames.map(f=>f.image),config.expressions?.image].filter(Boolean))];
+ const allFrames=[...config.frames,...(config.celebrations||[]).flatMap(c=>c.frames)];
+ const sources=[...new Set([config.throwStudy,...allFrames.map(f=>f.image),config.expressions?.image].filter(Boolean))];
  const images=new Map(await Promise.all(sources.map(async source=>{
   const image=new Image();image.src=source;await image.decode();return [source,image];
  })));
@@ -36,13 +37,14 @@ export function createCharacterRenderer(container,config,images){
  const mixCtx=mix.getContext('2d');
  Object.assign(container.style,{left:(config.canvasOffsetX||0)+'px',top:(config.canvasOffsetY||0)+'px',width:canvas.width+'px',height:canvas.height+'px',backgroundImage:'none'});
  Object.assign(canvas.style,{width:canvas.width+'px',height:canvas.height+'px',imageRendering:'pixelated'});
- return {draw(index,{heldDart=false,expression=null,expressionStrength=1,blink=0}={}){
-  const frame=config.frames[index],box=characterFrameLayout(config,index);
+ return {draw(index,{heldDart=false,expression=null,expressionStrength=1,blink=0,celebration='',celebrationCel=0}={}){
+  const variant=config.celebrations?.find(c=>c.id===celebration),frames=variant?.frames||config.frames;
+  const frameIndex=variant?celebrationCel:index,frame=frames[frameIndex],box=characterFrameLayout(config,frameIndex,frames);
   ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;
   ctx.drawImage(images.get(frame.image||config.throwStudy),frame.x,frame.y,frame.width,frame.height||config.frameHeight,
    box.left,box.top,box.width,box.height);
   const face=config.expressions;
-  if(index===0&&face&&Number.isInteger(expression)&&face.frames[expression]){
+  if(!variant&&index===0&&face&&Number.isInteger(expression)&&face.frames[expression]){
    const source=face.frames[expression],target=face.target;
    // Draw only the face interior in the original cel's coordinate system.
    // The body, hair silhouette, head outline, scale and foot anchor are the
@@ -68,5 +70,6 @@ export function createCharacterRenderer(container,config,images){
    ctx.fillStyle='#ff99c2';ctx.fillRect(-18,-4,3,1);ctx.restore();
   }
   container.dataset.cel=index;container.dataset.animation='whole-body';container.dataset.heldDart=String(heldDart);container.dataset.expression=expression??'';
+  container.dataset.celebration=variant?.id||'';container.dataset.celebrationCel=variant?celebrationCel:'';
  }};
 }
