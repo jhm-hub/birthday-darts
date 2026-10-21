@@ -3,16 +3,24 @@ import {BALLOON_HIT_HOLD_MS,BALLOON_BURST_MS} from './balloon-timing.js';
 const clamp=x=>Math.max(0,Math.min(1,x));
 
 export function spriteLayout(config,index){
- const frame=config.frames[index],scale=298/(frame.height||config.frameHeight);
- return {left:(config.bodyAnchorX-(frame.anchor-frame.x)*scale)+'px',width:frame.width*scale+'px',height:'298px',
-  backgroundSize:config.sheetWidth*scale+'px '+config.sheetHeight*scale+'px',
+ const frame=config.frames[index],box=characterFrameLayout(config,index),scale=box.scale;
+ return {left:box.left+'px',top:box.top+'px',width:box.width+'px',height:box.height+'px',
+  backgroundSize:(frame.sheetWidth||config.sheetWidth)*scale+'px '+(frame.sheetHeight||config.sheetHeight)*scale+'px',
   backgroundPosition:-frame.x*scale+'px '+(-frame.y*scale)+'px'};
+}
+
+export function characterFrameLayout(config,index){
+ const f=config.frames[index],height=f.height||config.frameHeight,scale=f.scale||298/height;
+ return {left:config.bodyAnchorX-(f.anchor-f.x)*scale,
+  top:f.baseline===undefined?0:config.groundY-(f.baseline-f.y)*scale,
+  width:f.width*scale,height:height*scale,scale};
 }
 
 export function dartReleasePoint(config,balloons){
  if(!config)return {x:228,y:balloons?128:86};
- const release=config.release,frame=config.frames[release.frame],scale=298/(frame.height||config.frameHeight);
- return {x:37+config.bodyAnchorX+(release.x-frame.anchor)*scale,y:(balloons?50:8)+(release.y-frame.y)*scale};
+ const release=config.release,frame=config.frames[release.frame],box=characterFrameLayout(config,release.frame);
+ return {x:37+(config.canvasOffsetX||0)+box.left+(release.x-frame.x)*box.scale+(release.tipOffsetX||0),
+  y:(balloons?50:8)+(config.canvasOffsetY||0)+box.top+(release.y-frame.y)*box.scale+(release.tipOffsetY||0)};
 }
 
 // All motion samples the shared shot clock. Refreshing or joining mid-throw
@@ -21,24 +29,10 @@ export function throwCel(shot,time,motion=true){
  if(!shot||time<shot.startAt)return 0;
  const age=time-shot.releaseAt;
  if(!motion)return age>=0&&age<260?8:0;
- // The elbow leads, then the forearm unfolds. Exposure shortens toward
- // release and lengthens on recovery; no rotated or stretched body parts.
- if(age<-390)return 0;
- if(age<-320)return 1;
- if(age<-260)return 2;
- if(age<-210)return 3;
- if(age<-160)return 4;
- if(age<-110)return 5;
- if(age<-65)return 6;
- if(age<0)return 7;
- if(age<75)return 8;
- if(age<170)return 9;
- if(age<270)return 10;
- if(age<390)return 11;
- if(age<510)return 12;
- if(age<620)return 13;
- if(age<750)return 14;
- if(age<870)return 15;
+ // Whole-body cels, sampled from the shared clock. The front boot is
+ // registered in the renderer while the hips, back leg and hair move.
+ const starts=[-410,-350,-290,-230,-180,-135,-90,-45,0,45,90,140,190,240,300,360,420,480,550,610,670,730,790,840];
+ if(age<870){let cel=0;for(let i=1;i<starts.length;i++){if(age<starts[i])break;cel=i;}return cel;}
  return 0;
 }
 

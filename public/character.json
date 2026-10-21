@@ -1,134 +1,584 @@
 {
-  "name": "Faith \u2014 painted throw with compact recovery hand",
+  "name": "Faith \u2014 dimensional full-body pixel performance",
   "idle": "./assets/faith-hybrid.png",
-  "throwStudy": "./assets/faith-painted-sixteen-v4.png",
-  "sheetWidth": 1086,
-  "sheetHeight": 1448,
-  "frameHeight": 342,
-  "bodyAnchorX": 102,
+  "throwStudy": "./assets/faith-whole-body-v6.png",
+  "sheetWidth": 1536,
+  "sheetHeight": 1024,
+  "bodyAnchorX": 187,
+  "groundY": 306,
+  "canvasWidth": 340,
+  "canvasHeight": 320,
+  "canvasOffsetX": -32,
+  "canvasOffsetY": -8,
   "idleFrame": 0,
   "frames": [
     {
+      "x": 67,
+      "y": 7,
+      "width": 135,
+      "height": 249,
+      "anchor": 175.0,
+      "baseline": 255,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 102,
+        "y": 45
+      }
+    },
+    {
+      "x": 321,
+      "y": 7,
+      "width": 127,
+      "height": 249,
+      "anchor": 428.0,
+      "baseline": 255,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 355,
+        "y": 45
+      }
+    },
+    {
+      "x": 574,
+      "y": 7,
+      "width": 130,
+      "height": 249,
+      "anchor": 682.5,
+      "baseline": 254,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 609,
+        "y": 45
+      }
+    },
+    {
+      "x": 827,
+      "y": 7,
+      "width": 137,
+      "height": 249,
+      "anchor": 938.5,
+      "baseline": 254,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 864,
+        "y": 45
+      }
+    },
+    {
+      "x": 1084,
+      "y": 7,
+      "width": 140,
+      "height": 249,
+      "anchor": 1195.5,
+      "baseline": 254,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 1118,
+        "y": 45
+      }
+    },
+    {
+      "x": 1336,
+      "y": 7,
+      "width": 146,
+      "height": 249,
+      "anchor": 1449.5,
+      "baseline": 254,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 1374,
+        "y": 45
+      }
+    },
+    {
       "x": 50,
-      "y": 15,
-      "width": 187,
-      "height": 344,
-      "anchor": 143.0
+      "y": 261,
+      "width": 145,
+      "height": 251,
+      "anchor": 174.5,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 137,
+        "y": 305
+      }
     },
     {
-      "x": 318,
-      "y": 14,
-      "width": 186,
-      "height": 346,
-      "anchor": 408.678
+      "x": 293,
+      "y": 261,
+      "width": 177,
+      "height": 251,
+      "anchor": 430.0,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 459,
+        "y": 305
+      }
     },
     {
-      "x": 584,
-      "y": 16,
-      "width": 198,
-      "height": 344,
-      "anchor": 687.617
+      "x": 548,
+      "y": 261,
+      "width": 216,
+      "height": 251,
+      "anchor": 686.5,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
     },
     {
-      "x": 47,
-      "y": 372,
+      "x": 798,
+      "y": 263,
+      "width": 230,
+      "height": 249,
+      "anchor": 942.5,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 1053,
+      "y": 262,
+      "width": 235,
+      "height": 250,
+      "anchor": 1198.5,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 1309,
+      "y": 262,
+      "width": 205,
+      "height": 250,
+      "anchor": 1452.5,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 28,
+      "y": 517,
+      "width": 233,
+      "height": 251,
+      "anchor": 174.0,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 285,
+      "y": 517,
+      "width": 179,
+      "height": 251,
+      "anchor": 430.0,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 545,
+      "y": 517,
+      "width": 175,
+      "height": 251,
+      "anchor": 686.0,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 803,
+      "y": 517,
+      "width": 169,
+      "height": 251,
+      "anchor": 946.0,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 1063,
+      "y": 517,
+      "width": 163,
+      "height": 251,
+      "anchor": 1198.5,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 1330,
+      "y": 517,
+      "width": 144,
+      "height": 251,
+      "anchor": 1453.5,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 64,
+      "y": 773,
+      "width": 133,
+      "height": 250,
+      "anchor": 177.5,
+      "baseline": 1021,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 92,
+        "y": 813
+      }
+    },
+    {
+      "x": 319,
+      "y": 772,
+      "width": 133,
+      "height": 251,
+      "anchor": 433.0,
+      "baseline": 1021,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 347,
+        "y": 813
+      }
+    },
+    {
+      "x": 575,
+      "y": 772,
+      "width": 134,
+      "height": 251,
+      "anchor": 689.5,
+      "baseline": 1021,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 603,
+        "y": 813
+      }
+    },
+    {
+      "x": 831,
+      "y": 772,
+      "width": 134,
+      "height": 251,
+      "anchor": 945.5,
+      "baseline": 1021,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 859,
+        "y": 813
+      }
+    },
+    {
+      "x": 1088,
+      "y": 772,
+      "width": 133,
+      "height": 251,
+      "anchor": 1202.0,
+      "baseline": 1021,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 1116,
+        "y": 813
+      }
+    },
+    {
+      "x": 1341,
+      "y": 772,
+      "width": 134,
+      "height": 251,
+      "anchor": 1453.0,
+      "baseline": 1021,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 1371,
+        "y": 813
+      }
+    },
+    {
+      "x": 121,
+      "y": 5,
+      "width": 168,
+      "height": 289,
+      "anchor": 259.0,
+      "baseline": 292,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 414,
+      "y": 5,
+      "width": 167,
+      "height": 289,
+      "anchor": 553.5,
+      "baseline": 292,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 686,
+      "y": 5,
+      "width": 161,
+      "height": 289,
+      "anchor": 822.0,
+      "baseline": 292,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 949,
+      "y": 4,
+      "width": 165,
+      "height": 290,
+      "anchor": 1088.5,
+      "baseline": 292,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 1226,
+      "y": 4,
+      "width": 166,
+      "height": 290,
+      "anchor": 1361.0,
+      "baseline": 292,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 1506,
+      "y": 2,
+      "width": 167,
+      "height": 292,
+      "anchor": 1646.0,
+      "baseline": 292,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 121,
+      "y": 299,
+      "width": 168,
+      "height": 291,
+      "anchor": 259.0,
+      "baseline": 588,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 401,
+      "y": 298,
+      "width": 171,
+      "height": 292,
+      "anchor": 546.5,
+      "baseline": 588,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 679,
+      "y": 298,
+      "width": 176,
+      "height": 292,
+      "anchor": 829.5,
+      "baseline": 588,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 950,
+      "y": 298,
+      "width": 176,
+      "height": 292,
+      "anchor": 1100.0,
+      "baseline": 588,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 1222,
+      "y": 298,
+      "width": 175,
+      "height": 292,
+      "anchor": 1371.0,
+      "baseline": 588,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 1507,
+      "y": 298,
+      "width": 166,
+      "height": 292,
+      "anchor": 1646.0,
+      "baseline": 588,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 121,
+      "y": 595,
+      "width": 168,
+      "height": 291,
+      "anchor": 259.5,
+      "baseline": 884,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
+    },
+    {
+      "x": 392,
+      "y": 592,
       "width": 190,
-      "height": 344,
-      "anchor": 143.154
+      "height": 294,
+      "anchor": 557.0,
+      "baseline": 884,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
     },
     {
-      "x": 856,
-      "y": 16,
-      "width": 189,
-      "height": 344,
-      "anchor": 949.228
+      "x": 663,
+      "y": 592,
+      "width": 192,
+      "height": 294,
+      "anchor": 829.5,
+      "baseline": 884,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
     },
     {
-      "x": 317,
-      "y": 373,
-      "width": 215,
-      "height": 343,
-      "anchor": 413.849
+      "x": 942,
+      "y": 592,
+      "width": 184,
+      "height": 294,
+      "anchor": 1101.0,
+      "baseline": 884,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
     },
     {
-      "x": 583,
-      "y": 373,
-      "width": 260,
-      "height": 343,
-      "anchor": 682.547
+      "x": 1221,
+      "y": 592,
+      "width": 180,
+      "height": 294,
+      "anchor": 1376.0,
+      "baseline": 884,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
     },
     {
-      "x": 847,
-      "y": 373,
-      "width": 239,
-      "height": 343,
-      "anchor": 946.641
-    },
-    {
-      "x": 39,
-      "y": 729,
-      "width": 243,
-      "height": 345,
-      "anchor": 141.0,
-      "image": "./assets/faith-painted-sixteen-v4-hands.png"
-    },
-    {
-      "x": 314,
-      "y": 729,
-      "width": 242,
-      "height": 345,
-      "anchor": 415.158,
-      "image": "./assets/faith-painted-sixteen-v4-hands.png"
-    },
-    {
-      "x": 590,
-      "y": 729,
-      "width": 200,
-      "height": 346,
-      "anchor": 690.5,
-      "image": "./assets/faith-compact-recovery-v5.png"
-    },
-    {
-      "x": 853,
-      "y": 729,
-      "width": 197,
-      "height": 345,
-      "anchor": 955.0,
-      "image": "./assets/faith-painted-sixteen-v4-hands.png"
-    },
-    {
-      "x": 47,
-      "y": 1085,
-      "width": 189,
-      "height": 342,
-      "anchor": 143.295
-    },
-    {
-      "x": 315,
-      "y": 1083,
-      "width": 188,
-      "height": 344,
-      "anchor": 410.0
-    },
-    {
-      "x": 585,
-      "y": 1085,
-      "width": 190,
-      "height": 342,
-      "anchor": 683.0
-    },
-    {
-      "x": 857,
-      "y": 1085,
-      "width": 189,
-      "height": 342,
-      "anchor": 955.0
+      "x": 1507,
+      "y": 594,
+      "width": 166,
+      "height": 292,
+      "anchor": 1646.0,
+      "baseline": 884,
+      "image": "./assets/faith-reactions-v6.png",
+      "sheetWidth": 1774,
+      "sheetHeight": 887,
+      "scale": 1.0456140350877192
     }
   ],
   "release": {
     "frame": 8,
-    "x": 277,
-    "y": 793
+    "x": 753,
+    "y": 305,
+    "tipOffsetX": 15,
+    "tipOffsetY": -2
   },
-  "note": "Whole-character painted poses replace the rejected articulated arm. Each frame is aligned by planted feet and drawn at the same 298px height. Earlier assets remain in the repository and Git history."
+  "note": "Twenty-four full-character throw cels and eighteen facial/body reaction cels. Each atlas uses one scale; the front boot stays planted. Earlier painted version is character-painted-v5.json. The 3D appearance is painted into 2D pixel art."
 }
