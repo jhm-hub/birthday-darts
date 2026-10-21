@@ -6,19 +6,19 @@ import {remainingBirthdayOutcomes,birthdayEstimate} from '../src/birthday-rules.
 import {BALLOON_HIT_HOLD_MS,BALLOON_RESULT_MS} from '../src/balloon-timing.js';
 import {makePopSamples,createPartyAudio} from '../src/party-audio.js';
 
-test('birthday widgets remove won amounts, hold the hit beat, and freeze active round rules',()=>{
+test('birthday widgets remove individual balloons, hold the hit beat, and freeze active round rules',()=>{
  const s=newWidgets([{id:'birthday',name:'Birthday',theme:'balloons',darts:3,outcomes:[{amountCents:1000,weight:0},{amountCents:2500,weight:1000},{amountCents:5000,weight:1},{amountCents:10000,weight:1}]}]);
- const won=new Set();
+ const won=new Set();let expectedTotal=0;
  for(let i=0;i<3;i++){
   const now=i*4000;applyWidgetAction(s,{action:'throw',id:'birthday'},now);
   const f=s.widgets[0].round.flight;
-  assert.notEqual(f.outcomeIndex,0);assert.ok(!won.has(f.amountCents));won.add(f.amountCents);
+  assert.notEqual(f.outcomeIndex,0);assert.ok(!won.has(f.balloonSlot));won.add(f.balloonSlot);expectedTotal+=f.amountCents;
   assert.equal(outcomeForShot(f,4),f.outcomeIndex);assert.equal(f.popAt-f.landAt,BALLOON_HIT_HOLD_MS);assert.equal(f.finishAt-f.landAt,BALLOON_RESULT_MS);
   advanceWidgets(s,f.finishAt-1);assert.ok(s.widgets[0].round.flight);assert.throws(()=>applyWidgetAction(s,{action:'throw',id:'birthday'},f.finishAt-1),/flight/);
   advanceWidgets(s,f.finishAt);
   assert.equal(s.widgets[0].round.throws[i].landAt,f.landAt);
  }
- assert.equal(s.widgets[0].lastResult.totalCents,17500);
+ assert.equal(s.widgets[0].lastResult.totalCents,expectedTotal);
  const id=applyWidgetAction(s,{action:'duplicate',id:'birthday'});
  assert.equal(s.widgets.find(w=>w.id===id).theme,'balloons');
  applyWidgetAction(s,{action:'save',widget:{id:'birthday',name:'Birthday renamed',darts:3,outcomes:[{amountCents:1000,weight:1}]}},12000);
@@ -80,21 +80,27 @@ test('widgets keep independent rounds, frozen rules, exact cents and automatic c
  const copy=applyWidgetAction(s,{action:'duplicate',id:'a'});const cloned=s.widgets.find(w=>w.id===copy);assert.notEqual(copy,'a');assert.equal(cloned.round,null);assert.equal(cloned.lastResult,null);
 });
 
-test('birthday rounds finish when eligible amounts run out and reset for the next viewer',()=>{
+test('birthday rounds exhaust physical balloons and reset the pool for the next viewer',()=>{
  const s=newWidgets([{id:'short',name:'Short',theme:'balloons',darts:12,outcomes:[{amountCents:1000,weight:1},{amountCents:2000,weight:0}]}]);
- applyWidgetAction(s,{action:'throw',id:'short',viewer:'First'},0);assert.equal(s.widgets[0].round.preset.darts,1);assert.equal(s.widgets[0].darts,12);
- const finish=s.widgets[0].round.flight.finishAt;advanceWidgets(s,finish);assert.equal(s.widgets[0].lastResult.totalCents,1000);
+ const slots=new Set();let finish=0;
+ for(let i=0;i<6;i++){
+  applyWidgetAction(s,{action:'throw',id:'short',viewer:'First'},i*4000);
+  const f=s.widgets[0].round.flight;assert.equal(s.widgets[0].round.preset.darts,6);assert.equal(f.amountCents,1000);
+  assert.ok(!slots.has(f.balloonSlot));slots.add(f.balloonSlot);finish=f.finishAt;advanceWidgets(s,finish);
+ }
+ assert.equal(s.widgets[0].lastResult.totalCents,6000);
  advanceWidgets(s,finish+RESULT_HOLD_MS+FADE_MS);applyWidgetAction(s,{action:'throw',id:'short',viewer:'Next'},finish+RESULT_HOLD_MS+FADE_MS+1);
  assert.equal(s.widgets[0].round.throws.length,0);assert.equal(s.widgets[0].round.flight.amountCents,1000);assert.equal(s.widgets[0].round.viewer,'Next');
- const saved=structuredClone(s);saved.widgets[0].round.throws=[{id:'old',amountCents:1000,landAt:10}];saved.widgets[0].round.flight=null;saved.widgets[0].round.preset.darts=12;
+ const saved=structuredClone(s);delete saved.widgets[0].round.preset.birthdayRule;
+ saved.widgets[0].round.throws=[{id:'old',amountCents:1000,landAt:10}];saved.widgets[0].round.flight=null;saved.widgets[0].round.preset.darts=12;
  assert.equal(advanceWidgets(saved,99999),true);assert.equal(saved.widgets[0].lastResult.totalCents,1000);
 });
 
-test('remaining prize weights and no-repeat estimates match the available birthday draws',()=>{
+test('legacy prize weights and repeated-amount estimates match the available balloon pool',()=>{
  const prizes=[{amountCents:1000,weight:3},{amountCents:2000,weight:1},{amountCents:5000,weight:0}];
  assert.deepEqual(remainingBirthdayOutcomes(prizes,[{amountCents:1000}]).map(o=>o.weight),[0,1,0]);
  assert.deepEqual(prizes.map(o=>o.weight),[3,1,0]);
  assert.deepEqual(birthdayEstimate(prizes,1),{count:1,average:1250,min:1000,max:2000});
- assert.deepEqual(birthdayEstimate(prizes,12),{count:2,average:3000,min:3000,max:3000});
- assert.deepEqual(birthdayEstimate([{amountCents:100,weight:1},{amountCents:200,weight:1},{amountCents:300,weight:1}],2),{count:2,average:400,min:300,max:500});
+ assert.deepEqual(birthdayEstimate(prizes,12),{count:8,average:12000,min:12000,max:12000});
+ assert.deepEqual(birthdayEstimate([{amountCents:100,weight:1},{amountCents:200,weight:1},{amountCents:300,weight:1}],2),{count:2,average:400,min:200,max:600});
 });

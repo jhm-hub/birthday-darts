@@ -12,7 +12,7 @@ A browser game for Faith's streams: enter a viewer's name, press once per dart, 
 2. Choose **Open controls**, enter an optional viewer name, and click **Throw dart**. Space also throws when you aren't typing in a field.
 3. Click once for each subsequent dart. The final total stays visible for five seconds, then the display clears for the next viewer.
 
-Birthday balloons stay popped. Each dollar amount can win once per round; matching balloons are marked won and the remaining weights are recalculated. The round ends after its configured dart count or when all eligible amounts are won. The classic board allows repeat amounts. Changes to settings apply to the next round.
+Birthday balloons stay popped individually. Matching dollar amounts can win again while another balloon with that amount remains. Configured relative prize odds stay the same until an amount has no balloons left; the remaining weights are then recalculated. The round ends after its configured dart count or when all eligible balloons are popped. Rounds already active when this update loads finish with their original rules. The classic board allows repeat amounts. Changes to settings apply to the next round.
 
 The editor demo is a separate, disposable game with sound off initially. It uses the real animation and weighted rules, but has no storage or stream connection. Editing a value resets that demo to the latest draft; it cannot change an active live round. Invalid or unfinished values disable demo throws until corrected.
 
@@ -54,11 +54,12 @@ Automated checks cover weighted draws, exact-cent totals, birthday prize removal
 
 ## Animation art and review
 
-The October 20 animation pass uses eight registered character cels: ready, aim, anticipation, acceleration, release, follow-through, recovery and reset. The flying dart starts at the release hand. Balloon hits retain the 320 ms reading beat, with elastic compression, eight stepped rupture cels, shaded pieces cut from the actual balloon art, and fluttering pixel confetti. All effects sample the shared shot clock; reconnecting does not replay or award a hit. Reduced motion removes confetti and reduces deformation and travel.
+The current throw uses a fixed pixel-art body with continuously articulated shoulder and elbow, sampled from cubic motion curves. Wind-up, release and recovery share their motion speed at each transition; the face, outfit and boots stay registered. Nearest-neighbour canvas rendering keeps pixel edges crisp. The flying dart starts at the animated hand, and the next dart appears late in recovery. Reduced motion holds a quiet ready/release pose.
 
+Balloon hits retain the 320 ms reading beat, with elastic compression, eight stepped rupture cels, shaded rubber fragments and fluttering pixel confetti. All effects sample the shared shot clock; reconnecting does not replay or award a hit. Reduced motion removes confetti and reduces deformation and travel. Individual balloon targets persist with each throw, so repeated amounts hit different balloons and the display agrees with the controller.
 To inspect individual poses and impact stages locally, run `node scripts/review-motion.mjs` after building, then open `review-motion.html` on the local server. This review page is excluded from the normal production build.
 
-The original sprite, four-pose atlas and configuration remain in `public/assets/` and `public/character-legacy.json`. Commit `dbdd6b8a9854ce674bb84b6a28cba63a0ad2cc8c` preserves the complete previous renderer and timing for a full rollback. The v2 PNG was created with the built-in image-generation tool using the approved sprite as reference; it retains its generated alpha channel. The pixel balloon rupture artwork is authored in `src/balloon-fx.js`.
+The original sprite, four-pose atlas, eight-pose atlas and original configuration remain in `public/assets/` and `public/character-legacy.json`. Commit `dbdd6b8a9854ce674bb84b6a28cba63a0ad2cc8c` preserves the complete previous renderer and timing for a full rollback. Commit `dfce377be6ba3959d1fce826e1e253a901b2bde4` preserves the complete eight-cel version before continuous motion and repeated balloon prizes. The v2 and v3 PNGs were created with the built-in image-generation tool using the approved sprite as reference; they retain their generated alpha channels. The pixel balloon rupture artwork is authored in `src/balloon-fx.js`.
 
 ## Credits
 

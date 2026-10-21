@@ -4,9 +4,9 @@ import {buildBalloonFX,animateBalloonFX} from './balloon-fx.js';
 import {balloonPixelLayers} from './balloon-art.js';
 import {birthdayCake,birthdayGifts} from './party-props.js';
 const palette=['#ee659e','#a48adc','#66bdac','#efbd62','#75afd8','#d783c0','#d59a71','#94ba73'];
-export function outcomeForShot(shot,count){return Number.isInteger(shot?.outcomeIndex)?shot.outcomeIndex:Math.min(shot.bandIndex,2*count-2-shot.bandIndex);}
-export function balloonSlots(count){return Array.from({length:Math.max(12,Math.min(16,count*3))},(_,i)=>i%count);}
-export function balloonSlotForShot(shot,count){const options=balloonSlots(count).flatMap((outcome,i)=>outcome===outcomeForShot(shot,count)?[i]:[]);let hash=0;for(const char of shot.id||'')hash=(hash*31+char.charCodeAt(0))>>>0;return options[hash%options.length];}
+export {outcomeForShot,balloonSlots,balloonSlotForShot} from './balloon-slots.js';
+import {outcomeForShot,balloonSlots,balloonSlotForShot} from './balloon-slots.js';
+import {REPEAT_BALLOON_RULE} from './birthday-rules.js';
 export function balloonPoint(index,count,time=0,motion=true){
  // Hand-staggered bouquet: varied sizes and heights, with no rows or columns.
  const positions=[[-18,30,.73],[35,57,.68],[-62,71,.71],[2,100,.76],[69,118,.69],[-51,133,.72],[-4,167,.76],[-71,191,.67],[58,194,.74],[-33,225,.7],[82,242,.65],[19,252,.73],[-52,278,.63],[7,298,.62],[95,66,.62],[-86,32,.6]];
@@ -46,7 +46,7 @@ export function animateBalloons(container,round,count,time,motion=true){
  const popped=new Map(landed.map(s=>[balloonSlotForShot(s,count),s]));
  const labels=container.querySelector('.prize-labels'),ribbons=container.querySelector('.bouquet-ribbons');
  for(let i=0;i<balloonSlots(count).length;i++){
-  const item=container.children[i],label=labels.children[i],old=popped.get(i),isHit=focused&&i===hit,used=won.has(Number(item.dataset.outcome))&&!old;
+  const item=container.children[i],label=labels.children[i],old=popped.get(i),isHit=focused&&i===hit,used=round?.preset?.birthdayRule!==REPEAT_BALLOON_RULE&&won.has(Number(item.dataset.outcome))&&!old;
   const point=balloonPoint(i,count,isHit?shot.landAt:time,motion);
   const deformation=balloonDeformation(old?time-balloonPopAt(old):-Infinity,motion);let alpha=used?.2:deformation.alpha;
   if(focused&&!isHit)alpha*=.38;

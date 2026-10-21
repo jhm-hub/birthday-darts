@@ -1,5 +1,5 @@
 {
-  "name": "Faith \u2014 eight-cel throw v2",
+  "name": "Faith \u2014 continuous pixel-art throw v3",
   "idle": "./assets/faith-hybrid.png",
   "throwStudy": "./assets/faith-throw-eight-cels-v2.png",
   "sheetWidth": 1536,
@@ -62,5 +62,82 @@
     "x": 420,
     "y": 621
   },
-  "note": "Eight transparent poses, aligned to the front boot. Original art and four-pose configuration are retained as character-legacy.json. No changes to timing or game rules."
+  "note": "Continuous jointed pixel-art throw. Eight-cel v2 and original four-cel art remain available in Git history and assets. Fixed body prevents face/boot jitter.",
+  "rig": {
+    "image": "./assets/faith-throw-rig-v3.png",
+    "body": {
+      "crop": [
+        180,
+        28,
+        506,
+        944
+      ],
+      "destination": [
+        14,
+        0,
+        160,
+        298
+      ]
+    },
+    "shoulder": [
+      69,
+      74
+    ],
+    "upperLength": 54,
+    "forearmLength": 47,
+    "upperThickness": 0.21,
+    "forearmThickness": 0.18,
+    "upper": {
+      "crop": [
+        852,
+        170,
+        338,
+        146
+      ],
+      "pivot": [
+        886,
+        217
+      ],
+      "end": [
+        1151,
+        274
+      ]
+    },
+    "closed": {
+      "crop": [
+        865,
+        464,
+        494,
+        122
+      ],
+      "pivot": [
+        899,
+        505
+      ],
+      "end": [
+        1234,
+        549
+      ]
+    },
+    "open": {
+      "crop": [
+        865,
+        741,
+        572,
+        153
+      ],
+      "pivot": [
+        899,
+        782
+      ],
+      "end": [
+        1234,
+        825
+      ]
+    },
+    "grip": [
+      1312,
+      532
+    ]
+  }
 }
