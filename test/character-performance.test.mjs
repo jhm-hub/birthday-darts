@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {characterPerformance,reactionTier,reactionCel,REACTION_MS} from '../src/character-performance.js';
+import {characterPerformance,reactionTier,reactionExpression,REACTION_MS} from '../src/character-performance.js';
 const preset={theme:'balloons',outcomes:[{amountCents:1000},{amountCents:2500},{amountCents:5000}]};
 const flight={id:'test',amountCents:5000,startAt:1000,releaseAt:1750,landAt:2490,popAt:2810,finishAt:4240};
 
@@ -14,11 +14,11 @@ test('a prize reaction never starts before its pop and resumes at the same cel a
  const round={flight,throws:[]};
  assert.equal(characterPerformance(round,preset,flight.popAt-1).reaction,'');
  const shown=characterPerformance(round,preset,flight.popAt+450);
- assert.equal(shown.reaction,'big-win');assert.equal(shown.cel,39);assert.equal(shown.heldDart,false);
+ assert.equal(shown.reaction,'big-win');assert.equal(shown.cel,0);assert.equal(shown.expression,4);assert.equal(shown.heldDart,false);
  assert.deepEqual(shown,characterPerformance(JSON.parse(JSON.stringify(round)),preset,flight.popAt+450));
  assert.equal(characterPerformance(round,preset,flight.releaseAt-1).heldDart,true);
  assert.equal(characterPerformance(round,preset,flight.releaseAt).heldDart,false);
- assert.equal(reactionCel(2,REACTION_MS),0);
+ assert.equal(reactionExpression(2,REACTION_MS),null);
 });
 test('classic reactions finish recovery first and continue after the flight settles',()=>{
  const p={...preset,theme:'dartboard'},f={...flight,landAt:2310,finishAt:2750};delete f.popAt;
@@ -30,7 +30,27 @@ test('classic reactions finish recovery first and continue after the flight sett
 });
 test('reduced motion holds one readable expression and a new throw takes precedence',()=>{
  const reduced=characterPerformance({flight},preset,flight.popAt+100,false);
- assert.equal(reduced.cel,38);assert.equal(characterPerformance({flight},preset,flight.popAt+800,false).cel,38);
+ assert.equal(reduced.cel,0);assert.equal(reduced.expression,4);assert.equal(characterPerformance({flight},preset,flight.popAt+800,false).expression,4);
  const next={...flight,startAt:3000,releaseAt:3410,landAt:4150,popAt:4470};
  assert.equal(characterPerformance({flight:next,throws:[flight]},preset,3100).reaction,'');
+});
+
+test('impact and facial reactions never replace or truncate the throw body',()=>{
+ for(const theme of ['balloons','dartboard']){
+  const p={...preset,theme},f={...flight,landAt:flight.releaseAt+(theme==='balloons'?740:560)};
+  if(theme!=='balloons')delete f.popAt;
+  const seen=new Set();
+  for(let time=f.startAt;time<f.releaseAt+870;time++){
+   const pose=characterPerformance({flight:f},p,time);seen.add(pose.cel);
+   assert.equal(pose.expression,null);assert.equal(pose.reaction,'');
+  }
+  assert.equal(seen.size,24,'every full-body throw cel plays, including recovery after impact');
+  const start=theme==='balloons'?f.popAt:f.releaseAt+870;
+  for(let tier=0;tier<3;tier++)for(let age=0;age<REACTION_MS;age+=10){
+   const pose=characterPerformance({flight:{...f,amountCents:p.outcomes[tier].amountCents}},p,start+age);
+   assert.equal(pose.cel,0,'every win keeps the exact ready body');
+   assert.ok(pose.expression===null||pose.expression>=tier*2&&pose.expression<tier*2+2);
+  }
+  assert.equal(characterPerformance({flight:f},p,start+REACTION_MS).cel,0);
+ }
 });

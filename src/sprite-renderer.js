@@ -3,7 +3,7 @@ import {characterFrameLayout} from './motion.js';
 // Decode all painted atlases before play. Drawing into one persistent canvas
 // avoids a blank frame when CSS switches atlas URLs at the instant of release.
 export async function loadCharacterArt(config){
- const sources=[...new Set([config.throwStudy,...config.frames.map(f=>f.image).filter(Boolean)])];
+ const sources=[...new Set([config.throwStudy,...config.frames.map(f=>f.image),config.expressions?.image].filter(Boolean))];
  return new Map(await Promise.all(sources.map(async source=>{
   const image=new Image();image.src=source;await image.decode();return [source,image];
  })));
@@ -13,11 +13,21 @@ export function createCharacterRenderer(container,config,images){
  const ctx=canvas.getContext('2d');container.replaceChildren(canvas);
  Object.assign(container.style,{left:(config.canvasOffsetX||0)+'px',top:(config.canvasOffsetY||0)+'px',width:canvas.width+'px',height:canvas.height+'px',backgroundImage:'none'});
  Object.assign(canvas.style,{width:canvas.width+'px',height:canvas.height+'px',imageRendering:'pixelated'});
- return {draw(index,{heldDart=false}={}){
+ return {draw(index,{heldDart=false,expression=null}={}){
   const frame=config.frames[index],box=characterFrameLayout(config,index);
   ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;
   ctx.drawImage(images.get(frame.image||config.throwStudy),frame.x,frame.y,frame.width,frame.height||config.frameHeight,
    box.left,box.top,box.width,box.height);
+  const face=config.expressions;
+  if(index===0&&face&&Number.isInteger(expression)&&face.frames[expression]){
+   const source=face.frames[expression],target=face.target;
+   // Draw only the face interior in the original cel's coordinate system.
+   // The body, hair silhouette, head outline, scale and foot anchor are the
+   // exact same pixels as the ready pose throughout every win reaction.
+   ctx.save();ctx.translate(box.left-frame.x*box.scale,box.top-frame.y*box.scale);ctx.scale(box.scale,box.scale);
+   ctx.beginPath();for(let i=0;i<face.clip.length;i++)ctx[i?'lineTo':'moveTo'](...face.clip[i]);ctx.closePath();ctx.clip();ctx.globalCompositeOperation='source-atop';
+   ctx.drawImage(images.get(face.image),source.x,source.y,source.width,source.height,target.x,target.y,target.width,target.height);ctx.restore();
+  }
   if(heldDart&&frame.hand){
    const x=Math.round(box.left+(frame.hand.x-frame.x)*box.scale),y=Math.round(box.top+(frame.hand.y-frame.y)*box.scale);
    ctx.save();ctx.translate(x,y);
@@ -26,6 +36,6 @@ export function createCharacterRenderer(container,config,images){
    ctx.fillStyle='#ef4d91';ctx.beginPath();ctx.moveTo(-19,-4);ctx.lineTo(-15,-4);ctx.lineTo(-10,-1);ctx.lineTo(-18,-1);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(-19,4);ctx.lineTo(-15,4);ctx.lineTo(-10,1);ctx.lineTo(-18,1);ctx.closePath();ctx.fill();
    ctx.fillStyle='#ff99c2';ctx.fillRect(-18,-4,3,1);ctx.restore();
   }
-  container.dataset.cel=index;container.dataset.animation='whole-body';container.dataset.heldDart=String(heldDart);
+  container.dataset.cel=index;container.dataset.animation='whole-body';container.dataset.heldDart=String(heldDart);container.dataset.expression=expression??'';
  }};
 }

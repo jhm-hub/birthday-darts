@@ -19,8 +19,8 @@ test('first and later throws expose all twenty-four full-body cels and release o
 
 test('atlas crops stay inside the sheet and the release point follows the registered hand',async()=>{
  const config=JSON.parse(await readFile(new URL('../public/character.json',import.meta.url),'utf8'));
- assert.equal(config.frames.length,42);
- for(let i=0;i<42;i++){
+ assert.equal(config.frames.length,24);
+ for(let i=0;i<24;i++){
   const f=config.frames[i];
   const bytes=await readFile(new URL('../public/'+(f.image||config.throwStudy).replace('./',''),import.meta.url));
   assert.ok(f.x>=0&&f.x+f.width<=bytes.readUInt32BE(16));
@@ -31,7 +31,7 @@ test('atlas crops stay inside the sheet and the release point follows the regist
   assert.ok(box.left>=0&&box.left+box.width<=config.canvasWidth,`cel ${i} fits horizontally`);
   assert.ok(box.top>=0&&box.top+box.height<=config.canvasHeight,`cel ${i} fits vertically`);
   assert.equal(box.top+(f.baseline-f.y)*box.scale,config.groundY,'front boot remains planted');
-  assert.equal(box.scale,config.frames[i<24?0:24].scale,'all cels in an atlas share one scale');
+  assert.equal(box.scale,config.frames[0].scale,'all cels in an atlas share one scale');
  }
  const f=config.frames[config.release.frame];assert.ok(config.release.x>=f.x&&config.release.x<=f.x+f.width);
  const birthday=dartReleasePoint(config,true),classic=dartReleasePoint(config,false);
@@ -57,4 +57,16 @@ test('particles sample deterministically, remain finite, finish cleanly and redu
   assert.equal(fragmentMotion(i,BALLOON_BURST_MS).alpha,0);
   assert.equal(fragmentMotion(i,300,false).turn,0);
  }
+});
+
+test('the approved throw art is unchanged and win overlays are confined inside its face',async()=>{
+ const read=name=>readFile(new URL('../public/'+name,import.meta.url),'utf8').then(JSON.parse);
+ const [config,previous]=await Promise.all([read('character.json'),read('character-full-body-v6.json')]);
+ assert.deepEqual(config.frames,previous.frames.slice(0,24));
+ for(const key of ['bodyAnchorX','groundY','canvasWidth','canvasHeight','canvasOffsetX','canvasOffsetY'])assert.equal(config[key],previous[key]);
+ const face=config.expressions;assert.equal(face.frames.length,6);
+ const bytes=await readFile(new URL('../public/'+face.image.replace('./',''),import.meta.url));
+ for(const f of face.frames){assert.ok(f.x>=0&&f.x+f.width<=bytes.readUInt32BE(16));assert.ok(f.y>=0&&f.y+f.height<=bytes.readUInt32BE(20));}
+ for(const [x,y] of face.clip){assert.ok(x>=138&&x<=164);assert.ok(y>=27&&y<=54);}
+ assert.deepEqual(face.target,{x:138,y:27,width:26,height:27});
 });

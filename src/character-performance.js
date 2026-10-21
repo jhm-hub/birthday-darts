@@ -1,4 +1,4 @@
-import {throwCel} from './motion.js';
+import {throwCel,THROW_RECOVERY_MS} from './motion.js';
 import {balloonPopAt} from './balloon-timing.js';
 
 export const REACTION_MS=1120;
@@ -12,24 +12,27 @@ export function reactionTier(amountCents,outcomes){
  return rank>=1?2:rank>=.5?1:0;
 }
 
-export function reactionCel(tier,age,motion=true){
- if(age<0||age>=REACTION_MS)return 0;
- if(!motion)return 24+tier*6+2;
- const phase=age<80?0:age<190?1:age<430?2:age<690?3:age<930?4:5;
- return 24+tier*6+phase;
+export function reactionExpression(tier,age,motion=true){
+ if(age<0||age>=REACTION_MS)return null;
+ if(!motion)return tier*2;
+ // Only the painted facial features change. Start and finish on her
+ // unchanged face so neither edge of a win swaps the character body.
+ if(age<80||age>=1040)return null;
+ return tier*2+(age>=530&&age<690?1:0);
 }
 
 export function characterPerformance(round,preset,time,motion=true){
  const flight=round?.flight,shot=flight||round?.throws?.at(-1);
- const idle={cel:0,heldDart:true,active:false,reaction:''};
+ const idle={cel:0,expression:null,heldDart:true,active:false,reaction:''};
  if(!shot)return idle;
  const revealAt=preset.theme==='balloons'?balloonPopAt(shot):shot.landAt;
  // A classic dart lands before recovery ends. Finish the body motion first.
- const reactAt=preset.theme==='balloons'?revealAt:revealAt+310;
+ const releaseAt=shot.releaseAt??shot.landAt-(preset.theme==='balloons'?740:560);
+ const reactAt=Math.max(revealAt,releaseAt+THROW_RECOVERY_MS);
  if(Number.isFinite(reactAt)&&time>=reactAt&&time<reactAt+REACTION_MS){
   const tier=reactionTier(shot.amountCents,preset.outcomes);
-  return {cel:reactionCel(tier,time-reactAt,motion),heldDart:false,active:true,reaction:['pleased','happy','big-win'][tier]};
+  return {cel:0,expression:reactionExpression(tier,time-reactAt,motion),heldDart:false,active:true,reaction:['pleased','happy','big-win'][tier]};
  }
- if(flight)return {cel:throwCel(flight,time,motion),heldDart:time<flight.releaseAt,active:true,reaction:''};
+ if(flight)return {cel:throwCel(flight,time,motion),expression:null,heldDart:time<flight.releaseAt,active:true,reaction:''};
  return idle;
 }

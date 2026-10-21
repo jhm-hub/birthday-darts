@@ -1,28 +1,39 @@
 import {loadCharacterArt,createCharacterRenderer} from './sprite-renderer.js';
-import {throwCel} from './motion.js';
-import {reactionCel,REACTION_MS} from './character-performance.js';
-const $=s=>document.querySelector(s),buttons=[...document.querySelectorAll('button')];
-let before,after,mode='idle',tier=0,elapsed=0,last=performance.now(),paused=false;
-const shot={startAt:0,releaseAt:650};
-function oldCel(t){const age=t-650,ends=[-390,-320,-260,-210,-160,-110,-65,0,75,170,270,390,510,620,750,870];const i=ends.findIndex(end=>age<end);return i<0?0:i;}
-function start(next,nextTier=0){mode=next;tier=nextTier;elapsed=0;paused=false;$('#pause').textContent='Pause';$('#pause').disabled=false;last=performance.now();}
-$('#play').addEventListener('click',()=>start('throw'));
-for(const button of document.querySelectorAll('[data-tier]'))button.addEventListener('click',()=>start('reaction',Number(button.dataset.tier)));
-$('#pause').addEventListener('click',()=>{paused=!paused;$('#pause').textContent=paused?'Resume':'Pause';last=performance.now();});
+import {characterPerformance,REACTION_MS} from './character-performance.js';
+const $=s=>document.querySelector(s);
+let before,after,tier=2,elapsed=0,last=performance.now(),playing=false;
+const shot={startAt:0,releaseAt:750,landAt:1490,popAt:1810,finishAt:3240};
+const preset={theme:'balloons',outcomes:[{amountCents:1000},{amountCents:5000},{amountCents:25000}]};
+const length=3400;
+function syncButton(){$('#pause').textContent=playing?'Pause':'Resume';$('#pause').disabled=false;}
+$('#play').addEventListener('click',()=>{elapsed=0;playing=true;last=performance.now();syncButton();});
+for(const button of document.querySelectorAll('[data-tier]'))button.addEventListener('click',()=>{
+ tier=Number(button.dataset.tier);for(const b of document.querySelectorAll('[data-tier]'))b.setAttribute('aria-pressed',String(b===button));
+});
+$('#pause').addEventListener('click',()=>{playing=!playing;if(elapsed>=length)elapsed=0;last=performance.now();syncButton();});
+$('#timeline').addEventListener('input',()=>{elapsed=Number($('#timeline').value);playing=false;syncButton();});
+function previousReaction(age){
+ const phase=age<80?0:age<190?1:age<430?2:age<690?3:age<930?4:5;
+ return 24+tier*6+phase;
+}
 try{
- const [oldConfig,newConfig]=await Promise.all(['./character-painted-v5.json','./character.json?v=whole-body-v6'].map(url=>fetch(url).then(r=>r.json())));
+ const [oldConfig,newConfig]=await Promise.all(['./character-full-body-v6.json','./character.json?v=consistent-body-v7'].map(url=>fetch(url).then(r=>r.json())));
  const [oldImages,newImages]=await Promise.all([loadCharacterArt(oldConfig),loadCharacterArt(newConfig)]);
  before=createCharacterRenderer($('#before'),oldConfig,oldImages);after=createCharacterRenderer($('#after'),newConfig,newImages);
- for(const button of buttons)button.disabled=false;$('#pause').disabled=true;
+ for(const input of document.querySelectorAll('button,input'))input.disabled=false;$('#pause').disabled=true;
  function frame(now){
-  const delta=now-last;last=now;if(!paused&&mode!=='idle')elapsed+=delta*Number($('#speed').value);
-  const length=mode==='reaction'?REACTION_MS+180:1700;
-  if(elapsed>length){mode='idle';elapsed=0;$('#pause').disabled=true;}
-  const cel=mode==='throw'?throwCel(shot,elapsed):mode==='reaction'?reactionCel(tier,elapsed):0;
-  after.draw(cel,{heldDart:mode==='idle'||mode==='throw'&&elapsed<shot.releaseAt});before.draw(mode==='throw'?oldCel(elapsed):0);
-  const label=mode==='idle'?'Ready. Play a throw or try a win reaction.':mode==='reaction'?['A pleased smile.','A happy win.','A big-prize celebration!'][tier]:elapsed<650?'Wind-up · weight shifts back':elapsed<840?'Release · body turns toward the target':'Recovery · hair and body settle';
-  $('#status').textContent=(paused?'Paused — ':'')+label;document.body.dataset.mode=mode;document.body.dataset.cel=String(cel);
+  const delta=now-last;last=now;if(playing)elapsed=Math.min(length,elapsed+delta*Number($('#speed').value));
+  if(elapsed===length&&playing){playing=false;syncButton();}
+  const flight={...shot,amountCents:preset.outcomes[tier].amountCents};
+  const round=elapsed>=shot.finishAt?{throws:[flight]}:{flight};
+  const pose=characterPerformance(round,preset,elapsed),age=elapsed-shot.popAt;
+  after.draw(pose.cel,pose);
+  before.draw(age>=0&&age<REACTION_MS?previousReaction(age):pose.cel,{heldDart:pose.heldDart});
+  const label=elapsed<340?'Ready':elapsed<750?'Wind-up':elapsed<1490?'Release and recovery':elapsed<1620?'Impact · recovery continues':elapsed<1810?'Recovery complete':elapsed<2930?'Balloon pop · facial reaction':'Ready for the next dart';
+  $('#status').textContent=(playing?'':'Paused — ')+label+' · '+(elapsed/1000).toFixed(2)+'s';
+  $('#timeline').value=String(Math.round(elapsed));
+  document.body.dataset.cel=String(pose.cel);document.body.dataset.phase=label;document.body.dataset.expression=pose.expression??'';
   requestAnimationFrame(frame);
  }
  requestAnimationFrame(frame);
-}catch{ $('#status').textContent='The artwork could not load. Refresh to try again.'; }
+}catch{$('#status').textContent='The artwork could not load. Refresh to try again.';}
