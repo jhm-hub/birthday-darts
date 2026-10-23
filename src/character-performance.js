@@ -1,6 +1,7 @@
 import {throwCel,THROW_RECOVERY_MS} from './motion.js';
 import {balloonPopAt} from './balloon-timing.js';
 import {celebrationPerformance} from './celebrations.js';
+import {shotScale} from './dart-timing.js';
 
 export const REACTION_MS=1120;
 
@@ -32,11 +33,11 @@ export function characterPerformance(round,preset,time,motion=true,celebrations=
  if(!shot)return idle;
  const revealAt=preset.theme==='balloons'?balloonPopAt(shot):shot.landAt;
  // A classic dart lands before recovery ends. Finish the body motion first.
- const releaseAt=shot.releaseAt??shot.landAt-(preset.theme==='balloons'?740:560);
- const reactAt=Math.max(revealAt,releaseAt+THROW_RECOVERY_MS);
- if(Number.isFinite(reactAt)&&time>=reactAt&&time<reactAt+REACTION_MS){
+ const scale=shotScale(shot),releaseAt=shot.releaseAt??shot.landAt-(preset.theme==='balloons'?740:560)*scale;
+ const reactAt=Math.max(revealAt,releaseAt+THROW_RECOVERY_MS*scale),age=(time-reactAt)/scale;
+ if(Number.isFinite(reactAt)&&age>=0&&age<REACTION_MS){
   const tier=reactionTier(shot.amountCents,preset.outcomes);
-  return {cel:0,expression:reactionExpression(tier,time-reactAt,motion),...facialMotion(time-reactAt,motion),heldDart:false,active:true,reaction:['pleased','happy','big-win'][tier]};
+  return {cel:0,expression:reactionExpression(tier,age,motion),...facialMotion(age,motion),heldDart:false,active:true,reaction:['pleased','happy','big-win'][tier]};
  }
  if(flight)return {cel:throwCel(flight,time,motion),expression:null,heldDart:time<flight.releaseAt,active:true,reaction:''};
  return idle;

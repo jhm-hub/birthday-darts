@@ -1,4 +1,5 @@
 import {BALLOON_HIT_HOLD_MS,BALLOON_BURST_MS} from './balloon-timing.js';
+import {shotAge} from './dart-timing.js';
 
 const clamp=x=>Math.max(0,Math.min(1,x));
 export const THROW_RECOVERY_MS=980;
@@ -28,7 +29,7 @@ export function dartReleasePoint(config,balloons){
 // shows the correct cel without starting another animation or awarding a prize.
 export function throwCel(shot,time,motion=true){
  if(!shot||time<shot.startAt)return 0;
- const age=time-shot.releaseAt;
+ const age=shotAge(shot,time,shot.releaseAt);
  if(!motion)return age>=0&&age<260?8:0;
  // Whole-body cels, sampled from the shared clock. The front boot is
  // registered in the renderer while the hips, back leg and hair move.

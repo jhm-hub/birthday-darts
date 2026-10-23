@@ -36,12 +36,13 @@ export async function loadCharacterArt(config){
   for(let i=3;i<pixels.data.length;i+=4){
    const row=Math.floor(i/4/canvas.width)%mask.cellHeight;
    const col=(i-3)/4%canvas.width%(mask.cellWidth||256),region=mask.replaceRegion;
+   const cell=Math.floor(Math.floor(i/4/canvas.width)/mask.cellHeight)*Math.floor(canvas.width/(mask.cellWidth||256))+Math.floor((i-3)/4%canvas.width/(mask.cellWidth||256));
    const replace=region&&col>=region.left&&col<region.right&&row>=region.top&&row<region.bottom&&(!region.polygon||inPolygon(col,row,region.polygon));
    const band=mask.bands?.find(b=>row>=b.start&&row<b.end);
    if((!replace&&silhouette[i]<mask.cutoff)||(band&&pixels.data[i]<band.cutoff))pixels.data[i]=0;
    // Keep the matching pose outside the local contour/gesture repaint.
    // This protects the head, hair and body from unrelated redraw drift.
-   if((region&&!replace)||mask.preserveRows?.some(([start,end])=>row>=start&&row<end)){
+   if(mask.preserveCells?.includes(cell)||(region&&!replace)||mask.preserveRows?.some(([start,end])=>row>=start&&row<end)){
     for(let c=-3;c<=0;c++)pixels.data[i+c]=silhouette[i+c];
     if(silhouette[i]<mask.cutoff)pixels.data[i]=0;
    }

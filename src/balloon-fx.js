@@ -1,6 +1,7 @@
 import {balloonPixelLayers} from './balloon-art.js';
 import {popCel,fragmentMotion,confettiMotion} from './motion.js';
 import {BALLOON_BURST_MS} from './balloon-timing.js';
+import {shotAge} from './dart-timing.js';
 
 const svg=(tag,attrs={})=>{const el=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [key,value]of Object.entries(attrs))el.setAttribute(key,value);return el;};
 // Eight drawn, stepped cels: pinprick, rupture, open burst, departing sparks.
@@ -39,7 +40,7 @@ export function buildBalloonFX(container,palette){
 
 export function animateBalloonFX(container,shot,origin,time,color,motion){
  const root=container.querySelector('.balloon-burst'),impact=container.querySelector('.balloon-impact');
- const age=shot?time-(shot.popAt??shot.landAt):Infinity,hitAge=shot?time-shot.landAt:Infinity;
+ const age=shot?shotAge(shot,time,shot.popAt??shot.landAt):Infinity,hitAge=shot?shotAge(shot,time,shot.landAt):Infinity;
  const impacting=hitAge>=0&&hitAge<180&&age<0;
  impact.style.display=impacting?'block':'none';
  if(impacting){impact.style.left=origin.x-28+'px';impact.style.top=origin.y-28+'px';impact.style.opacity=1-hitAge/180;impact.style.transform=`scale(${motion?1+hitAge/240:1})`;}

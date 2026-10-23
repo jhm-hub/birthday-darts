@@ -78,7 +78,26 @@ test('Goddess Moment joins the round selection while preserving the approved Bra
  assert.ok(variants.some(v=>v.id==='goddess-moment'));
  const seen=new Set();
  for(let i=0;i<100;i++)seen.add(chooseCelebration('viewer-'+i,variants).id);
- assert.deepEqual(seen,new Set(['bratty-victory','goddess-moment']));
+ assert.deepEqual(seen,new Set(['bratty-victory','goddess-moment','money-tease']));
+});
+
+test('Money Tease adds a third performance without changing the other two',async()=>{
+ const before=JSON.parse(await readFile(new URL('../public/character-goddess-v12.json',import.meta.url),'utf8'));
+ assert.deepEqual(variants.slice(0,2),before.celebrations);
+ for(const [source,mask]of Object.entries(before.alphaMasks))assert.deepEqual(config.alphaMasks[source],mask);
+ assert.equal(variants[2].id,'money-tease');
+});
+
+test('quicker celebrations retain every painted pose and the five-second reading hold',()=>{
+ const fast={...round,celebrationScale:.75};
+ for(const variant of variants){
+  const seen=new Set();for(let age=0;age<variant.duration*.75;age++)seen.add(celebrationPerformance(fast,shot.finishAt+age,[variant]).celebrationCel);
+  assert.deepEqual([...seen],variant.frames.map((_,i)=>i));
+  assert.equal(celebrationPerformance(fast,shot.finishAt+variant.duration*.75,[variant]).celebrationCel,0);
+  assert.ok(celebrationPerformance(fast,fast.hideAt-1,[variant]));assert.equal(celebrationPerformance(fast,fast.hideAt,[variant]),null);
+  const time=shot.finishAt+variant.duration*.4;assert.deepEqual(celebrationPerformance(fast,time,[variant]),celebrationPerformance(JSON.parse(JSON.stringify(fast)),time,[variant]));
+  assert.equal(celebrationPerformance(fast,time,[variant],false).celebrationCel,variant.reducedCel);
+ }
 });
 
 test('celebration art fits the same canvas at one common scale; existing throw and faces are unchanged',async()=>{

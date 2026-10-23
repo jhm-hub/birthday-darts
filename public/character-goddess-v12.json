@@ -1,0 +1,1410 @@
+{
+  "name": "Faith \u2014 Bratty Victory and Goddess Moment",
+  "idle": "./assets/faith-hybrid.png",
+  "throwStudy": "./assets/faith-whole-body-v6.png",
+  "sheetWidth": 1536,
+  "sheetHeight": 1024,
+  "bodyAnchorX": 187,
+  "groundY": 306,
+  "canvasWidth": 340,
+  "canvasHeight": 320,
+  "canvasOffsetX": -32,
+  "canvasOffsetY": -8,
+  "idleFrame": 0,
+  "frames": [
+    {
+      "x": 67,
+      "y": 7,
+      "width": 135,
+      "height": 249,
+      "anchor": 175,
+      "baseline": 255,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 102,
+        "y": 45
+      }
+    },
+    {
+      "x": 321,
+      "y": 7,
+      "width": 127,
+      "height": 249,
+      "anchor": 428,
+      "baseline": 255,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 355,
+        "y": 45
+      }
+    },
+    {
+      "x": 574,
+      "y": 7,
+      "width": 130,
+      "height": 249,
+      "anchor": 682.5,
+      "baseline": 254,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 609,
+        "y": 45
+      }
+    },
+    {
+      "x": 827,
+      "y": 7,
+      "width": 137,
+      "height": 249,
+      "anchor": 938.5,
+      "baseline": 254,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 864,
+        "y": 45
+      }
+    },
+    {
+      "x": 1084,
+      "y": 7,
+      "width": 140,
+      "height": 249,
+      "anchor": 1195.5,
+      "baseline": 254,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 1118,
+        "y": 45
+      }
+    },
+    {
+      "x": 1336,
+      "y": 7,
+      "width": 146,
+      "height": 249,
+      "anchor": 1449.5,
+      "baseline": 254,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 1374,
+        "y": 45
+      }
+    },
+    {
+      "x": 50,
+      "y": 261,
+      "width": 145,
+      "height": 251,
+      "anchor": 174.5,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 137,
+        "y": 305
+      }
+    },
+    {
+      "x": 293,
+      "y": 261,
+      "width": 177,
+      "height": 251,
+      "anchor": 430,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 459,
+        "y": 305
+      }
+    },
+    {
+      "x": 548,
+      "y": 261,
+      "width": 216,
+      "height": 251,
+      "anchor": 686.5,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 798,
+      "y": 263,
+      "width": 230,
+      "height": 249,
+      "anchor": 942.5,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 1053,
+      "y": 262,
+      "width": 235,
+      "height": 250,
+      "anchor": 1198.5,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 1309,
+      "y": 262,
+      "width": 205,
+      "height": 250,
+      "anchor": 1452.5,
+      "baseline": 510,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 28,
+      "y": 517,
+      "width": 233,
+      "height": 251,
+      "anchor": 174,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 285,
+      "y": 517,
+      "width": 179,
+      "height": 251,
+      "anchor": 430,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 545,
+      "y": 517,
+      "width": 175,
+      "height": 251,
+      "anchor": 686,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 803,
+      "y": 517,
+      "width": 169,
+      "height": 251,
+      "anchor": 946,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 1063,
+      "y": 517,
+      "width": 163,
+      "height": 251,
+      "anchor": 1198.5,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 1330,
+      "y": 517,
+      "width": 144,
+      "height": 251,
+      "anchor": 1453.5,
+      "baseline": 766,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 62,
+      "y": 773,
+      "width": 134,
+      "height": 251,
+      "anchor": 177.0,
+      "baseline": 1022,
+      "image": "./assets/faith-recovery-v8.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 318,
+      "y": 772,
+      "width": 134,
+      "height": 252,
+      "anchor": 433.0,
+      "baseline": 1022,
+      "image": "./assets/faith-recovery-v8.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 570,
+      "y": 772,
+      "width": 139,
+      "height": 252,
+      "anchor": 689.5,
+      "baseline": 1022,
+      "image": "./assets/faith-recovery-v8.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 826,
+      "y": 771,
+      "width": 139,
+      "height": 253,
+      "anchor": 945.5,
+      "baseline": 1022,
+      "image": "./assets/faith-recovery-v8.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 1088,
+      "y": 772,
+      "width": 133,
+      "height": 252,
+      "anchor": 1201.5,
+      "baseline": 1022,
+      "image": "./assets/faith-recovery-v8.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 67,
+      "y": 7,
+      "width": 135,
+      "height": 249,
+      "anchor": 175,
+      "baseline": 255,
+      "image": "./assets/faith-whole-body-v6.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383,
+      "hand": {
+        "x": 102,
+        "y": 45
+      }
+    }
+  ],
+  "release": {
+    "frame": 8,
+    "x": 753,
+    "y": 305,
+    "tipOffsetX": 15,
+    "tipOffsetY": -2
+  },
+  "note": "Original wind-up, release and initial follow-through; six painted recovery poses return to the exact original idle. One common scale throughout. Feature-only facial overlays preserve reference skin shading and animate with eased transitions. Previous pass is character-consistent-v7.json. Final totals play one complete Bratty Victory celebration. Original throw/recovery/face metadata unchanged. Future variants share the round seed; prize RNG is independent. Previous config is character-recovery-v8.json. V10: local body-contour correction against the original ready sprite, retaining v9 cell/foot registration, timing and gestures. Previous celebration config: character-bratty-v9.json. Uniform rendering scale is unchanged. V11: preserve the matching original painted head and copper hair through the body contour matte pass. Body below the hair extent, timing and registration unchanged. Previous config: character-proportions-v10.json. V12: Goddess Moment is a second complete painted final-total performance, sharing the original scale and planted-boot registration. Bratty Victory, throw, recovery and facial metadata unchanged. Previous config: character-bratty-v11.json.",
+  "expressions": {
+    "image": "./assets/faith-expressions-v7.png",
+    "target": {
+      "x": 138,
+      "y": 27,
+      "width": 26,
+      "height": 27
+    },
+    "clip": [
+      [
+        143,
+        27
+      ],
+      [
+        160,
+        27
+      ],
+      [
+        163,
+        34
+      ],
+      [
+        161,
+        44
+      ],
+      [
+        157,
+        51
+      ],
+      [
+        151,
+        54
+      ],
+      [
+        144,
+        50
+      ],
+      [
+        138,
+        43
+      ],
+      [
+        138,
+        34
+      ]
+    ],
+    "frames": [
+      {
+        "x": 138,
+        "y": 27,
+        "width": 26,
+        "height": 27
+      },
+      {
+        "x": 385,
+        "y": 28,
+        "width": 26,
+        "height": 27
+      },
+      {
+        "x": 640,
+        "y": 28,
+        "width": 26,
+        "height": 27
+      },
+      {
+        "x": 896,
+        "y": 28,
+        "width": 26,
+        "height": 27
+      },
+      {
+        "x": 1153,
+        "y": 28,
+        "width": 26,
+        "height": 27
+      },
+      {
+        "x": 1408,
+        "y": 28,
+        "width": 26,
+        "height": 27
+      }
+    ],
+    "preserveSkin": true,
+    "preserveInk": [
+      {
+        "x": 7,
+        "y": 17,
+        "width": 17,
+        "height": 10
+      }
+    ],
+    "regions": [
+      [
+        [
+          139,
+          27
+        ],
+        [
+          160,
+          27
+        ],
+        [
+          163,
+          31
+        ],
+        [
+          162,
+          42
+        ],
+        [
+          139,
+          42
+        ]
+      ],
+      [
+        [
+          143,
+          42
+        ],
+        [
+          162,
+          42
+        ],
+        [
+          161,
+          52
+        ],
+        [
+          154,
+          54
+        ],
+        [
+          144,
+          50
+        ]
+      ]
+    ]
+  },
+  "alphaCutoffs": {
+    "./assets/faith-recovery-v8.png": 128,
+    "./assets/faith-bratty-victory-v10.png": 192,
+    "./assets/faith-bratty-bridge-v10.png": 192,
+    "./assets/faith-goddess-legs-v12.png": 192,
+    "./assets/faith-goddess-bridge-v12.png": 192
+  },
+  "celebrations": [
+    {
+      "id": "bratty-victory",
+      "label": "Bratty Victory",
+      "duration": 3100,
+      "reducedCel": 11,
+      "frames": [
+        {
+          "x": 67,
+          "y": 7,
+          "width": 135,
+          "height": 249,
+          "anchor": 175,
+          "baseline": 255,
+          "image": "./assets/faith-whole-body-v6.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383,
+          "hand": {
+            "x": 102,
+            "y": 45
+          }
+        },
+        {
+          "x": 319,
+          "y": 6,
+          "width": 130,
+          "height": 250,
+          "anchor": 429.0,
+          "baseline": 255,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 574,
+          "y": 6,
+          "width": 134,
+          "height": 250,
+          "anchor": 685.0,
+          "baseline": 255,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 828,
+          "y": 6,
+          "width": 137,
+          "height": 250,
+          "anchor": 941.0,
+          "baseline": 255,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1084,
+          "y": 6,
+          "width": 135,
+          "height": 250,
+          "anchor": 1197.0,
+          "baseline": 255,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1339,
+          "y": 6,
+          "width": 139,
+          "height": 250,
+          "anchor": 1452.5,
+          "baseline": 255,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 53,
+          "y": 262,
+          "width": 148,
+          "height": 250,
+          "anchor": 175.5,
+          "baseline": 511,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 308,
+          "y": 262,
+          "width": 148,
+          "height": 250,
+          "anchor": 431.5,
+          "baseline": 511,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 574,
+          "y": 6,
+          "width": 139,
+          "height": 250,
+          "anchor": 688.5,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-bridge-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 828,
+          "y": 6,
+          "width": 140,
+          "height": 250,
+          "anchor": 942.5,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-bridge-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 55,
+          "y": 518,
+          "width": 147,
+          "height": 250,
+          "anchor": 174.5,
+          "baseline": 767,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 311,
+          "y": 517,
+          "width": 145,
+          "height": 251,
+          "anchor": 429.5,
+          "baseline": 767,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 567,
+          "y": 517,
+          "width": 146,
+          "height": 251,
+          "anchor": 685.5,
+          "baseline": 767,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 822,
+          "y": 517,
+          "width": 146,
+          "height": 251,
+          "anchor": 943.5,
+          "baseline": 767,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1078,
+          "y": 517,
+          "width": 142,
+          "height": 251,
+          "anchor": 1197.5,
+          "baseline": 767,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 828,
+          "y": 6,
+          "width": 140,
+          "height": 250,
+          "anchor": 942.5,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-bridge-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 574,
+          "y": 6,
+          "width": 139,
+          "height": 250,
+          "anchor": 688.5,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-bridge-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1335,
+          "y": 517,
+          "width": 140,
+          "height": 251,
+          "anchor": 1452.5,
+          "baseline": 767,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 63,
+          "y": 773,
+          "width": 138,
+          "height": 251,
+          "anchor": 177.0,
+          "baseline": 1023,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-bratty-victory-v10.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1084,
+          "y": 7,
+          "width": 140,
+          "height": 249,
+          "anchor": 1195.5,
+          "baseline": 254,
+          "image": "./assets/faith-whole-body-v6.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383,
+          "hand": {
+            "x": 1118,
+            "y": 45
+          }
+        },
+        {
+          "x": 827,
+          "y": 7,
+          "width": 137,
+          "height": 249,
+          "anchor": 938.5,
+          "baseline": 254,
+          "image": "./assets/faith-whole-body-v6.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383,
+          "hand": {
+            "x": 864,
+            "y": 45
+          }
+        },
+        {
+          "x": 574,
+          "y": 7,
+          "width": 130,
+          "height": 249,
+          "anchor": 682.5,
+          "baseline": 254,
+          "image": "./assets/faith-whole-body-v6.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383,
+          "hand": {
+            "x": 609,
+            "y": 45
+          }
+        },
+        {
+          "x": 321,
+          "y": 7,
+          "width": 127,
+          "height": 249,
+          "anchor": 428,
+          "baseline": 255,
+          "image": "./assets/faith-whole-body-v6.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383,
+          "hand": {
+            "x": 355,
+            "y": 45
+          }
+        },
+        {
+          "x": 67,
+          "y": 7,
+          "width": 135,
+          "height": 249,
+          "anchor": 175,
+          "baseline": 255,
+          "image": "./assets/faith-whole-body-v6.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383,
+          "hand": {
+            "x": 102,
+            "y": 45
+          }
+        }
+      ],
+      "starts": [
+        0,
+        140,
+        230,
+        320,
+        410,
+        500,
+        600,
+        690,
+        780,
+        870,
+        970,
+        1080,
+        1450,
+        1560,
+        1730,
+        2100,
+        2210,
+        2320,
+        2410,
+        2510,
+        2630,
+        2750,
+        2850,
+        2970
+      ]
+    },
+    {
+      "id": "goddess-moment",
+      "label": "Goddess Moment",
+      "duration": 3400,
+      "reducedCel": 14,
+      "frames": [
+        {
+          "x": 67,
+          "y": 7,
+          "width": 135,
+          "height": 249,
+          "anchor": 175,
+          "baseline": 255,
+          "image": "./assets/faith-whole-body-v6.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383,
+          "hand": {
+            "x": 102,
+            "y": 45
+          }
+        },
+        {
+          "x": 316,
+          "y": 7,
+          "width": 137,
+          "height": 249,
+          "face": {
+            "x": 399.0,
+            "y": 39.0
+          },
+          "anchor": 432.0,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 569,
+          "y": 7,
+          "width": 136,
+          "height": 249,
+          "face": {
+            "x": 652.0,
+            "y": 39.0
+          },
+          "anchor": 685.0,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1078,
+          "y": 7,
+          "width": 137,
+          "height": 249,
+          "face": {
+            "x": 1163.0,
+            "y": 39.0
+          },
+          "anchor": 1192.5,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1329,
+          "y": 6,
+          "width": 137,
+          "height": 250,
+          "face": {
+            "x": 1412.0,
+            "y": 39.0
+          },
+          "anchor": 1445.5,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 52,
+          "y": 261,
+          "width": 149,
+          "height": 250,
+          "face": {
+            "x": 145.0,
+            "y": 294.0
+          },
+          "anchor": 180.0,
+          "baseline": 511,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 307,
+          "y": 261,
+          "width": 149,
+          "height": 251,
+          "face": {
+            "x": 398.0,
+            "y": 294.0
+          },
+          "anchor": 435.0,
+          "baseline": 512,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 307,
+          "y": 261,
+          "width": 149,
+          "height": 251,
+          "face": {
+            "x": 398.0,
+            "y": 294.0
+          },
+          "anchor": 435.0,
+          "baseline": 512,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-bridge-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 559,
+          "y": 261,
+          "width": 157,
+          "height": 250,
+          "face": {
+            "x": 650.0,
+            "y": 293.0
+          },
+          "anchor": 687.5,
+          "baseline": 511,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 812,
+          "y": 260,
+          "width": 166,
+          "height": 251,
+          "face": {
+            "x": 902.0,
+            "y": 293.0
+          },
+          "anchor": 941.0,
+          "baseline": 511,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1066,
+          "y": 261,
+          "width": 176,
+          "height": 250,
+          "face": {
+            "x": 1157.0,
+            "y": 294.0
+          },
+          "anchor": 1196.0,
+          "baseline": 511,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1319,
+          "y": 260,
+          "width": 171,
+          "height": 251,
+          "face": {
+            "x": 1407.0,
+            "y": 294.0
+          },
+          "anchor": 1449.5,
+          "baseline": 511,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 51,
+          "y": 515,
+          "width": 171,
+          "height": 252,
+          "face": {
+            "x": 139.0,
+            "y": 548.0
+          },
+          "anchor": 182.5,
+          "baseline": 767,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 306,
+          "y": 516,
+          "width": 170,
+          "height": 252,
+          "face": {
+            "x": 392.0,
+            "y": 548.0
+          },
+          "anchor": 435.5,
+          "baseline": 768,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 559,
+          "y": 515,
+          "width": 168,
+          "height": 252,
+          "face": {
+            "x": 646.0,
+            "y": 547.0
+          },
+          "anchor": 687.5,
+          "baseline": 767,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 812,
+          "y": 515,
+          "width": 168,
+          "height": 252,
+          "face": {
+            "x": 899.0,
+            "y": 547.0
+          },
+          "anchor": 940.5,
+          "baseline": 767,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1066,
+          "y": 515,
+          "width": 167,
+          "height": 252,
+          "face": {
+            "x": 1153.0,
+            "y": 548.0
+          },
+          "anchor": 1195.5,
+          "baseline": 767,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1319,
+          "y": 516,
+          "width": 165,
+          "height": 252,
+          "face": {
+            "x": 1405.0,
+            "y": 548.0
+          },
+          "anchor": 1447.5,
+          "baseline": 768,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 559,
+          "y": 261,
+          "width": 157,
+          "height": 250,
+          "face": {
+            "x": 650.0,
+            "y": 293.0
+          },
+          "anchor": 687.5,
+          "baseline": 511,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 307,
+          "y": 261,
+          "width": 149,
+          "height": 251,
+          "face": {
+            "x": 398.0,
+            "y": 294.0
+          },
+          "anchor": 435.0,
+          "baseline": 512,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-bridge-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 307,
+          "y": 261,
+          "width": 149,
+          "height": 251,
+          "face": {
+            "x": 398.0,
+            "y": 294.0
+          },
+          "anchor": 435.0,
+          "baseline": 512,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 52,
+          "y": 261,
+          "width": 149,
+          "height": 250,
+          "face": {
+            "x": 145.0,
+            "y": 294.0
+          },
+          "anchor": 180.0,
+          "baseline": 511,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1329,
+          "y": 6,
+          "width": 137,
+          "height": 250,
+          "face": {
+            "x": 1412.0,
+            "y": 39.0
+          },
+          "anchor": 1445.5,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1078,
+          "y": 7,
+          "width": 137,
+          "height": 249,
+          "face": {
+            "x": 1163.0,
+            "y": 39.0
+          },
+          "anchor": 1192.5,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 569,
+          "y": 7,
+          "width": 136,
+          "height": 249,
+          "face": {
+            "x": 652.0,
+            "y": 39.0
+          },
+          "anchor": 685.0,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 316,
+          "y": 7,
+          "width": 137,
+          "height": 249,
+          "face": {
+            "x": 399.0,
+            "y": 39.0
+          },
+          "anchor": 432.0,
+          "baseline": 256,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-goddess-legs-v12.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 67,
+          "y": 7,
+          "width": 135,
+          "height": 249,
+          "anchor": 175,
+          "baseline": 255,
+          "image": "./assets/faith-whole-body-v6.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383,
+          "hand": {
+            "x": 102,
+            "y": 45
+          }
+        }
+      ],
+      "starts": [
+        0,
+        150,
+        280,
+        420,
+        540,
+        660,
+        780,
+        890,
+        1000,
+        1120,
+        1240,
+        1360,
+        1480,
+        1630,
+        1780,
+        1930,
+        2100,
+        2260,
+        2400,
+        2510,
+        2620,
+        2730,
+        2840,
+        2950,
+        3070,
+        3180,
+        3280
+      ]
+    }
+  ],
+  "alphaMasks": {
+    "./assets/faith-bratty-victory-v10.png": {
+      "image": "./assets/faith-bratty-victory-v9.png",
+      "cutoff": 192,
+      "cellHeight": 256,
+      "bands": [
+        {
+          "start": 64,
+          "end": 214,
+          "cutoff": 232
+        }
+      ],
+      "preserveHair": {
+        "headEnd": 64,
+        "hairEnd": 128,
+        "cellWidth": 256,
+        "hairRight": 115
+      }
+    },
+    "./assets/faith-bratty-bridge-v10.png": {
+      "image": "./assets/faith-bratty-bridge-v9.png",
+      "cutoff": 192,
+      "cellHeight": 256,
+      "bands": [
+        {
+          "start": 64,
+          "end": 214,
+          "cutoff": 232
+        }
+      ],
+      "preserveHair": {
+        "headEnd": 64,
+        "hairEnd": 128,
+        "cellWidth": 256,
+        "hairRight": 115
+      }
+    },
+    "./assets/faith-goddess-legs-v12.png": {
+      "image": "./assets/faith-goddess-refined-v12.png",
+      "cutoff": 192,
+      "cellHeight": 256,
+      "bands": [
+        {
+          "start": 148,
+          "end": 216,
+          "cutoff": 224
+        }
+      ],
+      "preserveRows": [
+        [
+          0,
+          148
+        ],
+        [
+          216,
+          256
+        ]
+      ]
+    },
+    "./assets/faith-goddess-bridge-v12.png": {
+      "image": "./assets/faith-goddess-legs-v12.png",
+      "cutoff": 192,
+      "cellHeight": 256,
+      "cellWidth": 256,
+      "replaceRegion": {
+        "left": 104,
+        "top": 60,
+        "right": 207,
+        "bottom": 116,
+        "polygon": [
+          [
+            104,
+            60
+          ],
+          [
+            207,
+            60
+          ],
+          [
+            207,
+            84
+          ],
+          [
+            173,
+            94
+          ],
+          [
+            145,
+            113
+          ],
+          [
+            104,
+            116
+          ]
+        ]
+      }
+    }
+  }
+}

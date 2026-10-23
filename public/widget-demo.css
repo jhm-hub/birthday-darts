@@ -60,6 +60,16 @@
 .widget[data-theme=balloons] :is(.throw-pop,.running strong,.reveal>strong,.receipts span){font-family:"Faith Candy",sans-serif;font-weight:700}
 .widget[data-theme=balloons] .reveal>strong{letter-spacing:-.025em}
 
+/* Keep the stream transparent, with an opaque-enough plaque under each total. */
+.running{background:linear-gradient(160deg,#352039fa,#1b1121fc);border:1px solid #ba916b;border-radius:8px;padding:8px 13px;box-shadow:0 3px 0 #100b18b3;gap:10px}
+.running small{color:#efd7c3}.running strong{color:#ffe8b8}
+.widget .reveal,.overlay-page .widget .reveal{inset:auto 26px 100px auto;width:370px;min-height:206px;padding:18px 22px 20px;border:2px solid #c7a16e;border-radius:12px;background:linear-gradient(155deg,#3a233cfa,#1d1224fc);box-shadow:inset 0 0 0 3px #1b1022,0 5px 0 #100b18b3;z-index:8}
+.widget[data-theme=balloons] .reveal{bottom:145px}
+.reveal .reveal-star{font-size:25px;margin:0 0 8px;color:#edc586}
+.reveal small{max-width:322px;color:#f5d7e4;line-height:1.5}
+.reveal>strong{margin:10px 0 12px;color:#ffe8b8;text-shadow:0 3px #160d20;line-height:1.08}
+.reveal>div{color:#ead6e8;overflow-wrap:anywhere}
+
 /* A readable hit beat, followed by permanent removal for this round. */
 .prize-balloon.is-hit-focus{z-index:3;filter:drop-shadow(0 0 3px #fff0bd) drop-shadow(0 0 7px #ffdc9d)}
 .prize-label.is-hit-focus{z-index:2}

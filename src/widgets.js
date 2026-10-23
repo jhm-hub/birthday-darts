@@ -1,6 +1,6 @@
 import {randomInt,randomUUID} from './random.js';
 import {validatePreset,chooseOutcome,defaultPreset} from './game.js';
-import {BALLOON_HIT_HOLD_MS,BALLOON_RESULT_MS} from './balloon-timing.js';
+import {dartTiming,CELEBRATION_TIME_SCALE} from './dart-timing.js';
 import {remainingRoundOutcomes,birthdayDartCount,REPEAT_BALLOON_RULE} from './birthday-rules.js';
 import {remainingBalloonSlots} from './balloon-slots.js';
 
@@ -19,7 +19,7 @@ export function widgetSnapshot(state,id,now=Date.now()){
 export function advanceWidgets(state,now=Date.now()){
  let changed=false;
  for(const w of state.widgets){const r=w.round;if(!r)continue;
-  if(r.flight&&now>=r.flight.finishAt){const {id,amountCents,bandIndex,offset,finishAt,outcomeIndex,balloonSlot,landAt,popAt}=r.flight;r.throws.push({id,amountCents,bandIndex,offset,outcomeIndex,...(Number.isInteger(balloonSlot)?{balloonSlot}:{}),landAt,popAt});r.flight=null;changed=true;
+  if(r.flight&&now>=r.flight.finishAt){const {id,amountCents,bandIndex,offset,finishAt,outcomeIndex,balloonSlot,startAt,releaseAt,landAt,popAt,animationScale}=r.flight;r.throws.push({id,amountCents,bandIndex,offset,outcomeIndex,...(Number.isInteger(balloonSlot)?{balloonSlot}:{}),startAt,releaseAt,landAt,popAt,animationScale});r.flight=null;changed=true;
    if(r.throws.length===r.preset.darts||r.preset.theme==='balloons'&&!remainingRoundOutcomes(r.preset,r.throws).some(o=>o.weight>0)){r.hideAt=finishAt+RESULT_HOLD_MS;w.lastResult={viewer:r.viewer,totalCents:total(r),completedAt:finishAt,roundId:r.id};}
   }
   // Older saved rounds may already have won every available birthday amount.
@@ -41,12 +41,12 @@ export function applyWidgetAction(state,input,now=Date.now()){
   const copy=validateWidget({...source,id:randomUUID(),name:source.name.slice(0,35)+' copy'});state.widgets.push({...copy,round:null,lastResult:null});id=copy.id;
  }else if(input.action==='throw'){
   const w=lookup(state,id);if(w.round?.flight)throw Error('A dart is already in flight.');if(w.round?.hideAt)throw Error('Wait for the result to clear.');
-  if(!w.round){const viewer=typeof input.viewer==='string'?input.viewer.trim():'';if(viewer.length>32)throw Error('Keep viewer names to 32 characters.');const preset=validateWidget(w);if(preset.theme==='balloons'){preset.birthdayRule=REPEAT_BALLOON_RULE;preset.darts=birthdayDartCount(preset.outcomes,preset.darts);}w.round={id:randomUUID(),viewer,preset,throws:[],flight:null,hideAt:null};}
+  if(!w.round){const viewer=typeof input.viewer==='string'?input.viewer.trim():'';if(viewer.length>32)throw Error('Keep viewer names to 32 characters.');const preset=validateWidget(w);if(preset.theme==='balloons'){preset.birthdayRule=REPEAT_BALLOON_RULE;preset.darts=birthdayDartCount(preset.outcomes,preset.darts);}w.round={id:randomUUID(),viewer,preset,celebrationScale:CELEBRATION_TIME_SCALE,throws:[],flight:null,hideAt:null};}
   const r=w.round;if(r.throws.length>=r.preset.darts)throw Error('This round is complete.');
-  const balloons=r.preset.theme==='balloons',i=chooseOutcome(balloons?remainingRoundOutcomes(r.preset,r.throws):r.preset.outcomes),n=r.preset.outcomes.length,first=!r.throws.length,releaseAt=now+(first?750:410),landAt=releaseAt+(balloons?740:560);
+  const balloons=r.preset.theme==='balloons',i=chooseOutcome(balloons?remainingRoundOutcomes(r.preset,r.throws):r.preset.outcomes),n=r.preset.outcomes.length,first=!r.throws.length;
   const available=balloons&&r.preset.birthdayRule===REPEAT_BALLOON_RULE?remainingBalloonSlots(n,r.throws).filter(b=>b.outcome===i):[];
   const target=available.length?{balloonSlot:available[randomInt(available.length)].slot}:{};
-  r.flight={...target,id:randomUUID(),outcomeIndex:i,amountCents:r.preset.outcomes[i].amountCents,bandIndex:i===n-1?i:(randomInt(2)?i:2*n-2-i),offset:(randomInt(401)-200)/1000,startAt:now,releaseAt,landAt,...(balloons?{popAt:landAt+BALLOON_HIT_HOLD_MS}:{}),finishAt:landAt+(balloons?BALLOON_RESULT_MS:440)};
+  r.flight={...target,id:randomUUID(),outcomeIndex:i,amountCents:r.preset.outcomes[i].amountCents,bandIndex:i===n-1?i:(randomInt(2)?i:2*n-2-i),offset:(randomInt(401)-200)/1000,...dartTiming(now,first,balloons)};
  }else throw Error('Unknown widget action.');
  state.revision++;return id;
 }

@@ -2,6 +2,7 @@ import {connectDemo} from './demo-session.js';
 import {connectControl,connectDisplay} from './session.js';
 import {balloonPopAt} from './balloon-timing.js';
 import {dartReleasePoint} from './motion.js';
+import {shotAge} from './dart-timing.js';
 import {characterPerformance} from './character-performance.js';
 import {loadCharacterArt,createCharacterRenderer} from './sprite-renderer.js';
 import {buildBalloons,animateBalloons,balloonPoint,balloonSlotForShot} from './balloons.js';
@@ -21,7 +22,7 @@ document.addEventListener('pointerdown',()=>{void partyAudio.unlock();},{once:tr
 function status(text){if(control)$('#status').textContent=text;}
 function size(){const screen=$('#screen'),anchor=$('#widget-anchor'),width=screen.clientWidth,height=screen.clientHeight,nativeHeight=(state?.round?.preset||state?.widget)?.theme==='balloons'?540:450;anchor.style.height=nativeHeight+'px';const scale=control?Math.min((width-24)/720,(height-24)/nativeHeight):Math.min(width/720,height/nativeHeight);anchor.style.transform='scale('+scale+')';{anchor.style.left=(width-720*scale)/2+'px';anchor.style.top=(height-nativeHeight*scale)/2+'px';}}
 new ResizeObserver(size).observe($('#screen'));
-fetch('./character.json?v=goddess-v12').then(r=>r.json()).then(c=>{
+fetch('./character.json?v=money-v13').then(r=>r.json()).then(c=>{
  config=c;$('#faith img').src=c.idle;
  loadCharacterArt(c).then(images=>{characterRenderer=createCharacterRenderer($('#sprite'),c,images);artReady=true;poseIndex=-2;render();}).catch(()=>{});
 }).catch(()=>{});
@@ -46,7 +47,7 @@ function render(){cancelAnimationFrame(raf);if(!state)return;const r=state.round
    $('#dart').style.display='block';$('#dart').style.left=target.x-31+'px';$('#dart').style.top=target.y-4+'px';$('#dart').style.transform='rotate(0deg)';
   }
   const revealAt=balloons?balloonPopAt(f):f.landAt;
-  if(t>=revealAt){const age=t-revealAt;if(!balloons)$('#target').children[f.bandIndex]?.classList.add('lit');$('#throw-pop').textContent='+'+money(f.amountCents);$('#throw-pop').style.left=(balloons?Math.min(550,target.x-50):390)+'px';$('#throw-pop').style.top=(balloons?target.y-16:115)+'px';$('#throw-pop').style.fontSize=Math.min(48,165/(money(f.amountCents).length*.62))+'px';$('#throw-pop').style.opacity=balloons?Math.min(1,Math.max(0,(1400-age)/400)):Math.max(0,1-age/650);$('#throw-pop').style.transform='translateY('+(-age/(balloons?100:40))+'px)';}
+  if(t>=revealAt){const age=shotAge(f,t,revealAt);if(!balloons)$('#target').children[f.bandIndex]?.classList.add('lit');$('#throw-pop').textContent='+'+money(f.amountCents);$('#throw-pop').style.left=(balloons?Math.min(550,target.x-50):390)+'px';$('#throw-pop').style.top=(balloons?target.y-16:115)+'px';$('#throw-pop').style.fontSize=Math.min(48,165/(money(f.amountCents).length*.62))+'px';$('#throw-pop').style.opacity=balloons?Math.min(1,Math.max(0,(1400-age)/400)):Math.max(0,1-age/650);$('#throw-pop').style.transform='translateY('+(-age/(balloons?100:40))+'px)';}
 
  }
  if(control){$('#empty-hint').classList.toggle('hidden',visible);$('#empty-hint').setAttribute('aria-hidden',String(visible));$('#throw').disabled=!connected||pending||!!f||finished;$('#button-label').textContent=!connected?'Connecting…':f?(balloons&&t>=f.landAt?'Popping…':'Throwing…'):finished?'Total revealed':r?'Throw next dart':'Throw dart';$('#viewer').disabled=!!r||pending;

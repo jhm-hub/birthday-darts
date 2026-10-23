@@ -1,4 +1,5 @@
 import {RESULT_HOLD_MS} from './widgets.js';
+import {CELEBRATION_TIME_SCALE} from './dart-timing.js';
 
 // A round UUID is already random. Hashing it chooses a cosmetic performance
 // identically on every display, without consuming the prize random source.
@@ -12,7 +13,8 @@ export function chooseCelebration(roundId,variants){
 
 export function celebrationPerformance(round,time,variants,motion=true){
  if(round?.flight||!Number.isFinite(round?.hideAt)||!round.throws?.length)return null;
- const age=time-(round.hideAt-RESULT_HOLD_MS);
+ const scale=round.celebrationScale===CELEBRATION_TIME_SCALE?CELEBRATION_TIME_SCALE:1;
+ const age=(time-(round.hideAt-RESULT_HOLD_MS))/scale;
  if(age<0||time>=round.hideAt)return null;
  const variant=chooseCelebration(round.id,variants);
  if(!variant)return null;

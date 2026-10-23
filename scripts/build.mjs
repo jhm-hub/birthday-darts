@@ -7,8 +7,11 @@ await build({entryPoints:['src/player.js','src/library.js','src/motion-preview.j
 // to its actual bundle so the editor, OBS display and previews load together.
 const versions=new Map();
 for(const name of ['player','library','motion-preview','celebration-preview'])versions.set(name,createHash('sha256').update(await readFile('dist/'+name+'.js')).digest('hex').slice(0,12));
+const styles=new Map();
+for(const file of await readdir('dist'))if(file.endsWith('.css'))styles.set(file,createHash('sha256').update(await readFile('dist/'+file)).digest('hex').slice(0,12));
 for(const file of await readdir('dist'))if(file.endsWith('.html')){
  const path='dist/'+file,html=await readFile(path,'utf8');
- await writeFile(path,html.replace(/src="\.\/(player|library|motion-preview|celebration-preview)\.js"/g,(_,name)=>'src="./'+name+'.js?v='+versions.get(name)+'"'));
+ await writeFile(path,html.replace(/src="\.\/(player|library|motion-preview|celebration-preview)\.js"/g,(_,name)=>'src="./'+name+'.js?v='+versions.get(name)+'"')
+  .replace(/href="\.\/([\w-]+\.css)(?:\?[^"\s]*)?"/g,(full,file)=>styles.has(file)?'href="./'+file+'?v='+styles.get(file)+'"':full));
 }
 console.log('Built browser game in dist/');

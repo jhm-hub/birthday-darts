@@ -1,5 +1,5 @@
 {
-  "name": "Faith \u2014 Bratty Victory and Goddess Moment",
+  "name": "Faith \u2014 three final-total celebrations",
   "idle": "./assets/faith-hybrid.png",
   "throwStudy": "./assets/faith-whole-body-v6.png",
   "sheetWidth": 1536,
@@ -344,7 +344,7 @@
     "tipOffsetX": 15,
     "tipOffsetY": -2
   },
-  "note": "Original wind-up, release and initial follow-through; six painted recovery poses return to the exact original idle. One common scale throughout. Feature-only facial overlays preserve reference skin shading and animate with eased transitions. Previous pass is character-consistent-v7.json. Final totals play one complete Bratty Victory celebration. Original throw/recovery/face metadata unchanged. Future variants share the round seed; prize RNG is independent. Previous config is character-recovery-v8.json. V10: local body-contour correction against the original ready sprite, retaining v9 cell/foot registration, timing and gestures. Previous celebration config: character-bratty-v9.json. Uniform rendering scale is unchanged. V11: preserve the matching original painted head and copper hair through the body contour matte pass. Body below the hair extent, timing and registration unchanged. Previous config: character-proportions-v10.json. V12: Goddess Moment is a second complete painted final-total performance, sharing the original scale and planted-boot registration. Bratty Victory, throw, recovery and facial metadata unchanged. Previous config: character-bratty-v11.json.",
+  "note": "Original wind-up, release and initial follow-through; six painted recovery poses return to the exact original idle. One common scale throughout. Feature-only facial overlays preserve reference skin shading and animate with eased transitions. Previous pass is character-consistent-v7.json. Final totals play one complete Bratty Victory celebration. Original throw/recovery/face metadata unchanged. Future variants share the round seed; prize RNG is independent. Previous config is character-recovery-v8.json. V10: local body-contour correction against the original ready sprite, retaining v9 cell/foot registration, timing and gestures. Previous celebration config: character-bratty-v9.json. Uniform rendering scale is unchanged. V11: preserve the matching original painted head and copper hair through the body contour matte pass. Body below the hair extent, timing and registration unchanged. Previous config: character-proportions-v10.json. V12: Goddess Moment is a second complete painted final-total performance, sharing the original scale and planted-boot registration. Bratty Victory, throw, recovery and facial metadata unchanged. Previous config: character-bratty-v11.json. V13: Money Tease joins the two unchanged celebrations at the same drawing scale and planted-boot anchor. Exact original idle endpoints. Previous config: character-goddess-v12.json.",
   "expressions": {
     "image": "./assets/faith-expressions-v7.png",
     "target": {
@@ -490,7 +490,10 @@
     "./assets/faith-bratty-victory-v10.png": 192,
     "./assets/faith-bratty-bridge-v10.png": 192,
     "./assets/faith-goddess-legs-v12.png": 192,
-    "./assets/faith-goddess-bridge-v12.png": 192
+    "./assets/faith-goddess-bridge-v12.png": 192,
+    "./assets/faith-money-tease-v13.png": 192,
+    "./assets/faith-money-contours-v13.png": 192,
+    "./assets/faith-money-legs-v13.png": 192
   },
   "celebrations": [
     {
@@ -1307,6 +1310,424 @@
         3180,
         3280
       ]
+    },
+    {
+      "id": "money-tease",
+      "label": "Money Tease",
+      "duration": 2800,
+      "reducedCel": 11,
+      "frames": [
+        {
+          "x": 67,
+          "y": 7,
+          "width": 135,
+          "height": 249,
+          "anchor": 175,
+          "baseline": 255,
+          "image": "./assets/faith-whole-body-v6.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383,
+          "hand": {
+            "x": 102,
+            "y": 45
+          }
+        },
+        {
+          "x": 320,
+          "y": 6,
+          "width": 138,
+          "height": 248,
+          "face": {
+            "x": 408.0,
+            "y": 40.0
+          },
+          "anchor": 435.5,
+          "baseline": 254,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 576,
+          "y": 5,
+          "width": 137,
+          "height": 249,
+          "face": {
+            "x": 661.0,
+            "y": 39.0
+          },
+          "anchor": 691.0,
+          "baseline": 254,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 830,
+          "y": 6,
+          "width": 138,
+          "height": 248,
+          "face": {
+            "x": 917.0,
+            "y": 39.5
+          },
+          "anchor": 946.5,
+          "baseline": 254,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1087,
+          "y": 5,
+          "width": 137,
+          "height": 249,
+          "face": {
+            "x": 1173.0,
+            "y": 39.5
+          },
+          "anchor": 1202.5,
+          "baseline": 254,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 63,
+          "y": 261,
+          "width": 141,
+          "height": 249,
+          "face": {
+            "x": 154.0,
+            "y": 296.0
+          },
+          "anchor": 180.5,
+          "baseline": 510,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1342,
+          "y": 5,
+          "width": 137,
+          "height": 249,
+          "face": {
+            "x": 1429.0,
+            "y": 40.0
+          },
+          "anchor": 1457.5,
+          "baseline": 254,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 318,
+          "y": 261,
+          "width": 143,
+          "height": 249,
+          "face": {
+            "x": 409.0,
+            "y": 296.0
+          },
+          "anchor": 436.5,
+          "baseline": 510,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 575,
+          "y": 261,
+          "width": 141,
+          "height": 249,
+          "face": {
+            "x": 663.0,
+            "y": 296.0
+          },
+          "anchor": 691.5,
+          "baseline": 510,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 827,
+          "y": 261,
+          "width": 144,
+          "height": 249,
+          "face": {
+            "x": 917.0,
+            "y": 296.0
+          },
+          "anchor": 946.5,
+          "baseline": 510,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1086,
+          "y": 261,
+          "width": 141,
+          "height": 249,
+          "face": {
+            "x": 1175.0,
+            "y": 296.0
+          },
+          "anchor": 1202.5,
+          "baseline": 510,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1341,
+          "y": 261,
+          "width": 141,
+          "height": 250,
+          "face": {
+            "x": 1430.0,
+            "y": 296.0
+          },
+          "anchor": 1458.0,
+          "baseline": 511,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 63,
+          "y": 517,
+          "width": 141,
+          "height": 249,
+          "face": {
+            "x": 153.0,
+            "y": 551.0
+          },
+          "anchor": 180.5,
+          "baseline": 766,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 318,
+          "y": 517,
+          "width": 142,
+          "height": 249,
+          "face": {
+            "x": 408.0,
+            "y": 552.0
+          },
+          "anchor": 435.5,
+          "baseline": 766,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 572,
+          "y": 517,
+          "width": 142,
+          "height": 249,
+          "face": {
+            "x": 663.0,
+            "y": 551.0
+          },
+          "anchor": 690.5,
+          "baseline": 766,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 827,
+          "y": 517,
+          "width": 144,
+          "height": 249,
+          "face": {
+            "x": 920.0,
+            "y": 552.0
+          },
+          "anchor": 946.5,
+          "baseline": 766,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1086,
+          "y": 517,
+          "width": 141,
+          "height": 249,
+          "face": {
+            "x": 1176.0,
+            "y": 553.0
+          },
+          "anchor": 1203.0,
+          "baseline": 766,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1340,
+          "y": 517,
+          "width": 141,
+          "height": 249,
+          "face": {
+            "x": 1432.0,
+            "y": 552.0
+          },
+          "anchor": 1458.5,
+          "baseline": 766,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 61,
+          "y": 773,
+          "width": 142,
+          "height": 248,
+          "face": {
+            "x": 154.0,
+            "y": 807.0
+          },
+          "anchor": 179.5,
+          "baseline": 1021,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 318,
+          "y": 773,
+          "width": 140,
+          "height": 248,
+          "face": {
+            "x": 409.0,
+            "y": 807.0
+          },
+          "anchor": 436.5,
+          "baseline": 1021,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 573,
+          "y": 773,
+          "width": 141,
+          "height": 248,
+          "face": {
+            "x": 662.0,
+            "y": 807.5
+          },
+          "anchor": 691.0,
+          "baseline": 1021,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 830,
+          "y": 773,
+          "width": 140,
+          "height": 248,
+          "face": {
+            "x": 920.0,
+            "y": 807.0
+          },
+          "anchor": 948.0,
+          "baseline": 1021,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 1085,
+          "y": 772,
+          "width": 140,
+          "height": 249,
+          "face": {
+            "x": 1170.0,
+            "y": 807.0
+          },
+          "anchor": 1205.0,
+          "baseline": 1021,
+          "scale": 1.2113821138211383,
+          "image": "./assets/faith-money-legs-v13.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024
+        },
+        {
+          "x": 67,
+          "y": 7,
+          "width": 135,
+          "height": 249,
+          "anchor": 175,
+          "baseline": 255,
+          "image": "./assets/faith-whole-body-v6.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383,
+          "hand": {
+            "x": 102,
+            "y": 45
+          }
+        }
+      ],
+      "starts": [
+        0,
+        110,
+        220,
+        330,
+        440,
+        550,
+        660,
+        780,
+        900,
+        1020,
+        1140,
+        1260,
+        1380,
+        1480,
+        1600,
+        1720,
+        1840,
+        1960,
+        2080,
+        2200,
+        2320,
+        2440,
+        2560,
+        2680
+      ]
     }
   ],
   "alphaMasks": {
@@ -1405,6 +1826,54 @@
           ]
         ]
       }
+    },
+    "./assets/faith-money-contours-v13.png": {
+      "image": "./assets/faith-money-tease-v13.png",
+      "cutoff": 192,
+      "cellHeight": 256,
+      "cellWidth": 256,
+      "preserveRows": [
+        [
+          0,
+          64
+        ],
+        [
+          148,
+          256
+        ]
+      ],
+      "preserveCells": [
+        2,
+        8
+      ],
+      "preserveHair": {
+        "headEnd": 64,
+        "hairEnd": 128,
+        "cellWidth": 256,
+        "hairRight": 115
+      }
+    },
+    "./assets/faith-money-legs-v13.png": {
+      "image": "./assets/faith-money-contours-v13.png",
+      "cutoff": 192,
+      "cellHeight": 256,
+      "preserveRows": [
+        [
+          0,
+          148
+        ],
+        [
+          216,
+          256
+        ]
+      ],
+      "bands": [
+        {
+          "start": 148,
+          "end": 216,
+          "cutoff": 224
+        }
+      ]
     }
   }
 }

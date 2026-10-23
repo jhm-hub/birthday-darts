@@ -1,4 +1,5 @@
 import {balloonPopAt} from './balloon-timing.js';
+import {shotAge} from './dart-timing.js';
 import {balloonDeformation} from './motion.js';
 import {buildBalloonFX,animateBalloonFX} from './balloon-fx.js';
 import {balloonPixelLayers} from './balloon-art.js';
@@ -39,7 +40,7 @@ export function buildBalloons(container,outcomes,money){
 }
 export function animateBalloons(container,round,count,time,motion=true){
  const flight=round?.flight,shot=flight&&time>=flight.releaseAt?flight:round?.throws.at(-1),hit=shot?balloonSlotForShot(shot,count):-1;
- const popAt=shot?balloonPopAt(shot):0,elapsed=shot?time-popAt:Infinity;
+ const popAt=shot?balloonPopAt(shot):0,elapsed=shot?shotAge(shot,time,popAt):Infinity;
  const focused=!!shot&&time>=shot.releaseAt&&elapsed<1100;
  const landed=[...(round?.throws||[]),...(flight&&time>=flight.landAt?[flight]:[])];
  const won=new Set(landed.map(s=>outcomeForShot(s,count)));
@@ -48,7 +49,7 @@ export function animateBalloons(container,round,count,time,motion=true){
  for(let i=0;i<balloonSlots(count).length;i++){
   const item=container.children[i],label=labels.children[i],old=popped.get(i),isHit=focused&&i===hit,used=round?.preset?.birthdayRule!==REPEAT_BALLOON_RULE&&won.has(Number(item.dataset.outcome))&&!old;
   const point=balloonPoint(i,count,isHit?shot.landAt:time,motion);
-  const deformation=balloonDeformation(old?time-balloonPopAt(old):-Infinity,motion);let alpha=used?.2:deformation.alpha;
+  const deformation=balloonDeformation(old?shotAge(old,time,balloonPopAt(old)):-Infinity,motion);let alpha=used?.2:deformation.alpha;
   if(focused&&!isHit)alpha*=.38;
   const gone=!!old&&time>=balloonPopAt(old);
   item.classList.toggle('is-hit-focus',isHit);item.classList.toggle('is-popped',gone);item.setAttribute('aria-hidden',String(gone||used));

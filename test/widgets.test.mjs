@@ -4,6 +4,7 @@ import {newWidgets,applyWidgetAction,advanceWidgets,widgetSnapshot,RESULT_HOLD_M
 import {balloonPoint,balloonSlots,balloonSlotForShot,outcomeForShot} from '../src/balloons.js';
 import {remainingBirthdayOutcomes,birthdayEstimate} from '../src/birthday-rules.js';
 import {BALLOON_HIT_HOLD_MS,BALLOON_RESULT_MS} from '../src/balloon-timing.js';
+import {shotScale} from '../src/dart-timing.js';
 import {makePopSamples,createPartyAudio} from '../src/party-audio.js';
 
 test('birthday widgets remove individual balloons, hold the hit beat, and freeze active round rules',()=>{
@@ -13,7 +14,7 @@ test('birthday widgets remove individual balloons, hold the hit beat, and freeze
   const now=i*4000;applyWidgetAction(s,{action:'throw',id:'birthday'},now);
   const f=s.widgets[0].round.flight;
   assert.notEqual(f.outcomeIndex,0);assert.ok(!won.has(f.balloonSlot));won.add(f.balloonSlot);expectedTotal+=f.amountCents;
-  assert.equal(outcomeForShot(f,4),f.outcomeIndex);assert.equal(f.popAt-f.landAt,BALLOON_HIT_HOLD_MS);assert.equal(f.finishAt-f.landAt,BALLOON_RESULT_MS);
+  assert.equal(outcomeForShot(f,4),f.outcomeIndex);assert.equal(f.popAt-f.landAt,BALLOON_HIT_HOLD_MS*shotScale(f));assert.equal(f.finishAt-f.landAt,BALLOON_RESULT_MS*shotScale(f));
   advanceWidgets(s,f.finishAt-1);assert.ok(s.widgets[0].round.flight);assert.throws(()=>applyWidgetAction(s,{action:'throw',id:'birthday'},f.finishAt-1),/flight/);
   advanceWidgets(s,f.finishAt);
   assert.equal(s.widgets[0].round.throws[i].landAt,f.landAt);
