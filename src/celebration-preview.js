@@ -26,7 +26,7 @@ $('#pause').addEventListener('click',()=>{if(elapsed>=end)elapsed=shot.finishAt;
 $('#timeline').addEventListener('input',()=>{elapsed=Number($('#timeline').value);playing=false;syncButton();});
 function detail(source,target,focus={x:160.5,y:35.5}){const c=$(target),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.imageSmoothingEnabled=false;ctx.drawImage($(source+' canvas'),focus.x-32.5,focus.y-32.5,65,65,0,0,132,132);}
 try{
- const config=await fetch('./character.json?v=money-v13').then(r=>r.json()),images=await loadCharacterArt(config);
+ const config=await fetch('./character.json?v=money-v13b').then(r=>r.json()),images=await loadCharacterArt(config);
  let selected=config.celebrations.find(v=>v.id===selectedId)||config.celebrations[0];
  function select(variant){
   selected=variant;selectedId=variant.id;const text=copy[selectedId];

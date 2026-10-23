@@ -1542,15 +1542,15 @@
           "sheetHeight": 1024
         },
         {
-          "x": 572,
+          "x": 1086,
           "y": 517,
-          "width": 142,
+          "width": 141,
           "height": 249,
           "face": {
-            "x": 663.0,
-            "y": 551.0
+            "x": 1176.0,
+            "y": 553.0
           },
-          "anchor": 690.5,
+          "anchor": 1203.0,
           "baseline": 766,
           "scale": 1.2113821138211383,
           "image": "./assets/faith-money-legs-v13.png",
@@ -1638,15 +1638,15 @@
           "sheetHeight": 1024
         },
         {
-          "x": 573,
+          "x": 318,
           "y": 773,
-          "width": 141,
+          "width": 140,
           "height": 248,
           "face": {
-            "x": 662.0,
-            "y": 807.5
+            "x": 409.0,
+            "y": 807.0
           },
-          "anchor": 691.0,
+          "anchor": 436.5,
           "baseline": 1021,
           "scale": 1.2113821138211383,
           "image": "./assets/faith-money-legs-v13.png",
@@ -1844,7 +1844,9 @@
       ],
       "preserveCells": [
         2,
-        8
+        8,
+        14,
+        20
       ],
       "preserveHair": {
         "headEnd": 64,
