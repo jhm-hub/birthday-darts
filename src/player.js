@@ -22,10 +22,10 @@ document.addEventListener('pointerdown',()=>{void partyAudio.unlock();},{once:tr
 function status(text){if(control)$('#status').textContent=text;}
 function size(){const screen=$('#screen'),anchor=$('#widget-anchor'),width=screen.clientWidth,height=screen.clientHeight,nativeHeight=(state?.round?.preset||state?.widget)?.theme==='balloons'?540:450;anchor.style.height=nativeHeight+'px';const scale=control?Math.min((width-24)/720,(height-24)/nativeHeight):Math.min(width/720,height/nativeHeight);anchor.style.transform='scale('+scale+')';{anchor.style.left=(width-720*scale)/2+'px';anchor.style.top=(height-nativeHeight*scale)/2+'px';}}
 new ResizeObserver(size).observe($('#screen'));
-fetch('./character.json?v=money-v13b').then(r=>r.json()).then(c=>{
+fetch('./character.json?v=money-v14').then(r=>r.json()).then(c=>{
  config=c;$('#faith img').src=c.idle;
- loadCharacterArt(c).then(images=>{characterRenderer=createCharacterRenderer($('#sprite'),c,images);artReady=true;poseIndex=-2;render();}).catch(()=>{});
-}).catch(()=>{});
+ loadCharacterArt(c).then(images=>{characterRenderer=createCharacterRenderer($('#sprite'),c,images);artReady=true;poseIndex=-2;render();if(demo)parent.postMessage({kind:'darts-demo',type:'art-ready'},location.origin);}).catch(()=>{if(demo)parent.postMessage({kind:'darts-demo',type:'art-error'},location.origin);});
+}).catch(()=>{if(demo)parent.postMessage({kind:'darts-demo',type:'art-error'},location.origin);});
 function pose(performance){
  const {cel:index,heldDart=false,expression=null,expressionStrength=1,blink=0,celebration='',celebrationCel=0}=performance;
  const key=[index,heldDart,expression,expressionStrength,blink,celebration,celebrationCel].join(':');if(key===poseIndex&&artReady)return;poseIndex=key;
@@ -39,7 +39,8 @@ function history(r,p,t){const shots=visibleThrows(r,t),key=(r?.id||'')+':'+p.dar
 function receive(next){const old=state?.round;state=next;connected=control?session?.ready??false:true;offset=next.serverNow-Date.now();partyAudio.sync(next.round?.preset.theme==='balloons'?next.round.flight:null,clock());if(control){if(old&&!next.round)$('#viewer').value='';else if(next.round&&!old)$('#viewer').value=next.round.viewer;document.title=next.widget.name+' — Faith Darts';$('h1').textContent=next.widget.name;$('#manage-widgets').href='./index.html?id='+encodeURIComponent(widgetId);}cancelAnimationFrame(raf);render();window.dispatchEvent(new Event('widget-state'));}
 function render(){cancelAnimationFrame(raf);if(!state)return;const r=state.round,p=r?.preset||state.widget,t=clock(),finished=!!r?.hideAt,visible=demo||!!r&&(!r.hideAt||t<r.hideAt),balloons=p.theme==='balloons';board(p);history(r,p,t);if(balloons)animateBalloons($('#balloons'),r,p.outcomes.length,t,!reducedMotion.matches);$('#widget').classList.toggle('visible',visible);$('#widget').classList.toggle('finished',finished);$('#widget').setAttribute('aria-hidden',String(!visible));$('#reveal').setAttribute('aria-hidden',String(!finished||!visible));$('#player').textContent=r?.viewer||'';$('.name-line').hidden=!r?.viewer;$('#counter').textContent=r?(finished?r.throws.length:Math.min(p.darts,r.throws.length+(r.flight?1:0)))+' / '+(finished?r.throws.length:p.darts):p.darts+' DART'+(p.darts===1?'':'S');
  if(finished){const sum=r.throws.reduce((sum,s)=>sum+s.amountCents,0),formatted=money(sum);$('#reveal-name').textContent=r.viewer?r.viewer.toUpperCase()+'’S TOTAL':'ROUND TOTAL';$('#final-total').textContent=formatted;$('#final-total').style.fontSize=Math.min(108,290/(formatted.length*.62))+'px';$('#addition').textContent=r.throws.map(s=>money(s.amountCents)).join(' + ');}
- const performance=characterPerformance(r,p,t,!reducedMotion.matches,config?.celebrations);pose(performance);$('#sprite').dataset.reaction=performance.reaction;
+ const variants=demo&&state.previewCelebration?config?.celebrations?.filter(v=>v.id===state.previewCelebration):config?.celebrations;
+ const performance=characterPerformance(r,p,t,!reducedMotion.matches,variants);pose(performance);$('#sprite').dataset.reaction=performance.reaction;
  const f=r?.flight;for(const band of $('#target').children)band.classList.remove('lit');$('#dart').style.display='none';$('#throw-pop').style.opacity=0;
  if(f){const target=balloons?balloonPoint(balloonSlotForShot(f,p.outcomes.length),p.outcomes.length,f.landAt,!reducedMotion.matches):{x:583,y:83+(f.bandIndex+.5+f.offset)*213/(2*p.outcomes.length-1)},start=dartReleasePoint(artReady?config:null,balloons),cx=(start.x+target.x)/2,cy=Math.min(30,target.y-80);
   if(t>=f.releaseAt&&t<f.landAt){const u=(t-f.releaseAt)/(f.landAt-f.releaseAt),x=(1-u)*(1-u)*start.x+2*(1-u)*u*cx+u*u*target.x,py=(1-u)*(1-u)*start.y+2*(1-u)*u*cy+u*u*target.y,dx=2*(1-u)*(cx-start.x)+2*u*(target.x-cx),dy=2*(1-u)*(cy-start.y)+2*u*(target.y-cy);$('#dart').style.display='block';$('#dart').style.left=x-31+'px';$('#dart').style.top=py-4+'px';$('#dart').style.transform='rotate('+Math.atan2(dy,dx)*180/Math.PI+'deg)';}
@@ -65,6 +66,7 @@ async function connect(){
   $('#copy-display').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(url);$('#copy-display').textContent='Copied';}catch{$('#display-url').focus();$('#display-url').select();}});
  }else session=await connectDisplay(receive);
  session.start();
+ if(demo&&artReady)parent.postMessage({kind:'darts-demo',type:'art-ready'},location.origin);
  if(demo)window.addEventListener('pagehide',()=>session.dispose(),{once:true});
 }
 connect().catch(e=>{errorMessage=e.message;status(e.message);if(control)$('#throw').disabled=true;});

@@ -1,6 +1,12 @@
 import {RESULT_HOLD_MS} from './widgets.js';
 import {CELEBRATION_TIME_SCALE} from './dart-timing.js';
 
+export const CELEBRATION_CHOICES=[
+ {id:'bratty-victory',label:'Bratty Victory'},
+ {id:'goddess-moment',label:'Goddess Moment'},
+ {id:'money-tease',label:'Money Tease'}
+];
+
 // A round UUID is already random. Hashing it chooses a cosmetic performance
 // identically on every display, without consuming the prize random source.
 // Each complete performance owns its poses, timing and reduced-motion hold.

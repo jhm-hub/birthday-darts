@@ -104,7 +104,7 @@ test('celebration art fits the same canvas at one common scale; existing throw a
  const before=JSON.parse(await readFile(new URL('../public/character-recovery-v8.json',import.meta.url),'utf8'));
  assert.deepEqual(config.frames,before.frames);assert.deepEqual(config.expressions,before.expressions);
  assert.deepEqual(config.release,before.release);
- const sizes=new Map();
+ const sizes=new Map(),densityBySource=new Map();
  for(const variant of variants){
   assert.equal(variant.frames.length,variant.starts.length);assert.equal(variant.starts[0],0);
   assert.ok(variant.duration<RESULT_HOLD_MS);assert.ok(variant.starts.at(-1)<variant.duration);
@@ -116,10 +116,24 @@ test('celebration art fits the same canvas at one common scale; existing throw a
    const [width,height]=sizes.get(f.image);
    assert.ok(f.x>=0&&f.y>=0&&f.x+f.width<=width&&f.y+f.height<=height);
    const box=characterFrameLayout(config,i,variant.frames);
-   assert.equal(box.scale,config.frames[0].scale);
+   // The return atlas has more source pixels per figure. One density
+   // calibration applies to every cel, retaining the same on-screen size.
+   const density=f.sourceDensity||1;
+   if(densityBySource.has(f.image))assert.equal(density,densityBySource.get(f.image));
+   densityBySource.set(f.image,density);
+   assert.ok(Math.abs(box.scale*density-config.frames[0].scale)<1e-12);
    assert.ok(box.left>=0&&box.left+box.width<=config.canvasWidth);
    assert.ok(box.top>=0&&box.top+box.height<=config.canvasHeight);
    assert.equal(box.top+(f.baseline-f.y)*box.scale,config.groundY);
   }
  }
+});
+
+test('Money return adds tuck and recovery poses while preserving the approved opening and pace',async()=>{
+ const before=JSON.parse(await readFile(new URL('../public/character-money-v13.json',import.meta.url),'utf8'));
+ const old=before.celebrations[2],current=variants[2];
+ assert.deepEqual(current.frames.slice(0,17),old.frames.slice(0,17));
+ assert.equal(current.duration,old.duration);assert.equal(current.reducedCel,old.reducedCel);
+ assert.ok(current.frames.length>old.frames.length);
+ assert.deepEqual(variants.slice(0,2),before.celebrations.slice(0,2));
 });

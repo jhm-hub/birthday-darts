@@ -14,4 +14,8 @@ for(const file of await readdir('dist'))if(file.endsWith('.html')){
  await writeFile(path,html.replace(/src="\.\/(player|library|motion-preview|celebration-preview)\.js"/g,(_,name)=>'src="./'+name+'.js?v='+versions.get(name)+'"')
   .replace(/href="\.\/([\w-]+\.css)(?:\?[^"\s]*)?"/g,(full,file)=>styles.has(file)?'href="./'+file+'?v='+styles.get(file)+'"':full));
 }
+// The editor's iframe is an HTML document with its own cache entry. Version it
+// after rewriting its scripts/styles so a fresh editor cannot embed old code.
+const previewVersion=createHash('sha256').update(await readFile('dist/preview.html')).digest('hex').slice(0,12);
+await writeFile('dist/index.html',(await readFile('dist/index.html','utf8')).replace('src="./preview.html"','src="./preview.html?v='+previewVersion+'"'));
 console.log('Built browser game in dist/');

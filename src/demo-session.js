@@ -11,8 +11,10 @@ export function connectDemo(onSnapshot,audio){
   if(event.source!==parent||event.origin!==location.origin||event.data?.kind!=='darts-demo')return;
   const data=event.data;
   try{
-   if(data.type==='configure')game.configure(data.widget,data.error);
+   if(data.type==='configure'){game.configure(data.widget,data.error);game.selectCelebration(data.celebration);}
    else if(data.type==='throw'){void audio.unlock();game.throw();}
+   else if(data.type==='finale'){audio.cancel();game.previewFinale();}
+   else if(data.type==='celebration')game.selectCelebration(data.id);
    else if(data.type==='reset')game.reset();
    else if(data.type==='sound'){audio.setEnabled(!!data.enabled);if(data.enabled)void audio.unlock();}
    else return;
