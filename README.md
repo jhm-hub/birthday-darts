@@ -185,9 +185,22 @@ boards. There is no character in this game, and no character artwork to download
   limit. Remaining eligible weights rebalance. Gift appearances/positions do not change configured odds.
 - After the last pick, a readable plaque shows **cash × multiplier = total**
   over the grid, then clears after 5.5 seconds.
+- The last prize keeps a clear reading beat before handing off to that plaque.
+  Over the final 320 ms of the existing unwrap, its banner clears, the header
+  returns and three small pixel sparks travel from the chosen gift toward the
+  celebration. The board and footer ease back across the finish. The plaque's
+  opaque backing arrives before its lettering, preventing overlapping amounts;
+  the entrance finishes in **140 ms**, before Standard's first payoff. Royal's
+  footer fades away for its build-up and returns after the reveal. No extra pause,
+  screen space or sound is added; each tier keeps its distinct animation and score.
+  A display awaiting a controller update samples the already-chosen result on
+  the same committed clock, without changing stored awards or enabling another
+  pick. Bonus gifts that grant more picks do not trigger this handoff. Reduced
+  motion switches directly to the quiet result. Direct finale previews use the
+  same plaque entrance; play a demo round to see the last-present transition.
 - The final total appears in a shaded plum plaque with a stepped gold frame.
   **Standard** has its own gold-and-mint star badge, a quick tilt-and-settle and
-  a petite **56-piece sparkle fountain**. Its exact amount is visible immediately
+  a petite **56-piece sparkle fountain**. Its exact amount arrives with the plaque
   and rises just three pixels into place; the plaque stays fixed in size and position.
   Two soft mallet notes lead to a cheerful chord at **180 ms**, then a collected-coin
   answer resolves in about one second. The badge lands on that same beat, with
@@ -201,7 +214,7 @@ boards. There is no character in this game, and no character artwork to download
   **Celebration levels** in the private game settings controls two thresholds:
   **Standard below $100**, **Big win at $100+**, **Royal win at $250+** by default.
   Big win has its own **jeweled pink bow**, crisp rose frame and **108-piece ribbon
-  fountain**. Its total appears immediately, with a small upward settle; the bow
+  fountain**. Its total has a small upward settle; the bow
   opens and lands on a bright chord at **220 ms**, followed by a short bell answer.
   The plaque stays fixed in size and position. The quieter answering spray leaves
   space around the readable total;
@@ -209,7 +222,7 @@ boards. There is no character in this game, and no character artwork to download
   then the exact total appears with a matching warm chord and a broader **168-piece
   pixel-confetti burst**. Twin fountains and a crown shower stay behind the opaque
   plaque, away from the digits. The amount has 4.9 seconds of reading time inside
-  the existing 5.5-second finale. Standard and Big win still reveal immediately.
+  the existing 5.5-second finale. Standard and Big win use the brief shared plaque entrance.
   These tiers use the exact final total **after all multipliers**. They share the
   same plaque size, 5.5-second hold and master volume; their motion settles by
   2.0 / 2.8 / 3.4 seconds. Thresholds are saved per game, must be positive dollar

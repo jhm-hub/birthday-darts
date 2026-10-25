@@ -5,6 +5,7 @@ import {FINALE_PARTICLES,giftFinaleMotion,giftConfetti,pixelConfettiPath,giftFin
 import {giftUnwrapMotion,applyGiftUnwrap} from './gift-unwrap-motion.js';
 import {giftPrizeMotion,giftPrizeSpark,applyGiftPrize,PRIZE_COLORS} from './gift-prize-motion.js';
 import {giftPrizeEmblem} from './gift-prize-art.js';
+import {presentedGiftRound,giftFinishMotion,giftFinishSpark} from './gift-finish-motion.js';
 import {giftFinalFrame,giftFinalCrown,giftFinalBow,giftFinalBadge} from './gift-finale-art.js';
 
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
@@ -13,23 +14,29 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
  const $=s=>root.querySelector(s),stage=$('.gift-stage'),board=$('.gift-board'),buttons=new Map(),reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const bands=document.createElementNS('http://www.w3.org/2000/svg','svg');bands.setAttribute('class','gift-bonus-bands');bands.setAttribute('viewBox','0 0 396 314');bands.setAttribute('aria-hidden','true');bands.innerHTML='<path/><path/>';stage.insertBefore(bands,board);
  const confetti=document.createElementNS('http://www.w3.org/2000/svg','svg');confetti.setAttribute('class','gift-final-confetti');confetti.setAttribute('viewBox','0 0 420 460');confetti.setAttribute('aria-hidden','true');confetti.innerHTML='<path/>'.repeat(FINALE_PARTICLES);stage.insertBefore(confetti,$('.gift-finale'));
+ const finishTrail=document.createElementNS('http://www.w3.org/2000/svg','svg');finishTrail.setAttribute('class','gift-finish-trail');finishTrail.setAttribute('viewBox','0 0 420 460');finishTrail.setAttribute('aria-hidden','true');
+ finishTrail.innerHTML=Array.from({length:3},(_,i)=>i===0?'<g><path d="M2 0h2v2h2v2H4v2H2V4H0V2h2Z"/><path d="M2 1h2v2H2Z" fill="#fff6db"/></g>':'<g><path d="M0 0h4v4H0Z"/><path d="M0 0h2v1H0Z" fill="#fff6db"/></g>').join('');stage.insertBefore(finishTrail,$('.gift-finale'));
  $('.gift-final-frame').innerHTML=giftFinalFrame();$('.gift-final-star').innerHTML=giftFinalCrown();
  const gleams=document.createElementNS('http://www.w3.org/2000/svg','svg');gleams.setAttribute('class','gift-final-gleams');gleams.setAttribute('viewBox','0 0 364 228');gleams.setAttribute('aria-hidden','true');
  gleams.innerHTML=[[20,24],[336,196],[338,24],[18,196],[44,8],[310,214]].map(([x,y])=>`<path d="M${x} ${y}h2v3h3v2h-3v3h-2v-3h-3v-2h3Z"/>`).join('');$('.gift-finale').append(gleams);
  const toast=$('.gift-toast');toast.innerHTML='<i class="gift-prize-emblem" aria-hidden="true"></i><strong></strong><span class="gift-toast-detail"></span><i class="gift-title-spark" aria-hidden="true"></i>';
- let round=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null,oldPrizeKind=null,oldFinalLevel=null;
+ let snapshotRound=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null,oldPrizeKind=null,oldFinalLevel=null;
  const resize=()=>{const s=Math.min(root.clientWidth/420,root.clientHeight/460);stage.style.transform=`translate(-50%,-50%) scale(${s})`;};
  const observer=new ResizeObserver(resize);observer.observe(root);resize();
  // Inline gift art needs no character downloads. Defer readiness until callers initialize.
  void Promise.resolve().then(()=>{if(disposed)return;ready=true;onReady();render();}).catch(onError);
  function render(){
-  cancelAnimationFrame(raf);if(!preset)return;const time=Date.now()+offset,shown=projectedGiftRound(round,time),flight=round?.flight,age=flight?time-flight.startAt:0,finished=round?.completedAt!==null&&!!round,visible=show&&(preview||!!round&&time<round.hideAt||!!round&&!round.hideAt);
+  cancelAnimationFrame(raf);if(!preset)return;const time=Date.now()+offset,round=presentedGiftRound(snapshotRound,time),shown=projectedGiftRound(round,time),flight=round?.flight,age=flight?time-flight.startAt:0,finished=round?.completedAt!==null&&!!round,visible=show&&(preview||!!round&&time<round.hideAt||!!round&&!round.hideAt);
   stage.classList.toggle('stage-visible',visible);stage.classList.toggle('stage-finished',finished);stage.setAttribute('aria-hidden',String(!visible));
+  const finish=giftFinishMotion(round,time,reduced.matches);
+  for(const [key,value,unit]of [['finish-board',finish.board,''],['finish-footer',finish.footer,''],['finish-header',finish.header,''],['finish-toast',finish.toast,''],['finish-toast-y',finish.toastY,'px'],['finish-plaque',finish.plaque,''],['finish-content',finish.content,'']])stage.style.setProperty('--'+key,value+unit);
+  finishTrail.style.display=finish.linked&&!reduced.matches?'':'none';finishTrail.style.fill=PRIZE_COLORS[finish.shot?.prize.kind]??PRIZE_COLORS.cash;
+  [...finishTrail.children].forEach((g,i)=>{const p=giftFinishSpark(finish,i,round,time,reduced.matches);g.setAttribute('opacity',String(p?.opacity??0));if(p)g.setAttribute('transform',`translate(${p.x-Math.floor(p.size/2)} ${p.y-Math.floor(p.size/2)})`);});
   const {rows,cols}=giftDimensions(shown??preset),remaining=shown?.remaining??preset.picks,bonus=giftBonusMotion(round,time,reduced.matches);
   stage.style.setProperty('--bonus-color',bonus?.color??'#ffe8ad');stage.style.setProperty('--bonus-pop',String(bonus?.pop??0));
   stage.classList.toggle('gift-bonus-active',!!bonus);bands.style.opacity=String(bonus?.trace??0);
   const traces=giftBonusBands(bonus);[...bands.children].forEach((path,i)=>path.setAttribute('d',traces[i]?pixelBandPath(traces[i]):''));
-  $('.gift-count').textContent=finished?'ROUND COMPLETE':remaining+' PICK'+(remaining===1?'':'S')+' LEFT';
+  $('.gift-count').textContent=finished||finish.active?'ROUND COMPLETE':remaining+' PICK'+(remaining===1?'':'S')+' LEFT';
   $('.gift-viewer').textContent=round?.viewer?'FOR '+round.viewer:finished?'A LITTLE LUCK, ALL YOURS':flight?'UNWRAPPING…':'PICK A LITTLE MAGIC';
   $('.gift-board-size').textContent=rows+' × '+cols;$('.gift-board-size').setAttribute('aria-label',rows+' rows, '+cols+' columns');
   const boardIdentity=(round?.id??'preview')+':'+preset.id+':'+preset.side;
@@ -43,7 +50,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
    Object.assign(b.style,{left:arrival.left+'px',top:arrival.top+'px',width:arrival.width+'px',height:arrival.height+'px',transform:`translate(${arrival.x}px,${arrival.y}px) scale(${arrival.sx},${arrival.sy})`});
    b.style.setProperty('--arrival-opacity',String(arrival.opacity));b.style.setProperty('--spawn-opacity',String(arrival.spark));b.style.setProperty('--spawn-radius',arrival.radius+'px');b.classList.toggle('gift-new',arrival.newCell);
    const expansion=shot&&isGiftExpansion(shot.prize.kind),label=shot?(expansion?{extra:'GROW',row:'ROW',column:'COL'}[shot.prize.kind]:prizeLabel(shot.prize)):'';b.style.setProperty('--prize-size',Math.min(26,arrival.height*106/314,(arrival.width*.88)/(Math.max(1,label.length)*.55))+'px');b.dataset.kind=shot?.prize.kind??'';
-   b.disabled=!interactive||!ready||!canPick||!!flight||finished||!!shot;b.tabIndex=interactive?0:-1;
+   b.disabled=!interactive||!ready||!canPick||!!snapshotRound?.flight||finished||!!shot;b.tabIndex=interactive?0:-1;
    b.setAttribute('aria-label',shot?'Opened present: '+prizeLabel(shot.prize):`Open present, row ${row+1}, column ${col+1}`);
    b.classList.toggle('gift-opened',!!shot);b.classList.toggle('gift-opening',active);b.classList.toggle('gift-special',!!shot&&shot.prize.kind!=='cash');
    b.querySelector('.gift-cell-number').textContent=shot?'':String.fromCharCode(65+row)+(col+1);
@@ -101,5 +108,5 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   root.dataset.rows=rows;root.dataset.cols=cols;root.dataset.side=Math.max(rows,cols);root.dataset.picks=remaining;root.dataset.total=giftTotal(shown);root.dataset.phase=finished?'total':flight?'unwrapping':'ready';
   if(round)raf=requestAnimationFrame(render);
  }
- return {get ready(){return ready;},update({widget,round:r,serverNow=Date.now()},options={}){preset=widget;round=r;offset=serverNow-Date.now();preview=!!options.preview;canPick=options.canPick??true;show=options.show??true;render();},setInteractive(value){interactive=value;render();},hide(){show=false;render();},dispose(){disposed=true;cancelAnimationFrame(raf);observer.disconnect();}};
+ return {get ready(){return ready;},update({widget,round:r,serverNow=Date.now()},options={}){preset=widget;snapshotRound=r;offset=serverNow-Date.now();preview=!!options.preview;canPick=options.canPick??true;show=options.show??true;render();},setInteractive(value){interactive=value;render();},hide(){show=false;render();},dispose(){disposed=true;cancelAnimationFrame(raf);observer.disconnect();}};
 }

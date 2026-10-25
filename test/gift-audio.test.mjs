@@ -4,6 +4,8 @@ import {createGiftAudio,giftRevealScore,giftFinaleScore,scheduleGiftScore} from 
 import {giftBonusMotion,giftCellMotion} from '../src/gift-bonus-motion.js';
 import {giftUnwrapCues,synthesizeGiftFoley,scheduleGiftUnwrap} from '../src/gift-unwrap-audio.js';
 import {giftUnwrapMotion,CANDY_BOW_RELEASE_MS,CANDY_LID_POP_MS} from '../src/gift-unwrap-motion.js';
+import {presentedGiftRound} from '../src/gift-finish-motion.js';
+import {DEFAULT_GIFTS,startGiftRound,unwrapGift,advanceGiftRound} from '../src/gift-game.js';
 
 function context(state='running'){
  const nodes=[],param=()=>({value:0,calls:[],setValueAtTime(...a){this.calls.push(['set',...a]);},linearRampToValueAtTime(...a){this.calls.push(['linear',...a]);},exponentialRampToValueAtTime(...a){this.calls.push(['exp',...a]);},cancelAndHoldAtTime(...a){this.calls.push(['hold',...a]);},cancelScheduledValues(...a){this.calls.push(['cancel',...a]);}});
@@ -13,6 +15,17 @@ function context(state='running'){
 const shot=(id='one',kind='extra')=>({id,revealAt:1000,prize:{kind,nextRows:4,nextCols:4}});
 const unwrapShot=(id='unwrap')=>({...shot(id),startAt:1000,revealAt:1850});
 const oscillators=ctx=>ctx.nodes.filter(n=>n.kind==='oscillator');
+
+test('clock-completed display plays one finale when the controller snapshot arrives later',()=>{
+ const r=startGiftRound(DEFAULT_GIFTS,'Preview',0);
+ for(let i=0;i<2;i++){unwrapGift(r,i*2000,{cell:'0:'+i,forcedIndex:i});advanceGiftRound(r,(i+1)*2000);}
+ unwrapGift(r,4000,{cell:'1:1',forcedIndex:4});
+ const ctx=context(),a=createGiftAudio({createContext:()=>ctx});a.setEnabled(true);
+ a.finale(presentedGiftRound(r,5999),5999);assert.equal(oscillators(ctx).length,0);
+ a.finale(presentedGiftRound(r,6000),6000);const count=oscillators(ctx).length;assert.ok(count>0);
+ a.finale(presentedGiftRound(r,6050),6050);advanceGiftRound(r,6100);a.finale(r,6100);assert.equal(oscillators(ctx).length,count);
+ a.reset();assert.ok(oscillators(ctx).every(n=>n.stops.at(-1)===ctx.currentTime+.015));
+});
 
 test('rising notes meet each new present at its first full-size pose',()=>{
  for(const [kind,rows,cols,count]of [['row',4,3,3],['column',3,4,3],['extra',4,4,4],['row',6,4,4],['column',4,6,4],['extra',6,6,6]]){
