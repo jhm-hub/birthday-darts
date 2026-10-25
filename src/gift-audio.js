@@ -1,3 +1,4 @@
+import {giftIntroWaveCount,giftIntroDelay,GIFT_INTRO_POP_MS,GIFT_INTRO_LAND,GIFT_INTRO_MS} from './gift-intro-motion.js';
 import {isGiftExpansion} from './gift-game.js';
 import {giftArrivalCount,giftArrivalDelay,GIFT_ARRIVAL_MS} from './gift-bonus-motion.js';
 import {scheduleGiftUnwrap} from './gift-unwrap-audio.js';
@@ -6,6 +7,17 @@ import {giftCelebrationLevel,ROYAL_REVEAL_MS,BIG_RESOLVE_MS,STANDARD_RESOLVE_MS}
 
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
+
+// A restrained game-show welcome: one bell per diagonal, then a soft major
+// landing. Fixed note levels and a capped tail leave room for ribbon and prize.
+export function giftIntroScore(side=3){
+ const count=giftIntroWaveCount(side,side),pitches=[72,74,76,79,81,84,88];
+ const score=Array.from({length:count},(_,rank)=>({
+  ...note((giftIntroDelay(rank,count)+GIFT_INTRO_POP_MS*GIFT_INTRO_LAND)/1000,
+   pitches[Math.round(rank*6/Math.max(1,count-1))],.13,.022,'mallet'),beat:'welcome'}));
+ const land=score.at(-1).at;
+ return [...score,note(land,60,.23,.014,'soft'),note(land,76,.21,.012,'bell'),note(land,79,.19,.01,'bell')];
+}
 
 // Each tier has its own short phrase, all on the same quiet stream bus.
 export function giftFinaleScore(level=0){
@@ -110,7 +122,7 @@ export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{},destina
 }
 
 export function createGiftAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)()}={}){
- let ctx,master,volume=DEFAULT_GIFT_VOLUME,rampFrom=1,rampStart=0,enabled=false,last='',lastUnwrap='',lastFinale='',disposed=false;
+ let ctx,master,volume=DEFAULT_GIFT_VOLUME,rampFrom=1,rampStart=0,enabled=false,last='',lastUnwrap='',lastFinale='',lastIntro='',disposed=false;
  const playing=new Set();
  function track(source,envelope,nodes){
   const entry={source,envelope,nodes};playing.add(entry);
@@ -148,6 +160,14 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    gain.linearRampToValueAtTime(volume/100,time+.04);
   },
   setEnabled(value){if(disposed)return;enabled=!!value;if(enabled)unlock();else stop();},unlock,
+  intro(round,time){
+   if(!round||round.completedAt!=null||!Number.isFinite(round.startedAt)||time<round.startedAt||round.id===lastIntro||disposed)return;
+   if(!enabled){lastIntro=round.id;return;}
+   if(!ctx||ctx.state!=='running')return;
+   lastIntro=round.id;
+   if(time>=round.startedAt+GIFT_INTRO_MS)return;
+   scheduleGiftScore(ctx,giftIntroScore(round.preset.side),ctx.currentTime,(time-round.startedAt)/1000,track,master);
+  },
   unwrap(flight,time,{candy=true}={}){
    if(!flight||!Number.isFinite(flight.startAt)||time<flight.startAt||flight.id===lastUnwrap||disposed)return;
    if(!enabled){lastUnwrap=flight.id;return;}
@@ -170,7 +190,7 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    if(!enabled||!ctx||ctx.state!=='running'||time>round.completedAt+180)return;
    scheduleGiftScore(ctx,giftFinaleScore(giftCelebrationLevel(round)),ctx.currentTime,(time-round.completedAt)/1000,track,master);
   },
-  reset(){last='';lastUnwrap='';lastFinale='';stop();},
+  reset(){last='';lastUnwrap='';lastFinale='';lastIntro='';stop();},
   dispose(){stop();disposed=true;enabled=false;if(ctx&&ctx.state!=='closed')void ctx.close().catch(()=>{});}
  };
 }

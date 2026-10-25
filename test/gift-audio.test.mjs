@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createGiftAudio,giftRevealScore,giftFinaleScore,scheduleGiftScore} from '../src/gift-audio.js';
+import {createGiftAudio,giftIntroScore,giftRevealScore,giftFinaleScore,scheduleGiftScore} from '../src/gift-audio.js';
 import {giftBonusMotion,giftCellMotion} from '../src/gift-bonus-motion.js';
 import {giftUnwrapCues,synthesizeGiftFoley,scheduleGiftUnwrap} from '../src/gift-unwrap-audio.js';
 import {giftUnwrapMotion,CANDY_BOW_RELEASE_MS,CANDY_LID_POP_MS} from '../src/gift-unwrap-motion.js';
@@ -230,4 +230,27 @@ test('cancelling during Royal anticipation stops the future payoff and joining l
   assert.ok(voices.every(n=>Math.abs(n.stops.at(-1)-10.315)<1e-9));
  }
  const ctx=context(),a=createGiftAudio({createContext:()=>ctx});a.setEnabled(true);a.finale(round,1700);assert.equal(oscillators(ctx).length,0);a.finale(round,1000);assert.equal(oscillators(ctx).length,0);
+});
+
+
+test('opening chime plays once per real round on the volume bus and ignores old or muted rounds',()=>{
+ const r=startGiftRound(DEFAULT_GIFTS,'Demo',1000),ctx=context(),a=createGiftAudio({createContext:()=>ctx});a.setVolume(35);a.setEnabled(true);
+ a.intro(r,999);assert.equal(oscillators(ctx).length,0);a.intro(r,1000);
+ const count=oscillators(ctx).length,reference=context();scheduleGiftScore(reference,giftIntroScore(3),10);assert.ok(count>0);
+ assert.deepEqual(oscillators(ctx).map(n=>[n.started,n.frequency.value]),oscillators(reference).map(n=>[n.started,n.frequency.value]));
+ assert.ok(ctx.nodes.slice(1).filter(n=>n.kind==='gain').every(n=>n.connectedTo===ctx.nodes[0]));
+ a.intro(structuredClone(r),1100);assert.equal(oscillators(ctx).length,count);
+ a.intro({...r,id:'stale'},5000);a.intro({...r,id:'finale',completedAt:1000},1000);assert.equal(oscillators(ctx).length,count);
+ a.setEnabled(false);a.intro({...r,id:'muted'},1000);a.setEnabled(true);a.intro({...r,id:'muted'},1050);assert.equal(oscillators(ctx).length,count);
+});
+test('late/resuming opening audio joins remaining beats and all scheduled welcome notes cancel on reset',()=>{
+ const r=startGiftRound(DEFAULT_GIFTS,'Demo',1000);
+ for(const elapsed of [0,.12,.3,.5,.7]){
+  const ctx=context(),a=createGiftAudio({createContext:()=>ctx});a.setEnabled(true);a.intro(r,1000+elapsed*1000);
+  const reference=context();scheduleGiftScore(reference,giftIntroScore(3),10,elapsed);
+  assert.deepEqual(oscillators(ctx).map(n=>[n.started,n.frequency.value]),oscillators(reference).map(n=>[n.started,n.frequency.value]));
+  a.reset();assert.ok(oscillators(ctx).every(n=>n.stops.at(-1)===10.015));
+ }
+ const ctx=context('suspended');ctx.resume=async()=>{};const a=createGiftAudio({createContext:()=>ctx});a.setEnabled(true);a.intro(r,1000);assert.equal(oscillators(ctx).length,0);
+ ctx.state='running';a.intro(r,1200);assert.ok(oscillators(ctx).length>0);a.dispose();const count=ctx.nodes.length;a.intro({...r,id:'after-dispose'},1000);assert.equal(ctx.nodes.length,count);
 });

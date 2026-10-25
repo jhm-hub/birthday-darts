@@ -6,6 +6,7 @@ import {giftUnwrapMotion,applyGiftUnwrap} from './gift-unwrap-motion.js';
 import {giftPrizeMotion,giftPrizeSpark,applyGiftPrize,PRIZE_COLORS} from './gift-prize-motion.js';
 import {giftPrizeEmblem} from './gift-prize-art.js';
 import {presentedGiftRound,giftFinishMotion,giftFinishSpark} from './gift-finish-motion.js';
+import {giftIntroMotion,giftIntroCell,giftIntroLight,GIFT_INTRO_LIGHTS} from './gift-intro-motion.js';
 import {createGiftPresence} from './gift-exit-motion.js';
 import {giftFinalFrame,giftFinalCrown,giftFinalBow,giftFinalBadge} from './gift-finale-art.js';
 
@@ -14,6 +15,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
  root.innerHTML=`<section class="gift-stage" aria-label="Faith’s gift game"><div class="gift-head"><span>FAITH’S <b>GIFT PILE</b><i aria-hidden="true">✦</i></span><span class="gift-count"></span></div><div class="gift-caption"><span class="gift-viewer"></span><small class="gift-board-size"></small></div><div class="gift-board" aria-label="Wrapped presents"></div><div class="gift-toast" aria-live="polite"><strong></strong><span></span></div><div class="gift-footer"><div><small>COLLECTED</small><strong class="gift-subtotal">$0</strong></div><div class="gift-multiplier"><small>MULTIPLIER</small><strong>×1</strong></div><div class="gift-running"><small>TOTAL SO FAR</small><strong>$0</strong></div></div><div class="gift-finale" hidden><i class="gift-final-frame" aria-hidden="true"></i><i class="gift-final-sheen" aria-hidden="true"></i><span class="gift-final-star" aria-hidden="true"></span><span class="gift-final-rank"><b></b><i aria-hidden="true"><em></em><em></em><em></em></i></span><span class="gift-royal-build" hidden><b>Here it comes…</b><i aria-hidden="true"><em></em><em></em><em></em></i></span><small></small><strong></strong><p></p><span class="gift-final-count"></span></div></section>`;
  const $=s=>root.querySelector(s),stage=$('.gift-stage'),board=$('.gift-board'),buttons=new Map(),reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const bands=document.createElementNS('http://www.w3.org/2000/svg','svg');bands.setAttribute('class','gift-bonus-bands');bands.setAttribute('viewBox','0 0 396 314');bands.setAttribute('aria-hidden','true');bands.innerHTML='<path/><path/>';stage.insertBefore(bands,board);
+ const introLights=document.createElementNS('http://www.w3.org/2000/svg','svg');introLights.setAttribute('class','gift-intro-lights');introLights.setAttribute('viewBox','0 0 396 314');introLights.setAttribute('aria-hidden','true');introLights.innerHTML=GIFT_INTRO_LIGHTS.map(([x,y],i)=>`<g opacity="0"><path d="M${x} ${y}h4v4h-4Z" fill="${i%3===0?'#ffb8d7':'#f6cf86'}"/><path d="M${x} ${y}h2v1h-2Z" fill="#fff3d5"/></g>`).join('');stage.insertBefore(introLights,board);
  const confetti=document.createElementNS('http://www.w3.org/2000/svg','svg');confetti.setAttribute('class','gift-final-confetti');confetti.setAttribute('viewBox','0 0 420 460');confetti.setAttribute('aria-hidden','true');confetti.innerHTML='<path/>'.repeat(FINALE_PARTICLES);stage.insertBefore(confetti,$('.gift-finale'));
  const finishTrail=document.createElementNS('http://www.w3.org/2000/svg','svg');finishTrail.setAttribute('class','gift-finish-trail');finishTrail.setAttribute('viewBox','0 0 420 460');finishTrail.setAttribute('aria-hidden','true');
  finishTrail.innerHTML=Array.from({length:3},(_,i)=>i===0?'<g><path d="M2 0h2v2h2v2H4v2H2V4H0V2h2Z"/><path d="M2 1h2v2H2Z" fill="#fff6db"/></g>':'<g><path d="M0 0h4v4H0Z"/><path d="M0 0h2v1H0Z" fill="#fff6db"/></g>').join('');stage.insertBefore(finishTrail,$('.gift-finale'));
@@ -37,6 +39,9 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   finishTrail.style.display=finish.linked&&!reduced.matches?'':'none';finishTrail.style.fill=PRIZE_COLORS[finish.shot?.prize.kind]??PRIZE_COLORS.cash;
   [...finishTrail.children].forEach((g,i)=>{const p=giftFinishSpark(finish,i,round,time,reduced.matches);g.setAttribute('opacity',String(p?.opacity??0));if(p)g.setAttribute('transform',`translate(${p.x-Math.floor(p.size/2)} ${p.y-Math.floor(p.size/2)})`);});
   const {rows,cols}=giftDimensions(shown??preset),remaining=shown?.remaining??preset.picks,bonus=giftBonusMotion(round,time,reduced.matches);
+  const intro=giftIntroMotion(round,time,reduced.matches);
+  introLights.style.display=intro?'':'none';if(intro)[...introLights.children].forEach((g,i)=>g.setAttribute('opacity',String(giftIntroLight(i,intro))));
+  stage.classList.toggle('gift-intro-active',!!intro);
   stage.style.setProperty('--bonus-color',bonus?.color??'#ffe8ad');stage.style.setProperty('--bonus-pop',String(bonus?.pop??0));
   stage.classList.toggle('gift-bonus-active',!!bonus);bands.style.opacity=String(bonus?.trace??0);
   const traces=giftBonusBands(bonus);[...bands.children].forEach((path,i)=>path.setAttribute('d',traces[i]?pixelBandPath(traces[i]):''));
@@ -50,9 +55,10 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
    const id=row+':'+col,shot=opened.get(id),active=flight?.cell===id;let b=buttons.get(id);
    if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;b.innerHTML=art(row*3+col)+`<span class="gift-glints" aria-hidden="true">${'<i></i>'.repeat(8)}</span><span class="gift-cell-prize"><span class="gift-cell-main"></span><small class="gift-cell-detail"></small></span><span class="gift-cell-number"></span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
    b.classList.toggle('candy-unwrap',!!b.querySelector('svg[data-unwrap="candy"]'));
-   const arrival=giftCellMotion(row,col,rows,cols,bonus);
-   Object.assign(b.style,{left:arrival.left+'px',top:arrival.top+'px',width:arrival.width+'px',height:arrival.height+'px',transform:`translate(${arrival.x}px,${arrival.y}px) scale(${arrival.sx},${arrival.sy})`});
-   b.style.setProperty('--arrival-opacity',String(arrival.opacity));b.style.setProperty('--spawn-opacity',String(arrival.spark));b.style.setProperty('--spawn-radius',arrival.radius+'px');b.classList.toggle('gift-new',arrival.newCell);
+   const arrival=giftCellMotion(row,col,rows,cols,bonus),opening=giftIntroCell(row,col,intro);
+   b.classList.toggle('gift-intro-cell',!!intro&&!active);b.style.setProperty('--intro-color',['#ffe4a2','#ffb8d7','#d4bbf4'][(row+col)%3]);
+   Object.assign(b.style,{left:arrival.left+'px',top:arrival.top+'px',width:arrival.width+'px',height:arrival.height+'px',transform:`translate(${arrival.x}px,${arrival.y+opening.y}px) scale(${arrival.sx*opening.scale},${arrival.sy*opening.scale})`});
+   b.style.setProperty('--arrival-opacity',String(arrival.opacity*opening.opacity));b.style.setProperty('--spawn-opacity',String(Math.max(arrival.spark,opening.spark)));b.style.setProperty('--spawn-radius',(intro?Math.round(Math.min(arrival.width,arrival.height)*opening.radius):arrival.radius)+'px');b.classList.toggle('gift-new',arrival.newCell);
    const expansion=shot&&isGiftExpansion(shot.prize.kind),label=shot?(expansion?{extra:'GROW',row:'ROW',column:'COL'}[shot.prize.kind]:prizeLabel(shot.prize)):'';b.style.setProperty('--prize-size',Math.min(26,arrival.height*106/314,(arrival.width*.88)/(Math.max(1,label.length)*.55))+'px');b.dataset.kind=shot?.prize.kind??'';
    b.disabled=!interactive||!ready||!canPick||!!snapshotRound?.flight||finished||!!shot;b.tabIndex=interactive?0:-1;
    b.setAttribute('aria-label',shot?'Opened present: '+prizeLabel(shot.prize):`Open present, row ${row+1}, column ${col+1}`);
@@ -108,7 +114,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   confetti.style.display=finale?.particles?'':'none';
   if(finale?.particles)[...confetti.children].forEach((path,i)=>{const p=giftConfetti(round.id,i,finale.age,finale.level);path.setAttribute('d',p?pixelConfettiPath(p):'');if(p){path.setAttribute('opacity',String(p.opacity));path.setAttribute('fill',['#ffe4a2','#ffafd1','#c7b2ef','#afe4d0','#c3ddff'][p.color]);}});
   if(finished){const value=money(giftTotal(round));$('.gift-finale>small').textContent=round.viewer?round.viewer+'’s total':'ROUND TOTAL';$('.gift-finale>strong').textContent=value;$('.gift-finale>strong').style.fontSize=Math.min(68,480/value.length)+'px';const calculation=$('.gift-finale>p');calculation.textContent=money(round.cashCents)+' collected × '+round.multiplier;calculation.style.fontSize=Math.min(13,308/(calculation.textContent.length*.61))+'px';$('.gift-final-count').textContent=round.celebrationPreview?'Sample total · celebration preview':round.opened.length+' presents opened';}
-  if(audio){audio.unwrap(flight,time,{candy:buttons.get(flight?.cell)?.classList.contains('candy-unwrap')??true});audio.sync(flight,time);audio.finale(round,time);}
+  if(audio){audio.intro(round,time);audio.unwrap(flight,time,{candy:buttons.get(flight?.cell)?.classList.contains('candy-unwrap')??true});audio.sync(flight,time);audio.finale(round,time);}
   root.dataset.rows=rows;root.dataset.cols=cols;root.dataset.side=Math.max(rows,cols);root.dataset.picks=remaining;root.dataset.total=giftTotal(shown);root.dataset.phase=finished?'total':flight?'unwrapping':'ready';
   root.dataset.presentation=!visible?'hidden':exit.exiting?'exiting':display.entering?'entering':finished?'total':round?'playing':'ready';
   if(round||display.entering)raf=requestAnimationFrame(render);
