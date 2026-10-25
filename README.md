@@ -139,13 +139,18 @@ boards. There is no character in this game, and no character artwork to download
   two-second unwrap and 420×460 overlay; reduced motion shows the expanded board
   immediately. Displays sample the committed reveal time, so reconnects do not
   restart an old entrance. Bonus odds and awarded picks are unchanged.
-- With sound enabled, each arrival wave plays the next note in a rising bell
-  chime. Growth sounds both edges together; the shared corner has one final note.
-  Multipliers use a separate quick arpeggio and bright chord at the title's peak.
-  Cash keeps a softer reveal. Muting, resetting the demo or leaving the page cancels
-  pending sounds. The demo starts muted; press **Sound off** to turn sound on,
-  then use **Next demo reveal** to audition any bonus. Keep the control preview
-  muted when the stream display supplies audio, to avoid playing sounds twice.
+- Prize sounds share a soft arcade palette with distinct signatures: cash uses a
+  crisp coin sparkle, multipliers a plucked run into a warm chord, rows bright
+  mallets, columns rounded plucks, and growth a layered shimmer. Cash lands on
+  its 140 ms visual peak; bonuses bloom at 180 ms, then expansion notes follow
+  each new-present wave. Both growth edges share each note. Cash at $25+ and
+  $100+ adds a short ornament with lower main-note levels, not a volume jump;
+  custom amounts above $100 use that same capped phrase. These are sound tiers
+  only and never affect prize values or odds. Tails finish before the next pick.
+  Muting, resetting the demo or leaving the page cancels pending sounds. The demo
+  starts muted; press **Sound off** to turn sound on, then use **Next demo reveal**
+  to audition any result. Keep control preview muted when the stream display
+  supplies audio, to avoid playing sounds twice.
 - Gift boxes use **Candy Confetti** artwork: five candy-colored wrappers, pixel
   sprinkles and a cream bow, with matching lid/body perspective and aligned ribbons.
   The richer pixel shading keeps those colors while adding folded ribbon loops,
@@ -192,8 +197,8 @@ boards. There is no character in this game, and no character artwork to download
   no forced-prize input. **Preview finale** skips to a random sample round total.
 
 **Volume:** In **Open controls**, use **Stream volume** (0–100%) to balance all
-Gift Pile sounds with voice and music. Zero is silent; 100% keeps the original
-sound level. Adjustments apply to the paired display immediately, even during an
+Gift Pile sounds with voice and music. Zero is silent; 100% uses the balanced game
+mix. Adjustments apply to the paired display immediately, even during an
 unwrap, with a short smooth fade. The level is remembered separately for each
 saved game in this browser. The transparent overlay contains no mixer controls.
 Leave **Preview sound off** while streaming to avoid duplicate playback. The

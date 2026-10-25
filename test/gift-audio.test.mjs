@@ -16,7 +16,7 @@ const oscillators=ctx=>ctx.nodes.filter(n=>n.kind==='oscillator');
 
 test('rising notes meet each new present at its first full-size pose',()=>{
  for(const [kind,rows,cols,count]of [['row',4,3,3],['column',3,4,3],['extra',4,4,4],['row',6,4,4],['column',4,6,4],['extra',6,6,6]]){
-  const flight={revealAt:0,prize:{kind,nextRows:rows,nextCols:cols}},notes=giftRevealScore(flight.prize).slice(1);
+  const flight={revealAt:0,prize:{kind,nextRows:rows,nextCols:cols}},notes=giftRevealScore(flight.prize).filter(n=>n.beat==='arrival');
   assert.equal(notes.length,count);
   notes.forEach((n,i)=>{
    const b=giftBonusMotion({flight},n.at*1000),row=kind==='column'?i:rows-1,col=kind==='column'?cols-1:i;
@@ -36,8 +36,25 @@ test('legacy square growth sounds the same and multiplier has its own chord',()=
 test('scores stay conservatively below full scale even before decay',()=>{
  for(const kind of ['cash','multiply','row','column','extra']){
   const score=giftRevealScore({kind,nextRows:6,nextCols:6});
-  assert.ok(score.reduce((sum,n)=>sum+n.gain*(n.voice==='bell'?1.18:1),0)<.5);
+  assert.ok(score.reduce((sum,n)=>sum+n.gain*1.3,0)<.5);
   assert.ok(score.every(n=>n.frequency>0&&n.length>0&&n.gain>0&&n.at>=0));
+ }
+});
+test('cash sparkle and every bonus have distinct signatures at their visual peaks',()=>{
+ const scores=['cash','multiply','row','column','extra'].map(kind=>giftRevealScore({kind,value:25,nextRows:4,nextCols:4}));
+ assert.equal(new Set(scores.map(score=>JSON.stringify(score))).size,5);
+ for(const [i,score]of scores.entries()){
+  assert.ok(score.some(n=>Math.abs(n.at-(i===0?.14:.18))<1e-9));
+  assert.ok(score.every(n=>n.at+n.length+.015<1.15),'prize tails leave room for the next pick/finale');
+ }
+});
+test('cash ornaments are bounded for custom amounts and do not increase note levels',()=>{
+ const cash=value=>giftRevealScore({kind:'cash',value});
+ assert.notDeepEqual(cash(10),cash(25));assert.notDeepEqual(cash(25),cash(100));
+ assert.deepEqual(cash(100),cash(1000000));assert.deepEqual(cash(0),cash(.01));
+ for(const value of [0,.01,10,24.99,25,99.99,100,1000000]){
+  const score=cash(value);assert.ok(score.every(n=>n.gain<=.041));
+  assert.ok(score.length<=5);assert.ok(score.every(n=>n.frequency<=1600));
  }
 });
 test('audio waits for reveal, plays once, and ignores stale or muted snapshots',()=>{
@@ -50,9 +67,9 @@ test('audio waits for reveal, plays once, and ignores stale or muted snapshots',
 });
 test('a late display keeps future chimes on the same visual clock without a backlog',()=>{
  const ctx=context(),a=createGiftAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(shot(),1120);
- const notes=giftRevealScore(shot().prize).slice(1),voices=oscillators(ctx);
- assert.equal(voices.length,notes.length*2);
- notes.forEach((n,i)=>assert.ok(Math.abs(voices[i*2].started-(10+n.at-.12))<1e-9));
+ const notes=giftRevealScore(shot().prize).filter(n=>n.at>=.12-.035),voices=oscillators(ctx);
+ assert.equal(voices.length,notes.length*3);
+ notes.forEach((n,i)=>assert.ok(Math.abs(voices[i*3].started-(10+n.at-.12))<1e-9));
 });
 test('mute and reset stop scheduled notes and disconnect their nodes when ended',()=>{
  for(const action of ['mute','reset']){
@@ -72,7 +89,7 @@ test('unlock resumes suspended audio and dispose prevents restarting it',()=>{
 test('scheduled envelopes begin and end at zero, including the bell overtone',()=>{
  const ctx=context();scheduleGiftScore(ctx,giftRevealScore({kind:'cash'}),10);
  for(const n of ctx.nodes.filter(n=>n.kind==='gain')){assert.equal(n.gain.calls[0][1],0);assert.equal(n.gain.calls.at(-1)[1],0);}
- assert.equal(oscillators(ctx).length,6);
+ assert.equal(oscillators(ctx).length,9);
 });
 test('mute also works in browsers without cancelAndHoldAtTime',()=>{
  const ctx=context(),a=createGiftAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(shot(),1000);

@@ -13,25 +13,50 @@ export function giftFinaleScore(){return [
  note(.49,88,.42,.028),note(.63,91,.38,.024)
 ];}
 
-// Seconds relative to the committed reveal. One note per arrival wave, including
-// growth's two edges together, so a larger board never doubles the volume.
+// Gentle partials keep these miniature arcade instruments clear without a harsh
+// square-wave edge. [frequency ratio, level, decay, oscillator]. Finale's existing
+// bell/soft voices are preserved. Every partial uses the same cancellable bus.
+const voices={
+ bell:[[1,1,1,'sine'],[2,.18,.44,'sine']],
+ soft:[[1,1,1,'sine']],pluck:[[1,1,1,'triangle']],
+ coin:[[1,1,1,'sine'],[2,.22,.35,'sine'],[3,.045,.18,'sine']],
+ mallet:[[1,1,1,'sine'],[3,.11,.22,'sine']],
+ round:[[1,1,1,'triangle'],[2,.08,.32,'sine']],
+ bloom:[[1,1,1,'sine'],[2,.12,.5,'sine'],[.5,.18,.75,'sine']]
+};
+
+// Seconds relative to the committed reveal. Cash lands at its 140 ms animation
+// peak; bonus signatures bloom at 180 ms, then follow each arrival wave. Growth
+// sounds both edges together so a larger board never doubles the volume.
 export function giftRevealScore(prize){
  if(isGiftExpansion(prize.kind)){
   const count=giftArrivalCount(prize.kind,prize.nextRows??prize.nextSide,prize.nextCols??prize.nextSide);
-  const scale=[0,2,4,7,9,12],score=[note(0,72,.2,.025,'soft')];
+  const palette={
+   row:{voice:'mallet',pitches:[79,81,84,86,88,91],gain:.038,length:.25,
+    intro:[note(0,72,.14,.029,'mallet'),note(.18,79,.22,.034,'mallet')]},
+   column:{voice:'round',pitches:[72,76,79,81,84,88],gain:.043,length:.29,
+    intro:[note(0,67,.16,.038,'round'),note(.18,76,.24,.041,'round')]},
+   extra:{voice:'bloom',pitches:[79,81,84,86,88,91],gain:.033,length:.28,
+    intro:[note(0,60,.18,.028,'soft'),note(.18,72,.24,.026,'bloom'),note(.18,76,.22,.018,'bloom'),note(.18,79,.2,.015,'bloom')]}
+  }[prize.kind],score=[...palette.intro];
   for(let rank=0;rank<count;rank++){
    const at=(giftArrivalDelay(rank,count)+GIFT_ARRIVAL_MS*.44)/1000;
-   score.push(note(at,84+scale[Math.round(rank*5/Math.max(1,count-1))],.38));
+   score.push({...note(at,palette.pitches[Math.round(rank*5/Math.max(1,count-1))],palette.length,palette.gain,palette.voice),beat:'arrival'});
   }
   return score;
  }
  if(prize.kind==='multiply')return [
-  ...[60,64,67,72].map((pitch,i)=>note(i*.05,pitch,.18,.035,'pluck')),
-  // The chord blooms at the title's 180 ms peak: a distinct, fuller power-up.
-  note(.18,72,.58,.045),note(.18,76,.5,.029),note(.18,79,.48,.025),
-  note(.29,84,.4,.032)
+  ...[60,67,72].map((pitch,i)=>note(i*.06,pitch,.15,.031,'pluck')),
+  note(.18,72,.45,.034),note(.18,76,.4,.023),note(.18,79,.36,.019),
+  note(.29,84,.29,.021)
  ];
- return [76,80,83].map((pitch,i)=>note(i*.07,pitch,.32,.038));
+ // Extra ornament, never extra loudness, for higher cash amounts. These are sound
+ // tiers only: arbitrary custom values and exact scoring remain unchanged.
+ const tier=Number.isFinite(prize.value)?prize.value>=100?2:prize.value>=25?1:0:0;
+ const score=[76,79,84].map((pitch,i)=>note(i*.07,pitch,.27,[.041,.039,.037][tier],'coin'));
+ if(tier>0)score.push(note(.25,88,.2,.022,'coin'));
+ if(tier>1)score.push(note(.32,91,.17,.016,'coin'));
+ return score;
 }
 
 // Shared by live playback and the offline listening preview. No audio downloads.
@@ -51,8 +76,8 @@ export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{},destina
   // A slightly late display joins the current beat instead of bunching old notes.
   if(n.at<elapsed-.035)continue;
   const at=start+Math.max(0,n.at-elapsed);
-  tone(n.frequency,at,n.length,n.gain,n.voice==='pluck'?'triangle':'sine');
-  if(n.voice==='bell')tone(n.frequency*2,at,n.length*.44,n.gain*.18,'sine');
+  for(const [ratio,level,decay,type]of voices[n.voice]??voices.soft)
+   tone(n.frequency*ratio,at,n.length*decay,n.gain*level,type);
  }
 }
 
