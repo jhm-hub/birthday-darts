@@ -21,7 +21,7 @@ function select(id){
  for(const card of $('#concepts').children){const active=card.dataset.concept===id;card.classList.toggle('selected',active);card.querySelector('button').setAttribute('aria-pressed',String(active));}
  view=createGiftView($('#concept-preview'),{art:i=>giftConceptSVG(selected,i),audio,onReady:render});render();
 }
-$('#unwrap').onclick=()=>{audio.reset();round=startGiftRound(DEFAULT_GIFTS,'Concept preview');unwrapGift(round,Date.now(),{cell:'1:1',forcedIndex:1});audio.rustle();render();};
+$('#unwrap').onclick=()=>{if(audio.enabled)audio.unlock();audio.reset();round=startGiftRound(DEFAULT_GIFTS,'Concept preview');unwrapGift(round,Date.now(),{cell:'1:1',forcedIndex:1});render();};
 $('#finale').onclick=()=>{
  audio.reset();const now=Date.now();round=startGiftRound(DEFAULT_GIFTS,'Demo viewer',now-6000);
  for(const [i,prize]of [1,2,4].entries()){unwrapGift(round,now-6000+i*2000,{cell:'1:'+i,forcedIndex:prize});advanceGiftRound(round,now-4000+i*2000);}

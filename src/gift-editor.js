@@ -50,7 +50,7 @@ function renderDemo(){
 }
 function pick(cell=null){
  if(!ready||draftError||demo?.flight||demo?.completedAt!==null&&demo)return;
- try{demo??=startGiftRound(draftValue,'Demo viewer');const forced=$('#demo-prize').value;unwrapGift(demo,Date.now(),{cell,forcedIndex:forced===''?null:Number(forced)});audio.rustle();renderDemo();}catch(e){$('#demo-status').textContent=e.message;}
+ try{if(audio.enabled)audio.unlock();demo??=startGiftRound(draftValue,'Demo viewer');const forced=$('#demo-prize').value;unwrapGift(demo,Date.now(),{cell,forcedIndex:forced===''?null:Number(forced)});renderDemo();}catch(e){$('#demo-status').textContent=e.message;}
 }
 $('#demo-unwrap').addEventListener('click',()=>pick());
 $('#demo-reset').addEventListener('click',()=>{demo=null;audio.reset();renderDemo();});

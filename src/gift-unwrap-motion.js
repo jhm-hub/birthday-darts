@@ -3,7 +3,7 @@
 const clamp=x=>Math.max(0,Math.min(1,x));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x);};
 const mix=(a,b,t)=>a+(b-a)*t;
-export const CANDY_LID_POP_MS=520;
+export const CANDY_BOW_RELEASE_MS=100,CANDY_LID_POP_MS=520;
 export function giftUnwrapMotion(flight,time,{opened=false,reduced=false}={}){
  const idle={bowFrame:0,bowY:0,bowOpacity:1,bandY:0,bandOpacity:1,lidX:0,lidY:0,lidTurn:0,lidOpacity:1,bodyX:1,bodyY:1,shake:0,inside:0,prizeY:0,prizeScale:1,prizeOpacity:1};
  if(!flight)return opened?{...idle,bowOpacity:0,bandOpacity:0,lidOpacity:0,inside:1}:idle;
@@ -11,7 +11,7 @@ export function giftUnwrapMotion(flight,time,{opened=false,reduced=false}={}){
  if(age<0)return idle;
  // No wobbles, ribbons or flying lids for reduced motion: one quiet reveal.
  if(reduced)return revealed?{...idle,bowOpacity:0,bandOpacity:0,lidOpacity:0,inside:1}:idle;
- const bowFrame=age<100?0:age<180?1:age<260?2:age<340?3:age<420?4:5;
+ const bowFrame=age<CANDY_BOW_RELEASE_MS?0:age<180?1:age<260?2:age<340?3:age<420?4:5;
  const launch=age-CANDY_LID_POP_MS;
  const poses=[[0,0,2,0,1],[130,3,-15,-7,1],[220,6,-17,-12,.75],[320,9,-10,-16,0]];
  let lid=[0,0,0,1];

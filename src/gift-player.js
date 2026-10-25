@@ -18,7 +18,7 @@ function render(){
  if(!error&&connected&&!busy&&!finished&&giftModifierDue(r))$('#control-status').textContent+=' A modifier is guaranteed on this pick.';
 }
 function receive(next){const previous=snapshot?.round;snapshot=next;if(!overlay){$('#control-name').textContent=next.widget.name;document.title=next.widget.name+' — Gift Pile';if(previous&&!next.round)$('#viewer').value='';if(next.round)$('#viewer').value=next.round.viewer;}render();}
-async function pick(cell=null){if(overlay||!connected||!viewReady||pending||snapshot?.round?.flight||snapshot?.round?.completedAt!==null&&snapshot?.round)return;pending=true;error='';render();try{audio.rustle();receive(await session.unwrap($('#viewer').value,cell));}catch(e){error=e.message;}finally{pending=false;render();}}
+async function pick(cell=null){if(overlay||!connected||!viewReady||pending||snapshot?.round?.flight||snapshot?.round?.completedAt!==null&&snapshot?.round)return;pending=true;error='';render();try{if(audio.enabled)audio.unlock();receive(await session.unwrap($('#viewer').value,cell));}catch(e){error=e.message;}finally{pending=false;render();}}
 async function init(){
  if(overlay){session=connectGiftDisplay(receive,value=>{connected=value;render();});}
  else{

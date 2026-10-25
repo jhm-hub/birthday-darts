@@ -154,6 +154,10 @@ boards. There is no character in this game, and no character artwork to download
   reveal and 2-second pick timing stay intact. Displays sample the committed
   clock; reduced motion uses a stationary gift and a quiet reveal. A/B retain
   their saved artwork and original opening motion in the concept gallery.
+- With sound on, three soft ribbon rustles follow the bow loosening, then a
+  rounded pop meets the lid lift before the existing prize chime. These cues
+  follow the same committed clock in the demo, controls and OBS display; late
+  displays skip expired cues. Muting or resetting cancels pending sounds.
 - Default limits: **5×5 board, 12 picks per round**. Limits and bonus pick amounts
   are editable (up to 6×6 /36 picks). A partially capped bonus awards only the
   available picks. A row/column bonus stops when its own dimension reaches the board limit;

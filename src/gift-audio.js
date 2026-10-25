@@ -1,5 +1,6 @@
 import {isGiftExpansion} from './gift-game.js';
 import {giftArrivalCount,giftArrivalDelay,GIFT_ARRIVAL_MS} from './gift-bonus-motion.js';
+import {scheduleGiftUnwrap} from './gift-unwrap-audio.js';
 
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
@@ -55,7 +56,7 @@ export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{}){
 }
 
 export function createGiftAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)()}={}){
- let ctx,enabled=false,last='',lastFinale='',disposed=false;
+ let ctx,enabled=false,last='',lastUnwrap='',lastFinale='',disposed=false;
  const playing=new Set();
  function track(source,envelope,nodes){
   const entry={source,envelope,nodes};playing.add(entry);
@@ -74,6 +75,16 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
  function unlock(){if(disposed)return;ctx??=createContext();if(ctx.state==='suspended')void ctx.resume().catch(()=>{});}
  return {get enabled(){return enabled;},
   setEnabled(value){if(disposed)return;enabled=!!value;if(enabled)unlock();else stop();},unlock,
+  unwrap(flight,time,{candy=true}={}){
+   if(!flight||!Number.isFinite(flight.startAt)||time<flight.startAt||flight.id===lastUnwrap||disposed)return;
+   if(!enabled){lastUnwrap=flight.id;return;}
+   // A user gesture may still be resuming the context. Join the remaining beats
+   // once it runs, rather than consuming the whole cue during that short wait.
+   if(!ctx||ctx.state!=='running')return;
+   lastUnwrap=flight.id;
+   if(time>=flight.revealAt)return;
+   scheduleGiftUnwrap(ctx,candy,ctx.currentTime,(time-flight.startAt)/1000,track);
+  },
   sync(flight,time){
    if(!flight||flight.id===last||time<flight.revealAt||disposed)return;
    last=flight.id;
@@ -86,15 +97,7 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    if(!enabled||!ctx||ctx.state!=='running'||time>round.completedAt+180)return;
    scheduleGiftScore(ctx,giftFinaleScore(),ctx.currentTime,(time-round.completedAt)/1000,track);
   },
-  rustle(){
-   if(!enabled||disposed)return;unlock();if(ctx.state!=='running')return;
-   const t=ctx.currentTime,buffer=ctx.createBuffer(1,ctx.sampleRate*.3,ctx.sampleRate),data=buffer.getChannelData(0);
-   for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*Math.exp(-i/data.length*5);
-   const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
-   filter.type='highpass';filter.frequency.value=1700;gain.gain.value=.06;source.buffer=buffer;
-   source.connect(filter).connect(gain).connect(ctx.destination);track(source,gain,[source,filter,gain]);source.start(t);
-  },
-  reset(){last='';lastFinale='';stop();},
+  reset(){last='';lastUnwrap='';lastFinale='';stop();},
   dispose(){stop();disposed=true;enabled=false;if(ctx&&ctx.state!=='closed')void ctx.close().catch(()=>{});}
  };
 }
