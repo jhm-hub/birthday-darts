@@ -146,9 +146,9 @@ boards. There is no character in this game, and no character artwork to download
   pending sounds. The demo starts muted; press **Sound off** to turn sound on,
   then use **Next demo reveal** to audition any bonus. Keep the control preview
   muted when the stream display supplies audio, to avoid playing sounds twice.
-- Gift boxes use matching perspective for the lid and body, a clean overhanging
-  lip, aligned ribbons and shaded bow folds. All five pastel palettes and the
-  transparent 420×460 frame are retained.
+- Gift boxes use **Candy Confetti** artwork: five candy-colored wrappers, pixel
+  sprinkles and a cream bow, with matching lid/body perspective and aligned ribbons.
+  The editor demo, controls and transparent 420×460 display share the same artwork.
 - Default limits: **5×5 board, 12 picks per round**. Limits and bonus pick amounts
   are editable (up to 6×6 /36 picks). A partially capped bonus awards only the
   available picks. A row/column bonus stops when its own dimension reaches the board limit;
@@ -162,11 +162,12 @@ boards. There is no character in this game, and no character artwork to download
   the same 420×460 frame. Reduced motion keeps a stationary plaque without flying
   particles. Completion timestamps drive the effect; reconnecting cannot restart
   an old celebration or replay its sound. **Preview finale** auditions it directly.
-- **Present concepts** (`gift-concepts.html`) compares three review-only art
+- **Present concepts** (`gift-concepts.html`) preserves all three art
   directions: A / Satin Party, B / Royal Velvet, C / Candy Confetti. Each shows
   five wrapper colors and a stream-size preview with unwrapping, finale playback,
   sound and dark/light/colorful backgrounds. These previews never change saved
-  games; the approved live presents remain unchanged until a direction is chosen.
+  games. C is the active game style; A and B remain saved alternatives. A future
+  art switch only needs `ACTIVE_GIFT_CONCEPT` in `src/gift-concept-art.js` changed.
 - The editor’s **Next demo reveal** selector can force a cash, multiplier or
   expansion result for review. It is only a disposable demo; live controls have
   no forced-prize input. **Preview finale** skips to a random sample round total.

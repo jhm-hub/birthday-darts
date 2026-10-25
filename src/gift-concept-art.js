@@ -1,9 +1,11 @@
 import {giftSVG} from './gift-art.js';
 
+export const ACTIVE_GIFT_CONCEPT='candy';
+
 export const GIFT_CONCEPTS=[
- {id:'satin',letter:'A',name:'Satin Party',tag:'Closest to the current game',description:'Soft pastel paper, a lower folded bow and a crisp lid. A quieter wrapper lets the satin ribbon do the work.'},
- {id:'velvet',letter:'B',name:'Royal Velvet',tag:'A little more goddess',description:'Plum, emerald and rose velvet, fine gold edging and a jewel clasp. More luxurious, with a compact silhouette.'},
- {id:'candy',letter:'C',name:'Candy Confetti',tag:'Maximum birthday energy',description:'Candy-colored paper, playful sprinkles and a big cream bow. The boldest party look, still built from clean pixel clusters.'}
+ {id:'satin',letter:'A',name:'Satin Party',tag:'Saved alternative',description:'Soft pastel paper, a lower folded bow and a crisp lid. A quieter wrapper lets the satin ribbon do the work.'},
+ {id:'velvet',letter:'B',name:'Royal Velvet',tag:'Saved alternative',description:'Plum, emerald and rose velvet, fine gold edging and a jewel clasp. More luxurious, with a compact silhouette.'},
+ {id:'candy',letter:'C',name:'Candy Confetti',tag:'Current game style',description:'Candy-colored paper, playful sprinkles and a big cream bow. The boldest party look, still built from clean pixel clusters.'}
 ];
 const royal=[
  ['#825299','#603878','#3b244e','#c794c9','#dab976','#fff0c0','#956842'],
@@ -20,8 +22,10 @@ const candy=[
  ['#9cd2ed','#6aa9cf','#486d9d','#d7f5ff','#fff0b2','#fffbe2','#cda874']
 ];
 
-// These are review-only directions. The live game keeps its approved artwork
-// until a concept is selected; no saved settings or prize data include a style.
+// All three directions remain available for review. The shared game renderer
+// uses ACTIVE_GIFT_CONCEPT; previewing a different concept never changes it.
+export function activeGiftSVG(index=0){return giftConceptSVG(ACTIVE_GIFT_CONCEPT,index);}
+
 export function giftConceptSVG(concept,index=0){
  const opts={};
  if(concept==='satin'){

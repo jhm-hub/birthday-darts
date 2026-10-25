@@ -1,9 +1,9 @@
-import {GIFT_CONCEPTS,giftConceptSVG} from './gift-concept-art.js';
+import {ACTIVE_GIFT_CONCEPT,GIFT_CONCEPTS,giftConceptSVG} from './gift-concept-art.js';
 import {createGiftView} from './gift-view.js';
 import {createGiftAudio} from './gift-audio.js';
 import {DEFAULT_GIFTS,startGiftRound,unwrapGift,advanceGiftRound,giftTotal,money} from './gift-game.js';
 const $=s=>document.querySelector(s),audio=createGiftAudio();
-let view,round=null,selected='satin';
+let view,round=null,selected=ACTIVE_GIFT_CONCEPT;
 for(const c of GIFT_CONCEPTS){
  const card=document.createElement('article');card.className='concept-card';card.dataset.concept=c.id;
  card.innerHTML=`<span class="concept-number" aria-hidden="true">${c.letter}</span><span class="concept-tag">${c.tag}</span><h2>${c.name}</h2><div class="art-well">${giftConceptSVG(c.id)}</div><div class="color-strip" aria-label="Five wrapper colors">${Array.from({length:5},(_,i)=>giftConceptSVG(c.id,i)).join('')}</div><p>${c.description}</p><button type="button" aria-pressed="false">Preview ${c.letter} · ${c.name}</button>`;
