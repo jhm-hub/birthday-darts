@@ -3,21 +3,21 @@ import {connectGiftControl,connectGiftDisplay} from './gift-session.js';
 import {createGiftAudio} from './gift-audio.js';
 import {money,giftTotal} from './gift-game.js';
 const $=s=>document.querySelector(s),overlay=document.documentElement.classList.contains('gift-overlay'),audio=createGiftAudio();
-let session,snapshot,connected=false,pending=false,artReady=false,readiness='Loading artwork…',error='';
-const view=createGiftView($('#gift-control-preview'),{interactive:!overlay,onPick:pick,onReady(){artReady=true;render();},onError(e){error=e.message;render();},audio});
+let session,snapshot,connected=false,pending=false,viewReady=false,readiness='Loading gifts…',error='';
+const view=createGiftView($('#gift-control-preview'),{interactive:!overlay,onPick:pick,onReady(){viewReady=true;render();},onError(e){error=e.message;render();},audio});
 if(overlay){try{audio.setEnabled(true);}catch{}}
 document.addEventListener('pointerdown',()=>{try{audio.unlock();}catch{}},{once:true});
 function render(){
  if(snapshot)view.update(snapshot,{preview:!overlay,canPick:connected&&!pending,show:!overlay||connected});
  if(overlay){if(!connected)view.hide();return;}
  const r=snapshot?.round,busy=!!r?.flight,finished=r?.completedAt!==null&&!!r;
- $('#live-unwrap').disabled=!artReady||!connected||pending||busy||finished;
- $('#live-unwrap').textContent=!artReady?'Loading artwork…':busy?'Unwrapping…':finished?'Total revealed':'Unwrap for me';
+ $('#live-unwrap').disabled=!viewReady||!connected||pending||busy||finished;
+ $('#live-unwrap').textContent=!viewReady?'Loading gifts…':busy?'Unwrapping…':finished?'Total revealed':'Unwrap for me';
  $('#viewer').disabled=!!r||pending;
- $('#control-status').textContent=error||(!artReady?'Loading artwork…':!connected?readiness:busy?'Opening one present…':finished?money(giftTotal(r))+' total. Clearing automatically…':r?r.remaining+' pick'+(r.remaining===1?'':'s')+' left. Choose any wrapped present.':snapshot?.lastResult?'Ready for the next viewer. Last total: '+money(snapshot.lastResult.totalCents):'First pick: appear + unwrap. Last pick: total + celebration.');
+ $('#control-status').textContent=error||(!viewReady?'Loading gifts…':!connected?readiness:busy?'Opening one present…':finished?money(giftTotal(r))+' total. Clearing automatically…':r?r.remaining+' pick'+(r.remaining===1?'':'s')+' left. Choose any wrapped present.':snapshot?.lastResult?'Ready for the next viewer. Last total: '+money(snapshot.lastResult.totalCents):'First pick: appear + unwrap. Last pick: total reveal.');
 }
 function receive(next){const previous=snapshot?.round;snapshot=next;if(!overlay){$('#control-name').textContent=next.widget.name;document.title=next.widget.name+' — Gift Pile';if(previous&&!next.round)$('#viewer').value='';if(next.round)$('#viewer').value=next.round.viewer;}render();}
-async function pick(cell=null){if(overlay||!connected||!artReady||pending||snapshot?.round?.flight||snapshot?.round?.completedAt!==null&&snapshot?.round)return;pending=true;error='';render();try{audio.rustle();receive(await session.unwrap($('#viewer').value,cell));}catch(e){error=e.message;}finally{pending=false;render();}}
+async function pick(cell=null){if(overlay||!connected||!viewReady||pending||snapshot?.round?.flight||snapshot?.round?.completedAt!==null&&snapshot?.round)return;pending=true;error='';render();try{audio.rustle();receive(await session.unwrap($('#viewer').value,cell));}catch(e){error=e.message;}finally{pending=false;render();}}
 async function init(){
  if(overlay){session=connectGiftDisplay(receive,value=>{connected=value;render();});}
  else{

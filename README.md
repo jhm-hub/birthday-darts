@@ -99,10 +99,11 @@ The approved Faith sprite, balloon art, party props and original synthesized pop
 
 **Configure and demo:** https://jhm-hub.github.io/birthday-darts/gifts.html
 
-Gift Pile uses the approved Faith sprite, Goddess gesture and three final-total
-celebrations. New presents extend the editable pixel style of the birthday props,
-with stepped outlines, satin ribbon highlights, separate lids and paper rustle /
-celesta sounds. No character images or existing darts rules are replaced.
+Gift Pile is a compact, presents-only overlay with a transparent background.
+The gifts match the birthday game’s pixel style: stepped outlines, pastel wrappers,
+satin ribbon highlights, separate lids and paper rustle / celesta sounds.
+The grid and final-total plaque share one 420 × 460 frame, including expanded
+boards. There is no character in this game, and no character artwork to download.
 
 - Start with a **3×3 board of nine presents and three picks**. Both are editable.
 - Faith can **click a particular wrapped present**, or use **Unwrap for me** (Space
@@ -118,13 +119,13 @@ celesta sounds. No character images or existing darts rules are replaced.
   available picks. At either limit, expansion outcomes stop and remaining prize
   weights rebalance. Gift appearances/positions do not change configured odds.
 - After the last pick, a readable plaque shows **cash × multiplier = total**
-  alongside one of the existing celebrations; it clears after 5.5 seconds.
+  over the grid, then clears after 5.5 seconds.
 - The editor’s **Next demo reveal** selector can force a cash, multiplier or
   expansion result for review. It is only a disposable demo; live controls have
   no forced-prize input. **Preview finale** skips to a random sample round total.
 
 Save each setup separately, then use **Open controls**. Copy its private display
-link into an OBS/Streamlabs **Browser Source at 720×540**. The source is transparent
+link into an OBS/Streamlabs **Browser Source at 420×460**. The source is transparent
 and only appears during a round. Keep the control page open. Keep control preview
 sound off if OBS is playing the source audio, to avoid hearing it twice.
 
