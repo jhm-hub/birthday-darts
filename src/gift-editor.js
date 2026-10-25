@@ -17,8 +17,10 @@ function row(prize={kind:'cash',value:25,weight:10}){
 }
 function refresh(){
  clearTimeout(refreshTimer);demo=null;audio.reset();
- const total=[...$('#prize-rows').children].reduce((s,r)=>s+Number(r.querySelector('.prize-weight').value),0);
- for(const r of $('#prize-rows').children)r.querySelector('output').textContent=total>0?(Number(r.querySelector('.prize-weight').value)/total*100).toFixed(1).replace('.0','')+'%':'—';
+ const bonusAllowed=Number($('#max-board').value)>Number($('#board-size').value)&&Number($('#max-picks').value)>Number($('#pick-count').value);
+ const startWeight=r=>r.querySelector('select').value==='extra'&&!bonusAllowed?0:Number(r.querySelector('.prize-weight').value);
+ const total=[...$('#prize-rows').children].reduce((s,r)=>s+startWeight(r),0);
+ for(const r of $('#prize-rows').children)r.querySelector('output').textContent=total>0?(startWeight(r)/total*100).toFixed(1).replace('.0','')+'%':'—';
  $('#add-prize').disabled=$('#prize-rows').children.length>=10;
  try{draftValue=readDraft();draftError='';}catch(e){draftError=e.message;}
  $('#gift-preview').style.opacity=draftError?'.45':'1';
@@ -37,8 +39,8 @@ function renderDemo(){
  const busy=!!demo?.flight||demo?.completedAt!==null&&!!demo;
  $('#demo-unwrap').disabled=!ready||!!draftError||busy;$('#demo-reset').disabled=!ready;$('#demo-finale').disabled=!ready||!!draftError;
  $('#demo-unwrap').textContent=demo?.flight?'Unwrapping…':demo?.completedAt!==null&&demo?'Total revealed':'Unwrap for me';
- if(demo){const eligible=eligibleGiftOutcomes(demo);for(const o of $('#demo-prize').options)if(o.value!=='')o.disabled=eligible[Number(o.value)]?.weight<=0;}
- else for(const o of $('#demo-prize').options)o.disabled=false;
+ const eligible=eligibleGiftOutcomes(demo??{preset:draftValue,side:draftValue.side,allocated:draftValue.picks});
+ for(const o of $('#demo-prize').options)if(o.value!=='')o.disabled=eligible[Number(o.value)]?.weight<=0;
  if($('#demo-prize').selectedOptions[0]?.disabled)$('#demo-prize').value='';
  const text=draftError||(!ready?'Loading Faith’s artwork…':demo?.flight?'Opening your present…':demo?.completedAt!==null&&demo?money(giftTotal(demo))+' total · '+demo.opened.length+' presents opened.':demo?demo.remaining+' pick'+(demo.remaining===1?'':'s')+' left. Choose any wrapped present.':'Choose any of the '+draftValue.side**2+' presents. You have '+draftValue.picks+' picks.');
  $('#demo-status').textContent=text;$('#demo-status').classList.toggle('error',!!draftError);
