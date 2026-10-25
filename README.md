@@ -178,6 +178,13 @@ boards. There is no character in this game, and no character artwork to download
   mint growth, blue rows and pink columns have distinct pixel emblems in the
   readable top banner. Exact values appear at the original reveal time; effects
   sample that clock, finish before the next pick, and stay still for reduced motion.
+- Opened gifts use larger, heavier amounts on opaque shaded plaques, with a smaller
+  dollar sign to leave more room for the number. Bonus tiles use **TOTAL**, **ROW**,
+  **COL** and **GROW** beneath the reward. Labels fit the available cell through
+  6×6, including the reveal pop; cents and long values stay exact. The transparent
+  overlay remains **420 × 460**. Dense boards are still small in a portrait stream
+  view; the top reward banner carries the full result, and landscape is easier
+  for following individual gifts.
 - Default limits: **5×5 board, 12 picks per round**. Limits and bonus pick amounts
   are editable (up to 6×6 /36 picks). A partially capped bonus awards only the
   available picks. A row/column bonus stops when its own dimension reaches the board limit;

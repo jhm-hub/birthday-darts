@@ -55,19 +55,24 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   const opened=new Map(shown?.opened.map(s=>[s.cell,s])??[]);
   for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
    const id=row+':'+col,shot=opened.get(id),active=flight?.cell===id;let b=buttons.get(id);
-   if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;b.innerHTML=art(row*3+col)+`<span class="gift-pick-focus" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="gift-glints" aria-hidden="true">${'<i></i>'.repeat(8)}</span><span class="gift-cell-prize"><span class="gift-cell-main"></span><small class="gift-cell-detail"></small></span><span class="gift-cell-number"></span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
+   if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;b.innerHTML=art(row*3+col)+`<span class="gift-pick-focus" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="gift-glints" aria-hidden="true">${'<i></i>'.repeat(8)}</span><span class="gift-cell-prize"><span class="gift-cell-main"><span class="gift-cell-currency"></span><span class="gift-cell-value"></span></span><small class="gift-cell-detail"></small></span><span class="gift-cell-number"></span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
    b.style.setProperty('--focus-opacity',String(active?focus.opacity:0));b.style.setProperty('--focus-inset',focus.inset+'px');
    b.classList.toggle('candy-unwrap',!!b.querySelector('svg[data-unwrap="candy"]'));
    const arrival=giftCellMotion(row,col,rows,cols,bonus),opening=giftIntroCell(row,col,intro);
    b.classList.toggle('gift-intro-cell',!!intro&&!active);b.style.setProperty('--intro-color',['#ffe4a2','#ffb8d7','#d4bbf4'][(row+col)%3]);
    Object.assign(b.style,{left:arrival.left+'px',top:arrival.top+'px',width:arrival.width+'px',height:arrival.height+'px',transform:`translate(${arrival.x}px,${arrival.y+opening.y}px) scale(${arrival.sx*opening.scale},${arrival.sy*opening.scale})`});
    b.style.setProperty('--arrival-opacity',String(arrival.opacity*opening.opacity));b.style.setProperty('--spawn-opacity',String(Math.max(arrival.spark,opening.spark)));b.style.setProperty('--spawn-radius',(intro?Math.round(Math.min(arrival.width,arrival.height)*opening.radius):arrival.radius)+'px');b.classList.toggle('gift-new',arrival.newCell);
-   const reward=shot?giftRewardCopy(shot.prize,shown):null,label=reward?.cell??'';b.style.setProperty('--prize-size',Math.min(30,arrival.height*.38,(arrival.width*.82)/(Math.max(1,label.length)*.58))+'px');b.style.setProperty('--detail-size',Math.min(12,arrival.height*.18)+'px');b.dataset.kind=shot?.prize.kind??'';
+   const reward=shot?giftRewardCopy(shot.prize,shown):null,label=reward?.cell??'',cash=shot?.prize.kind==='cash',detail=reward?.cellDetail??'';
+   // Use the cell's available height and width, reserving room for the reveal
+   // overshoot. A smaller currency sign gives the actual number more space.
+   const detailSize=Math.min(18,Math.max(14,Math.floor(arrival.height*.26))),units=Math.max(1,label.length-(cash ? .32 : 0));
+   const prizeSize=Math.max(1,Math.min(42,(arrival.height-6)/1.065-6-(detail?detailSize+1:0),(arrival.width*.93-6)/1.065/(units*.6)));
+   b.style.setProperty('--prize-size',prizeSize+'px');b.style.setProperty('--detail-size',detailSize+'px');b.dataset.kind=shot?.prize.kind??'';
    b.disabled=!interactive||!ready||!canPick||!!snapshotRound?.flight||finished||!!shot;b.tabIndex=interactive?0:-1;
    b.setAttribute('aria-label',shot?'Opened present: '+prizeLabel(shot.prize):`Open present, row ${row+1}, column ${col+1}`);
    b.classList.toggle('gift-opened',!!shot);b.classList.toggle('gift-opening',active);b.classList.toggle('gift-special',!!shot&&shot.prize.kind!=='cash');
    b.querySelector('.gift-cell-number').textContent=shot?'':String.fromCharCode(65+row)+(col+1);
-   b.querySelector('.gift-cell-main').textContent=label;b.querySelector('.gift-cell-detail').textContent=reward?.cellDetail??'';
+   b.querySelector('.gift-cell-currency').textContent=cash?'$':'';b.querySelector('.gift-cell-value').textContent=cash?label.slice(1):label;b.querySelector('.gift-cell-detail').textContent=detail;
    if(b.classList.contains('candy-unwrap'))applyGiftUnwrap(b,giftUnwrapMotion(active?flight:null,time,{opened:!!shot,reduced:reduced.matches,opening:active&&openingPick}));
    else {
     const shake=active&&age<650&&!reduced.matches?Math.sin(age/28)*Math.sin(Math.PI*age/650)*3:0,lift=active?ease((age-400)/450):shot?1:0;

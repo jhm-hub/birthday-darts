@@ -10,7 +10,7 @@ test('reward headline prioritizes actual extra picks, with direction and dimensi
 });
 test('cash stays exact and stacked multiplier copy describes the total',()=>{
  assert.equal(giftRewardCopy({kind:'cash',value:12.34},{rows:3,cols:3}).title,'$12.34');
- const r=open(4);r.multiplier=3;assert.deepEqual(giftAnnouncement(r,1850).copy,{title:'×2 TOTAL',detail:'NOW ×6 ON ALL CASH',cell:'×2',cellDetail:''});
+ const r=open(4);r.multiplier=3;assert.deepEqual(giftAnnouncement(r,1850).copy,{title:'×2 TOTAL',detail:'NOW ×6 ON ALL CASH',cell:'×2',cellDetail:'TOTAL'});
 });
 test('reward holds across the authoritative flight commit without restarting its motion',()=>{
  const r=open(),before=structuredClone(r),announcement=giftAnnouncement(r,2999);assert.equal(announcement.until,3000+GIFT_REWARD_LINGER_MS);assert.deepEqual(r,before);advanceGiftRound(r,3000);

@@ -165,3 +165,13 @@
 .gift-cell-detail{display:block;font:500 var(--detail-size,12px)/1.1 Fredoka,sans-serif;letter-spacing:.2px;margin-top:2px}
 .gift-cell-detail:empty{display:none}
 .gift-count{font-size:14px;letter-spacing:.25px;padding:7px 9px}
+
+/* Opened gifts become small, high-contrast prize plaques. The full value stays
+   exact; only the currency sign is reduced to leave room for larger numerals. */
+.gift-cell-prize{left:3.5%;right:3.5%;padding:2px;border-color:var(--prize-color);background:linear-gradient(#59404f 0 3px,#24162f 3px calc(100% - 3px),#130a1e calc(100% - 3px));font-weight:700;color:#fff1d5;box-shadow:inset 0 1px #fff0d34d,inset 0 -2px #100719}
+.gift-cell-main{display:inline-flex;align-items:baseline;justify-content:center;line-height:1;text-shadow:0 1px #12081c}
+.gift-cell-currency{font-size:.68em;line-height:1;margin-right:.025em;color:#f6ddb3}
+.gift-cell-currency:empty{display:none}
+.gift-cell-detail{font-weight:600;line-height:1;letter-spacing:.3px;margin-top:1px;color:#fff0df;text-shadow:0 1px #12081c}
+.gift-special .gift-cell-main{color:var(--prize-color)}
+.gift-cell-prize::before{inset:2px;border-top-color:#ffefd55c;border-bottom-color:#bb90ae66}
