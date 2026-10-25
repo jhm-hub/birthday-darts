@@ -54,7 +54,7 @@ function pick(cell=null){
 }
 $('#demo-unwrap').addEventListener('click',()=>pick());
 $('#demo-reset').addEventListener('click',()=>{demo=null;audio.reset();renderDemo();});
-$('#demo-finale').addEventListener('click',()=>{if(draftError)return;demo=sampleGiftFinale(draftValue);renderDemo();});
+$('#demo-finale').addEventListener('click',()=>{if(draftError)return;audio.reset();demo=sampleGiftFinale(draftValue);renderDemo();});
 $('#demo-sound').addEventListener('click',()=>{audio.setEnabled(!audio.enabled);$('#demo-sound').textContent=audio.enabled?'Sound on':'Sound off';$('#demo-sound').setAttribute('aria-pressed',String(audio.enabled));});
 for(const id of ['game-name','board-size','pick-count','max-board','max-picks'])$('#'+id).addEventListener('input',changed);
 $('#add-prize').addEventListener('click',()=>{row();changed();});

@@ -4,6 +4,13 @@ import {giftArrivalCount,giftArrivalDelay,GIFT_ARRIVAL_MS} from './gift-bonus-mo
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
 
+// A resolved victory phrase, longer and warmer than the multiplier power-up.
+export function giftFinaleScore(){return [
+ ...[72,76,79,84].map((pitch,i)=>note(i*.095,pitch,.32,.04)),
+ note(.32,60,.65,.04,'soft'),note(.32,72,.7,.037),note(.32,76,.62,.028),note(.32,79,.58,.024),
+ note(.49,88,.42,.028),note(.63,91,.38,.024)
+];}
+
 // Seconds relative to the committed reveal. One note per arrival wave, including
 // growth's two edges together, so a larger board never doubles the volume.
 export function giftRevealScore(prize){
@@ -48,7 +55,7 @@ export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{}){
 }
 
 export function createGiftAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)()}={}){
- let ctx,enabled=false,last='',disposed=false;
+ let ctx,enabled=false,last='',lastFinale='',disposed=false;
  const playing=new Set();
  function track(source,envelope,nodes){
   const entry={source,envelope,nodes};playing.add(entry);
@@ -73,6 +80,12 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    if(!enabled||!ctx||ctx.state!=='running'||time>flight.revealAt+180)return;
    scheduleGiftScore(ctx,giftRevealScore(flight.prize),ctx.currentTime,(time-flight.revealAt)/1000,track);
   },
+  finale(round,time){
+   if(round?.completedAt==null||time<round.completedAt||round.id===lastFinale||disposed)return;
+   lastFinale=round.id;
+   if(!enabled||!ctx||ctx.state!=='running'||time>round.completedAt+180)return;
+   scheduleGiftScore(ctx,giftFinaleScore(),ctx.currentTime,(time-round.completedAt)/1000,track);
+  },
   rustle(){
    if(!enabled||disposed)return;unlock();if(ctx.state!=='running')return;
    const t=ctx.currentTime,buffer=ctx.createBuffer(1,ctx.sampleRate*.3,ctx.sampleRate),data=buffer.getChannelData(0);
@@ -81,7 +94,7 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    filter.type='highpass';filter.frequency.value=1700;gain.gain.value=.06;source.buffer=buffer;
    source.connect(filter).connect(gain).connect(ctx.destination);track(source,gain,[source,filter,gain]);source.start(t);
   },
-  reset(){last='';stop();},
+  reset(){last='';lastFinale='';stop();},
   dispose(){stop();disposed=true;enabled=false;if(ctx&&ctx.state!=='closed')void ctx.close().catch(()=>{});}
  };
 }

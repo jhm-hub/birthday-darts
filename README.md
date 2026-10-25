@@ -156,6 +156,17 @@ boards. There is no character in this game, and no character artwork to download
   limit. Remaining eligible weights rebalance. Gift appearances/positions do not change configured odds.
 - After the last pick, a readable plaque shows **cash × multiplier = total**
   over the grid, then clears after 5.5 seconds.
+- The final total gets a short victory melody, a gentle plaque entrance and two
+  pixel-confetti fountains. The exact total appears immediately and stays still.
+  Confetti sits behind the opaque plaque and is clipped to the board area, inside
+  the same 420×460 frame. Reduced motion keeps a stationary plaque without flying
+  particles. Completion timestamps drive the effect; reconnecting cannot restart
+  an old celebration or replay its sound. **Preview finale** auditions it directly.
+- **Present concepts** (`gift-concepts.html`) compares three review-only art
+  directions: A / Satin Party, B / Royal Velvet, C / Candy Confetti. Each shows
+  five wrapper colors and a stream-size preview with unwrapping, finale playback,
+  sound and dark/light/colorful backgrounds. These previews never change saved
+  games; the approved live presents remain unchanged until a direction is chosen.
 - The editor’s **Next demo reveal** selector can force a cash, multiplier or
   expansion result for review. It is only a disposable demo; live controls have
   no forced-prize input. **Preview finale** skips to a random sample round total.

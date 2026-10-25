@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createGiftAudio,giftRevealScore,scheduleGiftScore} from '../src/gift-audio.js';
+import {createGiftAudio,giftRevealScore,giftFinaleScore,scheduleGiftScore} from '../src/gift-audio.js';
 import {giftBonusMotion,giftCellMotion} from '../src/gift-bonus-motion.js';
 
 function context(state='running'){
@@ -76,4 +76,17 @@ test('mute also works in browsers without cancelAndHoldAtTime',()=>{
  const gains=ctx.nodes.filter(n=>n.kind==='gain');for(const n of gains){delete n.gain.cancelAndHoldAtTime;n.gain.cancelScheduledValues=t=>{n.cancelledAt=t;};}
  a.setEnabled(false);assert.ok(gains.every(n=>n.cancelledAt===ctx.currentTime));
  assert.ok(oscillators(ctx).every(n=>n.stops.at(-1)===ctx.currentTime+.015));
+});
+test('final-total cue waits for completion, plays once and skips stale or muted totals',()=>{
+ const ctx=context(),a=createGiftAudio({createContext:()=>ctx}),r={id:'final',completedAt:2000};a.setEnabled(true);
+ a.finale({...r,completedAt:null},2000);a.finale(r,1999);assert.equal(oscillators(ctx).length,0);
+ a.finale(r,2000);const count=oscillators(ctx).length;assert.ok(count>0);a.finale(r,2050);assert.equal(oscillators(ctx).length,count);
+ a.finale({...r,id:'stale'},2200);assert.equal(oscillators(ctx).length,count);
+ a.setEnabled(false);a.finale({...r,id:'muted'},2000);a.setEnabled(true);a.finale({...r,id:'muted'},2050);assert.equal(oscillators(ctx).length,count);
+ a.reset();assert.ok(oscillators(ctx).every(n=>n.stops.at(-1)===ctx.currentTime+.015));a.finale({...r,id:'replay'},2000);assert.equal(oscillators(ctx).length,count*2);
+});
+test('finale has a distinct resolved phrase with conservative levels and a short tail',()=>{
+ const score=giftFinaleScore();assert.notDeepEqual(score,giftRevealScore({kind:'multiply'}));
+ assert.ok(score.reduce((sum,n)=>sum+n.gain*(n.voice==='bell'?1.18:1),0)<.5);
+ assert.ok(score.every(n=>n.at+n.length+.015<1.2));assert.ok(score.some(n=>n.at===.32&&n.frequency<300));
 });
