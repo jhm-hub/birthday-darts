@@ -1,7 +1,7 @@
 import {createGiftView} from './gift-view.js';
 import {connectGiftControl,connectGiftDisplay} from './gift-session.js';
 import {createGiftAudio} from './gift-audio.js';
-import {money,giftTotal} from './gift-game.js';
+import {money,giftTotal,giftModifierDue} from './gift-game.js';
 const $=s=>document.querySelector(s),overlay=document.documentElement.classList.contains('gift-overlay'),audio=createGiftAudio();
 let session,snapshot,connected=false,pending=false,viewReady=false,readiness='Loading gifts…',error='';
 const view=createGiftView($('#gift-control-preview'),{interactive:!overlay,onPick:pick,onReady(){viewReady=true;render();},onError(e){error=e.message;render();},audio});
@@ -15,6 +15,7 @@ function render(){
  $('#live-unwrap').textContent=!viewReady?'Loading gifts…':busy?'Unwrapping…':finished?'Total revealed':'Unwrap for me';
  $('#viewer').disabled=!!r||pending;
  $('#control-status').textContent=error||(!viewReady?'Loading gifts…':!connected?readiness:busy?'Opening one present…':finished?money(giftTotal(r))+' total. Clearing automatically…':r?r.remaining+' pick'+(r.remaining===1?'':'s')+' left. Choose any wrapped present.':snapshot?.lastResult?'Ready for the next viewer. Last total: '+money(snapshot.lastResult.totalCents):'First pick: appear + unwrap. Last pick: total reveal.');
+ if(!error&&connected&&!busy&&!finished&&giftModifierDue(r))$('#control-status').textContent+=' A modifier is guaranteed on this pick.';
 }
 function receive(next){const previous=snapshot?.round;snapshot=next;if(!overlay){$('#control-name').textContent=next.widget.name;document.title=next.widget.name+' — Gift Pile';if(previous&&!next.round)$('#viewer').value='';if(next.round)$('#viewer').value=next.round.viewer;}render();}
 async function pick(cell=null){if(overlay||!connected||!viewReady||pending||snapshot?.round?.flight||snapshot?.round?.completedAt!==null&&snapshot?.round)return;pending=true;error='';render();try{audio.rustle();receive(await session.unwrap($('#viewer').value,cell));}catch(e){error=e.message;}finally{pending=false;render();}}

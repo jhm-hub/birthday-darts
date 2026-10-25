@@ -34,10 +34,19 @@ export const giftTotal=r=>r?(BigInt(r.cashCents)*BigInt(r.multiplier)).toString(
 export function startGiftRound(widget,viewer='',now=Date.now()){
  if(typeof viewer!=='string'||viewer.trim().length>32)throw Error('Keep viewer names to 32 characters.');
  const preset=validateGiftWidget(widget);
- return {id:randomUUID(),viewer:viewer.trim(),preset,startedAt:now,side:preset.side,allocated:preset.picks,remaining:preset.picks,cashCents:0,multiplier:1,opened:[],flight:null,completedAt:null,hideAt:null};
+ return {id:randomUUID(),viewer:viewer.trim(),preset,modifierByPick:giftModifierDeadline(preset),startedAt:now,side:preset.side,allocated:preset.picks,remaining:preset.picks,cashCents:0,multiplier:1,opened:[],flight:null,completedAt:null,hideAt:null};
 }
 export function availableGiftCells(round){const opened=new Set(round.opened.map(s=>s.cell));if(round.flight)opened.add(round.flight.cell);return Array.from({length:round.side**2},(_,i)=>Math.floor(i/round.side)+':'+i%round.side).filter(id=>!opened.has(id));}
-export function eligibleGiftOutcomes(round){return round.preset.outcomes.map(o=>({...o,weight:o.kind==='extra'&&(round.allocated>=round.preset.maxPicks||round.side>=round.preset.maxSide)?0:o.weight}));}
+export const giftModifierDue=r=>!!r?.modifierByPick&&r.opened.length+1>=r.modifierByPick&&!r.opened.some(s=>s.prize.kind!=='cash');
+export function eligibleGiftOutcomes(round){
+ const outcomes=round.preset.outcomes.map(o=>({...o,weight:o.kind==='extra'&&(round.allocated>=round.preset.maxPicks||round.side>=round.preset.maxSide)?0:o.weight}));
+ // The persisted deadline freezes this rule per round; older active rounds keep their rules.
+ if(giftModifierDue(round)&&outcomes.some(o=>o.kind!=='cash'&&o.weight>0))for(const o of outcomes)if(o.kind==='cash')o.weight=0;
+ return outcomes;
+}
+export function giftModifierDeadline(preset){
+ return preset.picks>=3&&eligibleGiftOutcomes({preset,side:preset.side,allocated:preset.picks}).some(o=>o.kind!=='cash'&&o.weight>0)?3:0;
+}
 export function unwrapGift(round,now=Date.now(),{cell=null,draw=randomInt,forcedIndex=null}={}){
  if(!round||round.remaining<1||round.completedAt!==null)throw Error('This round is complete.');
  if(round.flight)throw Error('Wait for this present to finish opening.');

@@ -109,6 +109,14 @@ boards. There is no character in this game, and no character artwork to download
 - Faith can **click a particular wrapped present**, or use **Unwrap for me** (Space
   outside form fields also works). One action opens one present; opened locations
   cannot be chosen again. A1/B2-style labels stay stable as the board grows.
+- **At least one modifier in the first three picks.** Picks one and two use normal
+  weighted odds. If both reveal cash, pick three draws only from eligible ×2 and
+  extra-picks prizes, using their relative weights. A modifier won earlier
+  satisfies the guarantee; later picks use normal eligible odds. Zero-weight
+  modifiers and capped expansion prizes remain unavailable. This applies to new
+  rounds with at least three starting picks and an available positive-weight
+  modifier. The editor explains when the configuration cannot support it.
+  Existing active rounds keep their original rules.
 - Cash prizes add to the collected amount. Every **×2** applies to the **final**
   total, including cash found later. Two ×2 prizes produce ×4.
 - **Extra picks** add the configured number of picks and expand the board by one

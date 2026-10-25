@@ -1,5 +1,5 @@
 import {giftStore,exportGiftSettings,importGiftSettings} from './gift-store.js';
-import {DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,eligibleGiftOutcomes,sampleGiftFinale,prizeLabel,giftTotal,money} from './gift-game.js';
+import {DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,eligibleGiftOutcomes,giftModifierDeadline,giftModifierDue,sampleGiftFinale,prizeLabel,giftTotal,money} from './gift-game.js';
 import {createGiftView} from './gift-view.js';
 import {createGiftAudio} from './gift-audio.js';
 const $=s=>document.querySelector(s),audio=createGiftAudio();
@@ -23,6 +23,9 @@ function refresh(){
  for(const r of $('#prize-rows').children)r.querySelector('output').textContent=total>0?(startWeight(r)/total*100).toFixed(1).replace('.0','')+'%':'—';
  $('#add-prize').disabled=$('#prize-rows').children.length>=10;
  try{draftValue=readDraft();draftError='';}catch(e){draftError=e.message;}
+ const guaranteed=!draftError&&giftModifierDeadline(draftValue)>0;
+ $('#modifier-rule').textContent=draftError?'Finish the settings to check the modifier guarantee.':guaranteed?'Modifier guaranteed by pick 3. If the first two picks reveal money, the third draws only from available modifiers, using their relative odds.':draftValue.picks<3?'The modifier guarantee applies to rounds with at least 3 starting picks. This shorter round uses normal odds.':'To guarantee a modifier, add a ×2 or an available extra-picks prize with odds above zero. This setup currently uses normal odds.';
+ $('#modifier-rule').classList.toggle('inactive',!guaranteed);
  $('#gift-preview').style.opacity=draftError?'.45':'1';
  const select=$('#demo-prize'),previous=select.value;select.replaceChildren(new Option('Random prize',''));
  if(!draftError)draftValue.outcomes.forEach((o,i)=>{if(o.weight>0)select.add(new Option(prizeLabel(o)+(o.kind==='extra'?' + expand board':''),String(i)));});
@@ -43,7 +46,7 @@ function renderDemo(){
  for(const o of $('#demo-prize').options)if(o.value!=='')o.disabled=eligible[Number(o.value)]?.weight<=0;
  if($('#demo-prize').selectedOptions[0]?.disabled)$('#demo-prize').value='';
  const text=draftError||(!ready?'Loading gifts…':demo?.flight?'Opening your present…':demo?.completedAt!==null&&demo?money(giftTotal(demo))+' total · '+demo.opened.length+' presents opened.':demo?demo.remaining+' pick'+(demo.remaining===1?'':'s')+' left. Choose any wrapped present.':'Choose any of the '+draftValue.side**2+' presents. You have '+draftValue.picks+' picks.');
- $('#demo-status').textContent=text;$('#demo-status').classList.toggle('error',!!draftError);
+ $('#demo-status').textContent=text+(!draftError&&demo&&!busy&&giftModifierDue(demo)?' A modifier is guaranteed on this pick.':'');$('#demo-status').classList.toggle('error',!!draftError);
 }
 function pick(cell=null){
  if(!ready||draftError||demo?.flight||demo?.completedAt!==null&&demo)return;
