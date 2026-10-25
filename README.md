@@ -106,6 +106,10 @@ The grid and final-total plaque share one 420 × 460 frame, including expanded
 boards. There is no character in this game, and no character artwork to download.
 
 - Start with a **3×3 board of nine presents and three picks**. Both are editable.
+- The starter has a **35% combined bonus chance** on normal picks: **8.75% each**
+  for ×2, Grow board, Bonus row and Bonus column while all four are eligible.
+  Money shares the remaining 65%. Odds remain editable. On a guaranteed modifier
+  pick, the four bonuses are equally likely (25% each when all are eligible).
 - Faith can **click a particular wrapped present**, or use **Unwrap for me** (Space
   outside form fields also works). One action opens one present; opened locations
   cannot be chosen again. A1/B2-style labels stay stable as the board grows.
@@ -150,10 +154,10 @@ refresh without redrawing a prize. Backup/import applies only to gift settings;
 backups omit viewer history and pairing keys. No payment or chat integration is
 included. The same authenticated read-only display transport as Darts is reused.
 
-The untouched original starter setup upgrades to all four modifiers between
-rounds, retaining its display link and a local copy of the previous settings.
-The old expansion weight of 8 is split into growth 4, row 2 and column 2, keeping
-the starter’s initial total modifier weight unchanged. Custom setups keep their
+Untouched older starter setups upgrade to the four equally weighted modifiers
+and 35% combined bonus chance between rounds, retaining their display link and
+a local copy of the previous settings. The money prizes retain approximately
+their previous relative proportions, rounded to hundredths. Custom setups keep their
 amounts and odds; use **Add a prize** to add the new types. Active rounds keep
 their frozen prize values, including older +2 growth gifts. Refresh controls and
 the stream display after updating.

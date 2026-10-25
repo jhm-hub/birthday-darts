@@ -3,9 +3,9 @@ import {chooseOutcome} from './game.js';
 
 export const UNWRAP_MS=2000, REVEAL_MS=850, GIFT_HOLD_MS=5500;
 export const DEFAULT_GIFTS={id:'gift-pile',name:'Faith’s gift pile',side:3,picks:3,maxSide:5,maxPicks:12,outcomes:[
- {kind:'cash',value:10,weight:35},{kind:'cash',value:25,weight:27},{kind:'cash',value:50,weight:15},
- {kind:'cash',value:100,weight:5},{kind:'multiply',value:2,weight:10},{kind:'extra',value:3,weight:4},
- {kind:'row',value:1,weight:2},{kind:'column',value:1,weight:2}
+ {kind:'cash',value:10,weight:27.74},{kind:'cash',value:25,weight:21.40},{kind:'cash',value:50,weight:11.89},
+ {kind:'cash',value:100,weight:3.97},{kind:'multiply',value:2,weight:8.75},{kind:'extra',value:3,weight:8.75},
+ {kind:'row',value:1,weight:8.75},{kind:'column',value:1,weight:8.75}
 ]};
 // Integer cents and BigInt products retain exact totals with stacked multipliers.
 // JSON carries the product as a decimal string, never a rounded float.

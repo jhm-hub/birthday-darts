@@ -1,12 +1,17 @@
 import {DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,cleanGiftRound,giftTotal} from './gift-game.js';
 import {randomKey,validKey} from './protocol.js';
 export const GIFT_STORE_KEY='faith-gift-pile-v1';
-const previousStarter={...DEFAULT_GIFTS,outcomes:[...DEFAULT_GIFTS.outcomes.slice(0,5),{kind:'extra',value:2,weight:8}]};
+const previousStarter={...DEFAULT_GIFTS,outcomes:[{kind:'cash',value:10,weight:35},{kind:'cash',value:25,weight:27},{kind:'cash',value:50,weight:15},{kind:'cash',value:100,weight:5},{kind:'multiply',value:2,weight:10},{kind:'extra',value:2,weight:8}]};
+const fourBonusStarter={...previousStarter,outcomes:[...previousStarter.outcomes.slice(0,5),{kind:'extra',value:3,weight:4},{kind:'row',value:1,weight:2},{kind:'column',value:1,weight:2}]};
 function upgradeStarter(w){
- if(w.starterBonusesVersion||w.round)return false;
- // Update only the untouched original starter, between rounds. Custom setups stay intact.
- if(JSON.stringify(validateGiftWidget(w))===JSON.stringify(validateGiftWidget(previousStarter))){w.starterBeforeBonusUpdate=validateGiftWidget(w);Object.assign(w,structuredClone(DEFAULT_GIFTS));}
- w.starterBonusesVersion=1;return true;
+ if(w.starterBonusesVersion>=2||w.round)return false;
+ // Update only untouched starter presets, between rounds. Custom setups stay intact.
+ const before=validateGiftWidget(w),matches=p=>JSON.stringify(before)===JSON.stringify(validateGiftWidget(p));
+ if(matches(fourBonusStarter)||(!w.starterBonusesVersion&&matches(previousStarter))){
+  if(!w.starterBonusesVersion&&matches(previousStarter))w.starterBeforeBonusUpdate=before;
+  w.starterBeforeOddsUpdate=before;Object.assign(w,structuredClone(DEFAULT_GIFTS));
+ }
+ w.starterBonusesVersion=2;return true;
 }
 export function exportGiftSettings(widgets){return {format:'faith-gift-pile',version:2,widgets:widgets.map(w=>{const {id,...p}=validateGiftWidget(w);return p;})};}
 export function importGiftSettings(raw){

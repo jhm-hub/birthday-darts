@@ -20,7 +20,7 @@ function refresh(){
  const bonusAllowed=Number($('#max-board').value)>Number($('#board-size').value)&&Number($('#max-picks').value)>Number($('#pick-count').value);
  const startWeight=r=>isGiftExpansion(r.querySelector('select').value)&&!bonusAllowed?0:Number(r.querySelector('.prize-weight').value);
  const total=[...$('#prize-rows').children].reduce((s,r)=>s+startWeight(r),0);
- for(const r of $('#prize-rows').children)r.querySelector('output').textContent=total>0?(startWeight(r)/total*100).toFixed(1).replace('.0','')+'%':'—';
+ for(const r of $('#prize-rows').children)r.querySelector('output').textContent=total>0?(startWeight(r)/total*100).toFixed(2).replace(/\.?0+$/,'')+'%':'—';
  $('#add-prize').disabled=$('#prize-rows').children.length>=10;
  try{draftValue=readDraft();draftError='';}catch(e){draftError=e.message;}
  const guaranteed=!draftError&&giftModifierDeadline(draftValue)>0;

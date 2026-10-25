@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,availableGiftCells,eligibleGiftOutcomes,projectedGiftRound,cleanGiftRound,sampleGiftFinale,giftTotal,money,UNWRAP_MS,giftDimensions,prizeLabel} from '../src/gift-game.js';
 import {createGiftStore,exportGiftSettings,importGiftSettings,GIFT_STORE_KEY} from '../src/gift-store.js';
+import {chooseOutcome} from '../src/game.js';
 // Retain the prior user-configurable setup as a compatibility fixture.
 const config=()=>({id:'gift-pile',name:'Faith’s gift pile',side:3,picks:3,maxSide:5,maxPicks:12,outcomes:[{kind:'cash',value:10,weight:35},{kind:'cash',value:25,weight:27},{kind:'cash',value:50,weight:15},{kind:'cash',value:100,weight:5},{kind:'multiply',value:2,weight:10},{kind:'extra',value:2,weight:8}]});
 function open(r,index,cell=null,now=(r.opened.length+1)*UNWRAP_MS){unwrapGift(r,now,{cell,forcedIndex:index});advanceGiftRound(r,now+UNWRAP_MS);}
@@ -109,6 +110,13 @@ const modern=()=>structuredClone(DEFAULT_GIFTS);
 test('new starter offers multiplier, growth +3, row +1 and column +1 with total weight 100',()=>{
  const p=validateGiftWidget(modern());assert.deepEqual(p.outcomes.filter(o=>o.kind!=='cash').map(o=>[o.kind,o.value]),[['multiply',2],['extra',3],['row',1],['column',1]]);assert.equal(p.outcomes.reduce((n,o)=>n+o.weight,0),100);
 });
+test('starter draws give bonuses 35 percent combined and equal shares, including the pick-three guarantee',()=>{
+ const counts=r=>{const outcomes=eligibleGiftOutcomes(r),total=outcomes.reduce((n,o)=>n+Math.round(o.weight*100),0),hits=outcomes.map(()=>0);for(let draw=0;draw<total;draw++)hits[chooseOutcome(outcomes,n=>{assert.equal(n,total);return draw;})]++;return hits;};
+ const r=startGiftRound(modern());assert.deepEqual(counts(r),[2774,2140,1189,397,875,875,875,875]);
+ open(r,0);open(r,1);assert.deepEqual(counts(r),[0,0,0,0,875,875,875,875]);
+ const early=startGiftRound(modern());open(early,4);assert.deepEqual(counts(early),[2774,2140,1189,397,875,875,875,875]);
+ for(let i=4;i<8;i++){const third=structuredClone(r);assert.equal(weightedOpen(third,()=>875*(i-4)).kind,modern().outcomes[i].kind);}
+});
 test('growth adds both dimensions and three picks without granting every new cell',()=>{
  const r=startGiftRound(modern());open(r,5,'1:1');assert.deepEqual(giftDimensions(r),{rows:4,cols:4});assert.equal(r.allocated,6);assert.equal(r.remaining,5);assert.equal(availableGiftCells(r).length,15);assert.equal(r.opened[0].prize.granted,3);
 });
@@ -160,4 +168,20 @@ test('untouched original starter upgrades once between rounds; custom odds and a
  await store.save(config());await store.init();assert.deepEqual(store.list()[0].outcomes,config().outcomes); // Deliberate later edit is not upgraded again.
  const custom={...config(),outcomes:config().outcomes.map((o,i)=>i===5?{...o,weight:7}:o)};data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[{...custom,room:originalRoom,round:null}]}));await store.init();assert.deepEqual(store.list()[0].outcomes,custom.outcomes);
  const round=startGiftRound(config(),'Active');data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[{...config(),room:originalRoom,round}]}));await store.init();assert.deepEqual(store.list()[0].outcomes,config().outcomes);assert.deepEqual(store.snapshot('gift-pile').round.preset.outcomes,config().outcomes.map(({kind,value})=>({kind,value})));
+});
+const fourBonusConfig=()=>({...config(),outcomes:[...config().outcomes.slice(0,5),{kind:'extra',value:3,weight:4},{kind:'row',value:1,weight:2},{kind:'column',value:1,weight:2}]});
+test('previous four-bonus starter upgrades its odds once while preserving display key and history',async()=>{
+ const {store,data}=fixture();await store.init();const previous=JSON.parse(data.get(GIFT_STORE_KEY)).widgets[0];
+ Object.assign(previous,fourBonusConfig(),{starterBonusesVersion:1,lastResult:{totalCents:'2345'}});data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[previous]}));
+ await store.init();const saved=JSON.parse(data.get(GIFT_STORE_KEY)).widgets[0];assert.deepEqual(store.list()[0],modern());assert.equal(saved.room,previous.room);assert.equal(saved.lastResult.totalCents,'2345');assert.equal(saved.starterBonusesVersion,2);assert.deepEqual(saved.starterBeforeOddsUpdate,fourBonusConfig());
+ await store.save(fourBonusConfig());await store.init();assert.deepEqual(store.list()[0],fourBonusConfig());
+});
+test('35 percent upgrade preserves customized games and waits until an active round clears',async()=>{
+ const {store,data}=fixture();await store.init();const room=store.roomKey('gift-pile');
+ const custom=fourBonusConfig();custom.outcomes[4].weight=12;
+ data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[{...custom,room,round:null,starterBonusesVersion:1}]}));await store.init();assert.deepEqual(store.list()[0],custom);
+ const r=startGiftRound(fourBonusConfig());open(r,0,'0:0');open(r,1,'0:1');unwrapGift(r,Date.now()+10000,{forcedIndex:4,cell:'0:2'});
+ data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[{...fourBonusConfig(),room,round:r,starterBonusesVersion:1}]}));await store.init();assert.deepEqual(store.list()[0],fourBonusConfig());
+ await store.advance(r.flight.finishAt);assert.deepEqual(store.list()[0],fourBonusConfig());assert.equal(store.snapshot('gift-pile').lastResult.totalCents,'7000');
+ await store.advance(r.flight.finishAt+6000);assert.equal(store.snapshot('gift-pile').round,null);assert.deepEqual(store.list()[0],modern());assert.equal(store.roomKey('gift-pile'),room);
 });
