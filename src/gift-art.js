@@ -7,7 +7,7 @@ const palettes=[
  ['#a6c3e5','#7f9cc6','#485e8e','#d9e6ff','#c8afea','#f0defa','#8e6eae'],
  ['#edc88f','#cfa16e','#8a6557','#ffe8b8','#c47fa7','#f2bad3','#814666']
 ];
-export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim='',unwrap=false}={}){
+export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim='',bodyDetail='',lidDetail='',unwrap=false}={}){
  const [light,base,shade,shine,ribbon,ribbonLight,ribbonShade]=colors??palettes[index%palettes.length];
  const stars=pattern??[[12,39],[31,45],[12,51]].map(([x,y])=>`<path d="M${x} ${y-2}h1v2h2v1h-2v2h-1v-2h-2v-1h2Z" fill="${shine}"/>`).join('');
  const defaultBow=`
@@ -34,7 +34,7 @@ export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim='',unwra
  <path d="M38 30L50 24V53L38 59Z" fill="${shade}"/>
  <path d="M40 31L48 27V50L40 54Z" fill="${base}"/>
  <path d="M6 36H8V55H6ZM8 57H34V59H8Z" fill="${shine}" opacity=".7"/>${trim}
- <path d="M6 32H36V36H6Z" fill="${shade}"/>${stars}
+ <path d="M6 32H36V36H6Z" fill="${shade}"/>${bodyDetail}${stars}
  <path class="parcel-band" d="M20 30H28V59H20Z" fill="${ribbonShade}"/><path class="parcel-band" d="M20 32H26V57H20Z" fill="${ribbon}"/><path class="parcel-band" d="M21 36H23V55H21Z" fill="${ribbonLight}"/>
  <path class="parcel-inside" d="M6 29L18 23H48L36 29Z" fill="${shade}"/>
  <path class="parcel-inside" d="M10 28L18 24H44L36 28Z" fill="#211429"/>
@@ -44,7 +44,7 @@ export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim='',unwra
  <path d="M4 26L16 20H50L38 26Z" fill="${shine}"/>
  <path d="M2 28H36V34H2Z" fill="${light}"/><path d="M2 32H36V34H2Z" fill="${base}"/>
  <path d="M38 28L52 21V27L38 34Z" fill="${shade}"/><path d="M40 28L50 23V25L40 30Z" fill="${base}"/>
- <path d="M4 28H18V30H4ZM30 28H36V30H30Z" fill="${shine}"/>
+ <path d="M4 28H18V30H4ZM30 28H36V30H30Z" fill="${shine}"/>${lidDetail}
  <path${lidBand} d="M20 26L32 20H40L28 26V34H20Z" fill="${ribbon}"/>
  <path${lidBand} d="M21 26L33 20H35L23 26V32H21Z" fill="${ribbonLight}"/>
  <path${lidBand} d="M26 28H28V34H20V32H26Z" fill="${ribbonShade}"/>

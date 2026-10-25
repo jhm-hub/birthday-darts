@@ -1,12 +1,13 @@
 import {giftSVG} from './gift-art.js';
 import {candyBowFrames} from './gift-candy-bow.js';
+import {candyPaperFinish,candyTiedBow} from './gift-candy-finish.js';
 
 export const ACTIVE_GIFT_CONCEPT='candy';
 
 export const GIFT_CONCEPTS=[
  {id:'satin',letter:'A',name:'Satin Party',tag:'Saved alternative',description:'Soft pastel paper, a lower folded bow and a crisp lid. A quieter wrapper lets the satin ribbon do the work.'},
  {id:'velvet',letter:'B',name:'Royal Velvet',tag:'Saved alternative',description:'Plum, emerald and rose velvet, fine gold edging and a jewel clasp. More luxurious, with a compact silhouette.'},
- {id:'candy',letter:'C',name:'Candy Confetti',tag:'Current game style',description:'Candy-colored paper, playful sprinkles and a big cream bow. The boldest party look, still built from clean pixel clusters.'}
+ {id:'candy',letter:'C',name:'Candy Confetti',tag:'Current game style',description:'Candy-colored paper, playful sprinkles and a folded cream bow. Richer pixel shading brings out the ribbon loops, crisp lid and wrapped corners.'}
 ];
 const royal=[
  ['#825299','#603878','#3b244e','#c794c9','#dab976','#fff0c0','#956842'],
@@ -55,12 +56,8 @@ export function giftConceptSVG(concept,index=0){
  }else if(concept==='candy'){
   opts.colors=candy[index%5];
   opts.pattern='<path d="M11 38h2v4h-2ZM30 49h3v2h-3Z" fill="#ffeaa8"/><path d="M30 39h2v3h-2ZM11 50h3v2h-3Z" fill="#fff3fb"/><path d="M16 46h2v3h-2ZM31 55h2v2h-2Z" fill="#8b70bb"/>';
-  opts.bow=`<path d="M27 24H19V22H9V20H5V10H9V6H17V8H23V12H27V16H33V12H37V6H41V4H49V8H53V16H49V20H41V22H35V26H27Z" fill="#342233"/>
-  <path d="M27 22H19V20H11V18H7V11H11V8H17V10H21V14H25V18H29ZM33 22V16H37V12H39V8H43V6H47V10H51V15H47V18H41V20H37V22Z" fill="#fff0b2"/>
-  <path d="M10 11H14V10H17V12H21V15H17V13H13V14H10ZM40 11H43V8H46V11H48V13H44V16H39V18H37V15H40Z" fill="#fffbe2"/>
-  <path d="M13 16H17V18H23V20H27V22H19V20H13ZM41 17H45V15H49V17H45V19H39V21H35V20H39V19H41Z" fill="#cda874"/>
-  <path d="M27 23H31V28H27V32H23V29H21V27H25V25H27ZM33 23H37V27H41V31H37V29H33Z" fill="#fff0b2"/>
-  <path d="M27 18H35V25H27Z" fill="#cda874"/><path d="M28 19H34V23H28Z" fill="#fff0b2"/><path d="M29 19H32V21H29Z" fill="#fffbe2"/>`;
+  Object.assign(opts,candyPaperFinish(opts.colors));
+  opts.bow=candyTiedBow();
  }
  if(concept==='candy'){opts.unwrap=true;opts.bow=candyBowFrames(opts.bow);}
  return giftSVG(index,opts);

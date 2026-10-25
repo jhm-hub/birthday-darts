@@ -148,6 +148,9 @@ boards. There is no character in this game, and no character artwork to download
   muted when the stream display supplies audio, to avoid playing sounds twice.
 - Gift boxes use **Candy Confetti** artwork: five candy-colored wrappers, pixel
   sprinkles and a cream bow, with matching lid/body perspective and aligned ribbons.
+  The richer pixel shading keeps those colors while adding folded ribbon loops,
+  crisp lid bevels and shaded paper corners. The bow retains that shading through
+  its loosening poses; all shapes stay on the original 56×64 drawing grid.
   The editor demo, controls and transparent 420×460 display share the same artwork.
 - Candy's bow loosens through five drawn pixel poses, the ribbons slip free and
   the lid hops away before the prize rises into view. The original 0.85-second
