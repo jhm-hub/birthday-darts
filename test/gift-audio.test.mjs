@@ -110,6 +110,17 @@ test('finale has a distinct resolved phrase with conservative levels and a short
  assert.ok(score.reduce((sum,n)=>sum+n.gain*(n.voice==='bell'?1.18:1),0)<.5);
  assert.ok(score.every(n=>n.at+n.length+.015<1.4));assert.ok(score.some(n=>n.at===.32&&n.frequency<300));
 });
+test('finale playback chooses the frozen round tier and keeps every tier on the master bus',()=>{
+ for(const [cents,level]of [[5000,0],[10000,1],[25000,2]]){
+  const ctx=context(),a=createGiftAudio({createContext:()=>ctx});a.setVolume(40);a.setEnabled(true);
+  const round={id:'tier-'+level,completedAt:2000,cashCents:cents,multiplier:1,preset:{celebration:{big:100,royal:250}}};
+  a.finale(round,2000);const voices=oscillators(ctx),reference=context();scheduleGiftScore(reference,giftFinaleScore(level),10);
+  assert.deepEqual(voices.map(n=>[n.frequency.value,n.started,n.stops[0]]),oscillators(reference).map(n=>[n.frequency.value,n.started,n.stops[0]]));
+  assert.ok(ctx.nodes.slice(1).filter(n=>n.kind==='gain').every(n=>n.connectedTo===ctx.nodes[0]));
+  a.finale(round,2100);assert.equal(oscillators(ctx).length,voices.length);
+  a.setEnabled(false);assert.ok(voices.every(n=>n.stops.at(-1)===10.015));
+ }
+});
 
 test('ribbon starts with the bow, lid pop meets takeoff and finishes before the prize',()=>{
  const cues=giftUnwrapCues(),f=unwrapShot();

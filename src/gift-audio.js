@@ -3,19 +3,27 @@ import {giftArrivalCount,giftArrivalDelay,GIFT_ARRIVAL_MS} from './gift-bonus-mo
 import {scheduleGiftUnwrap} from './gift-unwrap-audio.js';
 import {giftVolume,DEFAULT_GIFT_VOLUME} from './gift-volume.js';
 import {FINALE_RESOLVE_MS} from './gift-finale-motion.js';
+import {giftCelebrationLevel} from './gift-celebration.js';
 
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
 
 // A complete little fanfare: lift, crown/chord + second confetti burst, then a
 // resolving sparkle. More musical space than a prize cue, with the same quiet bus.
-export function giftFinaleScore(){const land=FINALE_RESOLVE_MS/1000;return [
+export function giftFinaleScore(level=0){const land=FINALE_RESOLVE_MS/1000,score=[
  note(0,60,.25,.018,'soft'),
  ...[72,76,79,84].map((pitch,i)=>note(i*.075,pitch,.24,.031,'mallet')),
  note(land,60,.65,.031,'soft'),note(land,72,.65,.031,'bloom'),
  note(land,76,.58,.022),note(land,79,.52,.018),
  note(.5,88,.28,.023,'coin'),note(.65,86,.28,.02,'coin'),note(.82,84,.45,.028)
-];}
+];
+ if(level===0)return score;
+ // Richer endings add musical detail, not a louder master or longer total hold.
+ const richer=score.map(n=>({...n,gain:n.gain*(level===2?.88:.94)}));
+ richer.push(note(.95,88,.24,.016,'coin'),note(1.1,91,.24,.014,'coin'),note(1.28,84,.45,.027));
+ if(level===2)richer.push(note(1.28,72,.4,.018,'bloom'),note(1.28,79,.35,.013),note(1.46,88,.22,.016,'coin'),note(1.62,84,.4,.022));
+ return richer;
+}
 
 // Gentle partials keep these miniature arcade instruments clear without a harsh
 // square-wave edge. [frequency ratio, level, decay, oscillator]. Finale's existing
@@ -144,7 +152,7 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    if(round?.completedAt==null||time<round.completedAt||round.id===lastFinale||disposed)return;
    lastFinale=round.id;
    if(!enabled||!ctx||ctx.state!=='running'||time>round.completedAt+180)return;
-   scheduleGiftScore(ctx,giftFinaleScore(),ctx.currentTime,(time-round.completedAt)/1000,track,master);
+   scheduleGiftScore(ctx,giftFinaleScore(giftCelebrationLevel(round)),ctx.currentTime,(time-round.completedAt)/1000,track,master);
   },
   reset(){last='';lastUnwrap='';lastFinale='';stop();},
   dispose(){stop();disposed=true;enabled=false;if(ctx&&ctx.state!=='closed')void ctx.close().catch(()=>{});}

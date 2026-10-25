@@ -2,8 +2,8 @@
 // No fonts, images or randomized shapes inside the frame/crest artwork.
 export function giftFinalFrame(){return `<svg viewBox="0 0 364 228" aria-hidden="true" shape-rendering="crispEdges">
  <path d="M12 0H352V4H360V12H364V216H360V224H352V228H12V224H4V216H0V12H4V4H12Z" fill="#4f3046"/>
- <path d="M12 2H352V6H358V12H362V216H358V222H352V226H12V222H6V216H2V12H6V6H12Z" fill="#bc805c"/>
- <path d="M12 2H352V6H358V12H362V16H354V10H10V218H6V216H2V12H6V6H12Z" fill="#ffe3a5"/>
+ <path d="M12 2H352V6H358V12H362V216H358V222H352V226H12V222H6V216H2V12H6V6H12Z" fill="var(--final-edge,#bc805c)"/>
+ <path d="M12 2H352V6H358V12H362V16H354V10H10V218H6V216H2V12H6V6H12Z" fill="var(--final-edge-light,#ffe3a5)"/>
  <path d="M14 8H350V12H354V16H358V212H354V216H350V220H14V216H10V212H6V16H10V12H14Z" fill="#21132c"/>
  <path d="M16 12H348V16H352V212H348V216H16V212H12V16H16Z" fill="#322039"/>
  <path d="M20 16H344V20H348V54H16V20H20Z" fill="#432a45"/>
@@ -13,9 +13,9 @@ export function giftFinalFrame(){return `<svg viewBox="0 0 364 228" aria-hidden=
  <path d="M26 64H338V65H26ZM26 186H338V187H26Z" fill="#72505a"/>
  ${[false,true].map(right=>`<g${right?' transform="translate(364 0) scale(-1 1)"':''}>
   <path d="M12 22H20V26H24V30H20V34H16V30H12Z M12 194H16V190H20V194H24V198H20V202H12Z" fill="#8f5e62"/>
-  <path d="M12 20H18V24H22V28H18V32H14V28H10V24H12Z M12 192H18V196H22V200H18V204H12V200H10V196H12Z" fill="#f0c382"/>
+  <path d="M12 20H18V24H22V28H18V32H14V28H10V24H12Z M12 192H18V196H22V200H18V204H12V200H10V196H12Z" fill="var(--final-corner,#f0c382)"/>
   <path d="M14 22H18V26H14Z M14 194H18V198H14Z" fill="#fff2c8"/>
-  <path d="M14 112H20V118H14Z" fill="#b77c9d"/><path d="M14 112H18V114H14Z" fill="#ffd3e6"/>
+  <path d="M14 112H20V118H14Z" fill="#b77c9d"/><path d="M14 112H18V114H14Z" fill="var(--final-gem-light,#ffd3e6)"/>
  </g>`).join('')}
  </svg>`;}
 
@@ -27,7 +27,7 @@ export function giftFinalCrown(){return `<svg viewBox="0 0 40 32" aria-hidden="t
  <path d="M9 23H31V28H9Z" fill="#b77b59"/><path d="M8 21H32V25H8Z" fill="#f5c781"/>
  <path d="M10 21H30V22H10Z M12 27H28V28H12Z" fill="#ffeabc"/>
  <path d="M18 15H22V17H24V21H22V23H18V21H16V17H18Z" fill="#9b608b"/>
- <path d="M18 16H21V18H23V20H21V22H18V20H17V18H18Z" fill="#ef9dc1"/>
+ <path d="M18 16H21V18H23V20H21V22H18V20H17V18H18Z" fill="var(--final-crown-gem,#ef9dc1)"/>
  <path d="M18 16H21V17H19V19H17V18H18Z" fill="#ffe0ed"/>
  <path d="M10 18H12V20H10Z M28 18H30V20H28Z" fill="#fff5ce"/>
  </svg>`;}

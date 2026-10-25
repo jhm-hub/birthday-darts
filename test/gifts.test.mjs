@@ -160,7 +160,7 @@ test('rectangular in-flight board state recovers and display snapshots preserve 
  let r=startGiftRound(modern());open(r,6,'0:0');unwrapGift(r,10000,{forcedIndex:7,cell:'3:2'});r=JSON.parse(JSON.stringify(r));assert.deepEqual(giftDimensions(r),{rows:4,cols:3});advanceGiftRound(r,12000);advanceGiftRound(r,13000);const clean=cleanGiftRound(r);assert.deepEqual(giftDimensions(clean),{rows:4,cols:4});assert.equal(clean.opened.length,2);assert.equal(clean.allocated,5);assert.ok(clean.preset.outcomes.every(o=>!('weight' in o)));assert.equal(availableGiftCells(clean).length,14);
 });
 test('settings backups round-trip all four modifier types and configured multiplier values',()=>{
- const p=modern();p.outcomes[4].value=5;const backup=exportGiftSettings([p]);assert.equal(backup.version,2);assert.deepEqual(importGiftSettings({format:'faith-gift-pile',version:1,widgets:[config()]})[0].outcomes,config().outcomes);assert.throws(()=>importGiftSettings({...backup,version:3}));const restored=importGiftSettings(backup)[0];assert.deepEqual(restored.outcomes,p.outcomes);assert.notEqual(restored.id,p.id);
+ const p=modern();p.outcomes[4].value=5;const backup=exportGiftSettings([p]);assert.equal(backup.version,3);assert.deepEqual(importGiftSettings({format:'faith-gift-pile',version:1,widgets:[config()]})[0].outcomes,config().outcomes);assert.throws(()=>importGiftSettings({...backup,version:4}));const restored=importGiftSettings(backup)[0];assert.deepEqual(restored.outcomes,p.outcomes);assert.notEqual(restored.id,p.id);
 });
 test('untouched original starter upgrades once between rounds; custom odds and active rounds stay intact',async()=>{
  const {store,data}=fixture();await store.init();const state=JSON.parse(data.get(GIFT_STORE_KEY)),originalRoom=state.widgets[0].room;
@@ -173,16 +173,16 @@ const fourBonusConfig=()=>({...config(),outcomes:[...config().outcomes.slice(0,5
 test('previous four-bonus starter upgrades its odds once while preserving display key and history',async()=>{
  const {store,data}=fixture();await store.init();const previous=JSON.parse(data.get(GIFT_STORE_KEY)).widgets[0];
  Object.assign(previous,fourBonusConfig(),{starterBonusesVersion:1,lastResult:{totalCents:'2345'}});data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[previous]}));
- await store.init();const saved=JSON.parse(data.get(GIFT_STORE_KEY)).widgets[0];assert.deepEqual(store.list()[0],modern());assert.equal(saved.room,previous.room);assert.equal(saved.lastResult.totalCents,'2345');assert.equal(saved.starterBonusesVersion,2);assert.deepEqual(saved.starterBeforeOddsUpdate,fourBonusConfig());
- await store.save(fourBonusConfig());await store.init();assert.deepEqual(store.list()[0],fourBonusConfig());
+ await store.init();const saved=JSON.parse(data.get(GIFT_STORE_KEY)).widgets[0];assert.deepEqual(store.list()[0],modern());assert.equal(saved.room,previous.room);assert.equal(saved.lastResult.totalCents,'2345');assert.equal(saved.starterBonusesVersion,2);assert.deepEqual(saved.starterBeforeOddsUpdate,validateGiftWidget(fourBonusConfig()));
+ await store.save(fourBonusConfig());await store.init();assert.deepEqual(store.list()[0],validateGiftWidget(fourBonusConfig()));
 });
 test('35 percent upgrade preserves customized games and waits until an active round clears',async()=>{
  const {store,data}=fixture();await store.init();const room=store.roomKey('gift-pile');
  const custom=fourBonusConfig();custom.outcomes[4].weight=12;
- data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[{...custom,room,round:null,starterBonusesVersion:1}]}));await store.init();assert.deepEqual(store.list()[0],custom);
+ data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[{...custom,room,round:null,starterBonusesVersion:1}]}));await store.init();assert.deepEqual(store.list()[0],validateGiftWidget(custom));
  const r=startGiftRound(fourBonusConfig());open(r,0,'0:0');open(r,1,'0:1');unwrapGift(r,Date.now()+10000,{forcedIndex:4,cell:'0:2'});
- data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[{...fourBonusConfig(),room,round:r,starterBonusesVersion:1}]}));await store.init();assert.deepEqual(store.list()[0],fourBonusConfig());
- await store.advance(r.flight.finishAt);assert.deepEqual(store.list()[0],fourBonusConfig());assert.equal(store.snapshot('gift-pile').lastResult.totalCents,'7000');
+ data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[{...fourBonusConfig(),room,round:r,starterBonusesVersion:1}]}));await store.init();assert.deepEqual(store.list()[0],validateGiftWidget(fourBonusConfig()));
+ await store.advance(r.flight.finishAt);assert.deepEqual(store.list()[0],validateGiftWidget(fourBonusConfig()));assert.equal(store.snapshot('gift-pile').lastResult.totalCents,'7000');
  await store.advance(r.flight.finishAt+6000);assert.equal(store.snapshot('gift-pile').round,null);assert.deepEqual(store.list()[0],modern());assert.equal(store.roomKey('gift-pile'),room);
 });
 

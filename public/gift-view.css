@@ -103,3 +103,14 @@
 @media(prefers-reduced-motion:reduce){.gift-stage,.gift-cell,.gift-board,.gift-toast{transition:none}.gift-cell,.gift-finale{animation:none}.gift-cell svg{transform:none!important}.gift-glints{display:none}}
 
 .gift-cell-detail{display:block;font-size:max(9px,calc(var(--prize-size,24px)*.52));font-weight:500;line-height:1.2;margin-top:2px}.gift-cell-detail:empty{display:none}
+
+/* Tiers decorate the same fixed plaque; no larger overlay or jumping amount. */
+.gift-finale[data-tier="big"]{--final-edge:#b77886;--final-edge-light:#ffd0e1;--final-corner:#f4b5d1;--final-gem-light:#fff0f7;--final-crown-gem:#c4abf0}
+.gift-finale[data-tier="royal"]{--final-edge:#c49765;--final-edge-light:#fff0bf;--final-corner:#ffe7aa;--final-gem-light:#e5d8ff;--final-crown-gem:#a3e2cc}
+.gift-final-rank{position:absolute;top:27px;left:32px;right:32px;display:flex;align-items:center;justify-content:space-between;height:16px;color:#ffcee3;pointer-events:none}
+.gift-final-rank[hidden]{display:none}
+.gift-final-rank b{width:105px;font:500 11px/1 Fredoka,sans-serif;letter-spacing:1.3px;text-shadow:0 2px #180c24}
+.gift-final-rank i{display:flex;gap:8px;width:105px;justify-content:center}
+.gift-final-rank em{display:block;width:8px;height:8px;background:currentColor;clip-path:polygon(25% 0,75% 0,75% 25%,100% 25%,100% 75%,75% 75%,75% 100%,25% 100%,25% 75%,0 75%,0 25%,25% 25%);box-shadow:inset 2px 2px #fff5}
+.gift-finale[data-tier="big"] .gift-final-rank em:last-child{display:none}
+.gift-finale[data-tier="royal"] .gift-final-rank{color:#fff0bc}

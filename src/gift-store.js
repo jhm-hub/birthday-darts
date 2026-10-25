@@ -14,9 +14,9 @@ function upgradeStarter(w){
  }
  w.starterBonusesVersion=2;return true;
 }
-export function exportGiftSettings(widgets){return {format:'faith-gift-pile',version:2,widgets:widgets.map(w=>{const {id,...p}=validateGiftWidget(w);return p;})};}
+export function exportGiftSettings(widgets){return {format:'faith-gift-pile',version:3,widgets:widgets.map(w=>{const {id,...p}=validateGiftWidget(w);return p;})};}
 export function importGiftSettings(raw){
- if(raw?.format!=='faith-gift-pile'||![1,2].includes(raw.version)||!Array.isArray(raw.widgets)||!raw.widgets.length||raw.widgets.length>30)throw Error('Choose a Gift Pile settings backup.');
+ if(raw?.format!=='faith-gift-pile'||![1,2,3].includes(raw.version)||!Array.isArray(raw.widgets)||!raw.widgets.length||raw.widgets.length>30)throw Error('Choose a Gift Pile settings backup.');
  return raw.widgets.map(w=>validateGiftWidget({...w,id:crypto.randomUUID()}));
 }
 export function createGiftStore(storage,locks){

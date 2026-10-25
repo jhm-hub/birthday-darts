@@ -186,12 +186,22 @@ boards. There is no character in this game, and no character artwork to download
   waves stay behind the opaque plaque and inside the board. The second wave and
   crown peak meet the fanfare's warm chord at 320 ms, followed by a resolving
   coin sparkle. The fanfare uses the same balanced master volume as the prizes.
-  All motion settles within 2.6 seconds, leaving a still, readable total during
+  Standard motion settles within 2.6 seconds, leaving a still, readable total during
   the original 5.5-second hold. Long totals/calculations resize within the plaque.
   The transparent overlay stays 420×460. Reduced motion keeps a stationary frame
   and crown without particles, sheen or glints. Completion timestamps drive all
   effects; reconnecting cannot restart an old celebration or replay its sound.
-  **Preview finale** auditions it directly.
+  **Celebration levels** in the private game settings controls two thresholds:
+  **Standard below $100**, **Big win at $100+**, **Royal win at $250+** by default.
+  Big win adds a pink frame, a third confetti wave and an extended musical finish;
+  Royal win adds brighter gold, a fourth wave and a richer resolving fanfare.
+  These tiers use the exact final total **after all multipliers**. They share the
+  same plaque size, 5.5-second hold and master volume; their motion settles by
+  2.6 / 2.9 / 3.2 seconds. Thresholds are saved per game, must be positive dollar
+  amounts (up to two decimal places), and Royal must exceed Big. Changes apply
+  to the next viewer; a running round keeps its original thresholds. Older
+  saved games gain the $100 / $250 defaults on their next round, while already
+  active legacy rounds retain their original standard celebration.
 - **Present concepts** (`gift-concepts.html`) preserves all three art
   directions: A / Satin Party, B / Royal Velvet, C / Candy Confetti. Each shows
   five wrapper colors and a stream-size preview with unwrapping, finale playback,
@@ -200,7 +210,10 @@ boards. There is no character in this game, and no character artwork to download
   art switch only needs `ACTIVE_GIFT_CONCEPT` in `src/gift-concept-art.js` changed.
 - The editor’s **Next demo reveal** selector can force a cash, multiplier or
   expansion result for review. It is only a disposable demo; live controls have
-  no forced-prize input. **Preview finale** skips to a random sample round total.
+  no forced-prize input. **Finale preview → Standard / Big win / Royal win →
+  Preview finale** plays a clearly labelled sample total at the selected level.
+  **Random round** uses the draft's real prizes and odds to generate a sample
+  round. These choices never change saved settings or a live round.
 
 **Volume:** In **Open controls**, use **Stream volume** (0–100%) to balance all
 Gift Pile sounds with voice and music. Zero is silent; 100% uses the balanced game
@@ -231,4 +244,5 @@ their previous relative proportions, rounded to hundredths. Custom setups keep t
 amounts and odds; use **Add a prize** to add the new types. Active rounds keep
 their frozen prize values, including older +2 growth gifts. Refresh controls and
 the stream display after updating.
-New settings backups use version 2; the game still imports older version-1 backups.
+New settings backups use version 3 and include celebration thresholds; the game
+still imports version-1 and version-2 backups, applying default thresholds when absent.
