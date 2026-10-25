@@ -181,3 +181,31 @@
 .gift-cell-detail{font-weight:600;line-height:1;letter-spacing:.3px;margin-top:1px;color:#fff0df;text-shadow:0 1px #12081c}
 .gift-special .gift-cell-main{color:var(--prize-color)}
 .gift-cell-prize::before{inset:2px;border-top-color:#ffefd55c;border-bottom-color:#bb90ae66}
+
+
+/* Birthday icing: bright candy lettering on the existing shaded pixel plaques. */
+.gift-stage{--birthday-pink:#ffabe1;--birthday-peach:#ffd0a3;--birthday-mint:#a8ffe2;--birthday-lilac:#ddb5ff;--birthday-sky:#acebff;--birthday-vanilla:#fff2ac;--birthday-icing:#ffe7f7;color:var(--birthday-icing)}
+.gift-head>span:first-child{color:var(--birthday-peach)}
+.gift-head b{color:var(--birthday-pink);text-shadow:0 1px #9b4173,0 2px #24132f}
+.gift-head i{color:var(--birthday-vanilla)}
+.gift-count{color:var(--birthday-mint)}
+.gift-viewer{color:var(--birthday-icing)}
+.gift-board-size,.gift-cell-number{color:var(--birthday-lilac)}
+.gift-cell[data-kind="multiply"],.gift-toast[data-kind="multiply"]{--birthday-reward:var(--birthday-lilac)}
+.gift-cell[data-kind="extra"],.gift-toast[data-kind="extra"]{--birthday-reward:var(--birthday-mint)}
+.gift-cell[data-kind="row"],.gift-toast[data-kind="row"]{--birthday-reward:var(--birthday-sky)}
+.gift-cell[data-kind="column"],.gift-toast[data-kind="column"]{--birthday-reward:var(--birthday-pink)}
+.gift-cell-main,.gift-special .gift-cell-main,.gift-toast strong{color:var(--birthday-reward,var(--birthday-pink))}
+.gift-cell-currency{color:var(--birthday-vanilla)}
+.gift-cell-detail,.gift-toast-detail{color:var(--birthday-icing)}
+.gift-footer small{color:#f5cceb}
+.gift-subtotal{color:var(--birthday-peach)}
+.gift-multiplier strong{color:var(--birthday-lilac)}
+.gift-running strong{color:var(--birthday-mint)}
+.gift-finale>small,.gift-finale>p,.gift-final-count{color:var(--birthday-icing)}
+.gift-finale>strong{color:var(--birthday-pink);text-shadow:0 2px #a64b7f,0 4px #22102d}
+.gift-finale[data-tier="big"]>strong{color:var(--birthday-lilac);text-shadow:0 2px #8153a8,0 4px #22102d}
+.gift-finale[data-tier="royal"]>strong{color:var(--birthday-vanilla);text-shadow:0 2px #b46982,0 4px #22102d}
+.gift-final-rank{color:var(--birthday-pink)}
+.gift-finale[data-tier="royal"] .gift-final-rank{color:var(--birthday-vanilla)}
+.gift-royal-build{color:var(--birthday-pink)}

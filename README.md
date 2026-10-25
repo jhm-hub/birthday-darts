@@ -178,6 +178,10 @@ boards. There is no character in this game, and no character artwork to download
   mint growth, blue rows and pink columns have distinct pixel emblems in the
   readable top banner. Exact values appear at the original reveal time; effects
   sample that clock, finish before the next pick, and stay still for reduced motion.
+- Birthday lettering uses candy-pink cash amounts, lilac multipliers, mint growth
+  and totals, sky-blue rows, and pink columns. Vanilla dollar signs and light icing
+  subtitles keep values clear against the shaded plaques. Standard, Big and Royal
+  totals use pink, lilac and vanilla respectively, with small pixel shadows.
 - Every selected present gets a shaded gold-and-candy pixel frame throughout its
   unwrap and prize reading beat. Surrounding gifts soften briefly, then recover
   as the reward lands; new bonus gifts arrive at full brightness. The focus stays
