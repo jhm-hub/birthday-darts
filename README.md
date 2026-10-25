@@ -163,6 +163,11 @@ boards. There is no character in this game, and no character artwork to download
   rounded pop meets the lid lift before the existing prize chime. These cues
   follow the same committed clock in the demo, controls and OBS display; late
   displays skip expired cues. Muting or resetting cancels pending sounds.
+- Each prize appears in a shaded pixel frame with a brief pop-and-settle, a quiet
+  highlight sweep and small stars confined to its gift. Gold cash, lilac multipliers,
+  mint growth, blue rows and pink columns have distinct pixel emblems in the
+  readable top banner. Exact values appear at the original reveal time; effects
+  sample that clock, finish before the next pick, and stay still for reduced motion.
 - Default limits: **5×5 board, 12 picks per round**. Limits and bonus pick amounts
   are editable (up to 6×6 /36 picks). A partially capped bonus awards only the
   available picks. A row/column bonus stops when its own dimension reaches the board limit;

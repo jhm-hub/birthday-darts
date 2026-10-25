@@ -3,6 +3,8 @@ import {money,giftTotal,prizeLabel,projectedGiftRound,giftDimensions,isGiftExpan
 import {giftBonusMotion,giftCellMotion,giftBonusBands,pixelBandPath} from './gift-bonus-motion.js';
 import {FINALE_PARTICLES,giftFinaleMotion,giftConfetti,pixelConfettiPath} from './gift-finale-motion.js';
 import {giftUnwrapMotion,applyGiftUnwrap} from './gift-unwrap-motion.js';
+import {giftPrizeMotion,giftPrizeSpark,applyGiftPrize,PRIZE_COLORS} from './gift-prize-motion.js';
+import {giftPrizeEmblem} from './gift-prize-art.js';
 
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
 export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=>{},onError=()=>{},audio=null,art=activeGiftSVG}={}){
@@ -11,7 +13,8 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
  const bands=document.createElementNS('http://www.w3.org/2000/svg','svg');bands.setAttribute('class','gift-bonus-bands');bands.setAttribute('viewBox','0 0 396 314');bands.setAttribute('aria-hidden','true');bands.innerHTML='<path/><path/>';stage.insertBefore(bands,board);
  const confetti=document.createElementNS('http://www.w3.org/2000/svg','svg');confetti.setAttribute('class','gift-final-confetti');confetti.setAttribute('viewBox','0 0 420 460');confetti.setAttribute('aria-hidden','true');confetti.innerHTML='<path/>'.repeat(FINALE_PARTICLES);stage.insertBefore(confetti,$('.gift-finale'));
  $('.gift-final-star').innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 0h4v4h4v4h4v4h-4v4h-4v4H8v-4H4v-4H0V8h4V4h4Z" fill="#e7bf7c"/><path d="M8 4h4v4h4v4h-4v4H8v-4H4V8h4Z" fill="#ffedbe"/></svg>';
- let round=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null;
+ const toast=$('.gift-toast');toast.innerHTML='<i class="gift-prize-emblem" aria-hidden="true"></i><strong></strong><span class="gift-toast-detail"></span><i class="gift-title-spark" aria-hidden="true"></i>';
+ let round=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null,oldPrizeKind=null;
  const resize=()=>{const s=Math.min(root.clientWidth/420,root.clientHeight/460);stage.style.transform=`translate(-50%,-50%) scale(${s})`;};
  const observer=new ResizeObserver(resize);observer.observe(root);resize();
  // Inline gift art needs no character downloads. Defer readiness until callers initialize.
@@ -31,7 +34,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   const opened=new Map(shown?.opened.map(s=>[s.cell,s])??[]);
   for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
    const id=row+':'+col,shot=opened.get(id),active=flight?.cell===id;let b=buttons.get(id);
-   if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;b.innerHTML=art(row*3+col)+`<span class="gift-cell-prize"><span class="gift-cell-main"></span><small class="gift-cell-detail"></small></span><span class="gift-cell-number"></span><span class="gift-glints" aria-hidden="true">${Array.from({length:8},(_,i)=>`<i style="--angle:${i*45}deg"></i>`).join('')}</span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
+   if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;b.innerHTML=art(row*3+col)+`<span class="gift-glints" aria-hidden="true">${'<i></i>'.repeat(8)}</span><span class="gift-cell-prize"><span class="gift-cell-main"></span><small class="gift-cell-detail"></small></span><span class="gift-cell-number"></span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
    b.classList.toggle('candy-unwrap',!!b.querySelector('svg[data-unwrap="candy"]'));
    const arrival=giftCellMotion(row,col,rows,cols,bonus);
    Object.assign(b.style,{left:arrival.left+'px',top:arrival.top+'px',width:arrival.width+'px',height:arrival.height+'px',transform:`translate(${arrival.x}px,${arrival.y}px) scale(${arrival.sx},${arrival.sy})`});
@@ -47,10 +50,26 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
     const shake=active&&age<650&&!reduced.matches?Math.sin(age/28)*Math.sin(Math.PI*age/650)*3:0,lift=active?ease((age-400)/450):shot?1:0;
     b.style.setProperty('--shake',shake+'deg');b.style.setProperty('--lid-y',(-34*lift)+'px');b.style.setProperty('--lid-turn',(-14*lift)+'deg');b.style.setProperty('--lid-opacity',String(1-ease((age-900)/300)*(active?1:0)));b.style.setProperty('--open',String(lift));
    }
-   const burst=active&&!reduced.matches?Math.max(0,(age-850)/650):2;b.style.setProperty('--glint-distance',(10+burst*35)+'px');b.style.setProperty('--glint-opacity',String(burst>0&&burst<1?1-burst:0));
+   const prize=giftPrizeMotion(active?flight:null,time,{opened:!!shot,reduced:reduced.matches});
+   applyGiftPrize(b,prize);b.style.setProperty('--prize-color',PRIZE_COLORS[shot?.prize.kind??flight?.prize.kind]??PRIZE_COLORS.cash);
+   b.style.setProperty('--spark-size',Math.min(6,arrival.height*.1)+'px');
+   const glints=b.querySelector('.gift-glints');glints.style.display=active&&prize.visible&&!reduced.matches?'':'none';
+   if(active&&prize.visible)[...glints.children].forEach((star,i)=>{
+    const p=giftPrizeSpark(i,prize.age,{reduced:reduced.matches});star.style.left=p.x+'%';star.style.top=p.y+'%';star.style.opacity=p.opacity;
+   });
   }
-  const reveal=flight&&time>=flight.revealAt,toast=$('.gift-toast');toast.classList.toggle('show',!!reveal);toast.setAttribute('aria-hidden',String(!reveal));toast.dataset.kind=flight?.prize.kind??'';
-  if(reveal){const expansion=isGiftExpansion(flight.prize.kind);toast.querySelector('strong').textContent=expansion?giftBonusName(flight.prize.kind).toUpperCase():prizeLabel(flight.prize);toast.querySelector('span').textContent=expansion?`${giftPickLabel(flight.prize).toUpperCase()} · ${rows} ROWS × ${cols} COLUMNS`:flight.prize.kind==='multiply'?`FINAL TOTAL MULTIPLIER: ×${shown.multiplier}`:'A LITTLE SOMETHING FOR YOU';}
+  const reveal=flight&&time>=flight.revealAt,prizeMotion=giftPrizeMotion(flight,time,{reduced:reduced.matches}),kind=flight?.prize.kind??'';
+  toast.classList.toggle('show',!!reveal);toast.setAttribute('aria-hidden',String(!reveal));toast.dataset.kind=kind;
+  stage.style.setProperty('--reveal-color',PRIZE_COLORS[kind]??PRIZE_COLORS.cash);
+  for(const [key,value,unit]of [['announce-opacity',prizeMotion.announce,''],['title-y',prizeMotion.titleY,'px'],['title-scale',prizeMotion.titleScale,''],['reveal-flare',prizeMotion.flare,'']])stage.style.setProperty('--'+key,value+unit);
+  if(kind!==oldPrizeKind){toast.querySelector('.gift-prize-emblem').innerHTML=kind?giftPrizeEmblem(kind):'';oldPrizeKind=kind;}
+  if(reveal){
+   const expansion=isGiftExpansion(kind),title=toast.querySelector('strong'),detail=toast.querySelector('.gift-toast-detail');
+   title.textContent=expansion?giftBonusName(kind).toUpperCase():prizeLabel(flight.prize);
+   title.style.fontSize=Math.min(expansion?27:36,280/(title.textContent.length*.6))+'px';
+   detail.textContent=expansion?`${giftPickLabel(flight.prize).toUpperCase()} · ${rows} ROWS × ${cols} COLUMNS`:kind==='multiply'?`FINAL TOTAL MULTIPLIER: ×${shown.multiplier}`:'CASH PRIZE';
+   detail.style.fontSize=Math.min(expansion?11:10,292/(detail.textContent.length*.62))+'px';
+  }
   $('.gift-subtotal').textContent=money(shown?.cashCents??0);$('.gift-multiplier strong').textContent='×'+(shown?.multiplier??1);$('.gift-running strong').textContent=money(giftTotal(shown));
   for(const [selector,width,max]of [['.gift-subtotal',100,22],['.gift-multiplier strong',72,22],['.gift-running strong',154,27]]){const element=$(selector);element.style.fontSize=Math.min(max,width/(element.textContent.length*.58))+'px';}
   $('.gift-finale').hidden=!finished;
