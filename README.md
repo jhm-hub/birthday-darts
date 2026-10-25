@@ -152,8 +152,10 @@ boards. There is no character in this game, and no character artwork to download
   crisp lid bevels and shaded paper corners. The bow retains that shading through
   its loosening poses; all shapes stay on the original 56×64 drawing grid.
   The editor demo, controls and transparent 420×460 display share the same artwork.
-- Candy's bow loosens through five drawn pixel poses, the ribbons slip free and
-  the lid hops away before the prize rises into view. The original 0.85-second
+- Candy's bow loosens through twelve drawn release poses with shaded folds,
+  curling ribbon ends and a gentle pull. The box compresses slightly, then the
+  lid follows one continuous rising/falling arc timed to its pop sound, with
+  a small settling motion before the prize rises into view. The original 0.85-second
   reveal and 2-second pick timing stay intact. Displays sample the committed
   clock; reduced motion uses a stationary gift and a quiet reveal. A/B retain
   their saved artwork and original opening motion in the concept gallery.

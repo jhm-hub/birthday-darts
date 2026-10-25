@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {giftUnwrapMotion} from '../src/gift-unwrap-motion.js';
+import {giftUnwrapMotion,CANDY_BOW_POSE_MS,CANDY_LID_POP_MS} from '../src/gift-unwrap-motion.js';
 import {DEFAULT_GIFTS,startGiftRound,unwrapGift,projectedGiftRound,advanceGiftRound,REVEAL_MS,UNWRAP_MS} from '../src/gift-game.js';
 
 function round(){const r=startGiftRound(DEFAULT_GIFTS,'Unwrap test',1000);unwrapGift(r,1000,{cell:'0:0',forcedIndex:1});return r;}
@@ -17,11 +17,28 @@ test('unwrap is bounded, finite and returns to a settled pose before another pic
  const f=round().flight;
  for(let age=-100;age<=UNWRAP_MS+100;age++){
   const m=giftUnwrapMotion(f,f.startAt+age);
-  assert.ok(Object.values(m).every(Number.isFinite));assert.ok(Number.isInteger(m.bowFrame));assert.ok(m.bowFrame>=0&&m.bowFrame<=5);
-  for(const key of ['bowOpacity','bandOpacity','lidOpacity','inside','prizeOpacity'])assert.ok(m[key]>=0&&m[key]<=1,key);
+  assert.ok(Object.values(m).every(Number.isFinite));assert.ok(Number.isInteger(m.bowFrame));assert.ok(m.bowFrame>=0&&m.bowFrame<CANDY_BOW_POSE_MS.length);
+  for(const key of ['bowOpacity','bandOpacity','lidOpacity','inside','parcelOpacity','prizeOpacity'])assert.ok(m[key]>=0&&m[key]<=1,key);
   assert.ok(m.lidX>=0&&m.lidX<=9);assert.ok(m.lidY>=-17&&m.lidY<=2);
  }
  const m=giftUnwrapMotion(f,f.finishAt-1);assert.equal(m.lidOpacity,0);assert.equal(m.bowOpacity,0);assert.equal(m.bodyX,1);assert.equal(m.bodyY,1);assert.equal(m.prizeY,0);assert.equal(m.prizeScale,1);assert.equal(m.prizeOpacity,1);
+ assert.ok(Math.abs(m.parcelOpacity-giftUnwrapMotion(null,f.finishAt,{opened:true}).parcelOpacity)<1e-12,'settles without another opacity jump');
+});
+test('lid takes one uninterrupted arc from the pop cue through its apex and falling exit',()=>{
+ const f=round().flight,pose=age=>giftUnwrapMotion(f,f.startAt+age);
+ assert.equal(pose(CANDY_LID_POP_MS).lidY,2);
+ let previous=pose(CANDY_LID_POP_MS);
+ for(let age=CANDY_LID_POP_MS+1;age<840;age++){
+  const current=pose(age);
+  assert.ok(Math.abs(current.lidY-previous.lidY)<.181,'no position jump');
+  if(age<=720)assert.ok(current.lidY<previous.lidY,'continuous rise');
+  else assert.ok(current.lidY>previous.lidY,'continuous fall');
+  assert.ok(current.lidX>previous.lidX,'horizontal follow-through');
+  previous=current;
+ }
+ // The old segmented easing stopped here, interrupting the apparent momentum.
+ for(const age of [650,740])assert.ok(Math.abs(pose(age+2).lidY-pose(age-2).lidY)>.05);
+ assert.equal(pose(840).lidOpacity,0);
 });
 test('reduced motion stays stationary until one quiet reveal',()=>{
  const f=round().flight,idle=giftUnwrapMotion(null,0);
