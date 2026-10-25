@@ -2,6 +2,7 @@ import {activeGiftSVG} from './gift-concept-art.js';
 import {money,giftTotal,prizeLabel,projectedGiftRound,giftDimensions,isGiftExpansion,giftBonusName,giftPickLabel} from './gift-game.js';
 import {giftBonusMotion,giftCellMotion,giftBonusBands,pixelBandPath} from './gift-bonus-motion.js';
 import {FINALE_PARTICLES,giftFinaleMotion,giftConfetti,pixelConfettiPath} from './gift-finale-motion.js';
+import {giftUnwrapMotion,applyGiftUnwrap} from './gift-unwrap-motion.js';
 
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
 export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=>{},onError=()=>{},audio=null,art=activeGiftSVG}={}){
@@ -31,6 +32,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
    const id=row+':'+col,shot=opened.get(id),active=flight?.cell===id;let b=buttons.get(id);
    if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;b.innerHTML=art(row*3+col)+`<span class="gift-cell-prize"><span class="gift-cell-main"></span><small class="gift-cell-detail"></small></span><span class="gift-cell-number"></span><span class="gift-glints" aria-hidden="true">${Array.from({length:8},(_,i)=>`<i style="--angle:${i*45}deg"></i>`).join('')}</span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
+   b.classList.toggle('candy-unwrap',!!b.querySelector('svg[data-unwrap="candy"]'));
    const arrival=giftCellMotion(row,col,rows,cols,bonus);
    Object.assign(b.style,{left:arrival.left+'px',top:arrival.top+'px',width:arrival.width+'px',height:arrival.height+'px',transform:`translate(${arrival.x}px,${arrival.y}px) scale(${arrival.sx},${arrival.sy})`});
    b.style.setProperty('--arrival-opacity',String(arrival.opacity));b.style.setProperty('--spawn-opacity',String(arrival.spark));b.style.setProperty('--spawn-radius',arrival.radius+'px');b.classList.toggle('gift-new',arrival.newCell);
@@ -40,8 +42,11 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
    b.classList.toggle('gift-opened',!!shot);b.classList.toggle('gift-opening',active);b.classList.toggle('gift-special',!!shot&&shot.prize.kind!=='cash');
    b.querySelector('.gift-cell-number').textContent=shot?'':String.fromCharCode(65+row)+(col+1);
    b.querySelector('.gift-cell-main').textContent=label;b.querySelector('.gift-cell-detail').textContent=expansion?giftPickLabel(shot.prize):'';
-   const shake=active&&age<650&&!reduced.matches?Math.sin(age/28)*Math.sin(Math.PI*age/650)*3:0,lift=active?ease((age-400)/450):shot?1:0;
-   b.style.setProperty('--shake',shake+'deg');b.style.setProperty('--lid-y',(-34*lift)+'px');b.style.setProperty('--lid-turn',(-14*lift)+'deg');b.style.setProperty('--lid-opacity',String(1-ease((age-900)/300)*(active?1:0)));b.style.setProperty('--open',String(lift));
+   if(b.classList.contains('candy-unwrap'))applyGiftUnwrap(b,giftUnwrapMotion(active?flight:null,time,{opened:!!shot,reduced:reduced.matches}));
+   else {
+    const shake=active&&age<650&&!reduced.matches?Math.sin(age/28)*Math.sin(Math.PI*age/650)*3:0,lift=active?ease((age-400)/450):shot?1:0;
+    b.style.setProperty('--shake',shake+'deg');b.style.setProperty('--lid-y',(-34*lift)+'px');b.style.setProperty('--lid-turn',(-14*lift)+'deg');b.style.setProperty('--lid-opacity',String(1-ease((age-900)/300)*(active?1:0)));b.style.setProperty('--open',String(lift));
+   }
    const burst=active&&!reduced.matches?Math.max(0,(age-850)/650):2;b.style.setProperty('--glint-distance',(10+burst*35)+'px');b.style.setProperty('--glint-opacity',String(burst>0&&burst<1?1-burst:0));
   }
   const reveal=flight&&time>=flight.revealAt,toast=$('.gift-toast');toast.classList.toggle('show',!!reveal);toast.setAttribute('aria-hidden',String(!reveal));toast.dataset.kind=flight?.prize.kind??'';

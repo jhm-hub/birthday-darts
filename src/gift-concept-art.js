@@ -1,4 +1,5 @@
 import {giftSVG} from './gift-art.js';
+import {candyBowFrames} from './gift-candy-bow.js';
 
 export const ACTIVE_GIFT_CONCEPT='candy';
 
@@ -61,5 +62,6 @@ export function giftConceptSVG(concept,index=0){
   <path d="M27 23H31V28H27V32H23V29H21V27H25V25H27ZM33 23H37V27H41V31H37V29H33Z" fill="#fff0b2"/>
   <path d="M27 18H35V25H27Z" fill="#cda874"/><path d="M28 19H34V23H28Z" fill="#fff0b2"/><path d="M29 19H32V21H29Z" fill="#fffbe2"/>`;
  }
+ if(concept==='candy'){opts.unwrap=true;opts.bow=candyBowFrames(opts.bow);}
  return giftSVG(index,opts);
 }

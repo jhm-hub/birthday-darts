@@ -7,7 +7,7 @@ const palettes=[
  ['#a6c3e5','#7f9cc6','#485e8e','#d9e6ff','#c8afea','#f0defa','#8e6eae'],
  ['#edc88f','#cfa16e','#8a6557','#ffe8b8','#c47fa7','#f2bad3','#814666']
 ];
-export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim=''}={}){
+export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim='',unwrap=false}={}){
  const [light,base,shade,shine,ribbon,ribbonLight,ribbonShade]=colors??palettes[index%palettes.length];
  const stars=pattern??[[12,39],[31,45],[12,51]].map(([x,y])=>`<path d="M${x} ${y-2}h1v2h2v1h-2v2h-1v-2h-2v-1h2Z" fill="${shine}"/>`).join('');
  const defaultBow=`
@@ -25,7 +25,9 @@ export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim=''}={}){
  <path d="M28 19H34V21H36V23H34V25H28V23H26V21H28Z" fill="${ribbonShade}"/>
  <path d="M28 20H33V23H28Z" fill="${ribbon}"/><path d="M29 20H32V21H29Z" fill="${ribbonLight}"/>
 `;
- return `<svg viewBox="0 0 56 64" aria-hidden="true" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+ const lidBand=unwrap?' class="parcel-lid-band"':'';
+ const bowArt=`<g class="parcel-bow">${bow??defaultBow} </g>`;
+ return `<svg${unwrap?' data-unwrap="candy"':''} viewBox="0 0 56 64" aria-hidden="true" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
  <path d="M6 60H46V58H52V62H46V64H6V62H2V60Z" fill="#160c23" opacity=".25"/>
  <g class="parcel-body"><path d="M4 28L18 21H52V54L38 61H4Z" fill="#342233"/>
  <path d="M6 30H36V59H6Z" fill="${base}"/><path d="M8 32H36V56H8Z" fill="${light}"/>
@@ -43,8 +45,8 @@ export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim=''}={}){
  <path d="M2 28H36V34H2Z" fill="${light}"/><path d="M2 32H36V34H2Z" fill="${base}"/>
  <path d="M38 28L52 21V27L38 34Z" fill="${shade}"/><path d="M40 28L50 23V25L40 30Z" fill="${base}"/>
  <path d="M4 28H18V30H4ZM30 28H36V30H30Z" fill="${shine}"/>
- <path d="M20 26L32 20H40L28 26V34H20Z" fill="${ribbon}"/>
- <path d="M21 26L33 20H35L23 26V32H21Z" fill="${ribbonLight}"/>
- <path d="M26 28H28V34H20V32H26Z" fill="${ribbonShade}"/>
- <g class="parcel-bow">${bow??defaultBow} </g></g></svg>`;
+ <path${lidBand} d="M20 26L32 20H40L28 26V34H20Z" fill="${ribbon}"/>
+ <path${lidBand} d="M21 26L33 20H35L23 26V32H21Z" fill="${ribbonLight}"/>
+ <path${lidBand} d="M26 28H28V34H20V32H26Z" fill="${ribbonShade}"/>
+ ${unwrap?'':bowArt}</g>${unwrap?bowArt:''}</svg>`;
 }

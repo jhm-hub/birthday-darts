@@ -22,6 +22,21 @@
 .parcel-inside{opacity:var(--open,0)}
 .parcel-lid{transform:translateY(var(--lid-y,0px)) rotate(var(--lid-turn,0deg));transform-origin:27px 25px;opacity:var(--lid-opacity,1)}
 .parcel-band{opacity:calc(1 - var(--open,0))}
+/* Candy's loose ribbons sit outside the lid so they fall while the lid rises. */
+.candy-bow-frame{display:none}.candy-bow-frame[data-bow-frame="0"]{display:inline}
+.gift-cell[data-bow-frame] .candy-bow-frame{display:none}
+.gift-cell[data-bow-frame="0"] .candy-bow-frame[data-bow-frame="0"],
+.gift-cell[data-bow-frame="1"] .candy-bow-frame[data-bow-frame="1"],
+.gift-cell[data-bow-frame="2"] .candy-bow-frame[data-bow-frame="2"],
+.gift-cell[data-bow-frame="3"] .candy-bow-frame[data-bow-frame="3"],
+.gift-cell[data-bow-frame="4"] .candy-bow-frame[data-bow-frame="4"],
+.gift-cell[data-bow-frame="5"] .candy-bow-frame[data-bow-frame="5"]{display:inline}
+.candy-unwrap .parcel-bow{transform:translateY(var(--bow-y,0px));opacity:var(--bow-opacity,1)}
+.candy-unwrap .parcel-lid{transform:translate(var(--lid-x,0px),var(--lid-y,0px)) rotate(var(--lid-turn,0deg))}
+.candy-unwrap .parcel-body{transform:scale(var(--body-x,1),var(--body-y,1));transform-origin:28px 59px}
+.candy-unwrap .parcel-band{transform:translateY(var(--band-y,0px));opacity:var(--band-opacity,1)}
+.candy-unwrap .parcel-lid-band{opacity:var(--band-opacity,1)}
+.candy-unwrap .gift-cell-prize{opacity:var(--prize-opacity,1);transform:translateY(calc(-50% + var(--prize-y,0px))) scale(var(--prize-scale,1))}
 .gift-cell-number{position:absolute;bottom:6px;left:50%;min-width:18px;padding:1px 3px;border-radius:3px;background:#21142ae8;transform:translateX(-50%);color:#e5cbe9;font:11px/1 Fredoka,sans-serif;text-shadow:0 1px 2px #160d22}
 .gift-cell-prize{display:none;position:absolute;left:5%;right:5%;top:48%;transform:translateY(-50%);padding:4px 2px;border:1px solid #b89969;border-radius:6px;background:#25172ff5;color:#ffe2ac;font:600 var(--prize-size,24px) Fredoka,sans-serif;white-space:nowrap;text-align:center;box-shadow:0 2px #110b18}
 .gift-opened .gift-cell-prize{display:block}

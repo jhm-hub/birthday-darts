@@ -149,6 +149,11 @@ boards. There is no character in this game, and no character artwork to download
 - Gift boxes use **Candy Confetti** artwork: five candy-colored wrappers, pixel
   sprinkles and a cream bow, with matching lid/body perspective and aligned ribbons.
   The editor demo, controls and transparent 420×460 display share the same artwork.
+- Candy's bow loosens through five drawn pixel poses, the ribbons slip free and
+  the lid hops away before the prize rises into view. The original 0.85-second
+  reveal and 2-second pick timing stay intact. Displays sample the committed
+  clock; reduced motion uses a stationary gift and a quiet reveal. A/B retain
+  their saved artwork and original opening motion in the concept gallery.
 - Default limits: **5×5 board, 12 picks per round**. Limits and bonus pick amounts
   are editable (up to 6×6 /36 picks). A partially capped bonus awards only the
   available picks. A row/column bonus stops when its own dimension reaches the board limit;
