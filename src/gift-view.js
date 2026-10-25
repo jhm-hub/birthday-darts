@@ -1,9 +1,10 @@
 import {activeGiftSVG} from './gift-concept-art.js';
-import {money,giftTotal,prizeLabel,projectedGiftRound,giftDimensions,isGiftExpansion,giftBonusName,giftPickLabel} from './gift-game.js';
+import {money,giftTotal,prizeLabel,projectedGiftRound,giftDimensions} from './gift-game.js';
 import {giftBonusMotion,giftCellMotion,giftBonusBands,pixelBandPath} from './gift-bonus-motion.js';
 import {FINALE_PARTICLES,giftFinaleMotion,giftConfetti,pixelConfettiPath,giftFinalGleam} from './gift-finale-motion.js';
 import {giftUnwrapMotion,applyGiftUnwrap} from './gift-unwrap-motion.js';
 import {giftPrizeMotion,giftPrizeSpark,applyGiftPrize,PRIZE_COLORS} from './gift-prize-motion.js';
+import {giftAnnouncement,giftRewardCopy} from './gift-announcement.js';
 import {giftPrizeEmblem} from './gift-prize-art.js';
 import {presentedGiftRound,giftFinishMotion,giftFinishSpark} from './gift-finish-motion.js';
 import {giftIntroMotion,giftIntroCell,giftIntroLight,GIFT_INTRO_LIGHTS} from './gift-intro-motion.js';
@@ -61,12 +62,12 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
    b.classList.toggle('gift-intro-cell',!!intro&&!active);b.style.setProperty('--intro-color',['#ffe4a2','#ffb8d7','#d4bbf4'][(row+col)%3]);
    Object.assign(b.style,{left:arrival.left+'px',top:arrival.top+'px',width:arrival.width+'px',height:arrival.height+'px',transform:`translate(${arrival.x}px,${arrival.y+opening.y}px) scale(${arrival.sx*opening.scale},${arrival.sy*opening.scale})`});
    b.style.setProperty('--arrival-opacity',String(arrival.opacity*opening.opacity));b.style.setProperty('--spawn-opacity',String(Math.max(arrival.spark,opening.spark)));b.style.setProperty('--spawn-radius',(intro?Math.round(Math.min(arrival.width,arrival.height)*opening.radius):arrival.radius)+'px');b.classList.toggle('gift-new',arrival.newCell);
-   const expansion=shot&&isGiftExpansion(shot.prize.kind),label=shot?(expansion?{extra:'GROW',row:'ROW',column:'COL'}[shot.prize.kind]:prizeLabel(shot.prize)):'';b.style.setProperty('--prize-size',Math.min(26,arrival.height*106/314,(arrival.width*.88)/(Math.max(1,label.length)*.55))+'px');b.dataset.kind=shot?.prize.kind??'';
+   const reward=shot?giftRewardCopy(shot.prize,shown):null,label=reward?.cell??'';b.style.setProperty('--prize-size',Math.min(30,arrival.height*.38,(arrival.width*.82)/(Math.max(1,label.length)*.58))+'px');b.style.setProperty('--detail-size',Math.min(12,arrival.height*.18)+'px');b.dataset.kind=shot?.prize.kind??'';
    b.disabled=!interactive||!ready||!canPick||!!snapshotRound?.flight||finished||!!shot;b.tabIndex=interactive?0:-1;
    b.setAttribute('aria-label',shot?'Opened present: '+prizeLabel(shot.prize):`Open present, row ${row+1}, column ${col+1}`);
    b.classList.toggle('gift-opened',!!shot);b.classList.toggle('gift-opening',active);b.classList.toggle('gift-special',!!shot&&shot.prize.kind!=='cash');
    b.querySelector('.gift-cell-number').textContent=shot?'':String.fromCharCode(65+row)+(col+1);
-   b.querySelector('.gift-cell-main').textContent=label;b.querySelector('.gift-cell-detail').textContent=expansion?giftPickLabel(shot.prize):'';
+   b.querySelector('.gift-cell-main').textContent=label;b.querySelector('.gift-cell-detail').textContent=reward?.cellDetail??'';
    if(b.classList.contains('candy-unwrap'))applyGiftUnwrap(b,giftUnwrapMotion(active?flight:null,time,{opened:!!shot,reduced:reduced.matches,opening:active&&openingPick}));
    else {
     const shake=active&&age<650&&!reduced.matches?Math.sin(age/28)*Math.sin(Math.PI*age/650)*3:0,lift=active?ease((age-400)/450):shot?1:0;
@@ -80,20 +81,18 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
     const p=giftPrizeSpark(i,prize.age,{reduced:reduced.matches});star.style.left=p.x+'%';star.style.top=p.y+'%';star.style.opacity=p.opacity;
    });
   }
-  const reveal=flight&&time>=flight.revealAt,prizeMotion=giftPrizeMotion(flight,time,{reduced:reduced.matches}),kind=flight?.prize.kind??'';
+  const announcement=giftAnnouncement(round,time),reveal=!!announcement,prizeMotion=giftPrizeMotion(announcement?.shot,time,{reduced:reduced.matches,announceUntil:announcement?.until}),kind=announcement?.shot.prize.kind??'';
   toast.classList.toggle('show',!!reveal);toast.setAttribute('aria-hidden',String(!reveal));toast.dataset.kind=kind;
   stage.style.setProperty('--reveal-color',PRIZE_COLORS[kind]??PRIZE_COLORS.cash);
   for(const [key,value,unit]of [['announce-opacity',prizeMotion.announce,''],['title-y',prizeMotion.titleY,'px'],['title-scale',prizeMotion.titleScale,''],['reveal-flare',prizeMotion.flare,'']])stage.style.setProperty('--'+key,value+unit);
   if(kind!==oldPrizeKind){toast.querySelector('.gift-prize-emblem').innerHTML=kind?giftPrizeEmblem(kind):'';oldPrizeKind=kind;}
   if(reveal){
-   const expansion=isGiftExpansion(kind),title=toast.querySelector('strong'),detail=toast.querySelector('.gift-toast-detail');
-   title.textContent=expansion?giftBonusName(kind).toUpperCase():prizeLabel(flight.prize);
-   title.style.fontSize=Math.min(expansion?27:36,280/(title.textContent.length*.6))+'px';
-   detail.textContent=expansion?`${giftPickLabel(flight.prize).toUpperCase()} · ${rows} ROWS × ${cols} COLUMNS`:kind==='multiply'?`FINAL TOTAL MULTIPLIER: ×${shown.multiplier}`:'CASH PRIZE';
-   detail.style.fontSize=Math.min(expansion?11:10,292/(detail.textContent.length*.62))+'px';
+   const title=toast.querySelector('strong'),detail=toast.querySelector('.gift-toast-detail');
+   title.textContent=announcement.copy.title;title.style.fontSize=Math.min(38,280/(title.textContent.length*.6))+'px';
+   detail.textContent=announcement.copy.detail;detail.style.fontSize=Math.min(16,292/(detail.textContent.length*.62))+'px';
   }
   $('.gift-subtotal').textContent=money(shown?.cashCents??0);$('.gift-multiplier strong').textContent='×'+(shown?.multiplier??1);$('.gift-running strong').textContent=money(giftTotal(shown));
-  for(const [selector,width,max]of [['.gift-subtotal',100,22],['.gift-multiplier strong',72,22],['.gift-running strong',154,27]]){const element=$(selector);element.style.fontSize=Math.min(max,width/(element.textContent.length*.58))+'px';}
+  for(const [selector,width,max]of [['.gift-subtotal',100,22],['.gift-multiplier strong',72,26],['.gift-running strong',154,32]]){const element=$(selector);element.style.fontSize=Math.min(max,width/(element.textContent.length*.58))+'px';}
   $('.gift-finale').hidden=!finished;
   const finale=giftFinaleMotion(round,time,reduced.matches);
   $('.gift-finale').dataset.tier=finale?.tier.id??'standard';

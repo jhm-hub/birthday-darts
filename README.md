@@ -202,6 +202,13 @@ boards. There is no character in this game, and no character artwork to download
   speak. The selection frame fades before the prize. Subsequent picks keep their
   original unwrap timing/sounds. Reduced motion uses a still selection marker.
   Both the marker and first unwrap join the committed flight clock on reconnect.
+- Reward banners lead with **+1 PICK**, **+3 PICKS**, or **×2 TOTAL**, with
+  the new row/column and accumulated multiplier underneath. Opened gift labels,
+  picks remaining and the running total use larger type within the same frame.
+  A non-final reward can remain for another **600 ms** while Faith pauses;
+  a new pick clears it immediately. This does not delay the next click, replay
+  sounds, or change the final-present-to-total transition. Capped growth shows
+  the actual number of extra picks awarded.
 - After the last pick, a readable plaque shows **cash × multiplier = total**
   over the grid for 5.5 seconds, followed by a short, layered fade.
 - The last prize keeps a clear reading beat before handing off to that plaque.
@@ -303,3 +310,18 @@ their frozen prize values, including older +2 growth gifts. Refresh controls and
 the stream display after updating.
 New settings backups use version 3 and include celebration thresholds; the game
 still imports version-1 and version-2 backups, applying default thresholds when absent.
+
+### Stream-size checks
+
+The overlay was reviewed over Faith’s footage in a 1920×1080 scene, at desktop,
+844px phone landscape and 390px phone portrait player sizes. Keep the source at
+its native 420×460 size or larger in the scene. Portrait phone playback makes
+individual gift labels very small; landscape is clearer for following each pick.
+The reward banner and final total carry the result at smaller sizes. Place the
+source clear of Faith’s face, existing alerts and goal bars.
+
+The full-round review covered Standard, Big and Royal, all bonus types, a 6×6
+board, quiet motion, saved-game reloads, rapid clicks, reset during an unwrap,
+duplicate control tabs, and an actual browser display reconnect during a round.
+Audio checks covered complete rounds at the earliest next-pick timing. Final
+voice/music balance and OBS audio routing still belong to Faith’s stream setup.

@@ -4,17 +4,17 @@ const clamp=x=>Math.max(0,Math.min(1,x));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x);};
 const out=x=>1-(1-clamp(x))**3;
 export const PRIZE_COLORS={cash:'#ffe3a5',multiply:'#dfbaff',extra:'#bcebd4',row:'#bfe5ff',column:'#ffbfdc'};
-export function giftPrizeMotion(flight,time,{opened=false,reduced=false}={}){
+export function giftPrizeMotion(flight,time,{opened=false,reduced=false,announceUntil=flight?.finishAt}={}){
  const idle={visible:opened,age:0,y:0,scale:1,opacity:opened?1:0,titleY:0,titleScale:1,announce:0,flare:0,shine:0,shineX:-50};
  if(!flight||time<flight.revealAt)return idle;
  const age=time-flight.revealAt,bonus=flight.prize.kind!=='cash';
- const shown={...idle,visible:true,age,opacity:1,announce:time<flight.finishAt?1:0};
+ const shown={...idle,visible:true,age,opacity:1,announce:time<announceUntil?1:0};
  if(reduced)return shown;
  const peak=bonus?180:140,amplitude=bonus?.065:.045;
  const pop=age<peak?.94+(1+amplitude-.94)*out(age/peak):1+amplitude*(1-smooth((age-peak)/200));
  return {...shown,y:5*(1-smooth(age/180)),scale:pop,opacity:.55+.45*smooth(age/60),
   titleY:4*(1-out(age/180)),titleScale:1+(pop-1)*.7,
-  announce:time<flight.finishAt?1-smooth((time-(flight.finishAt-120))/120):0,
+  announce:time<announceUntil?1-smooth((time-(announceUntil-120))/120):0,
   flare:age<420?Math.sin(Math.PI*clamp(age/420)):0,
   shine:age>=80&&age<400?.16*Math.sin(Math.PI*clamp((age-80)/320)):0,
   shineX:-50+200*smooth((age-80)/320)};

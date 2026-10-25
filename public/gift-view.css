@@ -157,3 +157,11 @@
 .gift-pick-focus i{position:absolute;width:12px;height:12px;background:currentColor;box-shadow:inset 1px 1px #fff3d5;clip-path:polygon(4px 0,100% 0,100% 2px,4px 2px,4px 4px,2px 4px,2px 100%,0 100%,0 4px,2px 4px,2px 2px,4px 2px)}
 .gift-pick-focus i:nth-child(1){left:0;top:0}.gift-pick-focus i:nth-child(2){right:0;top:0;transform:rotate(90deg);color:#ffbfdb}
 .gift-pick-focus i:nth-child(3){right:0;bottom:0;transform:rotate(180deg)}.gift-pick-focus i:nth-child(4){left:0;bottom:0;transform:rotate(270deg);color:#ffbfdb}
+
+/* Stream-size reading: reward first, with a clear second line inside the same frame. */
+.gift-toast{padding:4px 46px}
+.gift-toast strong{font-weight:600}
+.gift-toast-detail{line-height:17px;letter-spacing:.25px;font-weight:500}
+.gift-cell-detail{display:block;font:500 var(--detail-size,12px)/1.1 Fredoka,sans-serif;letter-spacing:.2px;margin-top:2px}
+.gift-cell-detail:empty{display:none}
+.gift-count{font-size:14px;letter-spacing:.25px;padding:7px 9px}
