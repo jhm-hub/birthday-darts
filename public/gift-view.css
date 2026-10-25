@@ -152,9 +152,15 @@
 .gift-intro-cell .gift-spawn-glints i:nth-child(even){width:2px;height:2px;left:-1px;top:-1px;background:#fff3d5}
 @media(prefers-reduced-motion:reduce){.gift-intro-lights{display:none!important}}
 
-/* A quiet selection beat connects the welcome lights to the first ribbon pull. */
-.gift-pick-focus{position:absolute;inset:var(--focus-inset,10px);opacity:var(--focus-opacity,0);pointer-events:none;color:#ffe4a2}
-.gift-pick-focus i{position:absolute;width:12px;height:12px;background:currentColor;box-shadow:inset 1px 1px #fff3d5;clip-path:polygon(4px 0,100% 0,100% 2px,4px 2px,4px 4px,2px 4px,2px 100%,0 100%,0 4px,2px 4px,2px 2px,4px 2px)}
+/* A shaded pixel spotlight follows every pick, inside its existing cell. */
+.gift-cell{isolation:isolate;filter:brightness(var(--pick-brightness,1))!important}
+.gift-cell>svg{position:relative;z-index:1}
+.gift-cell-prize{z-index:3}.gift-cell-number{z-index:2}
+.gift-glints,.gift-spawn-glints{z-index:4}
+.gift-selected{z-index:6}
+.gift-pick-focus{position:absolute;inset:var(--focus-inset,2px);opacity:var(--focus-opacity,0);pointer-events:none;color:#ffe4a2;z-index:0}
+.gift-pick-focus::before{content:'';position:absolute;inset:0;border:2px solid #b58b70;background:linear-gradient(#513548f5 0 4px,#2b1c37ed 4px calc(100% - 4px),#190f27f5 calc(100% - 4px));box-shadow:inset 0 1px #ffdeaf66,inset 0 -2px #10091c;clip-path:polygon(4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,100% 2px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 2px) 100%,4px 100%,4px calc(100% - 2px),0 calc(100% - 2px),0 4px,2px 4px,2px 2px,4px 2px)}
+.gift-pick-focus i{position:absolute;width:18px;height:16px;background:currentColor;box-shadow:inset 1px 1px #fff6d8;clip-path:polygon(4px 0,100% 0,100% 3px,5px 3px,5px 5px,3px 5px,3px 100%,0 100%,0 4px,2px 4px,2px 2px,4px 2px)}
 .gift-pick-focus i:nth-child(1){left:0;top:0}.gift-pick-focus i:nth-child(2){right:0;top:0;transform:rotate(90deg);color:#ffbfdb}
 .gift-pick-focus i:nth-child(3){right:0;bottom:0;transform:rotate(180deg)}.gift-pick-focus i:nth-child(4){left:0;bottom:0;transform:rotate(270deg);color:#ffbfdb}
 

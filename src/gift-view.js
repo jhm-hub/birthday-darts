@@ -8,7 +8,7 @@ import {giftAnnouncement,giftRewardCopy} from './gift-announcement.js';
 import {giftPrizeEmblem} from './gift-prize-art.js';
 import {presentedGiftRound,giftFinishMotion,giftFinishSpark} from './gift-finish-motion.js';
 import {giftIntroMotion,giftIntroCell,giftIntroLight,GIFT_INTRO_LIGHTS} from './gift-intro-motion.js';
-import {isGiftOpeningPick,giftOpeningFocus} from './gift-opening-handoff.js';
+import {isGiftOpeningPick,giftPickFocus} from './gift-opening-handoff.js';
 import {createGiftPresence} from './gift-exit-motion.js';
 import {giftFinalFrame,giftFinalCrown,giftFinalBow,giftFinalBadge} from './gift-finale-art.js';
 
@@ -41,7 +41,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   finishTrail.style.display=finish.linked&&!reduced.matches?'':'none';finishTrail.style.fill=PRIZE_COLORS[finish.shot?.prize.kind]??PRIZE_COLORS.cash;
   [...finishTrail.children].forEach((g,i)=>{const p=giftFinishSpark(finish,i,round,time,reduced.matches);g.setAttribute('opacity',String(p?.opacity??0));if(p)g.setAttribute('transform',`translate(${p.x-Math.floor(p.size/2)} ${p.y-Math.floor(p.size/2)})`);});
   const {rows,cols}=giftDimensions(shown??preset),remaining=shown?.remaining??preset.picks,bonus=giftBonusMotion(round,time,reduced.matches);
-  const intro=giftIntroMotion(round,time,reduced.matches),openingPick=isGiftOpeningPick(round),focus=giftOpeningFocus(round,time,reduced.matches);
+  const intro=giftIntroMotion(round,time,reduced.matches),openingPick=isGiftOpeningPick(round),focus=giftPickFocus(round,time,reduced.matches);
   introLights.style.display=intro?'':'none';if(intro)[...introLights.children].forEach((g,i)=>g.setAttribute('opacity',String(giftIntroLight(i,intro))));
   stage.classList.toggle('gift-intro-active',!!intro);
   stage.style.setProperty('--bonus-color',bonus?.color??'#ffe8ad');stage.style.setProperty('--bonus-pop',String(bonus?.pop??0));
@@ -56,9 +56,11 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
    const id=row+':'+col,shot=opened.get(id),active=flight?.cell===id;let b=buttons.get(id);
    if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;b.innerHTML=art(row*3+col)+`<span class="gift-pick-focus" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="gift-glints" aria-hidden="true">${'<i></i>'.repeat(8)}</span><span class="gift-cell-prize"><span class="gift-cell-main"><span class="gift-cell-currency"></span><span class="gift-cell-value"></span></span><small class="gift-cell-detail"></small></span><span class="gift-cell-number"></span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
-   b.style.setProperty('--focus-opacity',String(active?focus.opacity:0));b.style.setProperty('--focus-inset',focus.inset+'px');
    b.classList.toggle('candy-unwrap',!!b.querySelector('svg[data-unwrap="candy"]'));
    const arrival=giftCellMotion(row,col,rows,cols,bonus),opening=giftIntroCell(row,col,intro);
+   const selected=focus.cell===id&&focus.opacity>0;
+   b.classList.toggle('gift-selected',selected);b.style.setProperty('--focus-opacity',String(selected?focus.opacity:0));b.style.setProperty('--focus-inset',focus.inset+'px');
+   b.style.setProperty('--pick-brightness',String(selected||arrival.newCell?1:1-focus.shade));
    b.classList.toggle('gift-intro-cell',!!intro&&!active);b.style.setProperty('--intro-color',['#ffe4a2','#ffb8d7','#d4bbf4'][(row+col)%3]);
    Object.assign(b.style,{left:arrival.left+'px',top:arrival.top+'px',width:arrival.width+'px',height:arrival.height+'px',transform:`translate(${arrival.x}px,${arrival.y+opening.y}px) scale(${arrival.sx*opening.scale},${arrival.sy*opening.scale})`});
    b.style.setProperty('--arrival-opacity',String(arrival.opacity*opening.opacity));b.style.setProperty('--spawn-opacity',String(Math.max(arrival.spark,opening.spark)));b.style.setProperty('--spawn-radius',(intro?Math.round(Math.min(arrival.width,arrival.height)*opening.radius):arrival.radius)+'px');b.classList.toggle('gift-new',arrival.newCell);

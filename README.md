@@ -178,6 +178,11 @@ boards. There is no character in this game, and no character artwork to download
   mint growth, blue rows and pink columns have distinct pixel emblems in the
   readable top banner. Exact values appear at the original reveal time; effects
   sample that clock, finish before the next pick, and stay still for reduced motion.
+- Every selected present gets a shaded gold-and-candy pixel frame throughout its
+  unwrap and prize reading beat. Surrounding gifts soften briefly, then recover
+  as the reward lands; new bonus gifts arrive at full brightness. The focus stays
+  inside the selected cell, follows the shared clock on reconnect and clears on
+  reset or the final total. Reduced motion uses a stationary frame.
 - Opened gifts use larger, heavier amounts on opaque shaded plaques, with a smaller
   dollar sign to leave more room for the number. Bonus tiles use **TOTAL**, **ROW**,
   **COL** and **GROW** beneath the reward. Labels fit the available cell through

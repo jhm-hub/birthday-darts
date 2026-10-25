@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULT_GIFTS,startGiftRound,unwrapGift,advanceGiftRound,projectedGiftRound,REVEAL_MS} from '../src/gift-game.js';
-import {isGiftOpeningPick,giftOpeningFocus,FIRST_BOW_RELEASE_MS} from '../src/gift-opening-handoff.js';
+import {isGiftOpeningPick,giftPickFocus,FIRST_BOW_RELEASE_MS} from '../src/gift-opening-handoff.js';
 import {giftUnwrapMotion,FIRST_BOW_POSE_MS,CANDY_LID_POP_MS} from '../src/gift-unwrap-motion.js';
 import {giftUnwrapCues} from '../src/gift-unwrap-audio.js';
 import {giftIntroScore} from '../src/gift-audio.js';
@@ -19,7 +19,6 @@ test('selection is acknowledged before the first bow pulls; all thirteen drawing
  for(let age=0;age<240;age+=10){const p=pose(age);assert.equal(p.bowFrame,0);assert.equal(Math.abs(p.shake),0);assert.equal(p.bandY,0);assert.equal(p.bodyX,1);assert.equal(p.bodyY,1);}
  assert.equal(pose(FIRST_BOW_RELEASE_MS-1).bowFrame,0);assert.equal(pose(FIRST_BOW_RELEASE_MS).bowFrame,1);
  FIRST_BOW_POSE_MS.forEach((at,frame)=>assert.equal(pose(at).bowFrame,frame));assert.equal(FIRST_BOW_POSE_MS.length,13);
- assert.ok(giftOpeningFocus(r,1200).opacity>.8);assert.equal(giftOpeningFocus(r,1260).inset,10);
 });
 test('first unwrap rejoins the existing lid arc and prize clock without a pose jump',()=>{
  const r=first(),f=r.flight;
@@ -34,15 +33,35 @@ test('first unwrap rejoins the existing lid arc and prize clock without a pose j
  }
  assert.equal(projectedGiftRound(r,f.revealAt).cashCents,2500);assert.equal(f.revealAt,1850);assert.equal(f.finishAt,3000);
 });
-test('selection frame leaves before the prize and quiet mode uses a stationary marker',()=>{
- const r=first(),f=r.flight;assert.equal(giftOpeningFocus(r,999).opacity,0);
- let previous=0;
- for(let age=0;age<=740;age++){
-  const p=giftOpeningFocus(r,f.startAt+age);assert.ok(p.opacity>=0&&p.opacity<=.9);assert.ok(p.inset>=4&&p.inset<=10);assert.ok(Number.isInteger(p.inset));
-  if(age<=200)assert.ok(p.opacity>=previous);previous=p.opacity;
+test('every pick stays marked through the reveal and reading beat, then clears',()=>{
+ const r=first(),before=structuredClone(r);
+ for(const age of [0,100,260,520,849,850,1200,1999]){
+  const p=giftPickFocus(r,1000+age);assert.equal(p.cell,'1:1');assert.ok(p.opacity>=.55&&p.opacity<=1);
  }
- assert.equal(giftOpeningFocus(r,1740).opacity,0);assert.equal(giftOpeningFocus(r,1850).opacity,0);
- for(const age of [0,200,500,849]){assert.deepEqual(giftOpeningFocus(r,f.startAt+age,true),{opacity:.6,inset:10});assert.deepEqual(giftUnwrapMotion(f,f.startAt+age,{opening:true,reduced:true}),giftUnwrapMotion(null,0));}
+ assert.deepEqual(r,before);assert.equal(giftPickFocus(r,999).cell,null);
+ const beforeCommit=giftPickFocus(r,3000);advanceGiftRound(r,3000);
+ assert.deepEqual(giftPickFocus(r,3000),beforeCommit);assert.equal(giftPickFocus(r,3350).opacity,1);
+ assert.ok(giftPickFocus(r,3500).opacity>0);assert.equal(giftPickFocus(r,3600).cell,null);
+ unwrapGift(r,3100,{cell:'0:0',forcedIndex:0});assert.equal(isGiftOpeningPick(r),false);
+ assert.equal(giftPickFocus(r,3100).cell,'0:0');assert.equal(giftPickFocus(r,3500).cell,'0:0');
+});
+test('surrounding gifts soften during the unwrap and recover for bonus arrivals',()=>{
+ const r=first();
+ for(let age=0;age<=2600;age++){
+  const p=giftPickFocus(r,1000+age);assert.ok(p.opacity>=0&&p.opacity<=1);assert.ok(p.shade>=0&&p.shade<=.32);
+  assert.ok(Number.isInteger(p.inset)&&p.inset>=2&&p.inset<=5);
+ }
+ assert.equal(giftPickFocus(r,1000).shade,0);assert.equal(giftPickFocus(r,1120).shade,.32);
+ assert.equal(giftPickFocus(r,1850).shade,.32);assert.equal(giftPickFocus(r,2170).shade,0);
+ assert.equal(giftPickFocus(r,2170).opacity,1);
+});
+test('quiet mode keeps a stationary marker and reset or final total clears it',()=>{
+ const r=first();
+ for(const age of [0,200,500,849])assert.deepEqual(giftPickFocus(r,1000+age,true),{cell:'1:1',opacity:1,inset:2,shade:.2});
+ assert.deepEqual(giftPickFocus(r,1850,true),{cell:'1:1',opacity:1,inset:2,shade:0});
+ assert.equal(giftPickFocus(null,1200).cell,null);assert.equal(giftPickFocus({...r,completedAt:3000},3000).cell,null);
+ r.remaining=1;assert.ok(giftPickFocus(r,2900).opacity<1);assert.equal(giftPickFocus(r,3000).cell,null);
+ advanceGiftRound(r,3000);assert.equal(giftPickFocus(r,3000).cell,null);
 });
 test('first ribbon sounds meet the new drawings and welcome tails hand off before the lid pop',()=>{
  const f=first().flight,cues=giftUnwrapCues(true,true);assert.equal(cues.length,4);
@@ -54,7 +73,7 @@ test('first ribbon sounds meet the new drawings and welcome tails hand off befor
 test('reconnects and frame jumps sample the same first-pick motion and marker',()=>{
  const r=first(),clone=JSON.parse(JSON.stringify(r));
  for(const time of [1000,1180,1259,1260,1370,1480,1520,1620,1740,1850,3000]){
-  assert.deepEqual(giftOpeningFocus(r,time),giftOpeningFocus(clone,time));
+  assert.deepEqual(giftPickFocus(r,time),giftPickFocus(clone,time));
   assert.deepEqual(giftUnwrapMotion(r.flight,time,{opening:isGiftOpeningPick(r)}),giftUnwrapMotion(clone.flight,time,{opening:isGiftOpeningPick(clone)}));
  }
 });
