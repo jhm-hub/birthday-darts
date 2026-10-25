@@ -2,15 +2,19 @@ import {isGiftExpansion} from './gift-game.js';
 import {giftArrivalCount,giftArrivalDelay,GIFT_ARRIVAL_MS} from './gift-bonus-motion.js';
 import {scheduleGiftUnwrap} from './gift-unwrap-audio.js';
 import {giftVolume,DEFAULT_GIFT_VOLUME} from './gift-volume.js';
+import {FINALE_RESOLVE_MS} from './gift-finale-motion.js';
 
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
 
-// A resolved victory phrase, longer and warmer than the multiplier power-up.
-export function giftFinaleScore(){return [
- ...[72,76,79,84].map((pitch,i)=>note(i*.095,pitch,.32,.04)),
- note(.32,60,.65,.04,'soft'),note(.32,72,.7,.037),note(.32,76,.62,.028),note(.32,79,.58,.024),
- note(.49,88,.42,.028),note(.63,91,.38,.024)
+// A complete little fanfare: lift, crown/chord + second confetti burst, then a
+// resolving sparkle. More musical space than a prize cue, with the same quiet bus.
+export function giftFinaleScore(){const land=FINALE_RESOLVE_MS/1000;return [
+ note(0,60,.25,.018,'soft'),
+ ...[72,76,79,84].map((pitch,i)=>note(i*.075,pitch,.24,.031,'mallet')),
+ note(land,60,.65,.031,'soft'),note(land,72,.65,.031,'bloom'),
+ note(land,76,.58,.022),note(land,79,.52,.018),
+ note(.5,88,.28,.023,'coin'),note(.65,86,.28,.02,'coin'),note(.82,84,.45,.028)
 ];}
 
 // Gentle partials keep these miniature arcade instruments clear without a harsh

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {giftFinaleMotion,giftConfetti,pixelConfettiPath,FINALE_PARTICLES,FINALE_MOTION_MS} from '../src/gift-finale-motion.js';
+import {giftFinaleMotion,giftConfetti,pixelConfettiPath,giftFinalGleam,FINALE_PARTICLES,FINALE_MOTION_MS,FINALE_RESOLVE_MS} from '../src/gift-finale-motion.js';
+import {giftFinaleScore} from '../src/gift-audio.js';
 import {DEFAULT_GIFTS,startGiftRound,unwrapGift,advanceGiftRound,giftTotal,GIFT_HOLD_MS} from '../src/gift-game.js';
 test('celebration starts only after the last unwrap settles and leaves the full total hold',()=>{
  const r=startGiftRound(DEFAULT_GIFTS);const original=structuredClone(r.preset);
@@ -28,7 +29,19 @@ test('confetti is deterministic, cosmetic, finite and ends before the readable h
  assert.notDeepEqual(a,b);assert.equal(giftConfetti('viewer-1',0,-1),null);
 });
 test('reduced motion presents the stationary plaque without flying particles or glow',()=>{
- for(const age of [0,100,400,1500,4000]){const m=giftFinaleMotion({completedAt:0},age,true);assert.equal(m.scale,1);assert.equal(m.y,0);assert.equal(m.glow,0);assert.equal(m.particles,false);}
+ for(const age of [0,100,400,1500,4000]){const m=giftFinaleMotion({completedAt:0},age,true);assert.equal(m.scale,1);assert.equal(m.y,0);assert.equal(m.glow,0);assert.equal(m.particles,false);assert.equal(m.crownY,0);assert.equal(m.crownScale,1);assert.equal(m.shine,0);for(let i=0;i<6;i++)assert.equal(giftFinalGleam(i,age,true),0);}
+});
+test('crown landing and second confetti wave share the fanfare resolution beat',()=>{
+ const land=FINALE_RESOLVE_MS,m=giftFinaleMotion({completedAt:1000},1000+land);
+ assert.equal(m.scale,1.025);assert.equal(m.crownScale,1.08);
+ assert.ok(giftFinaleScore().filter(n=>n.at===land/1000).length>=3);
+ assert.equal(giftConfetti('two-waves',48,land-1),null);
+ assert.ok(giftConfetti('two-waves',48,land+100).opacity>0);
+ for(const age of [1400,2600,5000]){
+  const settled=giftFinaleMotion({completedAt:0},age);
+  assert.equal(settled.scale,1);assert.equal(settled.crownY,0);assert.equal(settled.shine,0);
+  for(let i=0;i<6;i++)assert.equal(giftFinalGleam(i,age),0);
+ }
 });
 test('both confetti fountains rise into the visible space above the total plaque',()=>{
  const visible=[];

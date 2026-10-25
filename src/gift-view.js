@@ -1,18 +1,21 @@
 import {activeGiftSVG} from './gift-concept-art.js';
 import {money,giftTotal,prizeLabel,projectedGiftRound,giftDimensions,isGiftExpansion,giftBonusName,giftPickLabel} from './gift-game.js';
 import {giftBonusMotion,giftCellMotion,giftBonusBands,pixelBandPath} from './gift-bonus-motion.js';
-import {FINALE_PARTICLES,giftFinaleMotion,giftConfetti,pixelConfettiPath} from './gift-finale-motion.js';
+import {FINALE_PARTICLES,giftFinaleMotion,giftConfetti,pixelConfettiPath,giftFinalGleam} from './gift-finale-motion.js';
 import {giftUnwrapMotion,applyGiftUnwrap} from './gift-unwrap-motion.js';
 import {giftPrizeMotion,giftPrizeSpark,applyGiftPrize,PRIZE_COLORS} from './gift-prize-motion.js';
 import {giftPrizeEmblem} from './gift-prize-art.js';
+import {giftFinalFrame,giftFinalCrown} from './gift-finale-art.js';
 
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
 export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=>{},onError=()=>{},audio=null,art=activeGiftSVG}={}){
- root.innerHTML=`<section class="gift-stage" aria-label="Faith’s gift game"><div class="gift-head"><span>FAITH’S <b>GIFT PILE</b><i aria-hidden="true">✦</i></span><span class="gift-count"></span></div><div class="gift-caption"><span class="gift-viewer"></span><small class="gift-board-size"></small></div><div class="gift-board" aria-label="Wrapped presents"></div><div class="gift-toast" aria-live="polite"><strong></strong><span></span></div><div class="gift-footer"><div><small>COLLECTED</small><strong class="gift-subtotal">$0</strong></div><div class="gift-multiplier"><small>MULTIPLIER</small><strong>×1</strong></div><div class="gift-running"><small>TOTAL SO FAR</small><strong>$0</strong></div></div><div class="gift-finale" hidden><span class="gift-final-star" aria-hidden="true">✦</span><small></small><strong></strong><p></p><span class="gift-final-count"></span></div></section>`;
+ root.innerHTML=`<section class="gift-stage" aria-label="Faith’s gift game"><div class="gift-head"><span>FAITH’S <b>GIFT PILE</b><i aria-hidden="true">✦</i></span><span class="gift-count"></span></div><div class="gift-caption"><span class="gift-viewer"></span><small class="gift-board-size"></small></div><div class="gift-board" aria-label="Wrapped presents"></div><div class="gift-toast" aria-live="polite"><strong></strong><span></span></div><div class="gift-footer"><div><small>COLLECTED</small><strong class="gift-subtotal">$0</strong></div><div class="gift-multiplier"><small>MULTIPLIER</small><strong>×1</strong></div><div class="gift-running"><small>TOTAL SO FAR</small><strong>$0</strong></div></div><div class="gift-finale" hidden><i class="gift-final-frame" aria-hidden="true"></i><i class="gift-final-sheen" aria-hidden="true"></i><span class="gift-final-star" aria-hidden="true"></span><small></small><strong></strong><p></p><span class="gift-final-count"></span></div></section>`;
  const $=s=>root.querySelector(s),stage=$('.gift-stage'),board=$('.gift-board'),buttons=new Map(),reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const bands=document.createElementNS('http://www.w3.org/2000/svg','svg');bands.setAttribute('class','gift-bonus-bands');bands.setAttribute('viewBox','0 0 396 314');bands.setAttribute('aria-hidden','true');bands.innerHTML='<path/><path/>';stage.insertBefore(bands,board);
  const confetti=document.createElementNS('http://www.w3.org/2000/svg','svg');confetti.setAttribute('class','gift-final-confetti');confetti.setAttribute('viewBox','0 0 420 460');confetti.setAttribute('aria-hidden','true');confetti.innerHTML='<path/>'.repeat(FINALE_PARTICLES);stage.insertBefore(confetti,$('.gift-finale'));
- $('.gift-final-star').innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 0h4v4h4v4h4v4h-4v4h-4v4H8v-4H4v-4H0V8h4V4h4Z" fill="#e7bf7c"/><path d="M8 4h4v4h4v4h-4v4H8v-4H4V8h4Z" fill="#ffedbe"/></svg>';
+ $('.gift-final-frame').innerHTML=giftFinalFrame();$('.gift-final-star').innerHTML=giftFinalCrown();
+ const gleams=document.createElementNS('http://www.w3.org/2000/svg','svg');gleams.setAttribute('class','gift-final-gleams');gleams.setAttribute('viewBox','0 0 364 228');gleams.setAttribute('aria-hidden','true');
+ gleams.innerHTML=[[20,24],[336,196],[338,24],[18,196],[44,8],[310,214]].map(([x,y])=>`<path d="M${x} ${y}h2v3h3v2h-3v3h-2v-3h-3v-2h3Z"/>`).join('');$('.gift-finale').append(gleams);
  const toast=$('.gift-toast');toast.innerHTML='<i class="gift-prize-emblem" aria-hidden="true"></i><strong></strong><span class="gift-toast-detail"></span><i class="gift-title-spark" aria-hidden="true"></i>';
  let round=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null,oldPrizeKind=null;
  const resize=()=>{const s=Math.min(root.clientWidth/420,root.clientHeight/460);stage.style.transform=`translate(-50%,-50%) scale(${s})`;};
@@ -76,9 +79,12 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   const finale=giftFinaleMotion(round,time,reduced.matches);
   $('.gift-finale').style.transform=`translateY(${finale?.y??0}px) scale(${finale?.scale??1})`;
   stage.style.setProperty('--final-glow',String(finale?.glow??0));
+  for(const [key,value,unit]of [['crown-y',finale?.crownY??0,'px'],['crown-scale',finale?.crownScale??1,''],['final-shine',finale?.shine??0,''],['final-shine-x',finale?.shineX??-35,'%']])stage.style.setProperty('--'+key,value+unit);
+  gleams.style.display=finale&&!reduced.matches?'':'none';
+  if(finale)[...gleams.children].forEach((path,i)=>path.setAttribute('opacity',String(giftFinalGleam(i,finale.age,reduced.matches))));
   confetti.style.display=finale?.particles?'':'none';
   if(finale?.particles)[...confetti.children].forEach((path,i)=>{const p=giftConfetti(round.id,i,finale.age);path.setAttribute('d',p?pixelConfettiPath(p):'');if(p){path.setAttribute('opacity',String(p.opacity));path.setAttribute('fill',['#ffe4a2','#ffafd1','#c7b2ef','#afe4d0','#c3ddff'][p.color]);}});
-  if(finished){const value=money(giftTotal(round));$('.gift-finale>small').textContent=round.viewer?round.viewer+'’s total':'ROUND TOTAL';$('.gift-finale>strong').textContent=value;$('.gift-finale>strong').style.fontSize=Math.min(68,480/value.length)+'px';$('.gift-finale>p').textContent=money(round.cashCents)+' collected × '+round.multiplier;$('.gift-final-count').textContent=round.opened.length+' presents opened';}
+  if(finished){const value=money(giftTotal(round));$('.gift-finale>small').textContent=round.viewer?round.viewer+'’s total':'ROUND TOTAL';$('.gift-finale>strong').textContent=value;$('.gift-finale>strong').style.fontSize=Math.min(68,480/value.length)+'px';const calculation=$('.gift-finale>p');calculation.textContent=money(round.cashCents)+' collected × '+round.multiplier;calculation.style.fontSize=Math.min(13,308/(calculation.textContent.length*.61))+'px';$('.gift-final-count').textContent=round.opened.length+' presents opened';}
   if(audio){audio.unwrap(flight,time,{candy:buttons.get(flight?.cell)?.classList.contains('candy-unwrap')??true});audio.sync(flight,time);audio.finale(round,time);}
   root.dataset.rows=rows;root.dataset.cols=cols;root.dataset.side=Math.max(rows,cols);root.dataset.picks=remaining;root.dataset.total=giftTotal(shown);root.dataset.phase=finished?'total':flight?'unwrapping':'ready';
   if(round)raf=requestAnimationFrame(render);

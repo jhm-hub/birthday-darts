@@ -180,12 +180,18 @@ boards. There is no character in this game, and no character artwork to download
   limit. Remaining eligible weights rebalance. Gift appearances/positions do not change configured odds.
 - After the last pick, a readable plaque shows **cash × multiplier = total**
   over the grid, then clears after 5.5 seconds.
-- The final total gets a short victory melody, a gentle plaque entrance and two
-  pixel-confetti fountains. The exact total appears immediately and stays still.
-  Confetti sits behind the opaque plaque and is clipped to the board area, inside
-  the same 420×460 frame. Reduced motion keeps a stationary plaque without flying
-  particles. Completion timestamps drive the effect; reconnecting cannot restart
-  an old celebration or replay its sound. **Preview finale** auditions it directly.
+- The final total appears immediately in a shaded plum plaque with a stepped
+  gold frame, a jeweled pixel crown and small corner glints. The plaque settles
+  gently; a restrained highlight passes behind the amount. Two candy-confetti
+  waves stay behind the opaque plaque and inside the board. The second wave and
+  crown peak meet the fanfare's warm chord at 320 ms, followed by a resolving
+  coin sparkle. The fanfare uses the same balanced master volume as the prizes.
+  All motion settles within 2.6 seconds, leaving a still, readable total during
+  the original 5.5-second hold. Long totals/calculations resize within the plaque.
+  The transparent overlay stays 420×460. Reduced motion keeps a stationary frame
+  and crown without particles, sheen or glints. Completion timestamps drive all
+  effects; reconnecting cannot restart an old celebration or replay its sound.
+  **Preview finale** auditions it directly.
 - **Present concepts** (`gift-concepts.html`) preserves all three art
   directions: A / Satin Party, B / Royal Velvet, C / Candy Confetti. Each shows
   five wrapper colors and a stream-size preview with unwrapping, finale playback,

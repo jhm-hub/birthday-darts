@@ -108,7 +108,7 @@ test('final-total cue waits for completion, plays once and skips stale or muted 
 test('finale has a distinct resolved phrase with conservative levels and a short tail',()=>{
  const score=giftFinaleScore();assert.notDeepEqual(score,giftRevealScore({kind:'multiply'}));
  assert.ok(score.reduce((sum,n)=>sum+n.gain*(n.voice==='bell'?1.18:1),0)<.5);
- assert.ok(score.every(n=>n.at+n.length+.015<1.2));assert.ok(score.some(n=>n.at===.32&&n.frequency<300));
+ assert.ok(score.every(n=>n.at+n.length+.015<1.4));assert.ok(score.some(n=>n.at===.32&&n.frequency<300));
 });
 
 test('ribbon starts with the bow, lid pop meets takeoff and finishes before the prize',()=>{
