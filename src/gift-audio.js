@@ -3,7 +3,7 @@ import {giftArrivalCount,giftArrivalDelay,GIFT_ARRIVAL_MS} from './gift-bonus-mo
 import {scheduleGiftUnwrap} from './gift-unwrap-audio.js';
 import {giftVolume,DEFAULT_GIFT_VOLUME} from './gift-volume.js';
 import {FINALE_RESOLVE_MS} from './gift-finale-motion.js';
-import {giftCelebrationLevel,ROYAL_REVEAL_MS} from './gift-celebration.js';
+import {giftCelebrationLevel,ROYAL_REVEAL_MS,BIG_RESOLVE_MS} from './gift-celebration.js';
 
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
@@ -12,6 +12,7 @@ const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),
 // resolving sparkle. More musical space than a prize cue, with the same quiet bus.
 export function giftFinaleScore(level=0){
  if(level===2)return royalFinaleScore();
+ if(level===1)return bigFinaleScore();
  const land=FINALE_RESOLVE_MS/1000,score=[
  note(0,60,.25,.018,'soft'),
  ...[72,76,79,84].map((pitch,i)=>note(i*.075,pitch,.24,.031,'mallet')),
@@ -19,12 +20,18 @@ export function giftFinaleScore(level=0){
  note(land,76,.58,.022),note(land,79,.52,.018),
  note(.5,88,.28,.023,'coin'),note(.65,86,.28,.02,'coin'),note(.82,84,.45,.028)
 ];
- if(level===0)return score;
- // Richer endings add musical detail, not a louder master or longer total hold.
- const richer=score.map(n=>({...n,gain:n.gain*.94}));
- richer.push(note(.95,88,.24,.016,'coin'),note(1.1,91,.24,.014,'coin'),note(1.28,84,.45,.027));
- return richer;
+ return score;
 }
+
+// A bright two-note pickup, rose-ribbon landing, then a short bell answer.
+function bigFinaleScore(){const land=BIG_RESOLVE_MS/1000;return [
+ note(0,77,.2,.025,'pluck'),note(.11,81,.2,.026,'mallet'),
+ note(land,65,.5,.023,'soft'),note(land,77,.48,.032,'round'),
+ note(land,81,.4,.022),note(land,84,.34,.019,'coin'),
+ note(.39,89,.22,.018,'coin'),note(.52,88,.2,.016,'coin'),
+ note(.69,84,.3,.024,'mallet'),note(.93,81,.32,.022),
+ note(1.12,77,.4,.025,'round'),note(1.12,84,.3,.012)
+].map(n=>({...n,gain:n.gain*1.25}));}
 
 // Three jewel notes build to the exact visual reveal. A warm chord and wider
 // coin shower give Royal its own payoff without changing the stream master.

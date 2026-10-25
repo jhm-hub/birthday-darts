@@ -44,3 +44,13 @@ test('multiplier announcement has a pop but does not move the board',()=>{
  const r=round(4),b=giftBonusMotion(r,r.flight.revealAt+180);assert.equal(b.pop,1);assert.deepEqual(giftBonusBands(b),[]);
  assert.deepEqual(giftCellMotion(1,1,3,3,b),giftCellMotion(1,1,3,3,null));
 });
+
+
+test('polished landings carry horizontal momentum through the first peak without over-stretching gifts',()=>{
+ const r={flight:{revealAt:0,prize:{kind:'row',nextRows:4,nextCols:3}}};
+ const pose=t=>giftCellMotion(3,0,4,3,giftBonusMotion(r,160+t*430));
+ for(let t=0;t<=1;t+=.001){const p=pose(t);assert.ok(p.sx>=.7-1e-9&&p.sx<=1.035+1e-9);assert.ok(p.sy>=.66-1e-9&&p.sy<=1.065+1e-9);assert.ok(p.y>=-4&&p.y<=12);}
+ const before=(pose(.44).sx-pose(.4399).sx)/.0001,after=(pose(.4401).sx-pose(.44).sx)/.0001;
+ assert.ok(before>.1&&after>.1,'first contact keeps moving into the soft settle');assert.ok(Math.abs(before-after)<.005,'velocity is continuous across the first pose');
+ assert.equal(pose(1).sx,1);assert.equal(pose(1).sy,1);assert.equal(pose(1).y,0);
+});

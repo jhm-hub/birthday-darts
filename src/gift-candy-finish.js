@@ -4,20 +4,34 @@ export function candyPaperFinish([light,base,shade,shine]){
  return {
   bodyDetail:`
    <path d="M8 36H10V51H8ZM10 36H17V37H10Z" fill="${shine}"/>
-   <path d="M32 36H36V56H32ZM10 54H32V57H10Z" fill="${base}"/>
-   <path d="M34 47H36V59H32V58H34Z" fill="${shade}"/>
-   <path d="M8 55H10V57H14V58H8Z" fill="${base}"/>
-   <path d="M10 38H14V39H16V40H14V39H10ZM28 52H32V50H33V54H28Z" fill="${base}"/>
+   <path d="M33 36H36V56H33ZM10 55H33V57H10Z" fill="${base}"/>
+   <path d="M34 49H36V59H32V58H34Z" fill="${shade}"/>
+   <path d="M8 53H10V55H13V56H16V57H9V55H8Z" fill="${base}"/>
+   <path d="M10 54H12V55H15V56H12V55H10Z" fill="${shine}"/>
+   <path d="M30 54H33V51H34V56H30Z" fill="${shade}"/>
    <path d="M40 31L48 27V29L40 33Z" fill="${light}"/>
-   <path d="M40 49L48 45V50L40 54Z" fill="${shade}"/>
-   <path d="M40 33L42 32V43L40 44Z" fill="${light}"/>`,
+   <path d="M40 48L48 44V50L40 54Z" fill="${shade}"/>
+   <path d="M40 33L42 32V43L40 44Z" fill="${light}"/>
+   <path d="M46 30L48 29V43L46 44Z" fill="${shade}"/>`,
   lidDetail:`
    <path d="M6 25L16 20H50L48 21H18L10 25Z" fill="${light}"/>
    <path d="M4 26H18V27H4ZM30 26H36L48 20H50L38 26V27H30Z" fill="${base}"/>
-   <path d="M3 29H5V32H3ZM5 29H17V30H5Z" fill="${shine}"/>
-   <path d="M30 31H36V34H30ZM2 33H36V34H2Z" fill="${base}"/>
+   <path d="M3 29H5V32H3ZM5 29H18V30H5ZM30 29H35V30H30Z" fill="${shine}"/>
+   <path d="M2 33H36V34H2ZM35 29H36V33H35Z" fill="${base}"/>
+   <path d="M4 34H35V35H4Z" fill="${shade}"/>
    <path d="M40 28L50 23V24L40 29Z" fill="${light}"/>
-   <path d="M38 33L52 26V27L38 34Z" fill="${shade}"/>`
+   <path d="M38 32L52 25V27L38 34Z" fill="${shade}"/>`,
+  bandDetail:`
+   <path class="parcel-band" d="M20 36H21V55H20ZM23 56H26V57H23Z" fill="#fffbe2"/>
+   <path class="parcel-band" d="M25 36H26V55H25ZM22 57H28V59H22Z" fill="#b58a63"/>
+   <path class="parcel-band" d="M26 36H28V38H26Z" fill="#9f745c"/>`,
+  insideDetail:`
+   <g class="parcel-inside">
+    <path d="M8 28L18 23H24L18 26H30L35 24H44L36 28H26L22 30H14Z" fill="#cda7cb"/>
+    <path d="M10 27L18 23H22L17 26H13L16 28H11Z" fill="#f2dbef"/>
+    <path d="M26 28L34 24H41L35 27H31L28 29Z" fill="#e8d4f3"/>
+    <path d="M18 28H26L22 30H16ZM32 27H36L34 28H30Z" fill="#987297"/>
+   </g>`
  };
 }
 

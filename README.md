@@ -154,13 +154,18 @@ boards. There is no character in this game, and no character artwork to download
 - Gift boxes use **Candy Confetti** artwork: five candy-colored wrappers, pixel
   sprinkles and a cream bow, with matching lid/body perspective and aligned ribbons.
   The richer pixel shading keeps those colors while adding folded ribbon loops,
-  crisp lid bevels and shaded paper corners. The bow retains that shading through
+  crisp lid bevels, folded paper corners and beveled gold bands. Open boxes reveal
+  folded pastel tissue, and a thin lid seam separates the lit top from its shaded
+  underside. The bow retains that shading through
   its loosening poses; all shapes stay on the original 56×64 drawing grid.
   The editor demo, controls and transparent 420×460 display share the same artwork.
 - Candy's bow loosens through twelve drawn release poses with shaded folds,
   curling ribbon ends and a gentle pull. The box compresses slightly, then the
   lid follows one continuous rising/falling arc timed to its pop sound, with
-  a small settling motion before the prize rises into view. The original 0.85-second
+  a small settling motion before the prize rises into view. Ribbon tails follow
+  the pull, the lid tilts gently, and restrained compression keeps the box solid.
+  New-present arrivals carry their momentum through a soft landing; prize panels
+  rise only slightly so their exact values are readable immediately. The original 0.85-second
   reveal and 2-second pick timing stay intact. Displays sample the committed
   clock; reduced motion uses a stationary gift and a quiet reveal. A/B retain
   their saved artwork and original opening motion in the concept gallery.
@@ -193,7 +198,11 @@ boards. There is no character in this game, and no character artwork to download
   effects; reconnecting cannot restart an old celebration or replay its sound.
   **Celebration levels** in the private game settings controls two thresholds:
   **Standard below $100**, **Big win at $100+**, **Royal win at $250+** by default.
-  Big win adds a pink frame, a third confetti wave and an extended musical finish;
+  Big win has its own **jeweled pink bow**, crisp rose frame and **108-piece ribbon
+  fountain**. Its total appears immediately, with a small upward settle; the bow
+  opens and lands on a bright chord at **220 ms**, followed by a short bell answer.
+  The plaque stays fixed in size and position. The quieter answering spray leaves
+  space around the readable total;
   Royal win starts with a **0.6-second build-up**: three gold jewels light up,
   then the exact total appears with a matching warm chord and a broader **168-piece
   pixel-confetti burst**. Twin fountains and a crown shower stay behind the opaque
@@ -201,7 +210,7 @@ boards. There is no character in this game, and no character artwork to download
   the existing 5.5-second finale. Standard and Big win still reveal immediately.
   These tiers use the exact final total **after all multipliers**. They share the
   same plaque size, 5.5-second hold and master volume; their motion settles by
-  2.6 / 2.9 / 3.4 seconds. Thresholds are saved per game, must be positive dollar
+  2.6 / 2.8 / 3.4 seconds. Thresholds are saved per game, must be positive dollar
   amounts (up to two decimal places), and Royal must exceed Big. Changes apply
   to the next viewer; a running round keeps its original thresholds. Older
   saved games gain the $100 / $250 defaults on their next round, while already

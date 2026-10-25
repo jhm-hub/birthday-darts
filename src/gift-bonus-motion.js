@@ -34,10 +34,8 @@ export function giftCellMotion(row,col,rows,cols,bonus){
  const count=giftArrivalCount(bonus.kind,rows,cols);
  const elapsed=bonus.age-giftArrivalDelay(rank,count),t=clamp(elapsed/GIFT_ARRIVAL_MS);
  if(elapsed<0){result.opacity=0;return result;}
- const poses=[[0,.3,.24,14],[.44,.98,1.12,-6],[.68,1.1,.9,3],[.84,.98,1.04,-1],[1,1,1,0]];
- let a=poses[0],b=poses[1];for(let i=1;i<poses.length;i++){b=poses[i];if(t<=b[0])break;a=b;}
- const u=smooth((t-a[0])/(b[0]-a[0]));
- result.sx=mix(a[1],b[1],u);result.sy=mix(a[2],b[2],u);result.y=Math.round(mix(a[3],b[3],u));
+ const poses=[[0,.7,.66,12],[.44,1.01,1.065,-4],[.72,1.035,.97,1],[1,1,1,0]];
+ result.sx=poseCurve(poses,1,t);result.sy=poseCurve(poses,2,t);result.y=Math.round(poseCurve(poses,3,t));
  result.x=bonus.kind==='column'?Math.round(12*(1-smooth(t/.44))):0;
  result.opacity=smooth(t/.16);
  const sparkle=clamp((elapsed-150)/370);
@@ -54,4 +52,15 @@ export function giftBonusBands(bonus){
 }
 export function pixelBandPath({x,y,width,height}){
  const r=4;return `M${x+r} ${y}H${x+width-r}V${y+r}H${x+width}V${y+height-r}H${x+width-r}V${y+height}H${x+r}V${y+height-r}H${x}V${y+r}H${x+r}Z`;
+}
+
+// Monotone cubic tangents carry momentum through a pose without overshooting
+// its intended silhouette; turning points and the final rest have zero velocity.
+function poseCurve(poses,key,t){
+ if(t<=0)return poses[0][key];if(t>=1)return poses.at(-1)[key];
+ let i=0;while(t>poses[i+1][0])i++;
+ const slope=j=>(poses[j+1][key]-poses[j][key])/(poses[j+1][0]-poses[j][0]);
+ const tangent=j=>{if(j===0||j===poses.length-1)return 0;const a=slope(j-1),b=slope(j);return a*b<=0?0:2*a*b/(a+b);};
+ const a=poses[i],b=poses[i+1],dt=b[0]-a[0],u=(t-a[0])/dt,u2=u*u,u3=u2*u;
+ return (2*u3-3*u2+1)*a[key]+(u3-2*u2+u)*dt*tangent(i)+(-2*u3+3*u2)*b[key]+(u3-u2)*dt*tangent(i+1);
 }

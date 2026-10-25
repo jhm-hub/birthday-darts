@@ -5,7 +5,7 @@ import {FINALE_PARTICLES,giftFinaleMotion,giftConfetti,pixelConfettiPath,giftFin
 import {giftUnwrapMotion,applyGiftUnwrap} from './gift-unwrap-motion.js';
 import {giftPrizeMotion,giftPrizeSpark,applyGiftPrize,PRIZE_COLORS} from './gift-prize-motion.js';
 import {giftPrizeEmblem} from './gift-prize-art.js';
-import {giftFinalFrame,giftFinalCrown} from './gift-finale-art.js';
+import {giftFinalFrame,giftFinalCrown,giftFinalBow} from './gift-finale-art.js';
 
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
 export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=>{},onError=()=>{},audio=null,art=activeGiftSVG}={}){
@@ -17,7 +17,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
  const gleams=document.createElementNS('http://www.w3.org/2000/svg','svg');gleams.setAttribute('class','gift-final-gleams');gleams.setAttribute('viewBox','0 0 364 228');gleams.setAttribute('aria-hidden','true');
  gleams.innerHTML=[[20,24],[336,196],[338,24],[18,196],[44,8],[310,214]].map(([x,y])=>`<path d="M${x} ${y}h2v3h3v2h-3v3h-2v-3h-3v-2h3Z"/>`).join('');$('.gift-finale').append(gleams);
  const toast=$('.gift-toast');toast.innerHTML='<i class="gift-prize-emblem" aria-hidden="true"></i><strong></strong><span class="gift-toast-detail"></span><i class="gift-title-spark" aria-hidden="true"></i>';
- let round=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null,oldPrizeKind=null;
+ let round=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null,oldPrizeKind=null,oldFinalLevel=null;
  const resize=()=>{const s=Math.min(root.clientWidth/420,root.clientHeight/460);stage.style.transform=`translate(-50%,-50%) scale(${s})`;};
  const observer=new ResizeObserver(resize);observer.observe(root);resize();
  // Inline gift art needs no character downloads. Defer readiness until callers initialize.
@@ -78,6 +78,10 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   $('.gift-finale').hidden=!finished;
   const finale=giftFinaleMotion(round,time,reduced.matches);
   $('.gift-finale').dataset.tier=finale?.tier.id??'standard';
+  const crestLevel=finale?.level??0;
+  if(crestLevel!==oldFinalLevel){$('.gift-final-star').innerHTML=crestLevel===1?giftFinalBow():giftFinalCrown();oldFinalLevel=crestLevel;}
+  stage.style.setProperty('--bow-spread',String(finale?.bowSpread??0));
+  stage.style.setProperty('--final-amount-y',(finale?.amountY??0)+'px');
   $('.gift-finale').dataset.phase=finale?.building?'build':'reveal';
   $('.gift-royal-build').hidden=!finale?.building;
   $('.gift-royal-build').dataset.charge=String(finale?.charge??0);

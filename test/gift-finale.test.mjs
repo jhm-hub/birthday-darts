@@ -73,3 +73,21 @@ test('Royal confetti waits for the reveal and fills both sides without invalid o
  assert.ok(visible.length>=40);assert.ok(visible.filter(p=>p.x<210).length>=15);assert.ok(visible.filter(p=>p.x>=210).length>=15);
  assert.equal(giftConfetti('royal-review',FINALE_PARTICLES,800,2),null);
 });
+
+
+test('Big win has its own quick crest landing and retains an immediate readable amount',()=>{
+ const r=startGiftRound(DEFAULT_GIFTS);r.cashCents=15000;r.completedAt=1000;
+ const start=giftFinaleMotion(r,1000),land=giftFinaleMotion(r,1220),rest=giftFinaleMotion(r,2000);
+ assert.equal(!!start.building,false);assert.equal(start.scale,1);assert.equal(start.particles,false);
+ assert.equal(land.scale,1);assert.equal(land.amountY,0);assert.equal(land.crownScale,1.1);assert.equal(land.particles,true);
+ assert.ok(giftFinaleScore(1).filter(n=>n.at===.22).length>=4);
+ assert.equal(rest.crownScale,1);assert.equal(rest.amountY,0);assert.equal(rest.bowSpread,0);
+ for(const age of [0,220,700,2000]){const quiet=giftFinaleMotion(r,1000+age,true);assert.equal(quiet.crownScale,1);assert.equal(quiet.amountY,0);assert.equal(quiet.bowSpread,0);assert.equal(quiet.particles,false);}
+});
+test('Big burst is bounded and visibly smaller than the Royal burst',()=>{
+ const count=level=>{let visible=0;for(let i=0;i<FINALE_PARTICLES;i++)if(giftConfetti('tier-hierarchy',i,1000,level))visible++;return visible;};
+ assert.ok(count(1)>count(0));assert.ok(count(2)>count(1));
+ for(let i=0;i<FINALE_PARTICLES;i++){assert.equal(giftConfetti('big',i,219,1),null);assert.equal(giftConfetti('big',i,2800,1),null);}
+ assert.ok(Math.max(...giftFinaleScore(1).map(n=>n.at+n.length))<Math.max(...giftFinaleScore(2).map(n=>n.at+n.length)));
+ assert.notDeepEqual(giftFinaleScore(1).map(n=>n.frequency),giftFinaleScore().map(n=>n.frequency));
+});

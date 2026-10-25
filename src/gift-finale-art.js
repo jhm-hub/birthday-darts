@@ -10,6 +10,8 @@ export function giftFinalFrame(){return `<svg viewBox="0 0 364 228" aria-hidden=
  <path d="M16 182H348V212H344V216H20V212H16Z" fill="#281a31"/>
  <path d="M20 16H344V18H20ZM16 20H18V52H16Z" fill="#785064"/>
  <path d="M20 210H344V212H20ZM346 58H348V208H346Z" fill="#180e23"/>
+ <path d="M26 62H338V63H26ZM26 184H338V185H26Z" fill="#180e23"/>
+ <path d="M28 10H66V11H28ZM298 10H336V11H298ZM28 217H54V218H28ZM310 217H336V218H310Z" fill="var(--final-edge-light,#ffe3a5)" opacity=".45"/>
  <path d="M26 64H338V65H26ZM26 186H338V187H26Z" fill="#72505a"/>
  ${[false,true].map(right=>`<g${right?' transform="translate(364 0) scale(-1 1)"':''}>
   <path d="M12 22H20V26H24V30H20V34H16V30H12Z M12 194H16V190H20V194H24V198H20V202H12Z" fill="#8f5e62"/>
@@ -30,4 +32,26 @@ export function giftFinalCrown(){return `<svg viewBox="0 0 40 32" aria-hidden="t
  <path d="M18 16H21V18H23V20H21V22H18V20H17V18H18Z" fill="var(--final-crown-gem,#ef9dc1)"/>
  <path d="M18 16H21V17H19V19H17V18H18Z" fill="#ffe0ed"/>
  <path d="M10 18H12V20H10Z M28 18H30V20H28Z" fill="#fff5ce"/>
+ </svg>`;}
+
+// The Big win crest is a wrapped rose bow; Royal retains the gold crown.
+export function giftFinalBow(){return `<svg viewBox="0 0 40 32" aria-hidden="true" shape-rendering="crispEdges">
+ <g class="final-bow-tail final-bow-tail-left">
+  <path d="M15 17H21V23H17V28H11V25H7V21H11V19H15Z" fill="#593047"/>
+  <path d="M15 19H19V22H15V26H12V24H9V22H13V20H15Z" fill="#d784b1"/>
+  <path d="M15 19H18V21H14V23H11V22H13V20H15Z" fill="#ffdaeb"/>
+ </g><g class="final-bow-tail final-bow-tail-right">
+  <path d="M21 17H26V20H30V22H33V27H27V25H23V22H20Z" fill="#593047"/>
+  <path d="M23 19H25V21H29V23H31V25H28V23H24V21H22Z" fill="#d784b1"/>
+  <path d="M23 19H25V21H28V22H24V21H22Z" fill="#ffdaeb"/>
+ </g>
+ <path d="M17 18H10V16H4V13H2V7H5V4H11V6H15V9H18V12H22V9H25V6H29V4H35V7H38V13H36V16H30V18H23V21H17Z" fill="#593047"/>
+ <path d="M17 16H11V14H6V12H4V8H6V6H10V8H14V11H17ZM23 16V12H26V9H30V6H34V8H36V12H34V14H29V16Z" fill="#edaccd"/>
+ <path d="M6 7H10V9H13V10H9V9H6ZM29 8H31V7H34V9H31V11H27V10H29Z" fill="#fff0f7"/>
+ <path d="M6 11H9V12H12V14H16V16H12V15H8V13H6ZM27 13H31V11H34V10H36V12H34V14H29V16H24V15H27Z" fill="#ae608f"/>
+ <path d="M8 10H10V11H13V13H15V14H12V13H9V12H8ZM28 12H31V10H33V11H31V13H27V14H26V13H28Z" fill="#805071"/>
+ <path d="M17 10H23V12H25V18H23V20H17V18H15V12H17Z" fill="#926077"/>
+ <path d="M18 11H22V13H24V17H22V19H18V17H16V13H18Z" fill="#ffe4ae"/>
+ <path d="M18 13H22V14H23V16H21V18H19V16H17V14H18Z" fill="#b6a2e5"/>
+ <path d="M18 13H21V14H19V16H17V14H18Z" fill="#eee4ff"/>
  </svg>`;}

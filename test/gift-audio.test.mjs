@@ -20,7 +20,7 @@ test('rising notes meet each new present at its first full-size pose',()=>{
   assert.equal(notes.length,count);
   notes.forEach((n,i)=>{
    const b=giftBonusMotion({flight},n.at*1000),row=kind==='column'?i:rows-1,col=kind==='column'?cols-1:i;
-   const c=giftCellMotion(row,col,rows,cols,b);assert.equal(c.newCell,true);assert.equal(c.opacity,1);assert.ok(Math.abs(c.sy-1.12)<.0001);assert.ok(c.spark>0);
+   const c=giftCellMotion(row,col,rows,cols,b);assert.equal(c.newCell,true);assert.equal(c.opacity,1);assert.ok(Math.abs(c.sy-1.065)<.0001);assert.ok(c.spark>0);
    if(i){assert.ok(n.at>notes[i-1].at);assert.ok(n.frequency>notes[i-1].frequency);}
    assert.ok(n.at+n.length+.015<1.15,'tail finishes before next pick unlocks');
   });

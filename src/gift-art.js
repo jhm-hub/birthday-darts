@@ -7,7 +7,7 @@ const palettes=[
  ['#a6c3e5','#7f9cc6','#485e8e','#d9e6ff','#c8afea','#f0defa','#8e6eae'],
  ['#edc88f','#cfa16e','#8a6557','#ffe8b8','#c47fa7','#f2bad3','#814666']
 ];
-export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim='',bodyDetail='',lidDetail='',unwrap=false}={}){
+export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim='',bodyDetail='',lidDetail='',bandDetail='',insideDetail='',unwrap=false}={}){
  const [light,base,shade,shine,ribbon,ribbonLight,ribbonShade]=colors??palettes[index%palettes.length];
  const stars=pattern??[[12,39],[31,45],[12,51]].map(([x,y])=>`<path d="M${x} ${y-2}h1v2h2v1h-2v2h-1v-2h-2v-1h2Z" fill="${shine}"/>`).join('');
  const defaultBow=`
@@ -35,10 +35,10 @@ export function giftSVG(index=0,{colors=null,pattern=null,bow=null,trim='',bodyD
  <path d="M40 31L48 27V50L40 54Z" fill="${base}"/>
  <path d="M6 36H8V55H6ZM8 57H34V59H8Z" fill="${shine}" opacity=".7"/>${trim}
  <path d="M6 32H36V36H6Z" fill="${shade}"/>${bodyDetail}${stars}
- <path class="parcel-band" d="M20 30H28V59H20Z" fill="${ribbonShade}"/><path class="parcel-band" d="M20 32H26V57H20Z" fill="${ribbon}"/><path class="parcel-band" d="M21 36H23V55H21Z" fill="${ribbonLight}"/>
+ <path class="parcel-band" d="M20 30H28V59H20Z" fill="${ribbonShade}"/><path class="parcel-band" d="M20 32H26V57H20Z" fill="${ribbon}"/><path class="parcel-band" d="M21 36H23V55H21Z" fill="${ribbonLight}"/>${bandDetail}
  <path class="parcel-inside" d="M6 29L18 23H48L36 29Z" fill="${shade}"/>
  <path class="parcel-inside" d="M10 28L18 24H44L36 28Z" fill="#211429"/>
- <path class="parcel-inside" d="M6 29H36V31H6Z" fill="${shine}"/>
+ <path class="parcel-inside" d="M6 29H36V31H6Z" fill="${shine}"/>${insideDetail}
  </g><g class="parcel-lid">
  <path d="M0 26L16 18H54V28L38 36H0Z" fill="#342233"/>
  <path d="M4 26L16 20H50L38 26Z" fill="${shine}"/>

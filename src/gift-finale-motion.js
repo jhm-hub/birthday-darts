@@ -1,6 +1,6 @@
 // Cosmetic only: deterministic particles share the committed completion clock.
 // The opaque total plaque sits in front; the entire effect stays inside 420×460.
-import {giftCelebrationLevel,GIFT_CELEBRATIONS,ROYAL_REVEAL_MS} from './gift-celebration.js';
+import {giftCelebrationLevel,GIFT_CELEBRATIONS,ROYAL_REVEAL_MS,BIG_RESOLVE_MS} from './gift-celebration.js';
 export const FINALE_PARTICLES=168,FINALE_MOTION_MS=3400,FINALE_RESOLVE_MS=320;
 const clamp=x=>Math.max(0,Math.min(1,x)),smooth=x=>{x=clamp(x);return x*x*(3-2*x);};
 export function giftFinaleMotion(round,time,reduced=false){
@@ -14,6 +14,13 @@ export function giftFinaleMotion(round,time,reduced=false){
    shine:!reduced&&release>=0&&release<750?.06*Math.sin(Math.PI*release/750):0,
    shineX:-35+170*smooth(release/750),particles:!reduced&&!building&&age<tier.motionMs};
  }
+ if(level===1){
+  const lift=age<BIG_RESOLVE_MS?smooth(age/BIG_RESOLVE_MS):1-smooth((age-BIG_RESOLVE_MS)/300),pop=reduced?0:lift;
+  return {age,level,tier,scale:1,y:0,glow:pop*.6,crownY:reduced?0:Math.round(-3*pop)||0,crownScale:1+pop*.1,
+   bowSpread:pop,amountY:reduced?0:Math.round(5*(1-smooth(age/180))),
+   shine:!reduced&&age>=BIG_RESOLVE_MS&&age<900?.055*Math.sin(Math.PI*(age-BIG_RESOLVE_MS)/680):0,
+   shineX:-35+170*smooth((age-BIG_RESOLVE_MS)/680),particles:!reduced&&age>=BIG_RESOLVE_MS&&age<tier.motionMs};
+ }
  const pop=reduced?0:age<FINALE_RESOLVE_MS?smooth(age/FINALE_RESOLVE_MS):1-smooth((age-FINALE_RESOLVE_MS)/300);
  return {age,level,tier,scale:reduced?1:age<FINALE_RESOLVE_MS?.96+.065*smooth(age/FINALE_RESOLVE_MS):1+.025*(1-smooth((age-FINALE_RESOLVE_MS)/300)),
   y:reduced?0:Math.round(8*(1-smooth(age/320))),glow:pop*.7,
@@ -25,6 +32,7 @@ function random(seed){let h=2166136261;for(const c of String(seed))h=Math.imul(h
 export function giftConfetti(seed,index,age,level=0){
  if(index>=GIFT_CELEBRATIONS[level].particles)return null;
  if(level===2)return royalConfetti(seed,index,age);
+ if(level===1)return bigConfetti(seed,index,age);
  const rand=random(seed+':'+index),right=index%2===1,encore=index>=48,
   wave=index>=96?3:index>=72?2:encore?1:0,
   delay=encore?[0,FINALE_RESOLVE_MS,650,950][wave]+Math.floor((index-(wave+1)*24)/2)*12:Math.floor(index/2)*7,life=encore?1700+rand()*400:1550+rand()*450;
@@ -35,6 +43,19 @@ export function giftConfetti(seed,index,age,level=0){
  const size=3+Math.floor(rand()*3),color=Math.floor(rand()*5),shape=encore&&index%3===0||index%7===0?'star':index%3===0?'strip':'square';
  return {x:Math.round(x),y:Math.round(y),width:shape==='star'?8:Math.max(2,Math.round(size*Math.abs(Math.cos(t*9+index)))),height:shape==='strip'?size*2:shape==='star'?8:size,
   opacity:Math.min(smooth(t/.07),1-smooth((t-(duration-.4))/.4)),color,shape};
+}
+// Big win: a quick rose-ribbon fountain and a small answering sparkle.
+// Shorter and narrower than Royal's crown shower, with fewer stars.
+function bigConfetti(seed,index,age){
+ const rand=random(seed+':big:'+index),right=index%2===1,encore=index>=72,
+  delay=BIG_RESOLVE_MS+(encore?240+Math.floor((index-72)/2)*5:Math.floor(index/2)*2),
+  t=(age-delay)/1000,duration=(1750+rand()*350)/1000;
+ if(t<0||t>=duration)return null;
+ const x=(right?394:26)+(right?-1:1)*(50+rand()*125)*t+Math.sin(t*8+index)*4,
+  y=190-(275+rand()*60)*t+215*t*t,size=3+Math.floor(rand()*3),
+  shape=index%6===0?'star':index%2===0?'strip':'square';
+ return {x:Math.round(x),y:Math.round(y),width:shape==='star'?8:Math.max(2,Math.round(size*Math.abs(Math.cos(t*9+index)))),height:shape==='star'?8:shape==='strip'?size*2:size,
+  opacity:Math.min(smooth(t/.05),1-smooth((t-(duration-.35))/.35)),color:[1,1,2,0,4][Math.floor(rand()*5)],shape};
 }
 // A tight double fountain plus a broad crown shower. All pieces render behind
 // the opaque plaque and through the existing board-size clip, never over digits.
@@ -54,6 +75,7 @@ function royalConfetti(seed,index,age){
 // The frame's corners sparkle once, away from the total and its calculation.
 export function giftFinalGleam(index,age,reduced=false,level=0){
  if(level===2)age-=ROYAL_REVEAL_MS-FINALE_RESOLVE_MS;
+ if(level===1)age-=BIG_RESOLVE_MS-FINALE_RESOLVE_MS;
  const delay=FINALE_RESOLVE_MS+index*95,t=(age-delay)/520;
  const encore=(age-1050-index*65)/520;
  return reduced?0:Math.max(t>0&&t<1?Math.sin(Math.PI*t)**2:0,level>0&&encore>0&&encore<1?Math.sin(Math.PI*encore)**2:0);

@@ -1,8 +1,8 @@
-export const ROYAL_REVEAL_MS=600;
+export const ROYAL_REVEAL_MS=600,BIG_RESOLVE_MS=220;
 export const DEFAULT_GIFT_CELEBRATION={big:100,royal:250};
 export const GIFT_CELEBRATIONS=[
  {id:'standard',label:'Standard',particles:72,motionMs:2600},
- {id:'big',label:'Big win',particles:96,motionMs:2900},
+ {id:'big',label:'Big win',particles:108,motionMs:2800},
  {id:'royal',label:'Royal win',particles:168,motionMs:3400}
 ];
 export function validateGiftCelebration(value=DEFAULT_GIFT_CELEBRATION){

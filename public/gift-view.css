@@ -38,7 +38,7 @@
 .gift-cell[data-bow-frame="10"] .candy-bow-frame[data-bow-frame="10"],
 .gift-cell[data-bow-frame="11"] .candy-bow-frame[data-bow-frame="11"],
 .gift-cell[data-bow-frame="12"] .candy-bow-frame[data-bow-frame="12"]{display:inline}
-.candy-unwrap .parcel-bow{transform:translateY(var(--bow-y,0px));opacity:var(--bow-opacity,1)}
+.candy-unwrap .parcel-bow{transform:translate(var(--bow-x,0px),var(--bow-y,0px));opacity:var(--bow-opacity,1)}
 .candy-unwrap .parcel-lid{transform:translate(var(--lid-x,0px),var(--lid-y,0px)) rotate(var(--lid-turn,0deg))}
 .candy-unwrap .parcel-body{transform:scale(var(--body-x,1),var(--body-y,1));transform-origin:28px 59px}
 .candy-unwrap .parcel-band{transform:translateY(var(--band-y,0px));opacity:var(--band-opacity,1)}
@@ -124,3 +124,16 @@
 .gift-royal-build[data-charge="1"] em:first-child,.gift-royal-build[data-charge="2"] em:nth-child(-n+2),.gift-royal-build[data-charge="3"] em{background:#ffe3a5;opacity:1}
 .gift-finale[data-phase="build"]>strong,.gift-finale[data-phase="build"]>p,.gift-finale[data-phase="build"] .gift-final-count{visibility:hidden}
 .stage-royal-build .gift-footer{visibility:hidden}
+
+/* Matching stepped trims keep the small HUD, prizes and finale in one art style. */
+.gift-head>span:first-child,.gift-count,.gift-footer{border-radius:0;clip-path:polygon(5px 0,calc(100% - 5px) 0,calc(100% - 5px) 2px,100% 2px,100% calc(100% - 5px),calc(100% - 2px) calc(100% - 5px),calc(100% - 2px) calc(100% - 2px),calc(100% - 5px) calc(100% - 2px),calc(100% - 5px) 100%,5px 100%,5px calc(100% - 2px),2px calc(100% - 2px),2px 5px,0 5px,0 2px,5px 2px)}
+.gift-head>span:first-child,.gift-count{box-shadow:inset 0 1px #c99bb32e,inset 0 -2px #160e20}
+.gift-footer{box-shadow:inset 0 1px #d0a88742,inset 0 -2px #160e20,inset 2px 0 #160e20}
+.gift-cell:not(:disabled) svg{transition:transform .12s ease-out,filter .12s ease-out}
+.gift-cell:hover:not(:disabled) svg{filter:drop-shadow(0 2px 0 #ffe4b55c) brightness(1.06);transform:translateY(-2px)}
+.gift-cell-prize{box-shadow:inset 0 1px #ffe7c733,inset 0 -2px #100a1b}
+.gift-cell-prize::before{inset:2px 3px;border-top-color:#ffefd566;border-bottom-color:#b993aa55}
+.gift-finale>strong{transform:translateY(var(--final-amount-y,0px))}
+.final-bow-tail-left{transform:translate(calc(-2px * var(--bow-spread,0)),calc(2px * var(--bow-spread,0)))}
+.final-bow-tail-right{transform:translate(calc(2px * var(--bow-spread,0)),calc(2px * var(--bow-spread,0)))}
+@media(prefers-reduced-motion:reduce){.gift-cell:not(:disabled) svg{transition:none}}

@@ -11,8 +11,8 @@ export function giftPrizeMotion(flight,time,{opened=false,reduced=false}={}){
  const shown={...idle,visible:true,age,opacity:1,announce:time<flight.finishAt?1:0};
  if(reduced)return shown;
  const peak=bonus?180:140,amplitude=bonus?.065:.045;
- const pop=age<peak?.88+(1+amplitude-.88)*out(age/peak):1+amplitude*(1-smooth((age-peak)/200));
- return {...shown,y:7*(1-smooth(age/180)),scale:pop,opacity:.3+.7*smooth(age/60),
+ const pop=age<peak?.94+(1+amplitude-.94)*out(age/peak):1+amplitude*(1-smooth((age-peak)/200));
+ return {...shown,y:5*(1-smooth(age/180)),scale:pop,opacity:.55+.45*smooth(age/60),
   titleY:4*(1-out(age/180)),titleScale:1+(pop-1)*.7,
   announce:time<flight.finishAt?1-smooth((time-(flight.finishAt-120))/120):0,
   flare:age<420?Math.sin(Math.PI*clamp(age/420)):0,

@@ -11,5 +11,8 @@ export function giftPrizeEmblem(kind){
    art+=`<path d="M${x} ${y}h4v4h-4Z" fill="${added?accent:'#80687d'}"/><path d="M${x} ${y}h4v1h-3v2h-1Z" fill="${added?'#fff6dc':'#b39bb3'}"/>`;
   }
  }
+ // Crisp lower facets give every emblem the same upper-left lighting.
+ if(kind==='cash')art+='<path d="M16 12H18V14H16V16H14V17H12V16H14V14H16Z" fill="#ba805d"/><path d="M5 5H7V6H5V8H4V6H5Z" fill="#fff8df"/>';
+ else if(kind==='multiply')art+='<path d="M16 12H18V14H16V16H14V18H11V17H13V15H15V13H16Z" fill="#9867b6"/><path d="M8 3H12V4H8V5H6V4H8Z" fill="#fff1ff"/>';
  return `<svg viewBox="0 0 20 20" aria-hidden="true" shape-rendering="crispEdges">${art}</svg>`;
 }
