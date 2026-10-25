@@ -1,5 +1,5 @@
-// Editable pixel clusters and the same plum outlines, satin highlights and
-// stepped contours as the birthday props. Lid and ribbon have separate layers.
+// One consistent 2:1 depth direction for the lid, box and ribbon. The two-pixel
+// overhang and darker seam separate the lid without making it look detached.
 const palettes=[
  ['#bc99dc','#a783c8','#654b88','#ebd2f3','#f1c984','#fff0c7','#b77d54'],
  ['#a7dcc2','#80bba9','#4f8d87','#d8f0d5','#efa1bc','#ffe0de','#be7099'],
@@ -9,30 +9,41 @@ const palettes=[
 ];
 export function giftSVG(index=0){
  const [light,base,shade,shine,ribbon,ribbonLight,ribbonShade]=palettes[index%palettes.length];
- const stars=[[11,34],[29,30],[12,46],[29,44]].map(([x,y])=>`<path d="M${x} ${y}h2v2h2v2h-2v2h-2v-2H${x-2}v-2h2Z" fill="${shine}"/>`).join('');
+ const stars=[[12,39],[31,45],[12,51]].map(([x,y])=>`<path d="M${x} ${y-2}h1v2h2v1h-2v2h-1v-2h-2v-1h2Z" fill="${shine}"/>`).join('');
  return `<svg viewBox="0 0 56 64" aria-hidden="true" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
- <ellipse cx="29" cy="60" rx="24" ry="3" fill="#160c23" opacity=".3"/>
- <g class="parcel-body"><path d="M4 22H40L52 28V56L40 62H4L2 58V26Z" fill="#342233"/>
- <path d="M6 26H38V58H6Z" fill="${base}"/><path d="M8 28H36V54H8Z" fill="${light}"/>
- <path d="M40 26L50 30V54L40 58Z" fill="${shade}"/><path d="M40 28H42V54H40Z" fill="${base}"/>
- <path d="M8 28H10V52H8ZM10 28H34V30H10Z" fill="${shine}"/>
- <path d="M6 54H38V58H6Z" fill="${shade}" opacity=".5"/>${stars}
- <path class="parcel-band" d="M20 26H28V58H20Z" fill="${ribbonShade}"/><path class="parcel-band" d="M20 26H26V56H20Z" fill="${ribbon}"/><path class="parcel-band" d="M22 28H24V56H22Z" fill="${ribbonLight}"/>
- <path class="parcel-inside" d="M6 26H38L48 30L38 36H6Z" fill="#211429"/>
- <path class="parcel-inside" d="M8 28H36L42 30L36 32H8Z" fill="${ribbonShade}"/>
+ <path d="M6 60H46V58H52V62H46V64H6V62H2V60Z" fill="#160c23" opacity=".25"/>
+ <g class="parcel-body"><path d="M4 28L18 21H52V54L38 61H4Z" fill="#342233"/>
+ <path d="M6 30H36V59H6Z" fill="${base}"/><path d="M8 32H36V56H8Z" fill="${light}"/>
+ <path d="M38 30L50 24V53L38 59Z" fill="${shade}"/>
+ <path d="M40 31L48 27V50L40 54Z" fill="${base}"/>
+ <path d="M6 36H8V55H6ZM8 57H34V59H8Z" fill="${shine}" opacity=".7"/>
+ <path d="M6 32H36V36H6Z" fill="${shade}"/>${stars}
+ <path class="parcel-band" d="M20 30H28V59H20Z" fill="${ribbonShade}"/><path class="parcel-band" d="M20 32H26V57H20Z" fill="${ribbon}"/><path class="parcel-band" d="M21 36H23V55H21Z" fill="${ribbonLight}"/>
+ <path class="parcel-inside" d="M6 29L18 23H48L36 29Z" fill="${shade}"/>
+ <path class="parcel-inside" d="M10 28L18 24H44L36 28Z" fill="#211429"/>
+ <path class="parcel-inside" d="M6 29H36V31H6Z" fill="${shine}"/>
  </g><g class="parcel-lid">
- <path d="M2 20L12 16H40L54 24V32L40 38H0V22Z" fill="#342233"/>
- <path d="M4 22L14 18H38L50 24L38 30H2V24Z" fill="${shine}"/>
- <path d="M2 30H38V34H2Z" fill="${light}"/><path d="M40 30L52 24V30L40 36Z" fill="${shade}"/>
- <path d="M4 24H34V26H4Z" fill="${light}"/><path d="M20 18H26V34H18V28Z" fill="${ribbon}"/><path d="M22 18H24V30H20V34H18V28Z" fill="${ribbonLight}"/>
- <g class="parcel-bow"><path d="M20 18H12V16H6V12H4V6H10V4H16V6H20V10H26V8H30V2H36V4H42V10H40V14H34V18H28V22H20Z" fill="#342233"/>
- <path d="M20 16H12V14H8V8H12V6H16V10H20V14H24V18Z" fill="${ribbon}"/>
- <path d="M8 8H12V10H16V12H20V14H14V12H10V10H8Z" fill="${ribbonLight}"/>
- <path d="M12 12H16V14H20V16H14V14H12Z" fill="${ribbonShade}"/>
- <path d="M26 16V10H30V6H34V4H38V6H40V10H36V12H32V16Z" fill="${ribbon}"/>
- <path d="M28 12H30V8H34V6H36V8H34V12H30V14H28Z" fill="${ribbonLight}"/>
- <path d="M32 14H36V12H38V10H40V12H36V16H32Z" fill="${ribbonShade}"/>
- <path d="M20 14H28V20H26V24H22V22H18V18H20Z" fill="${ribbon}"/><path d="M22 14H26V18H22Z" fill="${ribbonLight}"/>
- <path d="M18 20H22V30H18V28H16V24H18Z" fill="${ribbon}"/><path d="M26 20H30V28H28V26H26Z" fill="${ribbonShade}"/>
+ <path d="M0 26L16 18H54V28L38 36H0Z" fill="#342233"/>
+ <path d="M4 26L16 20H50L38 26Z" fill="${shine}"/>
+ <path d="M2 28H36V34H2Z" fill="${light}"/><path d="M2 32H36V34H2Z" fill="${base}"/>
+ <path d="M38 28L52 21V27L38 34Z" fill="${shade}"/><path d="M40 28L50 23V25L40 30Z" fill="${base}"/>
+ <path d="M4 28H18V30H4ZM30 28H36V30H30Z" fill="${shine}"/>
+ <path d="M20 26L32 20H40L28 26V34H20Z" fill="${ribbon}"/>
+ <path d="M21 26L33 20H35L23 26V32H21Z" fill="${ribbonLight}"/>
+ <path d="M26 28H28V34H20V32H26Z" fill="${ribbonShade}"/>
+ <g class="parcel-bow">
+ <path d="M28 23H20V21H14V19H10V13H12V9H20V11H24V15H28V17H32V13H34V9H38V7H44V9H48V15H46V19H40V21H36V25H28Z" fill="#342233"/>
+ <path d="M26 21H20V19H14V17H12V13H14V11H18V13H22V17H26Z" fill="${ribbon}"/>
+ <path d="M14 11H18V13H22V15H20V14H16V13H14ZM14 13H16V17H14Z" fill="${ribbonLight}"/>
+ <path d="M16 13H18V15H22V17H24V19H22V18H18V16H16Z" fill="${ribbonShade}"/>
+ <path d="M16 17H20V19H26V21H20V19H16Z" fill="${ribbonShade}"/>
+ <path d="M34 19V15H36V11H40V9H44V11H46V15H44V17H40V19Z" fill="${ribbon}"/>
+ <path d="M36 15V13H38V11H42V10H44V12H40V14H38V17H36Z" fill="${ribbonLight}"/>
+ <path d="M40 13H44V14H42V16H38V17H36V16H38V15H40Z" fill="${ribbonShade}"/>
+ <path d="M38 17H42V15H44V13H46V15H44V17H40V19H36V18H38Z" fill="${ribbonShade}"/>
+ <path d="M27 23H31V27H29V29H25V27H23V25H27Z" fill="${ribbonShade}"/>
+ <path d="M32 23H35L39 26V30H37V28H33Z" fill="${ribbon}"/>
+ <path d="M28 19H34V21H36V23H34V25H28V23H26V21H28Z" fill="${ribbonShade}"/>
+ <path d="M28 20H33V23H28Z" fill="${ribbon}"/><path d="M29 20H32V21H29Z" fill="${ribbonLight}"/>
  </g></g></svg>`;
 }

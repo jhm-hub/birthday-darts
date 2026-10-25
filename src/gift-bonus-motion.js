@@ -3,6 +3,9 @@ import {isGiftExpansion} from './gift-game.js';
 // Sample the committed reveal clock, not DOM insertion time. Reconnecting displays
 // join the same beat, and every landing finishes before the next pick unlocks.
 export const BONUS_MOTION_MS=1000;
+export const GIFT_ARRIVAL_MS=430;
+export const giftArrivalCount=(kind,rows,cols)=>kind==='row'?cols:kind==='column'?rows:Math.max(rows,cols);
+export const giftArrivalDelay=(rank,count)=>160+rank*Math.min(60,280/Math.max(1,count-1));
 const clamp=x=>Math.max(0,Math.min(1,x));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x);};
 const mix=(a,b,t)=>a+(b-a)*t;
@@ -28,8 +31,8 @@ export function giftCellMotion(row,col,rows,cols,bonus){
  result.newCell=true;
  // Both edges grow together; their shared corner lands last, once.
  const rank=bonus.kind==='row'?col:bonus.kind==='column'?row:row>=fromRows&&col>=fromCols?Math.max(fromRows,fromCols):row>=fromRows?col:row;
- const count=bonus.kind==='row'?cols:bonus.kind==='column'?rows:Math.max(rows,cols);
- const elapsed=bonus.age-160-rank*Math.min(60,280/Math.max(1,count-1)),t=clamp(elapsed/430);
+ const count=giftArrivalCount(bonus.kind,rows,cols);
+ const elapsed=bonus.age-giftArrivalDelay(rank,count),t=clamp(elapsed/GIFT_ARRIVAL_MS);
  if(elapsed<0){result.opacity=0;return result;}
  const poses=[[0,.3,.24,14],[.44,.98,1.12,-6],[.68,1.1,.9,3],[.84,.98,1.04,-1],[1,1,1,0]];
  let a=poses[0],b=poses[1];for(let i=1;i<poses.length;i++){b=poses[i];if(t<=b[0])break;a=b;}

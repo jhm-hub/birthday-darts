@@ -30,4 +30,4 @@ async function init(){
 }
 if(!overlay){$('#gift-controls').addEventListener('submit',e=>{e.preventDefault();void pick();});$('#live-sound').addEventListener('click',()=>{audio.setEnabled(!audio.enabled);$('#live-sound').textContent=audio.enabled?'Sound on':'Sound off';$('#live-sound').setAttribute('aria-pressed',String(audio.enabled));});window.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&!e.target.closest('input,select,textarea,button,a,summary')){e.preventDefault();void pick();}});}
 init().catch(e=>{error=e.message;if(overlay){$('#display-help').hidden=false;$('#display-help').textContent=e.message;}else render();});
-window.addEventListener('pagehide',()=>{session?.dispose();view.dispose();},{once:true});
+window.addEventListener('pagehide',()=>{session?.dispose();view.dispose();audio.dispose();},{once:true});

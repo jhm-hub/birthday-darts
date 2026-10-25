@@ -139,6 +139,16 @@ boards. There is no character in this game, and no character artwork to download
   two-second unwrap and 420×460 overlay; reduced motion shows the expanded board
   immediately. Displays sample the committed reveal time, so reconnects do not
   restart an old entrance. Bonus odds and awarded picks are unchanged.
+- With sound enabled, each arrival wave plays the next note in a rising bell
+  chime. Growth sounds both edges together; the shared corner has one final note.
+  Multipliers use a separate quick arpeggio and bright chord at the title's peak.
+  Cash keeps a softer reveal. Muting, resetting the demo or leaving the page cancels
+  pending sounds. The demo starts muted; press **Sound off** to turn sound on,
+  then use **Next demo reveal** to audition any bonus. Keep the control preview
+  muted when the stream display supplies audio, to avoid playing sounds twice.
+- Gift boxes use matching perspective for the lid and body, a clean overhanging
+  lip, aligned ribbons and shaded bow folds. All five pastel palettes and the
+  transparent 420×460 frame are retained.
 - Default limits: **5×5 board, 12 picks per round**. Limits and bonus pick amounts
   are editable (up to 6×6 /36 picks). A partially capped bonus awards only the
   available picks. A row/column bonus stops when its own dimension reaches the board limit;

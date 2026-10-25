@@ -65,6 +65,6 @@ $('#copy-display').addEventListener('click',async()=>{try{await navigator.clipbo
 $('#export-gifts').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(exportGiftSettings(giftStore.list()),null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='faith-gift-pile-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 $('#import-gifts').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>200000)throw Error('This settings file is too large.');await giftStore.import(importGiftSettings(JSON.parse(await file.text())));widgets=giftStore.list();list();message('Imported gift games. Existing games were kept.');}catch(e){message(e.message,true);}finally{e.target.value='';}});
 const timer=setInterval(()=>{if(!demo)return;if(advanceGiftRound(demo))renderDemo();if(demo?.hideAt&&Date.now()>=demo.hideAt+400){demo=null;renderDemo();}},50);
-window.addEventListener('pagehide',()=>{clearInterval(timer);view.dispose();},{once:true});
+window.addEventListener('pagehide',()=>{clearInterval(timer);view.dispose();audio.dispose();},{once:true});
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 giftStore.init().then(()=>{widgets=giftStore.list();edit(widgets.find(w=>w.id===new URLSearchParams(location.search).get('id'))??widgets[0]);}).catch(e=>message(e.message,true));
