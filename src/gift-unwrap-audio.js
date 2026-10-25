@@ -37,7 +37,7 @@ export function synthesizeGiftFoley(cue,sampleRate){
 }
 
 const buffers=new WeakMap();
-export function scheduleGiftUnwrap(ctx,candy,start,elapsed=0,track=()=>{}){
+export function scheduleGiftUnwrap(ctx,candy,start,elapsed=0,track=()=>{},destination=ctx.destination){
  let cache=buffers.get(ctx);if(!cache){cache=new Map();buffers.set(ctx,cache);}
  for(const cue of giftUnwrapCues(candy)){
   // Join future beats only. Reconnecting must not bunch expired rustles together.
@@ -46,7 +46,7 @@ export function scheduleGiftUnwrap(ctx,candy,start,elapsed=0,track=()=>{}){
   if(!buffer){const data=synthesizeGiftFoley(cue,ctx.sampleRate);buffer=ctx.createBuffer(1,data.length,ctx.sampleRate);buffer.getChannelData(0).set(data);cache.set(cue.id,buffer);}
   const at=start+Math.max(0,cue.at-elapsed),source=ctx.createBufferSource(),gain=ctx.createGain();
   source.buffer=buffer;gain.gain.setValueAtTime(cue.gain,at);
-  source.connect(gain).connect(ctx.destination);track(source,gain,[source,gain]);
+  source.connect(gain).connect(destination);track(source,gain,[source,gain]);
   source.start(at);source.stop(at+cue.length);
  }
 }

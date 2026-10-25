@@ -1,8 +1,10 @@
 import {ACTIVE_GIFT_CONCEPT,GIFT_CONCEPTS,giftConceptSVG} from './gift-concept-art.js';
 import {createGiftView} from './gift-view.js';
 import {createGiftAudio} from './gift-audio.js';
+import {bindGiftPreviewVolume} from './gift-mixer.js';
 import {DEFAULT_GIFTS,startGiftRound,unwrapGift,advanceGiftRound,giftTotal,money} from './gift-game.js';
 const $=s=>document.querySelector(s),audio=createGiftAudio();
+bindGiftPreviewVolume($('#gift-mixer'),audio);
 let view,round=null,selected=ACTIVE_GIFT_CONCEPT;
 for(const c of GIFT_CONCEPTS){
  const card=document.createElement('article');card.className='concept-card';card.dataset.concept=c.id;

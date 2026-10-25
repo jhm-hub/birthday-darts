@@ -11,7 +11,9 @@ export async function connectGiftControl(id,onSnapshot,onStatus){
  function claim(){void navigator.locks.request('faith-gift-control:'+id,{ifAvailable:true},async lock=>{if(disposed)return;if(!lock){status();retry=setTimeout(claim,2500);return;}ready=true;link=connectRoom({role:'host',key,status(value){peerStatus=value;status();},message(){},ready:publish});unsubscribe=giftStore.subscribe(publish);status();publish();pulse=setInterval(()=>{void giftStore.advance().catch(e=>onStatus(false,e.message));},100);heartbeat=setInterval(publish,1000);await new Promise(resolve=>{release=resolve;});});}
  function dispose(){disposed=true;ready=false;clearInterval(pulse);clearInterval(heartbeat);clearTimeout(retry);unsubscribe?.();link?.dispose();release?.();}
  window.addEventListener('pagehide',dispose,{once:true});
- return {id,displayURL:url.href,get ready(){return ready&&peerStatus!=='duplicate';},start:claim,dispose,async unwrap(viewer,cell){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return giftStore.unwrap(id,viewer,cell);}};
+ return {id,displayURL:url.href,get ready(){return ready&&peerStatus!=='duplicate';},start:claim,dispose,
+  async setVolume(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return giftStore.setVolume(id,value);},
+  async unwrap(viewer,cell){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return giftStore.unwrap(id,viewer,cell);}};
 }
 export function connectGiftDisplay(onSnapshot,onConnection){
  const key=new URLSearchParams(location.hash.slice(1)).get('room');if(!validKey(key))throw Error('Use the private display link from Gift Pile’s controls.');

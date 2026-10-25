@@ -1,0 +1,17 @@
+.gift-mixer{margin-top:18px;padding:15px 17px;border:1px solid #5b3c57;border-radius:9px;background:linear-gradient(115deg,#39223880,#25192d80);min-width:0;text-align:left}
+.gift-mixer .mixer-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.gift-mixer label{font:600 12px Arial,sans-serif;color:#f2d7e7;margin:0}
+.gift-mixer output{font:600 13px Fredoka,Arial,sans-serif;font-variant-numeric:tabular-nums;color:#ffe4b4;min-width:46px;text-align:right}
+.gift-mixer input[type=range]{--volume:100%;display:block;appearance:none;-webkit-appearance:none;width:100%;height:36px;min-width:0;margin:3px 0;padding:0;border:0;border-radius:0;cursor:pointer;background:transparent;accent-color:#ef9dbe}
+.gift-mixer input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:4px;background:linear-gradient(to right,#ef9dbe var(--volume),#60455f var(--volume))}
+.gift-mixer input[type=range]::-moz-range-track{height:6px;border-radius:4px;background:#60455f}
+.gift-mixer input[type=range]::-moz-range-progress{height:6px;border-radius:4px;background:#ef9dbe}
+.gift-mixer input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:18px;height:18px;margin-top:-6px;border:3px solid #ffe4b4;border-radius:5px;background:#d97fa7;box-shadow:0 2px 0 #160e20}
+.gift-mixer input[type=range]::-moz-range-thumb{width:12px;height:12px;border:3px solid #ffe4b4;border-radius:5px;background:#d97fa7;box-shadow:0 2px 0 #160e20}
+.gift-mixer input[type=range]:focus-visible{outline:2px solid #ffe4b4;outline-offset:3px;border-radius:5px}
+.gift-mixer input[type=range]:disabled{cursor:wait;opacity:.45}
+.gift-mixer p{margin:0;color:#c1aac4;font:11px/1.6 Arial,sans-serif}
+.gift-mixer .mixer-footer{display:flex;align-items:center;gap:15px;justify-content:space-between;flex-wrap:wrap;margin-top:4px}
+.gift-mixer button{min-height:36px;white-space:nowrap;font-size:11px;padding:8px 12px}
+.gift-mixer button[aria-pressed=true]{background:#51304a;border-color:#df97b7;color:#ffe4f0}
+.gift-mixer #volume-status:not(:empty){color:#ffb5c8;margin-top:9px}

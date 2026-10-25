@@ -181,6 +181,17 @@ boards. There is no character in this game, and no character artwork to download
   expansion result for review. It is only a disposable demo; live controls have
   no forced-prize input. **Preview finale** skips to a random sample round total.
 
+**Volume:** In **Open controls**, use **Stream volume** (0–100%) to balance all
+Gift Pile sounds with voice and music. Zero is silent; 100% keeps the original
+sound level. Adjustments apply to the paired display immediately, even during an
+unwrap, with a short smooth fade. The level is remembered separately for each
+saved game in this browser. The transparent overlay contains no mixer controls.
+Leave **Preview sound off** while streaming to avoid duplicate playback. The
+editor and art gallery have a separate **Preview volume** remembered in this
+browser; auditioning those never changes the live mix. Volume levels are local
+preferences and are not included in prize-settings backups. Refresh the control
+page and OBS Browser Source once after this update to load volume support.
+
 Save each setup separately, then use **Open controls**. Copy its private display
 link into an OBS/Streamlabs **Browser Source at 420×460**. The source is transparent
 and only appears during a round. Keep the control page open. Keep control preview

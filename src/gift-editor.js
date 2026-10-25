@@ -2,7 +2,9 @@ import {giftStore,exportGiftSettings,importGiftSettings} from './gift-store.js';
 import {DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,eligibleGiftOutcomes,giftModifierDeadline,giftModifierDue,sampleGiftFinale,prizeLabel,giftTotal,money,isGiftExpansion} from './gift-game.js';
 import {createGiftView} from './gift-view.js';
 import {createGiftAudio} from './gift-audio.js';
+import {bindGiftPreviewVolume} from './gift-mixer.js';
 const $=s=>document.querySelector(s),audio=createGiftAudio();
+bindGiftPreviewVolume($('#gift-mixer'),audio);
 let widgets=[],selected=null,dirty=false,draftValue=null,draftError='',demo=null,ready=false,refreshTimer;
 const view=createGiftView($('#gift-preview'),{interactive:true,onPick:pick,onReady(){ready=true;renderDemo();},onError(e){$('#demo-status').textContent=e.message;},audio});
 function message(text,error=false){$('#editor-status').textContent=text;$('#editor-status').classList.toggle('error',error);}

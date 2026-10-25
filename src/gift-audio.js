@@ -1,6 +1,7 @@
 import {isGiftExpansion} from './gift-game.js';
 import {giftArrivalCount,giftArrivalDelay,GIFT_ARRIVAL_MS} from './gift-bonus-motion.js';
 import {scheduleGiftUnwrap} from './gift-unwrap-audio.js';
+import {giftVolume,DEFAULT_GIFT_VOLUME} from './gift-volume.js';
 
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
@@ -34,7 +35,7 @@ export function giftRevealScore(prize){
 }
 
 // Shared by live playback and the offline listening preview. No audio downloads.
-export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{}){
+export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{},destination=ctx.destination){
  function tone(frequency,at,length,gain,type){
   const oscillator=ctx.createOscillator(),envelope=ctx.createGain();
   oscillator.type=type;oscillator.frequency.value=frequency;
@@ -42,7 +43,7 @@ export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{}){
   envelope.gain.linearRampToValueAtTime(gain,at+.006);
   envelope.gain.exponentialRampToValueAtTime(.0001,at+length);
   envelope.gain.linearRampToValueAtTime(0,at+length+.012);
-  oscillator.connect(envelope).connect(ctx.destination);
+  oscillator.connect(envelope).connect(destination);
   track(oscillator,envelope,[oscillator,envelope]);
   oscillator.start(at);oscillator.stop(at+length+.015);
  }
@@ -56,7 +57,7 @@ export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{}){
 }
 
 export function createGiftAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)()}={}){
- let ctx,enabled=false,last='',lastUnwrap='',lastFinale='',disposed=false;
+ let ctx,master,volume=DEFAULT_GIFT_VOLUME,rampFrom=1,rampStart=0,enabled=false,last='',lastUnwrap='',lastFinale='',disposed=false;
  const playing=new Set();
  function track(source,envelope,nodes){
   const entry={source,envelope,nodes};playing.add(entry);
@@ -72,8 +73,27 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    source.stop(ctx.currentTime+.015);
   }
  }
- function unlock(){if(disposed)return;ctx??=createContext();if(ctx.state==='suspended')void ctx.resume().catch(()=>{});}
- return {get enabled(){return enabled;},
+ function unlock(){
+  if(disposed)return;
+  if(!ctx){ctx=createContext();master=ctx.createGain();rampFrom=volume/100;rampStart=ctx.currentTime-.04;master.gain.setValueAtTime(volume/100,ctx.currentTime);master.connect(ctx.destination);}
+  if(ctx.state==='suspended')void ctx.resume().catch(()=>{});
+ }
+ return {get enabled(){return enabled;},get volume(){return volume;},
+  setVolume(value){
+   if(disposed)return;
+   const next=giftVolume(value);if(next===volume)return;
+   if(!master){volume=next;return;}
+   // A shared, gently ramped bus adjusts playing tails and future cues together.
+   // Snapshot heartbeats at the same level never restart the ramp.
+   const gain=master.gain,time=ctx.currentTime;
+   const progress=Math.max(0,Math.min(1,(time-rampStart)/.04));
+   const held=rampFrom+(volume/100-rampFrom)*progress;
+   // Explicitly anchor every ramp, including after a long silent gap. Tracking
+   // the short linear ramp also makes rapid scrubbing continuous in all browsers.
+   gain.cancelScheduledValues(time);gain.setValueAtTime(held,time);
+   rampFrom=held;rampStart=time;volume=next;
+   gain.linearRampToValueAtTime(volume/100,time+.04);
+  },
   setEnabled(value){if(disposed)return;enabled=!!value;if(enabled)unlock();else stop();},unlock,
   unwrap(flight,time,{candy=true}={}){
    if(!flight||!Number.isFinite(flight.startAt)||time<flight.startAt||flight.id===lastUnwrap||disposed)return;
@@ -83,19 +103,19 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    if(!ctx||ctx.state!=='running')return;
    lastUnwrap=flight.id;
    if(time>=flight.revealAt)return;
-   scheduleGiftUnwrap(ctx,candy,ctx.currentTime,(time-flight.startAt)/1000,track);
+   scheduleGiftUnwrap(ctx,candy,ctx.currentTime,(time-flight.startAt)/1000,track,master);
   },
   sync(flight,time){
    if(!flight||flight.id===last||time<flight.revealAt||disposed)return;
    last=flight.id;
    if(!enabled||!ctx||ctx.state!=='running'||time>flight.revealAt+180)return;
-   scheduleGiftScore(ctx,giftRevealScore(flight.prize),ctx.currentTime,(time-flight.revealAt)/1000,track);
+   scheduleGiftScore(ctx,giftRevealScore(flight.prize),ctx.currentTime,(time-flight.revealAt)/1000,track,master);
   },
   finale(round,time){
    if(round?.completedAt==null||time<round.completedAt||round.id===lastFinale||disposed)return;
    lastFinale=round.id;
    if(!enabled||!ctx||ctx.state!=='running'||time>round.completedAt+180)return;
-   scheduleGiftScore(ctx,giftFinaleScore(),ctx.currentTime,(time-round.completedAt)/1000,track);
+   scheduleGiftScore(ctx,giftFinaleScore(),ctx.currentTime,(time-round.completedAt)/1000,track,master);
   },
   reset(){last='';lastUnwrap='';lastFinale='';stop();},
   dispose(){stop();disposed=true;enabled=false;if(ctx&&ctx.state!=='closed')void ctx.close().catch(()=>{});}

@@ -185,3 +185,32 @@ test('35 percent upgrade preserves customized games and waits until an active ro
  await store.advance(r.flight.finishAt);assert.deepEqual(store.list()[0],fourBonusConfig());assert.equal(store.snapshot('gift-pile').lastResult.totalCents,'7000');
  await store.advance(r.flight.finishAt+6000);assert.equal(store.snapshot('gift-pile').round,null);assert.deepEqual(store.list()[0],modern());assert.equal(store.roomKey('gift-pile'),room);
 });
+
+
+test('stream volume persists per game without changing a running round, prizes or keys',async()=>{
+ const {store,data}=fixture();await store.init();assert.equal(store.snapshot('gift-pile').audio.volume,100);
+ await store.save({...config(),id:'second',name:'Second game'});
+ await store.unwrap('gift-pile','Test viewer','0:0',Date.now());
+ const before=store.snapshot('gift-pile'),key=store.roomKey('gift-pile');let published=0;
+ const unsubscribe=store.subscribe(()=>published++);
+ const changed=await store.setVolume('gift-pile',35);assert.equal(changed.audio.volume,35);assert.equal(published,1);
+ assert.deepEqual(changed.round,before.round);assert.deepEqual(changed.widget,before.widget);assert.equal(store.roomKey('gift-pile'),key);
+ assert.equal(store.snapshot('second').audio.volume,100);await store.setVolume('second',0);
+ await store.save({...config(),name:'Renamed'});assert.equal(store.snapshot('gift-pile').audio.volume,35);
+ const restored=createGiftStore({getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)},{request:(_n,fn)=>fn()});
+ assert.equal(restored.snapshot('gift-pile').audio.volume,35);assert.equal(restored.snapshot('second').audio.volume,0);
+ const serialized=JSON.stringify(changed);assert.ok(!serialized.includes(key));assert.ok(!serialized.includes('weight'));
+ unsubscribe();
+});
+test('serialized volume changes and picks preserve the newest volume and committed flight',async()=>{
+ const data=new Map();let queue=Promise.resolve();
+ const store=createGiftStore({getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)},{request:(_n,fn)=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;}});
+ await store.init();await Promise.all([store.setVolume('gift-pile',10),store.unwrap('gift-pile','Test',null,1000),store.setVolume('gift-pile',25),store.setVolume('gift-pile',60)]);
+ const state=store.snapshot('gift-pile',1000);assert.equal(state.audio.volume,60);assert.ok(state.round.flight);assert.equal(state.round.remaining,3);
+});
+test('a failed volume save does not announce or overwrite a persisted setting',async()=>{
+ const {store,data}=fixture();await store.init();await store.setVolume('gift-pile',40);
+ const before=data.get(GIFT_STORE_KEY),blocked=createGiftStore({getItem:k=>data.get(k),setItem:()=>{throw Error('Storage full');}},{request:(_n,fn)=>fn()});
+ let changed=false;blocked.subscribe(()=>changed=true);await assert.rejects(()=>blocked.setVolume('gift-pile',90),/Storage full/);
+ assert.equal(changed,false);assert.equal(data.get(GIFT_STORE_KEY),before);
+});
