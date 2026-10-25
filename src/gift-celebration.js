@@ -1,8 +1,9 @@
+export const ROYAL_REVEAL_MS=600;
 export const DEFAULT_GIFT_CELEBRATION={big:100,royal:250};
 export const GIFT_CELEBRATIONS=[
  {id:'standard',label:'Standard',particles:72,motionMs:2600},
  {id:'big',label:'Big win',particles:96,motionMs:2900},
- {id:'royal',label:'Royal win',particles:120,motionMs:3200}
+ {id:'royal',label:'Royal win',particles:168,motionMs:3400}
 ];
 export function validateGiftCelebration(value=DEFAULT_GIFT_CELEBRATION){
  if(!value||typeof value!=='object')throw Error('Enter both celebration thresholds.');

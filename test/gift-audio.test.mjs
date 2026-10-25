@@ -206,3 +206,15 @@ test('volume clamps safely and ramps in browsers without cancelAndHoldAtTime',()
  a.setVolume(20);assert.equal(master.cancelledAt,10);assert.deepEqual(master.gain.calls.slice(-2),[['set',1,10],['linear',.2,10.04]]);
  a.dispose();a.setVolume(80);assert.equal(a.volume,20);
 });
+
+
+test('cancelling during Royal anticipation stops the future payoff and joining late does not replay it',()=>{
+ const round={id:'royal',completedAt:1000,cashCents:25000,multiplier:1,preset:{celebration:{big:100,royal:250}}};
+ for(const action of ['reset','mute','dispose']){
+  const ctx=context(),a=createGiftAudio({createContext:()=>ctx});a.setEnabled(true);a.finale(round,1000);
+  const voices=oscillators(ctx);assert.ok(voices.some(n=>n.started===10.6));ctx.currentTime=10.3;
+  if(action==='mute')a.setEnabled(false);else a[action]();
+  assert.ok(voices.every(n=>Math.abs(n.stops.at(-1)-10.315)<1e-9));
+ }
+ const ctx=context(),a=createGiftAudio({createContext:()=>ctx});a.setEnabled(true);a.finale(round,1700);assert.equal(oscillators(ctx).length,0);a.finale(round,1000);assert.equal(oscillators(ctx).length,0);
+});

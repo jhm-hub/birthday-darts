@@ -59,9 +59,9 @@ test('all tiers remain bounded, settle within the same hold and respect reduced 
   const r=round([5000,15000,30000][level]),tier=GIFT_CELEBRATIONS[level];
   assert.equal(giftFinaleMotion(r,1200).level,level);
   assert.equal(giftFinaleMotion(r,1000+tier.motionMs).particles,false);
-  for(let i=0;i<120;i++){assert.equal(giftConfetti('tier',i,tier.motionMs,level),null);if(i>=tier.particles)assert.equal(giftConfetti('tier',i,1200,level),null);}
+  for(let i=0;i<168;i++){assert.equal(giftConfetti('tier',i,tier.motionMs,level),null);if(i>=tier.particles)assert.equal(giftConfetti('tier',i,1200,level),null);}
   for(const age of [320,1200,2000,3200]){const quiet=giftFinaleMotion(r,1000+age,true);assert.equal(quiet.scale,1);assert.equal(quiet.crownScale,1);assert.equal(quiet.particles,false);for(let i=0;i<6;i++)assert.equal(giftFinalGleam(i,age,true,level),0);}
-  const score=giftFinaleScore(level);assert.ok(score.every(n=>n.at+n.length+.015<2.1));assert.ok(score.reduce((sum,n)=>sum+n.gain*1.3,0)<.65);
+  const score=giftFinaleScore(level);assert.ok(score.every(n=>n.at+n.length+.015<(level===2?2.3:2.1)));assert.ok(score.reduce((sum,n)=>sum+n.gain*1.3,0)<.65);
  }
  assert.equal(new Set([0,1,2].map(i=>JSON.stringify(giftFinaleScore(i)))).size,3);
 });

@@ -114,3 +114,13 @@
 .gift-final-rank em{display:block;width:8px;height:8px;background:currentColor;clip-path:polygon(25% 0,75% 0,75% 25%,100% 25%,100% 75%,75% 75%,75% 100%,25% 100%,25% 75%,0 75%,0 25%,25% 25%);box-shadow:inset 2px 2px #fff5}
 .gift-finale[data-tier="big"] .gift-final-rank em:last-child{display:none}
 .gift-finale[data-tier="royal"] .gift-final-rank{color:#fff0bc}
+
+/* Royal anticipation uses the same plaque, with no reflow or rolling digits. */
+.gift-royal-build{position:absolute;top:88px;left:26px;right:26px;height:94px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;color:#ffe5b5}
+.gift-royal-build[hidden]{display:none}
+.gift-royal-build b{font:500 21px/1.2 Fredoka,sans-serif;text-shadow:0 2px #180c24}
+.gift-royal-build i{display:flex;gap:16px}
+.gift-royal-build em{display:block;width:14px;height:14px;background:#755575;opacity:.55;clip-path:polygon(4px 0,10px 0,10px 2px,12px 2px,12px 4px,14px 4px,14px 10px,12px 10px,12px 12px,10px 12px,10px 14px,4px 14px,4px 12px,2px 12px,2px 10px,0 10px,0 4px,2px 4px,2px 2px,4px 2px);box-shadow:inset 3px 3px #fff5,inset -3px -3px #5b345a}
+.gift-royal-build[data-charge="1"] em:first-child,.gift-royal-build[data-charge="2"] em:nth-child(-n+2),.gift-royal-build[data-charge="3"] em{background:#ffe3a5;opacity:1}
+.gift-finale[data-phase="build"]>strong,.gift-finale[data-phase="build"]>p,.gift-finale[data-phase="build"] .gift-final-count{visibility:hidden}
+.stage-royal-build .gift-footer{visibility:hidden}

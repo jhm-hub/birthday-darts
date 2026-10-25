@@ -3,14 +3,16 @@ import {giftArrivalCount,giftArrivalDelay,GIFT_ARRIVAL_MS} from './gift-bonus-mo
 import {scheduleGiftUnwrap} from './gift-unwrap-audio.js';
 import {giftVolume,DEFAULT_GIFT_VOLUME} from './gift-volume.js';
 import {FINALE_RESOLVE_MS} from './gift-finale-motion.js';
-import {giftCelebrationLevel} from './gift-celebration.js';
+import {giftCelebrationLevel,ROYAL_REVEAL_MS} from './gift-celebration.js';
 
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
 
 // A complete little fanfare: lift, crown/chord + second confetti burst, then a
 // resolving sparkle. More musical space than a prize cue, with the same quiet bus.
-export function giftFinaleScore(level=0){const land=FINALE_RESOLVE_MS/1000,score=[
+export function giftFinaleScore(level=0){
+ if(level===2)return royalFinaleScore();
+ const land=FINALE_RESOLVE_MS/1000,score=[
  note(0,60,.25,.018,'soft'),
  ...[72,76,79,84].map((pitch,i)=>note(i*.075,pitch,.24,.031,'mallet')),
  note(land,60,.65,.031,'soft'),note(land,72,.65,.031,'bloom'),
@@ -19,11 +21,23 @@ export function giftFinaleScore(level=0){const land=FINALE_RESOLVE_MS/1000,score
 ];
  if(level===0)return score;
  // Richer endings add musical detail, not a louder master or longer total hold.
- const richer=score.map(n=>({...n,gain:n.gain*(level===2?.88:.94)}));
+ const richer=score.map(n=>({...n,gain:n.gain*.94}));
  richer.push(note(.95,88,.24,.016,'coin'),note(1.1,91,.24,.014,'coin'),note(1.28,84,.45,.027));
- if(level===2)richer.push(note(1.28,72,.4,.018,'bloom'),note(1.28,79,.35,.013),note(1.46,88,.22,.016,'coin'),note(1.62,84,.4,.022));
  return richer;
 }
+
+// Three jewel notes build to the exact visual reveal. A warm chord and wider
+// coin shower give Royal its own payoff without changing the stream master.
+function royalFinaleScore(){const reveal=ROYAL_REVEAL_MS/1000;return [
+ note(0,60,.42,.012,'soft'),
+ ...[72,76,79].map((pitch,i)=>note(i*.18,pitch,.23,.024+i*.002,'mallet')),
+ note(.48,84,.11,.021,'coin'),
+ note(reveal,60,.7,.028,'soft'),note(reveal,72,.68,.033,'bloom'),
+ note(reveal,76,.6,.024),note(reveal,79,.56,.019),note(reveal,84,.46,.021,'coin'),
+ ...[88,91,88,84].map((pitch,i)=>note(reveal+.15+i*.12,pitch,.26,.016,'coin')),
+ note(reveal+.9,72,.45,.016,'bloom'),note(reveal+.9,84,.48,.026),
+ note(reveal+1.07,88,.22,.014,'coin'),note(reveal+1.24,84,.38,.019)
+];}
 
 // Gentle partials keep these miniature arcade instruments clear without a harsh
 // square-wave edge. [frequency ratio, level, decay, oscillator]. Finale's existing

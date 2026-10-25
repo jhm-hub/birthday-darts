@@ -48,3 +48,28 @@ test('both confetti fountains rise into the visible space above the total plaque
  for(let i=0;i<FINALE_PARTICLES;i++){const p=giftConfetti('visibility-check',i,650);if(p&&p.y>=76&&p.y+p.height<137&&p.opacity>.3)visible.push(p);}
  assert.ok(visible.length>=24);assert.ok(visible.some(p=>p.x<210));assert.ok(visible.some(p=>p.x>210));
 });
+
+
+test('Royal builds briefly then reveals on the musical payoff, with almost five seconds to read',()=>{
+ const r=startGiftRound(DEFAULT_GIFTS);r.cashCents=25000;r.completedAt=1000;r.hideAt=1000+GIFT_HOLD_MS;
+ for(const reduced of [false,true]){
+  for(const age of [0,180,360,599]){const m=giftFinaleMotion(r,1000+age,reduced);assert.equal(m.building,true);assert.equal(m.particles,false);assert.equal(m.scale,1);assert.equal(m.y,0);}
+  const reveal=giftFinaleMotion(r,1600,reduced);assert.equal(reveal.building,false);assert.equal(reveal.particles,!reduced);assert.equal(r.hideAt-1600,4900);
+  assert.deepEqual(reveal,giftFinaleMotion(JSON.parse(JSON.stringify(r)),1600,reduced));
+  const late=giftFinaleMotion(r,5000,reduced);assert.equal(late.building,false);assert.equal(late.particles,false);assert.equal(late.crownScale,1);
+ }
+ assert.ok(giftFinaleScore(2).filter(n=>n.at===.6).length>=5);
+ const cues=giftFinaleScore(2).filter(n=>n.voice==='mallet');assert.deepEqual(cues.map(n=>n.at),[0,.18,.36]);
+ for(const cents of [0,10000]){r.cashCents=cents;assert.equal(!!giftFinaleMotion(r,1000).building,false);}
+});
+test('Royal confetti waits for the reveal and fills both sides without invalid or endless particles',()=>{
+ const visible=[];
+ for(let i=0;i<FINALE_PARTICLES;i++){
+  assert.equal(giftConfetti('royal-review',i,599,2),null);
+  for(let age=600;age<3400;age+=50){const p=giftConfetti('royal-review',i,age,2);assert.deepEqual(p,giftConfetti('royal-review',i,age,2));if(p){assert.ok(Object.values(p).every(v=>typeof v!=='number'||Number.isFinite(v)));assert.ok(p.opacity>=0&&p.opacity<=1);assert.ok(Number.isInteger(p.x)&&Number.isInteger(p.y));}}
+  assert.equal(giftConfetti('royal-review',i,3400,2),null);
+  const p=giftConfetti('royal-review',i,1100,2);if(p&&p.opacity>.3&&p.y>=76&&p.y+p.height<128&&p.x>=0&&p.x+p.width<=420)visible.push(p);
+ }
+ assert.ok(visible.length>=40);assert.ok(visible.filter(p=>p.x<210).length>=15);assert.ok(visible.filter(p=>p.x>=210).length>=15);
+ assert.equal(giftConfetti('royal-review',FINALE_PARTICLES,800,2),null);
+});

@@ -180,7 +180,7 @@ boards. There is no character in this game, and no character artwork to download
   limit. Remaining eligible weights rebalance. Gift appearances/positions do not change configured odds.
 - After the last pick, a readable plaque shows **cash × multiplier = total**
   over the grid, then clears after 5.5 seconds.
-- The final total appears immediately in a shaded plum plaque with a stepped
+- The final total appears in a shaded plum plaque with a stepped
   gold frame, a jeweled pixel crown and small corner glints. The plaque settles
   gently; a restrained highlight passes behind the amount. Two candy-confetti
   waves stay behind the opaque plaque and inside the board. The second wave and
@@ -194,10 +194,14 @@ boards. There is no character in this game, and no character artwork to download
   **Celebration levels** in the private game settings controls two thresholds:
   **Standard below $100**, **Big win at $100+**, **Royal win at $250+** by default.
   Big win adds a pink frame, a third confetti wave and an extended musical finish;
-  Royal win adds brighter gold, a fourth wave and a richer resolving fanfare.
+  Royal win starts with a **0.6-second build-up**: three gold jewels light up,
+  then the exact total appears with a matching warm chord and a broader **168-piece
+  pixel-confetti burst**. Twin fountains and a crown shower stay behind the opaque
+  plaque, away from the digits. The amount has 4.9 seconds of reading time inside
+  the existing 5.5-second finale. Standard and Big win still reveal immediately.
   These tiers use the exact final total **after all multipliers**. They share the
   same plaque size, 5.5-second hold and master volume; their motion settles by
-  2.6 / 2.9 / 3.2 seconds. Thresholds are saved per game, must be positive dollar
+  2.6 / 2.9 / 3.4 seconds. Thresholds are saved per game, must be positive dollar
   amounts (up to two decimal places), and Royal must exceed Big. Changes apply
   to the next viewer; a running round keeps its original thresholds. Older
   saved games gain the $100 / $250 defaults on their next round, while already
