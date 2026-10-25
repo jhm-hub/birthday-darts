@@ -38,5 +38,6 @@ export const GIFT_INTRO_LIGHTS=[
 export function giftIntroLight(index,intro){
  if(!intro)return 0;
  const age=intro.age-index*12;
- return smooth(age/45)*(1-smooth((age-75)/180));
+ // Hand attention to the selected gift as its ribbon starts to move.
+ return smooth(age/45)*(1-smooth((age-75)/180))*(1-smooth((intro.age-220)/240));
 }

@@ -254,3 +254,21 @@ test('late/resuming opening audio joins remaining beats and all scheduled welcom
  const ctx=context('suspended');ctx.resume=async()=>{};const a=createGiftAudio({createContext:()=>ctx});a.setEnabled(true);a.intro(r,1000);assert.equal(oscillators(ctx).length,0);
  ctx.state='running';a.intro(r,1200);assert.ok(oscillators(ctx).length>0);a.dispose();const count=ctx.nodes.length;a.intro({...r,id:'after-dispose'},1000);assert.equal(ctx.nodes.length,count);
 });
+
+
+test('first-pick rustles use their own cached buffers while the lid pop and later unwrap stay unchanged',()=>{
+ const ctx=context();scheduleGiftUnwrap(ctx,true,10,0,()=>{},ctx.destination,true);scheduleGiftUnwrap(ctx,true,12,0,()=>{},ctx.destination,false);
+ const sources=ctx.nodes.filter(n=>n.kind==='buffer'),opening=giftUnwrapCues(true,true),ordinary=giftUnwrapCues(true,false);
+ opening.forEach((cue,i)=>assert.equal(sources[i].started,10+cue.at));ordinary.forEach((cue,i)=>assert.equal(sources[4+i].started,12+cue.at));
+ for(let i=0;i<3;i++)assert.notEqual(sources[i].buffer,sources[4+i].buffer);assert.equal(sources[3].buffer,sources[7].buffer);
+});
+test('first-pick audio joins the correct ribbon beat once and cancels on mute, reset or disposal',()=>{
+ for(const elapsed of [0,.25,.4,.55,.7]){
+  const ctx=context(),a=createGiftAudio({createContext:()=>ctx}),f=unwrapShot();a.setVolume(40);a.setEnabled(true);a.unwrap(f,1000+elapsed*1000,{opening:true});
+  const sources=ctx.nodes.filter(n=>n.kind==='buffer'),cues=giftUnwrapCues(true,true).filter(c=>c.at>=elapsed-.035);assert.equal(sources.length,cues.length);
+  sources.forEach((s,i)=>assert.ok(Math.abs(s.started-(10+Math.max(0,cues[i].at-elapsed)))<1e-9));
+  a.unwrap(f,1600,{opening:true});assert.equal(ctx.nodes.filter(n=>n.kind==='buffer').length,sources.length);assert.ok(ctx.nodes.slice(1).filter(n=>n.kind==='gain').every(n=>n.connectedTo===ctx.nodes[0]));
+  a.reset();assert.ok(sources.every(s=>s.stops.at(-1)===10.015));
+ }
+ for(const action of ['mute','dispose']){const ctx=context(),a=createGiftAudio({createContext:()=>ctx});a.setEnabled(true);a.unwrap(unwrapShot(),1000,{opening:true});if(action==='mute')a.setEnabled(false);else a.dispose();assert.ok(ctx.nodes.filter(n=>n.kind==='buffer').every(s=>s.stops.at(-1)===10.015));}
+});

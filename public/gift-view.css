@@ -151,3 +151,9 @@
 .gift-intro-cell .gift-spawn-glints i{width:4px;height:4px;left:-2px;top:-2px;background:var(--intro-color);box-shadow:inset 1px 1px #fff3d5}
 .gift-intro-cell .gift-spawn-glints i:nth-child(even){width:2px;height:2px;left:-1px;top:-1px;background:#fff3d5}
 @media(prefers-reduced-motion:reduce){.gift-intro-lights{display:none!important}}
+
+/* A quiet selection beat connects the welcome lights to the first ribbon pull. */
+.gift-pick-focus{position:absolute;inset:var(--focus-inset,10px);opacity:var(--focus-opacity,0);pointer-events:none;color:#ffe4a2}
+.gift-pick-focus i{position:absolute;width:12px;height:12px;background:currentColor;box-shadow:inset 1px 1px #fff3d5;clip-path:polygon(4px 0,100% 0,100% 2px,4px 2px,4px 4px,2px 4px,2px 100%,0 100%,0 4px,2px 4px,2px 2px,4px 2px)}
+.gift-pick-focus i:nth-child(1){left:0;top:0}.gift-pick-focus i:nth-child(2){right:0;top:0;transform:rotate(90deg);color:#ffbfdb}
+.gift-pick-focus i:nth-child(3){right:0;bottom:0;transform:rotate(180deg)}.gift-pick-focus i:nth-child(4){left:0;bottom:0;transform:rotate(270deg);color:#ffbfdb}

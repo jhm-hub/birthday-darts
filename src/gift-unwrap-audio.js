@@ -1,8 +1,15 @@
+import {FIRST_BOW_RELEASE_MS} from './gift-opening-handoff.js';
 import {CANDY_BOW_RELEASE_MS,CANDY_LID_POP_MS} from './gift-unwrap-motion.js';
 
 // Soft paper/satin texture, then a round low pop. Seconds share the animation's
 // committed start, leaving a little air before the brighter 850 ms prize chime.
-export function giftUnwrapCues(candy=true){
+export function giftUnwrapCues(candy=true,opening=false){
+ if(candy&&opening)return [
+  {id:'first-ribbon-pull',kind:'ribbon',at:FIRST_BOW_RELEASE_MS/1000,length:.105,gain:.14,seed:41},
+  {id:'first-ribbon-loosen',kind:'ribbon',at:.37,length:.085,gain:.115,seed:83},
+  {id:'first-ribbon-slip',kind:'ribbon',at:.46,length:.055,gain:.095,seed:127},
+  {id:'lid-pop',kind:'pop',at:CANDY_LID_POP_MS/1000,length:.16,gain:.12,seed:179}
+ ];
  return candy?[
   {id:'ribbon-pull',kind:'ribbon',at:CANDY_BOW_RELEASE_MS/1000,length:.145,gain:.15,seed:41},
   {id:'ribbon-loosen',kind:'ribbon',at:(CANDY_BOW_RELEASE_MS+160)/1000,length:.135,gain:.12,seed:83},
@@ -37,9 +44,9 @@ export function synthesizeGiftFoley(cue,sampleRate){
 }
 
 const buffers=new WeakMap();
-export function scheduleGiftUnwrap(ctx,candy,start,elapsed=0,track=()=>{},destination=ctx.destination){
+export function scheduleGiftUnwrap(ctx,candy,start,elapsed=0,track=()=>{},destination=ctx.destination,opening=false){
  let cache=buffers.get(ctx);if(!cache){cache=new Map();buffers.set(ctx,cache);}
- for(const cue of giftUnwrapCues(candy)){
+ for(const cue of giftUnwrapCues(candy,opening)){
   // Join future beats only. Reconnecting must not bunch expired rustles together.
   if(cue.at<elapsed-.035)continue;
   let buffer=cache.get(cue.id);

@@ -7,6 +7,7 @@ import {giftPrizeMotion,giftPrizeSpark,applyGiftPrize,PRIZE_COLORS} from './gift
 import {giftPrizeEmblem} from './gift-prize-art.js';
 import {presentedGiftRound,giftFinishMotion,giftFinishSpark} from './gift-finish-motion.js';
 import {giftIntroMotion,giftIntroCell,giftIntroLight,GIFT_INTRO_LIGHTS} from './gift-intro-motion.js';
+import {isGiftOpeningPick,giftOpeningFocus} from './gift-opening-handoff.js';
 import {createGiftPresence} from './gift-exit-motion.js';
 import {giftFinalFrame,giftFinalCrown,giftFinalBow,giftFinalBadge} from './gift-finale-art.js';
 
@@ -39,7 +40,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   finishTrail.style.display=finish.linked&&!reduced.matches?'':'none';finishTrail.style.fill=PRIZE_COLORS[finish.shot?.prize.kind]??PRIZE_COLORS.cash;
   [...finishTrail.children].forEach((g,i)=>{const p=giftFinishSpark(finish,i,round,time,reduced.matches);g.setAttribute('opacity',String(p?.opacity??0));if(p)g.setAttribute('transform',`translate(${p.x-Math.floor(p.size/2)} ${p.y-Math.floor(p.size/2)})`);});
   const {rows,cols}=giftDimensions(shown??preset),remaining=shown?.remaining??preset.picks,bonus=giftBonusMotion(round,time,reduced.matches);
-  const intro=giftIntroMotion(round,time,reduced.matches);
+  const intro=giftIntroMotion(round,time,reduced.matches),openingPick=isGiftOpeningPick(round),focus=giftOpeningFocus(round,time,reduced.matches);
   introLights.style.display=intro?'':'none';if(intro)[...introLights.children].forEach((g,i)=>g.setAttribute('opacity',String(giftIntroLight(i,intro))));
   stage.classList.toggle('gift-intro-active',!!intro);
   stage.style.setProperty('--bonus-color',bonus?.color??'#ffe8ad');stage.style.setProperty('--bonus-pop',String(bonus?.pop??0));
@@ -53,7 +54,8 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   const opened=new Map(shown?.opened.map(s=>[s.cell,s])??[]);
   for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
    const id=row+':'+col,shot=opened.get(id),active=flight?.cell===id;let b=buttons.get(id);
-   if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;b.innerHTML=art(row*3+col)+`<span class="gift-glints" aria-hidden="true">${'<i></i>'.repeat(8)}</span><span class="gift-cell-prize"><span class="gift-cell-main"></span><small class="gift-cell-detail"></small></span><span class="gift-cell-number"></span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
+   if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;b.innerHTML=art(row*3+col)+`<span class="gift-pick-focus" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="gift-glints" aria-hidden="true">${'<i></i>'.repeat(8)}</span><span class="gift-cell-prize"><span class="gift-cell-main"></span><small class="gift-cell-detail"></small></span><span class="gift-cell-number"></span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
+   b.style.setProperty('--focus-opacity',String(active?focus.opacity:0));b.style.setProperty('--focus-inset',focus.inset+'px');
    b.classList.toggle('candy-unwrap',!!b.querySelector('svg[data-unwrap="candy"]'));
    const arrival=giftCellMotion(row,col,rows,cols,bonus),opening=giftIntroCell(row,col,intro);
    b.classList.toggle('gift-intro-cell',!!intro&&!active);b.style.setProperty('--intro-color',['#ffe4a2','#ffb8d7','#d4bbf4'][(row+col)%3]);
@@ -65,7 +67,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
    b.classList.toggle('gift-opened',!!shot);b.classList.toggle('gift-opening',active);b.classList.toggle('gift-special',!!shot&&shot.prize.kind!=='cash');
    b.querySelector('.gift-cell-number').textContent=shot?'':String.fromCharCode(65+row)+(col+1);
    b.querySelector('.gift-cell-main').textContent=label;b.querySelector('.gift-cell-detail').textContent=expansion?giftPickLabel(shot.prize):'';
-   if(b.classList.contains('candy-unwrap'))applyGiftUnwrap(b,giftUnwrapMotion(active?flight:null,time,{opened:!!shot,reduced:reduced.matches}));
+   if(b.classList.contains('candy-unwrap'))applyGiftUnwrap(b,giftUnwrapMotion(active?flight:null,time,{opened:!!shot,reduced:reduced.matches,opening:active&&openingPick}));
    else {
     const shake=active&&age<650&&!reduced.matches?Math.sin(age/28)*Math.sin(Math.PI*age/650)*3:0,lift=active?ease((age-400)/450):shot?1:0;
     b.style.setProperty('--shake',shake+'deg');b.style.setProperty('--lid-y',(-34*lift)+'px');b.style.setProperty('--lid-turn',(-14*lift)+'deg');b.style.setProperty('--lid-opacity',String(1-ease((age-900)/300)*(active?1:0)));b.style.setProperty('--open',String(lift));
@@ -114,7 +116,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   confetti.style.display=finale?.particles?'':'none';
   if(finale?.particles)[...confetti.children].forEach((path,i)=>{const p=giftConfetti(round.id,i,finale.age,finale.level);path.setAttribute('d',p?pixelConfettiPath(p):'');if(p){path.setAttribute('opacity',String(p.opacity));path.setAttribute('fill',['#ffe4a2','#ffafd1','#c7b2ef','#afe4d0','#c3ddff'][p.color]);}});
   if(finished){const value=money(giftTotal(round));$('.gift-finale>small').textContent=round.viewer?round.viewer+'’s total':'ROUND TOTAL';$('.gift-finale>strong').textContent=value;$('.gift-finale>strong').style.fontSize=Math.min(68,480/value.length)+'px';const calculation=$('.gift-finale>p');calculation.textContent=money(round.cashCents)+' collected × '+round.multiplier;calculation.style.fontSize=Math.min(13,308/(calculation.textContent.length*.61))+'px';$('.gift-final-count').textContent=round.celebrationPreview?'Sample total · celebration preview':round.opened.length+' presents opened';}
-  if(audio){audio.intro(round,time);audio.unwrap(flight,time,{candy:buttons.get(flight?.cell)?.classList.contains('candy-unwrap')??true});audio.sync(flight,time);audio.finale(round,time);}
+  if(audio){audio.intro(round,time);audio.unwrap(flight,time,{candy:buttons.get(flight?.cell)?.classList.contains('candy-unwrap')??true,opening:openingPick});audio.sync(flight,time);audio.finale(round,time);}
   root.dataset.rows=rows;root.dataset.cols=cols;root.dataset.side=Math.max(rows,cols);root.dataset.picks=remaining;root.dataset.total=giftTotal(shown);root.dataset.phase=finished?'total':flight?'unwrapping':'ready';
   root.dataset.presentation=!visible?'hidden':exit.exiting?'exiting':display.entering?'entering':finished?'total':round?'playing':'ready';
   if(round||display.entering)raf=requestAnimationFrame(render);

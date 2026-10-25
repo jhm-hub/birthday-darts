@@ -9,14 +9,14 @@ const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
 
 // A restrained game-show welcome: one bell per diagonal, then a soft major
-// landing. Fixed note levels and a capped tail leave room for ribbon and prize.
+// landing. Its release passes smoothly into the ribbon, ending before the lid pop.
 export function giftIntroScore(side=3){
  const count=giftIntroWaveCount(side,side),pitches=[72,74,76,79,81,84,88];
  const score=Array.from({length:count},(_,rank)=>({
   ...note((giftIntroDelay(rank,count)+GIFT_INTRO_POP_MS*GIFT_INTRO_LAND)/1000,
-   pitches[Math.round(rank*6/Math.max(1,count-1))],.13,.022,'mallet'),beat:'welcome'}));
+   pitches[Math.round(rank*6/Math.max(1,count-1))],.115,.022,'mallet'),beat:'welcome'}));
  const land=score.at(-1).at;
- return [...score,note(land,60,.23,.014,'soft'),note(land,76,.21,.012,'bell'),note(land,79,.19,.01,'bell')];
+ return [...score,note(land,60,.115,.014,'soft'),note(land,76,.105,.012,'bell'),note(land,79,.095,.01,'bell')];
 }
 
 // Each tier has its own short phrase, all on the same quiet stream bus.
@@ -168,7 +168,7 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    if(time>=round.startedAt+GIFT_INTRO_MS)return;
    scheduleGiftScore(ctx,giftIntroScore(round.preset.side),ctx.currentTime,(time-round.startedAt)/1000,track,master);
   },
-  unwrap(flight,time,{candy=true}={}){
+  unwrap(flight,time,{candy=true,opening=false}={}){
    if(!flight||!Number.isFinite(flight.startAt)||time<flight.startAt||flight.id===lastUnwrap||disposed)return;
    if(!enabled){lastUnwrap=flight.id;return;}
    // A user gesture may still be resuming the context. Join the remaining beats
@@ -176,7 +176,7 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    if(!ctx||ctx.state!=='running')return;
    lastUnwrap=flight.id;
    if(time>=flight.revealAt)return;
-   scheduleGiftUnwrap(ctx,candy,ctx.currentTime,(time-flight.startAt)/1000,track,master);
+   scheduleGiftUnwrap(ctx,candy,ctx.currentTime,(time-flight.startAt)/1000,track,master,opening);
   },
   sync(flight,time){
    if(!flight||flight.id===last||time<flight.revealAt||disposed)return;

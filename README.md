@@ -186,14 +186,22 @@ boards. There is no character in this game, and no character artwork to download
 - A new round opens with a quick diagonal wave of presents: a small uniform
   pop, gold/pink/lilac pixel sparkles and a single chase of shaded marquee lights
   inside the board. A quiet rising chime lands with the gift waves, then resolves
-  into a small chord. Faith’s selected gift stays full-size and begins unwrapping
-  immediately. Other gifts settle within **540 ms**, the opening lights finish
+  into a small chord. Faith’s selected gift stays full-size and responds immediately with a
+  small gold/pink selection frame. Other gifts settle within **540 ms**, the opening lights finish
   by **620 ms**, and the first prize still arrives at **850 ms**. There is no extra
   click or delay. The round clock drives the entrance once; later picks, bonus
   expansions, reconnects and direct finale previews cannot restart it. Reduced
   motion keeps the presents still. Opening audio follows the existing stream
   volume/mute controls and cancels with reset. In the editor, press **Reset**,
   then click a present or **Unwrap for me** to try the complete opening.
+- The opening hands off to that chosen gift: marquee lights recede as the
+  corner frame gently tightens, then the first ribbon pull starts at **260 ms**.
+  All thirteen bow drawings are retained around the original **520 ms** lid pop; the
+  first amount still appears at **850 ms**, with no added pause or pick delay.
+  Shorter welcome-chord tails give the coordinated first-pick rustles room to
+  speak. The selection frame fades before the prize. Subsequent picks keep their
+  original unwrap timing/sounds. Reduced motion uses a still selection marker.
+  Both the marker and first unwrap join the committed flight clock on reconnect.
 - After the last pick, a readable plaque shows **cash × multiplier = total**
   over the grid for 5.5 seconds, followed by a short, layered fade.
 - The last prize keeps a clear reading beat before handing off to that plaque.
