@@ -132,6 +132,13 @@ boards. There is no character in this game, and no character artwork to download
   Board sizes are rows × columns. New cells are choices, not extra picks; opened
   presents retain their cell IDs and cannot be selected again. All boards stay
   within the same compact overlay frame.
+- Board bonuses smoothly make room, trace the new edge in its bonus color, then
+  bring in presents with a staggered bounce and pixel sparkles. Growth animates
+  both edges together and lands the shared corner once. The stronger bonus title
+  and larger pick-grant text stay in the header. Motion fits inside the existing
+  two-second unwrap and 420×460 overlay; reduced motion shows the expanded board
+  immediately. Displays sample the committed reveal time, so reconnects do not
+  restart an old entrance. Bonus odds and awarded picks are unchanged.
 - Default limits: **5×5 board, 12 picks per round**. Limits and bonus pick amounts
   are editable (up to 6×6 /36 picks). A partially capped bonus awards only the
   available picks. A row/column bonus stops when its own dimension reaches the board limit;

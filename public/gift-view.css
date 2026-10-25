@@ -14,7 +14,7 @@
 .gift-viewer{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gift-board-size{font-size:11px;color:#ddc5df;white-space:nowrap}
 .gift-board{position:absolute;left:12px;top:79px;width:396px;height:314px;transition:opacity .3s}
-.gift-cell{position:absolute;padding:4px 6px 11px;border:0!important;border-radius:0;background:none!important;min-height:0!important;cursor:pointer;transition:left .4s,top .4s,width .4s,height .4s;transform-origin:50% 70%;outline-offset:-5px!important;opacity:1!important;filter:none!important;animation:gift-arrive .4s ease-out}
+.gift-cell{position:absolute;padding:4px 6px 11px;border:0!important;border-radius:0;background:none!important;min-height:0!important;cursor:pointer;transform-origin:50% 70%;outline-offset:-5px!important;opacity:var(--arrival-opacity,1)!important;filter:none!important}
 .gift-cell svg{display:block;height:100%;width:100%;overflow:visible;image-rendering:pixelated;transform:rotate(var(--shake,0deg));filter:drop-shadow(0 3px 0 #160d2440)}
 .gift-cell:hover:not(:disabled) svg{filter:drop-shadow(0 0 5px #ffdc9a) brightness(1.1);transform:translateY(-3px)}
 .gift-cell:focus-visible{outline:2px solid #ffe8b8!important}
@@ -34,11 +34,20 @@
 .gift-glints{position:absolute;left:50%;top:45%;pointer-events:none;opacity:var(--glint-opacity,0)}
 .gift-glints i{position:absolute;width:4px;height:4px;background:#ffe8ad;box-shadow:0 0 0 1px #8e638d;transform:rotate(var(--angle)) translateY(var(--glint-distance,10px))}
 .gift-glints i:nth-child(even){background:#eab5d7;width:3px;height:6px}
+.gift-bonus-bands{position:absolute;left:12px;top:79px;width:396px;height:314px;pointer-events:none;overflow:hidden;shape-rendering:crispEdges}
+.gift-bonus-bands path{stroke:var(--bonus-color);stroke-width:2;fill:var(--bonus-color);fill-opacity:.08}
+.gift-spawn-glints{position:absolute;left:50%;top:42%;pointer-events:none;opacity:var(--spawn-opacity,0)}
+.gift-spawn-glints i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;background:var(--bonus-color);clip-path:polygon(25% 0,75% 0,75% 25%,100% 25%,100% 75%,75% 75%,75% 100%,25% 100%,25% 75%,0 75%,0 25%,25% 25%);transform:rotate(var(--angle)) translateY(var(--spawn-radius)) rotate(calc(-1 * var(--angle)))}
+.gift-spawn-glints i:nth-child(even){background:#ffe8ad;width:4px;height:4px;left:-2px;top:-2px;clip-path:none}
 /* The reveal replaces the header briefly, leaving every present visible. */
 .gift-toast{position:absolute;top:8px;left:12px;width:396px;min-height:65px;z-index:7;text-align:center;padding:8px 10px;border:1px solid #e2bc7f;border-radius:8px;background:linear-gradient(145deg,#3a233e,#24172f);box-shadow:0 3px 0 #160d24;opacity:0;transform:translateY(-5px);transition:opacity .15s,transform .15s;pointer-events:none}
 .gift-toast.show{opacity:1;transform:translateY(0)}
+.gift-bonus-active .gift-toast.show{transform:translateY(0) scale(calc(1 + var(--bonus-pop) * .035));border-color:var(--bonus-color);box-shadow:0 3px 0 #160d24,inset 0 0 0 2px #ffffff12}
+.gift-toast::before,.gift-toast::after{content:'';position:absolute;top:22px;left:12px;width:9px;height:9px;background:var(--bonus-color);clip-path:polygon(33% 0,66% 0,66% 33%,100% 33%,100% 66%,66% 66%,66% 100%,33% 100%,33% 66%,0 66%,0 33%,33% 33%);opacity:var(--bonus-pop,0);transform:scale(calc(.6 + var(--bonus-pop,0) * .8))}
+.gift-toast::after{left:auto;right:12px}
 .gift-toast strong{display:block;font-size:32px;color:#ffe8b7;line-height:1.1}
 .gift-toast span{font-size:9px;letter-spacing:1px;color:#dfc7dc}
+.gift-toast[data-kind=row] span,.gift-toast[data-kind=column] span,.gift-toast[data-kind=extra] span{font-size:11px;font-weight:500;letter-spacing:.5px}
 .gift-toast[data-kind=extra] strong{color:#c8efdb}
 .gift-toast[data-kind=multiply] strong{color:#ddb9f4}
 .gift-footer{position:absolute;left:12px;right:12px;bottom:8px;height:52px;display:grid;grid-template-columns:minmax(0,1fr) 72px minmax(0,1.5fr);gap:10px;align-items:center;padding:7px 12px;background:#21162bf5;border:1px solid #8b6d5b;border-radius:8px;box-shadow:inset 0 0 0 2px #160e20}
