@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,availableGiftCells,eligibleGiftOutcomes,projectedGiftRound,cleanGiftRound,sampleGiftFinale,giftTotal,money,UNWRAP_MS} from '../src/gift-game.js';
+import {DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,availableGiftCells,eligibleGiftOutcomes,projectedGiftRound,cleanGiftRound,sampleGiftFinale,giftTotal,money,UNWRAP_MS,giftDimensions,prizeLabel} from '../src/gift-game.js';
 import {createGiftStore,exportGiftSettings,importGiftSettings,GIFT_STORE_KEY} from '../src/gift-store.js';
-const config=()=>structuredClone(DEFAULT_GIFTS);
+// Retain the prior user-configurable setup as a compatibility fixture.
+const config=()=>({id:'gift-pile',name:'Faith’s gift pile',side:3,picks:3,maxSide:5,maxPicks:12,outcomes:[{kind:'cash',value:10,weight:35},{kind:'cash',value:25,weight:27},{kind:'cash',value:50,weight:15},{kind:'cash',value:100,weight:5},{kind:'multiply',value:2,weight:10},{kind:'extra',value:2,weight:8}]});
 function open(r,index,cell=null,now=(r.opened.length+1)*UNWRAP_MS){unwrapGift(r,now,{cell,forcedIndex:index});advanceGiftRound(r,now+UNWRAP_MS);}
 test('3×3 is nine choices but only three picks',()=>{const p=config();p.outcomes=p.outcomes.filter(o=>o.kind==='cash');const r=startGiftRound(p,'Viewer',0);assert.equal(availableGiftCells(r).length,9);assert.equal(r.remaining,3);open(r,1,'0:1');open(r,1,'1:0');open(r,1,'2:2');assert.equal(r.remaining,0);assert.equal(availableGiftCells(r).length,6);assert.equal(giftTotal(r),'7500');assert.ok(r.hideAt);assert.throws(()=>unwrapGift(r),/complete/);});
 test('targeted selection cannot reuse opened or out of bounds gifts, or double click',()=>{const r=startGiftRound(config());unwrapGift(r,0,{cell:'0:0',forcedIndex:0});assert.throws(()=>unwrapGift(r,0,{cell:'0:1'}),/finish/);assert.equal(advanceGiftRound(r,1999),false);assert.equal(advanceGiftRound(r,2000),true);assert.equal(advanceGiftRound(r,3000),false);assert.throws(()=>unwrapGift(r,3000,{cell:'0:0'}),/wrapped/);assert.throws(()=>unwrapGift(r,3000,{cell:'3:3'}),/wrapped/);assert.equal(r.opened.length,1);});
@@ -102,4 +103,61 @@ test('old active rounds without a guarantee marker retain their previous weighte
  const r=startGiftRound(config());delete r.modifierByPick;
  for(let i=0;i<3;i++)assert.equal(weightedOpen(r,()=>0).kind,'cash');
  assert.equal(r.remaining,0);assert.equal(giftTotal(r),'3000');
+});
+
+const modern=()=>structuredClone(DEFAULT_GIFTS);
+test('new starter offers multiplier, growth +3, row +1 and column +1 with total weight 100',()=>{
+ const p=validateGiftWidget(modern());assert.deepEqual(p.outcomes.filter(o=>o.kind!=='cash').map(o=>[o.kind,o.value]),[['multiply',2],['extra',3],['row',1],['column',1]]);assert.equal(p.outcomes.reduce((n,o)=>n+o.weight,0),100);
+});
+test('growth adds both dimensions and three picks without granting every new cell',()=>{
+ const r=startGiftRound(modern());open(r,5,'1:1');assert.deepEqual(giftDimensions(r),{rows:4,cols:4});assert.equal(r.allocated,6);assert.equal(r.remaining,5);assert.equal(availableGiftCells(r).length,15);assert.equal(r.opened[0].prize.granted,3);
+});
+test('row and column add only their own dimension and one pick, preserving selected locations',()=>{
+ for(const [index,expected,added]of [[6,{rows:4,cols:3},'3:2'],[7,{rows:3,cols:4},'2:3']]){
+  const r=startGiftRound(modern());open(r,0,'1:1');open(r,index,'2:2');assert.deepEqual(giftDimensions(r),expected);assert.equal(r.remaining,2);assert.equal(r.allocated,4);assert.equal(availableGiftCells(r).length,10);assert.ok(availableGiftCells(r).includes(added));assert.ok(!availableGiftCells(r).includes('1:1'));assert.deepEqual(r.opened.map(s=>s.cell),['1:1','2:2']);assert.equal(r.opened[1].prize.granted,1);
+ }
+});
+test('mixed row, growth and column bonuses preserve a rectangular board and never reuse cells',()=>{
+ const r=startGiftRound(modern());open(r,6,'0:0');open(r,5,'3:2');assert.deepEqual(giftDimensions(r),{rows:5,cols:4});assert.equal(r.remaining,5);open(r,7,'4:3');assert.deepEqual(giftDimensions(r),{rows:5,cols:5});assert.equal(r.remaining,5);assert.equal(availableGiftCells(r).length,22);assert.deepEqual(r.opened.map(s=>s.cell),['0:0','3:2','4:3']);assert.ok(eligibleGiftOutcomes(r).filter(o=>['extra','row','column'].includes(o.kind)).every(o=>o.weight===0));
+});
+test('directional limits block only the exhausted direction; growth needs room on both axes',()=>{
+ for(const [first,blocked,allowed]of [[6,6,7],[7,7,6]]){
+  const r=startGiftRound(modern());open(r,first);open(r,first);const e=eligibleGiftOutcomes(r);assert.equal(e[blocked].weight,0);assert.equal(e[5].weight,0);assert.ok(e[allowed].weight>0);assert.throws(()=>unwrapGift(r,10000,{forcedIndex:blocked}),/unavailable/);open(r,allowed);assert.equal(Math.max(r.rows,r.cols),5);
+ }
+});
+test('pick caps apply to every expansion and partially capped growth reports the actual grant',()=>{
+ for(const index of [5,6,7]){const r=startGiftRound({...modern(),maxPicks:4});open(r,index);assert.equal(r.allocated,4);assert.equal(r.opened[0].prize.granted,1);assert.ok(eligibleGiftOutcomes(r).filter(o=>['extra','row','column'].includes(o.kind)).every(o=>o.weight===0));assert.match(prizeLabel(r.opened[0].prize),/\+1 pick$/);}
+});
+test('both new directional bonuses satisfy and participate in the first-three modifier guarantee',()=>{
+ for(const index of [6,7]){
+  const p=modern();for(const o of p.outcomes)if(o.kind!=='cash')o.weight=0;p.outcomes[index].weight=1;
+  const r=startGiftRound(p);weightedOpen(r,()=>0);weightedOpen(r,()=>0);assert.equal(weightedOpen(r,n=>{assert.equal(n,100);return 0;}).kind,p.outcomes[index].kind);assert.equal(r.remaining,1);assert.ok(eligibleGiftOutcomes(r).some(o=>o.kind==='cash'&&o.weight>0));
+ }
+});
+test('different multiplier values stack on the final total, including later cash',()=>{
+ const p=modern();p.picks=4;p.outcomes.push({kind:'multiply',value:3,weight:4});const r=startGiftRound(p);for(const i of [0,4,8,1])open(r,i);assert.equal(r.cashCents,3500);assert.equal(r.multiplier,6);assert.equal(giftTotal(r),'21000');assert.equal(prizeLabel(r.opened[2].prize),'×3');
+});
+test('large stacked multipliers remain exact through JSON and projected reveals',()=>{
+ const p=modern();p.side=4;p.maxSide=6;p.maxPicks=36;p.picks=16;p.outcomes=[{kind:'cash',value:.01,weight:1},{kind:'multiply',value:10,weight:1},{kind:'extra',value:5,weight:1},{kind:'row',value:1,weight:1},{kind:'column',value:1,weight:1}];let r=startGiftRound(p);open(r,2);open(r,2);open(r,0);for(let i=0;i<22;i++)open(r,1);assert.equal(r.multiplier,'10000000000000000000000');assert.equal(giftTotal(r),'10000000000000000000000');r=JSON.parse(JSON.stringify(r));unwrapGift(r,100000,{forcedIndex:1});const projection=projectedGiftRound(r,100850);assert.equal(projection.multiplier,'100000000000000000000000');assert.equal(r.multiplier,'10000000000000000000000');advanceGiftRound(r,102000);assert.equal(r.remaining,0);assert.equal(giftTotal(r),'100000000000000000000000');
+});
+test('row/column validation is strict and multipliers accept only integers 2 through 10',()=>{
+ for(const kind of ['row','column'])for(const value of [0,2,1.5])assert.throws(()=>validateGiftWidget({...modern(),outcomes:[{kind:'cash',value:1,weight:1},{kind,value,weight:1}]}));
+ for(const value of [1,11,2.5])assert.throws(()=>validateGiftWidget({...modern(),outcomes:[{kind:'cash',value:1,weight:1},{kind:'multiply',value,weight:1}]}));
+ for(const value of [2,3,10])assert.equal(validateGiftWidget({...modern(),outcomes:[{kind:'cash',value:1,weight:1},{kind:'multiply',value,weight:1}]}).outcomes[1].value,value);
+});
+test('old square in-flight expansions recover at their original pick value exactly once',()=>{
+ const r=startGiftRound(config());delete r.rows;delete r.cols;unwrapGift(r,100,{forcedIndex:5,cell:'1:1'});r.flight.prize.nextSide=4;delete r.flight.prize.nextRows;delete r.flight.prize.nextCols;const restored=JSON.parse(JSON.stringify(r));assert.deepEqual(giftDimensions(projectedGiftRound(restored,950)),{rows:4,cols:4});advanceGiftRound(restored,2100);assert.equal(advanceGiftRound(restored,2200),false);assert.equal(restored.allocated,5);assert.equal(restored.remaining,4);assert.deepEqual(giftDimensions(restored),{rows:4,cols:4});
+});
+test('rectangular in-flight board state recovers and display snapshots preserve dimensions without odds',()=>{
+ let r=startGiftRound(modern());open(r,6,'0:0');unwrapGift(r,10000,{forcedIndex:7,cell:'3:2'});r=JSON.parse(JSON.stringify(r));assert.deepEqual(giftDimensions(r),{rows:4,cols:3});advanceGiftRound(r,12000);advanceGiftRound(r,13000);const clean=cleanGiftRound(r);assert.deepEqual(giftDimensions(clean),{rows:4,cols:4});assert.equal(clean.opened.length,2);assert.equal(clean.allocated,5);assert.ok(clean.preset.outcomes.every(o=>!('weight' in o)));assert.equal(availableGiftCells(clean).length,14);
+});
+test('settings backups round-trip all four modifier types and configured multiplier values',()=>{
+ const p=modern();p.outcomes[4].value=5;const backup=exportGiftSettings([p]);assert.equal(backup.version,2);assert.deepEqual(importGiftSettings({format:'faith-gift-pile',version:1,widgets:[config()]})[0].outcomes,config().outcomes);assert.throws(()=>importGiftSettings({...backup,version:3}));const restored=importGiftSettings(backup)[0];assert.deepEqual(restored.outcomes,p.outcomes);assert.notEqual(restored.id,p.id);
+});
+test('untouched original starter upgrades once between rounds; custom odds and active rounds stay intact',async()=>{
+ const {store,data}=fixture();await store.init();const state=JSON.parse(data.get(GIFT_STORE_KEY)),originalRoom=state.widgets[0].room;
+ state.widgets[0]={...config(),room:originalRoom,round:null,lastResult:{totalCents:'1234'}};data.set(GIFT_STORE_KEY,JSON.stringify(state));await store.init();let saved=JSON.parse(data.get(GIFT_STORE_KEY)).widgets[0];assert.deepEqual(saved.outcomes,modern().outcomes);assert.deepEqual(saved.starterBeforeBonusUpdate.outcomes,config().outcomes);assert.equal(saved.room,originalRoom);assert.equal(saved.lastResult.totalCents,'1234');
+ await store.save(config());await store.init();assert.deepEqual(store.list()[0].outcomes,config().outcomes); // Deliberate later edit is not upgraded again.
+ const custom={...config(),outcomes:config().outcomes.map((o,i)=>i===5?{...o,weight:7}:o)};data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[{...custom,room:originalRoom,round:null}]}));await store.init();assert.deepEqual(store.list()[0].outcomes,custom.outcomes);
+ const round=startGiftRound(config(),'Active');data.set(GIFT_STORE_KEY,JSON.stringify({schema:1,widgets:[{...config(),room:originalRoom,round}]}));await store.init();assert.deepEqual(store.list()[0].outcomes,config().outcomes);assert.deepEqual(store.snapshot('gift-pile').round.preset.outcomes,config().outcomes.map(({kind,value})=>({kind,value})));
 });

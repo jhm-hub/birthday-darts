@@ -1,5 +1,5 @@
 import {giftStore,exportGiftSettings,importGiftSettings} from './gift-store.js';
-import {DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,eligibleGiftOutcomes,giftModifierDeadline,giftModifierDue,sampleGiftFinale,prizeLabel,giftTotal,money} from './gift-game.js';
+import {DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,eligibleGiftOutcomes,giftModifierDeadline,giftModifierDue,sampleGiftFinale,prizeLabel,giftTotal,money,isGiftExpansion} from './gift-game.js';
 import {createGiftView} from './gift-view.js';
 import {createGiftAudio} from './gift-audio.js';
 const $=s=>document.querySelector(s),audio=createGiftAudio();
@@ -8,9 +8,9 @@ const view=createGiftView($('#gift-preview'),{interactive:true,onPick:pick,onRea
 function message(text,error=false){$('#editor-status').textContent=text;$('#editor-status').classList.toggle('error',error);}
 function readDraft(){if([...$('#gift-settings').querySelectorAll('input')].some(i=>!i.validity.valid))throw Error('Finish the highlighted settings before playing the demo.');return validateGiftWidget({...(selected?{id:selected}:{}),name:$('#game-name').value,side:Number($('#board-size').value),picks:Number($('#pick-count').value),maxSide:Number($('#max-board').value),maxPicks:Number($('#max-picks').value),outcomes:[...$('#prize-rows').children].map(r=>({kind:r.querySelector('select').value,value:Number(r.querySelector('.prize-value').value),weight:Number(r.querySelector('.prize-weight').value)}))});}
 function row(prize={kind:'cash',value:25,weight:10}){
- const r=document.createElement('div');r.className='prize-row';r.innerHTML='<select aria-label="Prize type"><option value="cash">Money $</option><option value="multiply">×2 total</option><option value="extra">Extra picks</option></select><input class="prize-value" aria-label="Prize value" type="number" required><input class="prize-weight" aria-label="Relative odds" type="number" min="0" max="1000" step=".01" required><output aria-label="Chance"></output><button type="button" aria-label="Remove prize">×</button>';
+ const r=document.createElement('div');r.className='prize-row';r.innerHTML='<select aria-label="Prize type"><option value="cash">Money $</option><option value="multiply">×Y total</option><option value="extra">Grow board</option><option value="row">Bonus row</option><option value="column">Bonus column</option></select><input class="prize-value" aria-label="Prize value" type="number" required><input class="prize-weight" aria-label="Relative odds" type="number" min="0" max="1000" step=".01" required><output aria-label="Chance"></output><button type="button" aria-label="Remove prize">×</button>';
  const kind=r.querySelector('select'),value=r.querySelector('.prize-value'),weight=r.querySelector('.prize-weight');kind.value=prize.kind;value.value=prize.value;weight.value=prize.weight;
- function typeChanged(change=false){const k=kind.value;value.disabled=k==='multiply';value.min=k==='cash'?'0':'1';value.max=k==='cash'?'1000000':k==='extra'?'5':'2';value.step=k==='cash'?'.01':'1';if(k==='multiply')value.value=2;else if(change)value.value=k==='extra'?2:25;}
+ function typeChanged(change=false){const k=kind.value,fixed=k==='row'||k==='column';value.disabled=fixed;value.min=k==='cash'?'0':k==='multiply'?'2':'1';value.max=k==='cash'?'1000000':k==='multiply'?'10':k==='extra'?'5':'1';value.step=k==='cash'?'.01':'1';if(fixed)value.value=1;else if(change)value.value=k==='multiply'?2:k==='extra'?3:25;value.title=k==='multiply'?'Multiply the final total by this number':isGiftExpansion(k)?'Extra picks awarded with the board expansion':'Dollar amount';}
  typeChanged();kind.addEventListener('change',()=>{typeChanged(true);changed();});
  for(const input of [value,weight])input.addEventListener('input',changed);
  r.querySelector('button').addEventListener('click',()=>{if($('#prize-rows').children.length===1)return message('Keep at least one money prize.',true);r.remove();changed();});$('#prize-rows').append(r);
@@ -18,17 +18,17 @@ function row(prize={kind:'cash',value:25,weight:10}){
 function refresh(){
  clearTimeout(refreshTimer);demo=null;audio.reset();
  const bonusAllowed=Number($('#max-board').value)>Number($('#board-size').value)&&Number($('#max-picks').value)>Number($('#pick-count').value);
- const startWeight=r=>r.querySelector('select').value==='extra'&&!bonusAllowed?0:Number(r.querySelector('.prize-weight').value);
+ const startWeight=r=>isGiftExpansion(r.querySelector('select').value)&&!bonusAllowed?0:Number(r.querySelector('.prize-weight').value);
  const total=[...$('#prize-rows').children].reduce((s,r)=>s+startWeight(r),0);
  for(const r of $('#prize-rows').children)r.querySelector('output').textContent=total>0?(startWeight(r)/total*100).toFixed(1).replace('.0','')+'%':'—';
  $('#add-prize').disabled=$('#prize-rows').children.length>=10;
  try{draftValue=readDraft();draftError='';}catch(e){draftError=e.message;}
  const guaranteed=!draftError&&giftModifierDeadline(draftValue)>0;
- $('#modifier-rule').textContent=draftError?'Finish the settings to check the modifier guarantee.':guaranteed?'Modifier guaranteed by pick 3. If the first two picks reveal money, the third draws only from available modifiers, using their relative odds.':draftValue.picks<3?'The modifier guarantee applies to rounds with at least 3 starting picks. This shorter round uses normal odds.':'To guarantee a modifier, add a ×2 or an available extra-picks prize with odds above zero. This setup currently uses normal odds.';
+ $('#modifier-rule').textContent=draftError?'Finish the settings to check the modifier guarantee.':guaranteed?'Modifier guaranteed by pick 3. If the first two picks reveal money, the third draws only from available modifiers, using their relative odds.':draftValue.picks<3?'The modifier guarantee applies to rounds with at least 3 starting picks. This shorter round uses normal odds.':'To guarantee a modifier, add a multiplier or an available board bonus with odds above zero. This setup currently uses normal odds.';
  $('#modifier-rule').classList.toggle('inactive',!guaranteed);
  $('#gift-preview').style.opacity=draftError?'.45':'1';
  const select=$('#demo-prize'),previous=select.value;select.replaceChildren(new Option('Random prize',''));
- if(!draftError)draftValue.outcomes.forEach((o,i)=>{if(o.weight>0)select.add(new Option(prizeLabel(o)+(o.kind==='extra'?' + expand board':''),String(i)));});
+ if(!draftError)draftValue.outcomes.forEach((o,i)=>{if(o.weight>0)select.add(new Option(prizeLabel(o),String(i)));});
  if([...select.options].some(o=>o.value===previous))select.value=previous;
  renderDemo();
 }

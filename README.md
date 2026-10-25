@@ -110,22 +110,29 @@ boards. There is no character in this game, and no character artwork to download
   outside form fields also works). One action opens one present; opened locations
   cannot be chosen again. A1/B2-style labels stay stable as the board grows.
 - **At least one modifier in the first three picks.** Picks one and two use normal
-  weighted odds. If both reveal cash, pick three draws only from eligible ×2 and
-  extra-picks prizes, using their relative weights. A modifier won earlier
+  weighted odds. If both reveal cash, pick three draws only from eligible
+  multipliers, growth, row and column bonuses, using their relative weights. A modifier won earlier
   satisfies the guarantee; later picks use normal eligible odds. Zero-weight
   modifiers and capped expansion prizes remain unavailable. This applies to new
   rounds with at least three starting picks and an available positive-weight
   modifier. The editor explains when the configuration cannot support it.
   Existing active rounds keep their original rules.
-- Cash prizes add to the collected amount. Every **×2** applies to the **final**
-  total, including cash found later. Two ×2 prizes produce ×4.
-- **Extra picks** add the configured number of picks and expand the board by one
-  row and one column: 3×3 → 4×4 → 5×5. This adds seven, then nine new *choices*,
-  not that many extra picks. Existing opened presents stay in their positions.
+- Cash prizes add to the collected amount. **×Y total** multiplies the **final**
+  total, including cash found later. Faith can set Y to a whole number from 2
+  through 10. Multipliers stack: ×2 then ×3 produces ×6, with exact totals.
+- **Grow board** adds one row and one column and defaults to **+3 picks**:
+  3×3 → 4×4 → 5×5. Faith can edit the pick grant (1–5). On a rectangular board,
+  both dimensions grow: 4×3 → 5×4.
+- **Bonus row** adds one row and **+1 pick**: 3×3 → 4×3.
+- **Bonus column** adds one column and **+1 pick**: 3×3 → 3×4.
+  Board sizes are rows × columns. New cells are choices, not extra picks; opened
+  presents retain their cell IDs and cannot be selected again. All boards stay
+  within the same compact overlay frame.
 - Default limits: **5×5 board, 12 picks per round**. Limits and bonus pick amounts
   are editable (up to 6×6 /36 picks). A partially capped bonus awards only the
-  available picks. At either limit, expansion outcomes stop and remaining prize
-  weights rebalance. Gift appearances/positions do not change configured odds.
+  available picks. A row/column bonus stops when its own dimension reaches the board limit;
+  growth requires room on both axes. All expansion bonuses stop at the pick
+  limit. Remaining eligible weights rebalance. Gift appearances/positions do not change configured odds.
 - After the last pick, a readable plaque shows **cash × multiplier = total**
   over the grid, then clears after 5.5 seconds.
 - The editor’s **Next demo reveal** selector can force a cash, multiplier or
@@ -142,3 +149,12 @@ from Darts. Active rounds freeze their rules when started and recover through a
 refresh without redrawing a prize. Backup/import applies only to gift settings;
 backups omit viewer history and pairing keys. No payment or chat integration is
 included. The same authenticated read-only display transport as Darts is reused.
+
+The untouched original starter setup upgrades to all four modifiers between
+rounds, retaining its display link and a local copy of the previous settings.
+The old expansion weight of 8 is split into growth 4, row 2 and column 2, keeping
+the starter’s initial total modifier weight unchanged. Custom setups keep their
+amounts and odds; use **Add a prize** to add the new types. Active rounds keep
+their frozen prize values, including older +2 growth gifts. Refresh controls and
+the stream display after updating.
+New settings backups use version 2; the game still imports older version-1 backups.
