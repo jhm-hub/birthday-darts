@@ -2,7 +2,7 @@ import {ACTIVE_GIFT_CONCEPT,GIFT_CONCEPTS,giftConceptSVG} from './gift-concept-a
 import {createGiftView} from './gift-view.js';
 import {createGiftAudio} from './gift-audio.js';
 import {bindGiftPreviewVolume} from './gift-mixer.js';
-import {DEFAULT_GIFTS,startGiftRound,unwrapGift,advanceGiftRound,giftTotal,money} from './gift-game.js';
+import {GIFT_CLEAR_MS,DEFAULT_GIFTS,startGiftRound,unwrapGift,advanceGiftRound,giftTotal,money} from './gift-game.js';
 const $=s=>document.querySelector(s),audio=createGiftAudio();
 bindGiftPreviewVolume($('#gift-mixer'),audio);
 let view,round=null,selected=ACTIVE_GIFT_CONCEPT;
@@ -32,6 +32,6 @@ $('#finale').onclick=()=>{
 $('#reset').onclick=reset;
 $('#sound').onclick=()=>{audio.setEnabled(!audio.enabled);$('#sound').textContent=audio.enabled?'Sound on':'Sound off';$('#sound').setAttribute('aria-pressed',String(audio.enabled));};
 $('#background').onchange=e=>$('#preview-backdrop').dataset.background=e.target.value;
-const timer=setInterval(()=>{if(!round)return;if(advanceGiftRound(round))render();if(round.hideAt&&Date.now()>=round.hideAt+400)reset();},50);
+const timer=setInterval(()=>{if(!round)return;if(advanceGiftRound(round))render();if(round.hideAt&&Date.now()>=round.hideAt+GIFT_CLEAR_MS)reset();},50);
 select(selected);
 window.addEventListener('pagehide',()=>{clearInterval(timer);view.dispose();audio.dispose();},{once:true});

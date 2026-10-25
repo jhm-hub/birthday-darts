@@ -184,7 +184,7 @@ boards. There is no character in this game, and no character artwork to download
   growth requires room on both axes. All expansion bonuses stop at the pick
   limit. Remaining eligible weights rebalance. Gift appearances/positions do not change configured odds.
 - After the last pick, a readable plaque shows **cash × multiplier = total**
-  over the grid, then clears after 5.5 seconds.
+  over the grid for 5.5 seconds, followed by a short, layered fade.
 - The last prize keeps a clear reading beat before handing off to that plaque.
   Over the final 320 ms of the existing unwrap, its banner clears, the header
   returns and three small pixel sparks travel from the chosen gift toward the
@@ -198,6 +198,16 @@ boards. There is no character in this game, and no character artwork to download
   pick. Bonus gifts that grant more picks do not trigger this handoff. Reduced
   motion switches directly to the quiet result. Direct finale previews use the
   same plaque entrance; play a demo round to see the last-present transition.
+- After the full reading hold, the board/header/footer fade first, the total and
+  crest follow, and the plaque backing leaves last. This **340 ms** exit fits
+  inside the existing 400 ms cleanup window, leaving a brief clear frame before
+  reset. No scaling, sliding, extra sound, or screen space is added. The stream
+  display stays transparent between viewers; the private preview eases its fresh
+  board in over **220 ms**. A first pick during that entrance continues smoothly.
+  The total and viewer clear before the new board appears. Snapshot updates do
+  not restart the exit, and reconnecting to an expired round stays hidden.
+  Reduced motion switches directly to the cleared state. Saved settings, exact
+  totals, last-result history, bonus odds, and each tier’s celebration stay intact.
 - The final total appears in a shaded plum plaque with a stepped gold frame.
   **Standard** has its own gold-and-mint star badge, a quick tilt-and-settle and
   a petite **56-piece sparkle fountain**. Its exact amount arrives with the plaque

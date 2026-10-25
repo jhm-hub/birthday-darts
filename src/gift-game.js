@@ -2,7 +2,7 @@ import {randomUUID,randomInt} from './random.js';
 import {chooseOutcome} from './game.js';
 import {DEFAULT_GIFT_CELEBRATION,validateGiftCelebration} from './gift-celebration.js';
 
-export const UNWRAP_MS=2000, REVEAL_MS=850, GIFT_HOLD_MS=5500;
+export const UNWRAP_MS=2000, REVEAL_MS=850, GIFT_HOLD_MS=5500, GIFT_CLEAR_MS=400;
 export const DEFAULT_GIFTS={id:'gift-pile',name:'Faith’s gift pile',side:3,picks:3,maxSide:5,maxPicks:12,celebration:{...DEFAULT_GIFT_CELEBRATION},outcomes:[
  {kind:'cash',value:10,weight:27.74},{kind:'cash',value:25,weight:21.40},{kind:'cash',value:50,weight:11.89},
  {kind:'cash',value:100,weight:3.97},{kind:'multiply',value:2,weight:8.75},{kind:'extra',value:3,weight:8.75},

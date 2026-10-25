@@ -1,8 +1,8 @@
 @font-face{font-family:Fredoka;src:url('./fonts/Fredoka.ttf') format('truetype');font-weight:300 700;font-display:swap}
 /* Fixed stream footprint: bonus boards and totals stay within the same frame. */
 .gift-screen{position:relative;width:100%;aspect-ratio:21/23;overflow:hidden}
-.gift-stage{position:absolute;left:50%;top:50%;width:420px;height:460px;transform-origin:center;opacity:0;transition:opacity .3s;color:#ffedd0;font-family:Fredoka,Arial,sans-serif}
-.gift-stage.stage-visible{opacity:1}
+.gift-stage{position:absolute;left:50%;top:50%;width:420px;height:460px;transform-origin:center;opacity:0;color:#ffedd0;font-family:Fredoka,Arial,sans-serif}
+.gift-stage.stage-visible{opacity:var(--presence-opacity,1)}
 .gift-stage *{box-sizing:border-box}
 .gift-head{position:absolute;left:12px;right:12px;top:8px;display:flex;justify-content:space-between;align-items:center;gap:6px;text-shadow:0 2px #25172e}
 .gift-head>span:first-child{padding:7px 9px;background:#25172ff2;border:1px solid #765768;border-radius:7px;font-size:17px;font-weight:600;letter-spacing:.6px;white-space:nowrap}
