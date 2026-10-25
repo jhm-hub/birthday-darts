@@ -94,3 +94,42 @@ The original sprite and previous atlases/configurations remain in `public/assets
 ## Credits
 
 The approved Faith sprite, balloon art, party props and original synthesized pop sound are retained from the local prototype. Fredoka is bundled under the SIL Open Font License; see `public/fonts/`. Third-party library notices are in `public/THIRD-PARTY-NOTICES.txt` and the generated bundle license file.
+
+## Gift Pile — present-opening game
+
+**Configure and demo:** https://jhm-hub.github.io/birthday-darts/gifts.html
+
+Gift Pile uses the approved Faith sprite, Goddess gesture and three final-total
+celebrations. New presents extend the editable pixel style of the birthday props,
+with stepped outlines, satin ribbon highlights, separate lids and paper rustle /
+celesta sounds. No character images or existing darts rules are replaced.
+
+- Start with a **3×3 board of nine presents and three picks**. Both are editable.
+- Faith can **click a particular wrapped present**, or use **Unwrap for me** (Space
+  outside form fields also works). One action opens one present; opened locations
+  cannot be chosen again. A1/B2-style labels stay stable as the board grows.
+- Cash prizes add to the collected amount. Every **×2** applies to the **final**
+  total, including cash found later. Two ×2 prizes produce ×4.
+- **Extra picks** add the configured number of picks and expand the board by one
+  row and one column: 3×3 → 4×4 → 5×5. This adds seven, then nine new *choices*,
+  not that many extra picks. Existing opened presents stay in their positions.
+- Default limits: **5×5 board, 12 picks per round**. Limits and bonus pick amounts
+  are editable (up to 6×6 /36 picks). A partially capped bonus awards only the
+  available picks. At either limit, expansion outcomes stop and remaining prize
+  weights rebalance. Gift appearances/positions do not change configured odds.
+- After the last pick, a readable plaque shows **cash × multiplier = total**
+  alongside one of the existing celebrations; it clears after 5.5 seconds.
+- The editor’s **Next demo reveal** selector can force a cash, multiplier or
+  expansion result for review. It is only a disposable demo; live controls have
+  no forced-prize input. **Preview finale** skips to a random sample round total.
+
+Save each setup separately, then use **Open controls**. Copy its private display
+link into an OBS/Streamlabs **Browser Source at 720×540**. The source is transparent
+and only appears during a round. Keep the control page open. Keep control preview
+sound off if OBS is playing the source audio, to avoid hearing it twice.
+
+Gift settings, pairing rooms and rounds use a separate browser storage namespace
+from Darts. Active rounds freeze their rules when started and recover through a
+refresh without redrawing a prize. Backup/import applies only to gift settings;
+backups omit viewer history and pairing keys. No payment or chat integration is
+included. The same authenticated read-only display transport as Darts is reused.
