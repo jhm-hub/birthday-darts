@@ -21,6 +21,21 @@ export function giftFinalFrame(){return `<svg viewBox="0 0 364 228" aria-hidden=
  </g>`).join('')}
  </svg>`;}
 
+// A small collectible star badge leaves the bow and crown for the higher tiers.
+export function giftFinalBadge(){return `<svg viewBox="0 0 40 32" aria-hidden="true" shape-rendering="crispEdges">
+ <path d="M14 2H26V4H30V8H33V24H30V28H26V30H14V28H10V24H7V8H10V4H14Z" fill="#63444b"/>
+ <path d="M14 4H26V6H29V9H31V23H28V26H25V28H15V26H12V23H9V9H12V6H14Z" fill="#bd885e"/>
+ <path d="M14 4H26V6H29V9H30V12H27V9H24V7H16V9H13V12H11V22H9V9H12V6H14Z" fill="#ffe8ad"/>
+ <path d="M16 8H24V10H27V13H29V21H26V24H23V26H17V24H14V21H12V13H14V10H16Z" fill="#386c68"/>
+ <path d="M16 9H24V11H26V14H27V21H24V23H17V21H14V13H16Z" fill="#78c4ae"/>
+ <path d="M16 10H23V11H17V13H15V18H14V13H16Z" fill="#c5f1d1"/>
+ <path d="M18 11H22V15H26V18H23V22H20V21H17V22H15V18H14V15H18Z" fill="#4c6557"/>
+ <path d="M19 10H21V14H25V16H23V18H24V21H21V19H19V21H16V18H17V16H15V14H19Z" fill="#e7b975"/>
+ <path d="M19 10H21V14H25V15H21V17H19V19H17V17H18V15H15V14H19Z" fill="#fff0bd"/>
+ <path d="M18 24H24V25H18ZM12 23H14V25H12Z" fill="#f1c58a"/>
+ <path d="M11 8H13V10H11Z" fill="#fff7d6"/>
+ </svg>`;}
+
 export function giftFinalCrown(){return `<svg viewBox="0 0 40 32" aria-hidden="true" shape-rendering="crispEdges">
  <path d="M4 5H10V9H14V7H16V1H24V7H26V9H30V5H36V11H34V23H32V29H8V23H6V11H4Z" fill="#624151"/>
  <path d="M6 7H9V11H14V13H17V7H19V3H22V7H24V13H27V11H31V7H34V11H32V23H8V11H6Z" fill="#e3a761"/>

@@ -1,7 +1,7 @@
-export const ROYAL_REVEAL_MS=600,BIG_RESOLVE_MS=220;
+export const ROYAL_REVEAL_MS=600,BIG_RESOLVE_MS=220,STANDARD_RESOLVE_MS=180;
 export const DEFAULT_GIFT_CELEBRATION={big:100,royal:250};
 export const GIFT_CELEBRATIONS=[
- {id:'standard',label:'Standard',particles:72,motionMs:2600},
+ {id:'standard',label:'Standard',particles:56,motionMs:2000},
  {id:'big',label:'Big win',particles:108,motionMs:2800},
  {id:'royal',label:'Royal win',particles:168,motionMs:3400}
 ];

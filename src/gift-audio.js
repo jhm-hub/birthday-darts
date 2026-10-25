@@ -2,25 +2,20 @@ import {isGiftExpansion} from './gift-game.js';
 import {giftArrivalCount,giftArrivalDelay,GIFT_ARRIVAL_MS} from './gift-bonus-motion.js';
 import {scheduleGiftUnwrap} from './gift-unwrap-audio.js';
 import {giftVolume,DEFAULT_GIFT_VOLUME} from './gift-volume.js';
-import {FINALE_RESOLVE_MS} from './gift-finale-motion.js';
-import {giftCelebrationLevel,ROYAL_REVEAL_MS,BIG_RESOLVE_MS} from './gift-celebration.js';
+import {giftCelebrationLevel,ROYAL_REVEAL_MS,BIG_RESOLVE_MS,STANDARD_RESOLVE_MS} from './gift-celebration.js';
 
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
 
-// A complete little fanfare: lift, crown/chord + second confetti burst, then a
-// resolving sparkle. More musical space than a prize cue, with the same quiet bus.
+// Each tier has its own short phrase, all on the same quiet stream bus.
 export function giftFinaleScore(level=0){
  if(level===2)return royalFinaleScore();
  if(level===1)return bigFinaleScore();
- const land=FINALE_RESOLVE_MS/1000,score=[
- note(0,60,.25,.018,'soft'),
- ...[72,76,79,84].map((pitch,i)=>note(i*.075,pitch,.24,.031,'mallet')),
- note(land,60,.65,.031,'soft'),note(land,72,.65,.031,'bloom'),
- note(land,76,.58,.022),note(land,79,.52,.018),
- note(.5,88,.28,.023,'coin'),note(.65,86,.28,.02,'coin'),note(.82,84,.45,.028)
-];
- return score;
+ const land=STANDARD_RESOLVE_MS/1000;
+ // A cheerful D-major pickup, badge landing and a soft collected-coin answer.
+ return [note(0,74,.19,.032,'mallet'),note(.09,78,.18,.029,'mallet'),
+  note(land,62,.36,.023,'soft'),note(land,74,.34,.031,'round'),note(land,81,.3,.029,'coin'),
+  note(.39,86,.2,.023,'coin'),note(.58,81,.22,.022,'mallet'),note(.78,74,.28,.027)].map(n=>({...n,gain:n.gain*1.2}));
 }
 
 // A bright two-note pickup, rose-ribbon landing, then a short bell answer.

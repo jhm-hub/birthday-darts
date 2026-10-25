@@ -1,7 +1,7 @@
 // Cosmetic only: deterministic particles share the committed completion clock.
 // The opaque total plaque sits in front; the entire effect stays inside 420×460.
-import {giftCelebrationLevel,GIFT_CELEBRATIONS,ROYAL_REVEAL_MS,BIG_RESOLVE_MS} from './gift-celebration.js';
-export const FINALE_PARTICLES=168,FINALE_MOTION_MS=3400,FINALE_RESOLVE_MS=320;
+import {giftCelebrationLevel,GIFT_CELEBRATIONS,ROYAL_REVEAL_MS,BIG_RESOLVE_MS,STANDARD_RESOLVE_MS} from './gift-celebration.js';
+export const FINALE_PARTICLES=168,FINALE_MOTION_MS=3400,FINALE_RESOLVE_MS=STANDARD_RESOLVE_MS;
 const clamp=x=>Math.max(0,Math.min(1,x)),smooth=x=>{x=clamp(x);return x*x*(3-2*x);};
 export function giftFinaleMotion(round,time,reduced=false){
  if(round?.completedAt==null||time<round.completedAt)return null;
@@ -21,28 +21,28 @@ export function giftFinaleMotion(round,time,reduced=false){
    shine:!reduced&&age>=BIG_RESOLVE_MS&&age<900?.055*Math.sin(Math.PI*(age-BIG_RESOLVE_MS)/680):0,
    shineX:-35+170*smooth((age-BIG_RESOLVE_MS)/680),particles:!reduced&&age>=BIG_RESOLVE_MS&&age<tier.motionMs};
  }
- const pop=reduced?0:age<FINALE_RESOLVE_MS?smooth(age/FINALE_RESOLVE_MS):1-smooth((age-FINALE_RESOLVE_MS)/300);
- return {age,level,tier,scale:reduced?1:age<FINALE_RESOLVE_MS?.96+.065*smooth(age/FINALE_RESOLVE_MS):1+.025*(1-smooth((age-FINALE_RESOLVE_MS)/300)),
-  y:reduced?0:Math.round(8*(1-smooth(age/320))),glow:pop*.7,
-  crownY:reduced?0:Math.round(-4*pop)||0,crownScale:1+pop*.08,
-  shine:!reduced&&age>=350&&age<1100?.055*Math.sin(Math.PI*(age-350)/750):0,
-  shineX:-35+170*smooth((age-350)/750),particles:!reduced&&age<tier.motionMs};
+ // Standard: a small badge hop and one crisp sparkle, without moving the plaque.
+ const pop=reduced?0:age<STANDARD_RESOLVE_MS?smooth(age/STANDARD_RESOLVE_MS):1-smooth((age-STANDARD_RESOLVE_MS)/260);
+ return {age,level,tier,scale:1,y:0,glow:pop*.4,
+  crownY:reduced?0:Math.round(-3*pop)||0,crownScale:1+pop*.08,
+  crestTurn:reduced?0:age<STANDARD_RESOLVE_MS?-7+10*smooth(age/STANDARD_RESOLVE_MS):3*(1-smooth((age-STANDARD_RESOLVE_MS)/260)),
+  amountY:reduced?0:Math.round(3*(1-smooth(age/STANDARD_RESOLVE_MS))),
+  shine:!reduced&&age>=STANDARD_RESOLVE_MS&&age<700?.035*Math.sin(Math.PI*(age-STANDARD_RESOLVE_MS)/520):0,
+  shineX:-35+170*smooth((age-STANDARD_RESOLVE_MS)/520),particles:!reduced&&age>=STANDARD_RESOLVE_MS&&age<tier.motionMs};
 }
 function random(seed){let h=2166136261;for(const c of String(seed))h=Math.imul(h^c.charCodeAt(0),16777619);return ()=>{h+=0x6D2B79F5;let t=h;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};}
 export function giftConfetti(seed,index,age,level=0){
  if(index>=GIFT_CELEBRATIONS[level].particles)return null;
  if(level===2)return royalConfetti(seed,index,age);
  if(level===1)return bigConfetti(seed,index,age);
- const rand=random(seed+':'+index),right=index%2===1,encore=index>=48,
-  wave=index>=96?3:index>=72?2:encore?1:0,
-  delay=encore?[0,FINALE_RESOLVE_MS,650,950][wave]+Math.floor((index-(wave+1)*24)/2)*12:Math.floor(index/2)*7,life=encore?1700+rand()*400:1550+rand()*450;
- const t=(age-delay)/1000,duration=life/1000;
+ // One petite gold/mint fountain, with only a few stars and no encore shower.
+ const rand=random(seed+':standard:'+index),right=index%2===1,
+  delay=STANDARD_RESOLVE_MS+Math.floor(index/2)*3,t=(age-delay)/1000,duration=(1300+rand()*250)/1000;
  if(t<0||t>=duration)return null;
- const x=(right?396:24)+(right?-1:1)*(35+rand()*110)*t+Math.sin(t*8+index)*5;
- const y=(encore?274:212)-((encore?420:330)+rand()*55)*t+250*t*t;
- const size=3+Math.floor(rand()*3),color=Math.floor(rand()*5),shape=encore&&index%3===0||index%7===0?'star':index%3===0?'strip':'square';
- return {x:Math.round(x),y:Math.round(y),width:shape==='star'?8:Math.max(2,Math.round(size*Math.abs(Math.cos(t*9+index)))),height:shape==='strip'?size*2:shape==='star'?8:size,
-  opacity:Math.min(smooth(t/.07),1-smooth((t-(duration-.4))/.4)),color,shape};
+ const x=(right?392:28)+(right?-1:1)*(35+rand()*85)*t+Math.sin(t*7+index)*3,
+  y=180-(235+rand()*35)*t+225*t*t,size=2+Math.floor(rand()*2),shape=index%14===0?'star':index%3===0?'strip':'square';
+ return {x:Math.round(x),y:Math.round(y),width:shape==='star'?8:Math.max(2,Math.round(size*Math.abs(Math.cos(t*8+index)))),height:shape==='star'?8:shape==='strip'?size*2:size,
+  opacity:Math.min(smooth(t/.045),1-smooth((t-(duration-.3))/.3)),color:[0,0,3,4][Math.floor(rand()*4)],shape};
 }
 // Big win: a quick rose-ribbon fountain and a small answering sparkle.
 // Shorter and narrower than Royal's crown shower, with fewer stars.
@@ -74,11 +74,12 @@ function royalConfetti(seed,index,age){
 }
 // The frame's corners sparkle once, away from the total and its calculation.
 export function giftFinalGleam(index,age,reduced=false,level=0){
- if(level===2)age-=ROYAL_REVEAL_MS-FINALE_RESOLVE_MS;
- if(level===1)age-=BIG_RESOLVE_MS-FINALE_RESOLVE_MS;
- const delay=FINALE_RESOLVE_MS+index*95,t=(age-delay)/520;
- const encore=(age-1050-index*65)/520;
- return reduced?0:Math.max(t>0&&t<1?Math.sin(Math.PI*t)**2:0,level>0&&encore>0&&encore<1?Math.sin(Math.PI*encore)**2:0);
+ if(reduced)return 0;
+ if(level===0){const t=(age-STANDARD_RESOLVE_MS-index*70)/360;return index<4&&t>0&&t<1?Math.sin(Math.PI*t)**2*.7:0;}
+ // Preserve the established Big/Royal corner and encore timing.
+ const beat=level===2?ROYAL_REVEAL_MS:BIG_RESOLVE_MS;
+ const t=(age-beat-index*95)/520,encore=(age-(1050+beat-320)-index*65)/520;
+ return Math.max(t>0&&t<1?Math.sin(Math.PI*t)**2:0,encore>0&&encore<1?Math.sin(Math.PI*encore)**2:0);
 }
 export function pixelConfettiPath(p){
  const {x,y,width:w,height:h}=p;

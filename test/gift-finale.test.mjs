@@ -31,12 +31,12 @@ test('confetti is deterministic, cosmetic, finite and ends before the readable h
 test('reduced motion presents the stationary plaque without flying particles or glow',()=>{
  for(const age of [0,100,400,1500,4000]){const m=giftFinaleMotion({completedAt:0},age,true);assert.equal(m.scale,1);assert.equal(m.y,0);assert.equal(m.glow,0);assert.equal(m.particles,false);assert.equal(m.crownY,0);assert.equal(m.crownScale,1);assert.equal(m.shine,0);for(let i=0;i<6;i++)assert.equal(giftFinalGleam(i,age,true),0);}
 });
-test('crown landing and second confetti wave share the fanfare resolution beat',()=>{
+test('Standard badge landing and petite sparkle share the chime beat with no plaque resize',()=>{
  const land=FINALE_RESOLVE_MS,m=giftFinaleMotion({completedAt:1000},1000+land);
- assert.equal(m.scale,1.025);assert.equal(m.crownScale,1.08);
+ assert.equal(m.scale,1);assert.equal(m.y,0);assert.equal(m.amountY,0);assert.equal(m.crownScale,1.08);
  assert.ok(giftFinaleScore().filter(n=>n.at===land/1000).length>=3);
- assert.equal(giftConfetti('two-waves',48,land-1),null);
- assert.ok(giftConfetti('two-waves',48,land+100).opacity>0);
+ assert.equal(giftConfetti('standard',0,land-1),null);
+ assert.ok(giftConfetti('standard',0,land+100).opacity>0);
  for(const age of [1400,2600,5000]){
   const settled=giftFinaleMotion({completedAt:0},age);
   assert.equal(settled.scale,1);assert.equal(settled.crownY,0);assert.equal(settled.shine,0);
@@ -90,4 +90,14 @@ test('Big burst is bounded and visibly smaller than the Royal burst',()=>{
  for(let i=0;i<FINALE_PARTICLES;i++){assert.equal(giftConfetti('big',i,219,1),null);assert.equal(giftConfetti('big',i,2800,1),null);}
  assert.ok(Math.max(...giftFinaleScore(1).map(n=>n.at+n.length))<Math.max(...giftFinaleScore(2).map(n=>n.at+n.length)));
  assert.notDeepEqual(giftFinaleScore(1).map(n=>n.frequency),giftFinaleScore().map(n=>n.frequency));
+});
+
+
+test('Standard has a short distinct phrase and a quiet settled badge before higher tiers finish',()=>{
+ const round={id:'standard-review',completedAt:1000};
+ for(let age=0;age<=5500;age+=25){const m=giftFinaleMotion(round,1000+age);assert.equal(m.scale,1);assert.equal(m.y,0);assert.equal(!!m.building,false);assert.ok(m.amountY>=0&&m.amountY<=3);assert.ok(m.crestTurn>=-7&&m.crestTurn<=3);}
+ const settled=giftFinaleMotion(round,3000);assert.equal(settled.crestTurn,0);assert.equal(settled.particles,false);assert.equal(settled.amountY,0);
+ for(const age of [0,180,500,1500]){const quiet=giftFinaleMotion(round,1000+age,true);assert.equal(quiet.crestTurn,0);assert.equal(quiet.amountY,0);}
+ const end=level=>Math.max(...giftFinaleScore(level).map(n=>n.at+n.length+.015));assert.ok(end(0)<1.1);assert.ok(end(0)<end(1));assert.ok(end(1)<end(2));
+ assert.notDeepEqual(giftFinaleScore(0).map(n=>n.frequency),giftFinaleScore(1).map(n=>n.frequency));
 });

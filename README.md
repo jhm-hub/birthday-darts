@@ -185,17 +185,19 @@ boards. There is no character in this game, and no character artwork to download
   limit. Remaining eligible weights rebalance. Gift appearances/positions do not change configured odds.
 - After the last pick, a readable plaque shows **cash × multiplier = total**
   over the grid, then clears after 5.5 seconds.
-- The final total appears in a shaded plum plaque with a stepped
-  gold frame, a jeweled pixel crown and small corner glints. The plaque settles
-  gently; a restrained highlight passes behind the amount. Two candy-confetti
-  waves stay behind the opaque plaque and inside the board. The second wave and
-  crown peak meet the fanfare's warm chord at 320 ms, followed by a resolving
-  coin sparkle. The fanfare uses the same balanced master volume as the prizes.
-  Standard motion settles within 2.6 seconds, leaving a still, readable total during
-  the original 5.5-second hold. Long totals/calculations resize within the plaque.
-  The transparent overlay stays 420×460. Reduced motion keeps a stationary frame
-  and crown without particles, sheen or glints. Completion timestamps drive all
-  effects; reconnecting cannot restart an old celebration or replay its sound.
+- The final total appears in a shaded plum plaque with a stepped gold frame.
+  **Standard** has its own gold-and-mint star badge, a quick tilt-and-settle and
+  a petite **56-piece sparkle fountain**. Its exact amount is visible immediately
+  and rises just three pixels into place; the plaque stays fixed in size and position.
+  Two soft mallet notes lead to a cheerful chord at **180 ms**, then a collected-coin
+  answer resolves in about one second. The badge lands on that same beat, with
+  small corner glints and a restrained highlight behind the total. All particles
+  stay behind the opaque plaque and inside the board. Standard effects finish
+  within **two seconds**, leaving a still total during the original 5.5-second hold.
+  Long totals/calculations resize within the plaque. The transparent overlay stays
+  **420×460**. Reduced motion keeps the selected crest and amount stationary, with
+  no particles, sheen or glints. Completion timestamps drive all effects;
+  reconnecting cannot restart an old celebration or replay its sound.
   **Celebration levels** in the private game settings controls two thresholds:
   **Standard below $100**, **Big win at $100+**, **Royal win at $250+** by default.
   Big win has its own **jeweled pink bow**, crisp rose frame and **108-piece ribbon
@@ -210,7 +212,7 @@ boards. There is no character in this game, and no character artwork to download
   the existing 5.5-second finale. Standard and Big win still reveal immediately.
   These tiers use the exact final total **after all multipliers**. They share the
   same plaque size, 5.5-second hold and master volume; their motion settles by
-  2.6 / 2.8 / 3.4 seconds. Thresholds are saved per game, must be positive dollar
+  2.0 / 2.8 / 3.4 seconds. Thresholds are saved per game, must be positive dollar
   amounts (up to two decimal places), and Royal must exceed Big. Changes apply
   to the next viewer; a running round keeps its original thresholds. Older
   saved games gain the $100 / $250 defaults on their next round, while already

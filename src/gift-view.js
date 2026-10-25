@@ -5,7 +5,7 @@ import {FINALE_PARTICLES,giftFinaleMotion,giftConfetti,pixelConfettiPath,giftFin
 import {giftUnwrapMotion,applyGiftUnwrap} from './gift-unwrap-motion.js';
 import {giftPrizeMotion,giftPrizeSpark,applyGiftPrize,PRIZE_COLORS} from './gift-prize-motion.js';
 import {giftPrizeEmblem} from './gift-prize-art.js';
-import {giftFinalFrame,giftFinalCrown,giftFinalBow} from './gift-finale-art.js';
+import {giftFinalFrame,giftFinalCrown,giftFinalBow,giftFinalBadge} from './gift-finale-art.js';
 
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
 export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=>{},onError=()=>{},audio=null,art=activeGiftSVG}={}){
@@ -79,7 +79,8 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   const finale=giftFinaleMotion(round,time,reduced.matches);
   $('.gift-finale').dataset.tier=finale?.tier.id??'standard';
   const crestLevel=finale?.level??0;
-  if(crestLevel!==oldFinalLevel){$('.gift-final-star').innerHTML=crestLevel===1?giftFinalBow():giftFinalCrown();oldFinalLevel=crestLevel;}
+  if(crestLevel!==oldFinalLevel){$('.gift-final-star').innerHTML=crestLevel===2?giftFinalCrown():crestLevel===1?giftFinalBow():giftFinalBadge();oldFinalLevel=crestLevel;}
+  stage.style.setProperty('--crest-turn',(finale?.crestTurn??0)+'deg');
   stage.style.setProperty('--bow-spread',String(finale?.bowSpread??0));
   stage.style.setProperty('--final-amount-y',(finale?.amountY??0)+'px');
   $('.gift-finale').dataset.phase=finale?.building?'build':'reveal';

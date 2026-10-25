@@ -137,3 +137,6 @@
 .final-bow-tail-left{transform:translate(calc(-2px * var(--bow-spread,0)),calc(2px * var(--bow-spread,0)))}
 .final-bow-tail-right{transform:translate(calc(2px * var(--bow-spread,0)),calc(2px * var(--bow-spread,0)))}
 @media(prefers-reduced-motion:reduce){.gift-cell:not(:disabled) svg{transition:none}}
+
+/* Standard gets a small collectible badge; upper-tier crests keep their motion. */
+.gift-finale[data-tier="standard"] .gift-final-star{transform:translateY(var(--crown-y,0px)) rotate(var(--crest-turn,0deg)) scale(var(--crown-scale,1))}
