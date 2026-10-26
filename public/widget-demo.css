@@ -151,4 +151,6 @@
 /* Readable floating awards and larger lettering directly on the balloon art. */
 .widget .throw-pop{background:none;border:0;box-shadow:none;clip-path:none;padding:0;color:#fff0c9;-webkit-text-stroke:1.2px #382039;paint-order:stroke fill;text-shadow:0 2px #382039;overflow:visible}
 .widget .throw-pop .award-extra{display:block;margin-top:3px;font-size:18px;line-height:1.15;color:#b6ffe0;-webkit-text-stroke:1px #382039;paint-order:stroke fill}
-.bonus-extra-note{font:600 9px 'Faith Candy',sans-serif;fill:#fff7dc;stroke:var(--label-ink);stroke-width:1.8px;paint-order:stroke fill}
+.bonus-extra-note{font:700 20px 'Faith Candy',sans-serif;fill:#d0ffe8;stroke:var(--label-ink);stroke-width:2px;paint-order:stroke fill}
+.bonus-extra-number{font-size:1.2em}.bonus-extra-word{font-size:.7em;fill:#fff7dc}
+.prize-label.has-extra-reward .bonus-balloon-note{font-size:12px;letter-spacing:.6px}
