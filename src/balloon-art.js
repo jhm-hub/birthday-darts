@@ -2,6 +2,7 @@
 const ink='#251b29';
 const mix=(a,b,t)=>'#'+[1,3,5].map(i=>Math.round(parseInt(a.slice(i,i+2),16)*(1-t)+parseInt(b.slice(i,i+2),16)*t).toString(16).padStart(2,'0')).join('');
 const inside=(x,y)=>y>=1&&y<=46&&((x-21.5)/(19-Math.max(0,y-27)*.12))**2+((y-23)/22.5)**2<=1;
+export function balloonLabelPalette(base){return {back:mix(base,ink,.17),edge:mix(base,'#ffe4ca',.24),ink:mix(base,ink,.72)};}
 export function balloonPixelLayers(base){
  const colors=[ink,mix(base,ink,.65),mix(base,ink,.4),mix(base,ink,.17),base,mix(base,'#ffe4ca',.24),mix(base,'#fff0d4',.48),mix(base,'#fff5e5',.8)],paths=colors.map(()=>[]);
  for(let y=0;y<48;y++)for(let x=0;x<44;x++){

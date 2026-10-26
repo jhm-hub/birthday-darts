@@ -2,6 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {createDemo} from '../src/demo.js';
 import {newWidgets,widgetSnapshot,applyWidgetAction} from '../src/widgets.js';
 import {celebrationPerformance,CELEBRATION_CHOICES} from '../src/celebrations.js';
+import {dartsScore} from '../src/darts-bonuses.js';
 
 const preset={id:'birthday',name:'Birthday balloons',theme:'balloons',bonuses:{enabled:false},darts:3,outcomes:[{amountCents:1234,weight:100},{amountCents:2500,weight:0}]};
 test('unsaved demo values run independently of the saved game and its active round',()=>{
@@ -67,4 +68,48 @@ test('finale preview can replay immediately but cannot bypass invalid values',()
  const demo=createDemo();demo.configure(preset);demo.previewFinale(100000);const first=demo.snapshot().round.id;
  demo.previewFinale(100500);assert.notEqual(demo.snapshot().round.id,first);assert.equal(demo.snapshot().round.hideAt,105500);
  demo.configure(preset,'Finish the amount');assert.throws(()=>demo.previewFinale(),/Finish the amount/);assert.equal(demo.snapshot().round,null);
+});
+
+test('every bonus shortcut lands the requested bonus through a normal animated flight',()=>{
+ for(const kind of ['multiply','extra','gold','stacked-gold']){
+  const input={...preset,outcomes:[{amountCents:1000,weight:1}]},before=structuredClone(input),demo=createDemo();demo.configure(input);
+  const widgetBefore=demo.snapshot().widget;
+  demo.previewBonus(kind,100000);
+  const s=demo.snapshot(100000),r=s.round;
+  assert.equal(s.previewBonus,kind);assert.equal(r.flight.kind,kind==='stacked-gold'?'gold':kind);
+  assert.equal(r.flight.startAt,100000);assert.ok(r.flight.releaseAt>100000);assert.ok(r.flight.landAt>r.flight.releaseAt);assert.ok(r.flight.finishAt>r.flight.landAt);
+  assert.equal(r.throws.length,kind==='stacked-gold'?2:1);assert.ok(r.throws.every(t=>t.landAt<100000));
+  assert.deepEqual(s.widget,widgetBefore);assert.deepEqual(input,before);
+  demo.advance(r.flight.finishAt);const settled=demo.snapshot().round,score=dartsScore(settled.preset,settled.throws);
+  assert.equal(settled.flight,null);assert.equal(settled.hideAt,null);
+  assert.equal(score.totalCents,kind==='multiply'?2000:1000);
+  assert.equal(score.allocated,kind==='extra'?5:4);
+  assert.equal(score.goldBoostPercent,kind==='stacked-gold'?20:kind==='gold'?10:0);
+  assert.equal(new Set(settled.throws.map(t=>t.balloonSlot)).size,settled.throws.length);
+  demo.reset();assert.equal(demo.snapshot().previewBonus,'');assert.deepEqual(demo.snapshot().widget,widgetBefore);
+  demo.throw(200000);assert.equal(demo.snapshot().round.preset.bonuses.enabled,false);assert.equal(demo.snapshot().round.preset.darts,3);
+ }
+});
+
+test('bonus samples honor edited values, even when disabled, zero-weight, or limited to one starting dart',()=>{
+ for(const count of [1,8])for(const kind of ['multiply','extra','gold','stacked-gold']){
+  const input={...preset,darts:1,bonuses:{enabled:false,multiplyWeight:0,extraWeight:0,goldWeight:0,multiplier:5,extraDarts:3,goldPercent:25,maxDarts:1},outcomes:Array.from({length:count},(_,i)=>({amountCents:i?i*111:0,weight:i===count-1?1:0}))};
+  const demo=createDemo();demo.configure(input);demo.previewBonus(kind,100000);
+  const r=demo.snapshot().round,shot=r.flight;demo.advance(shot.finishAt);const score=dartsScore(r.preset,demo.snapshot().round.throws);
+  if(kind==='multiply')assert.equal(score.multiplier,5);
+  if(kind==='extra'){assert.equal(shot.granted,3);assert.equal(score.allocated,7);}
+  if(kind==='gold'||kind==='stacked-gold')assert.equal(score.goldBoostPercent,kind==='gold'?25:50);
+  assert.deepEqual(r.preset.outcomes.map(o=>o.amountCents),input.outcomes.map(o=>o.amountCents));
+  demo.reset();assert.equal(demo.snapshot().widget.darts,1);assert.equal(demo.snapshot().widget.bonuses.maxDarts,1);
+ }
+});
+
+test('bonus previews replay from a fresh sample, then restore the draft for finale and normal throws',()=>{
+ const demo=createDemo();demo.configure(preset);demo.previewBonus('stacked-gold',100000);const old=demo.snapshot().round;
+ demo.previewBonus('multiply',100001);const next=demo.snapshot().round;assert.notEqual(next.id,old.id);assert.equal(next.throws.length,1);assert.equal(dartsScore(next.preset,next.throws).goldStacks,0);
+ demo.previewFinale(200000);assert.equal(demo.snapshot().previewBonus,'');assert.equal(demo.snapshot().round.preset.darts,3);assert.equal(demo.snapshot().round.preset.bonuses.enabled,false);
+ demo.previewBonus('gold',300000);demo.configure(preset);assert.equal(demo.snapshot().round,null);assert.equal(demo.snapshot().previewBonus,'');
+ assert.throws(()=>demo.previewBonus('invalid'),/Choose a bonus preview/);
+ demo.configure({...preset,theme:'dartboard'});assert.throws(()=>demo.previewBonus('gold'),/Birthday balloons/);
+ demo.configure(preset,'Finish the amount');assert.throws(()=>demo.previewBonus('gold'),/Finish the amount/);
 });

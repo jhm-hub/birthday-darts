@@ -377,3 +377,9 @@ Cash and bonus weights share the draw. The editor’s cash percentages describe
 which amount wins **conditional on a cash hit**, not the chance across all throws.
 Faith can edit the multiplier (×2–×5), gold increase (1–50%), extra darts (+1–+3), and each bonus’s relative odds. These save with each widget and travel in settings backups.
 The transparent display never receives relative weights.
+
+### Bonus previews
+
+Under **Try a bonus**, choose **×2 total**, **+1 dart**, **Gold +10%**, or **Stacked +20%**. These buttons use your edited bonus values and play the actual throw, pop, and award in a fresh four-dart sample. The stacked preview begins with one gold bonus already applied and animates the second. A sample cash hit is included so the multiplier has a visible total to change. Continue with **Throw next demo dart**, or **Reset demo** to return to your draft.
+
+Bonus previews remain available for the Birthday balloons style even when bonus odds are zero or bonuses are disabled. Sample rounds enable all bonus types and use equal cash weights; saved settings, live odds, and stream rounds are never changed. The controls are only on the private editor, never on the transparent display.

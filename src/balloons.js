@@ -3,7 +3,7 @@ import {balloonPopAt} from './balloon-timing.js';
 import {shotAge} from './dart-timing.js';
 import {balloonDeformation} from './motion.js';
 import {buildBalloonFX,animateBalloonFX} from './balloon-fx.js';
-import {balloonPixelLayers} from './balloon-art.js';
+import {balloonPixelLayers,balloonLabelPalette} from './balloon-art.js';
 import {birthdayCake,birthdayGifts} from './party-props.js';
 const palette=['#f28cbe','#baa0ec','#83d9bc','#efcd87','#8dc7ec','#dea2d5','#efb58f','#accc95'];
 export {outcomeForShot,balloonSlots,balloonSlotForShot} from './balloon-slots.js';
@@ -13,6 +13,7 @@ export {balloonPoint} from './darts-layout.js';
 import {balloonPoint} from './darts-layout.js';
 function svgNode(tag,attrs){const node=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [key,value]of Object.entries(attrs))node.setAttribute(key,value);return node;}
 function paintBalloon(item,color){const svg=item.querySelector('svg');svg.replaceChildren();for(const layer of balloonPixelLayers(color))svg.append(svgNode('path',layer));}
+function paintLabel(label,color){for(const [key,value]of Object.entries(balloonLabelPalette(color)))label.style.setProperty('--label-'+key,value);}
 function fitLabel(label){const text=label.querySelector('text'),plaque=label.querySelector('.candy-plaque');text.style.fontSize='26px';const width=text.getComputedTextLength(),size=width>67?26*67/width:26;text.style.fontSize=size+'px';text.setAttribute('y',50+size*.28);const half=Math.min(38,(Math.min(67,width)+8)/2),l=44-half,r=44+half,top=50-size*.58-3,bottom=50+size*.28+4;plaque.setAttribute('d',`M${l+3} ${top}H${r-3}V${top+2}H${r}V${bottom-2}H${r-3}V${bottom}H${l+3}V${bottom-2}H${l}V${top+2}H${l+3}Z`);}
 function labelValue(label,text,cash){const amount=label.querySelector('text');amount.replaceChildren();if(cash){const currency=svgNode('tspan',{class:'candy-currency'});currency.textContent='$';const digits=svgNode('tspan',{});digits.textContent=text.slice(1);amount.append(currency,digits);}else amount.textContent=text;fitLabel(label);}
 export function buildBalloons(container,preset,money){
@@ -23,7 +24,7 @@ export function buildBalloons(container,preset,money){
   const {slot:index,outcomeIndex,kind}=descriptor,outcome=outcomes[outcomeIndex],item=document.createElement('div');item.className='prize-balloon';item.dataset.index=index;item.dataset.outcome=outcomeIndex??'';item.dataset.kind=kind;
   const color=kind==='cash'?palette[outcomeIndex%palette.length]:kind==='multiply'?'#bca0f1':kind==='extra'?'#83dcc4':'#f5c968';item.dataset.color=color;
   const svg=svgNode('svg',{viewBox:'0 0 88 138','aria-hidden':'true'});item.append(svg);paintBalloon(item,color);
-  const labelBox=document.createElement('div');labelBox.className='prize-label';labelBox.dataset.kind=kind;
+  const labelBox=document.createElement('div');labelBox.className='prize-label';labelBox.dataset.kind=kind;paintLabel(labelBox,color);
   const lettering=svgNode('svg',{viewBox:'0 0 88 138'}),amount=svgNode('text',{x:44,y:57,'text-anchor':'middle',class:'candy-amount'});
   lettering.append(svgNode('path',{class:'candy-plaque'}),amount);
   if(kind!=='cash'){const note=svgNode('text',{x:44,y:72,'text-anchor':'middle',class:'bonus-balloon-note'});note.textContent=kind==='multiply'?'TOTAL':kind==='extra'?'DART'+(preset.bonuses.extraDarts===1?'':'S'):'GOLD';lettering.append(note);}
@@ -49,7 +50,7 @@ export function animateBalloons(container,round,count,time,motion=true){
  const labels=container.querySelector('.prize-labels'),ribbons=container.querySelector('.bouquet-ribbons');
  for(let i=0;i<balloonSlots(count).length;i++){
   const item=container.children[i],label=labels.children[i],old=popped.get(i),isHit=focused&&i===hit,used=round?.preset?.birthdayRule!==REPEAT_BALLOON_RULE&&round?.preset?.birthdayRule!==BONUS_BALLOON_RULE&&won.has(Number(item.dataset.outcome))&&!old;
-  const descriptor=container._deck[i];if(descriptor.kind==='cash'&&!old){const amount=goldAmount(container._preset.outcomes[descriptor.outcomeIndex].amountCents,score.goldStacks,container._preset.bonuses?.goldPercent??10),value=container._money(amount);if(label.dataset.value!==value){label.dataset.value=value;labelValue(label,value,true);item.setAttribute('aria-label',value+' gold balloon');}if(item.dataset.gold!==String(score.goldStacks)){item.dataset.gold=String(score.goldStacks);paintBalloon(item,score.goldStacks?'#f4c753':item.dataset.color);item.classList.toggle('is-gold',score.goldStacks>0);label.classList.toggle('is-gold',score.goldStacks>0);}}
+  const descriptor=container._deck[i];if(descriptor.kind==='cash'&&!old){const amount=goldAmount(container._preset.outcomes[descriptor.outcomeIndex].amountCents,score.goldStacks,container._preset.bonuses?.goldPercent??10),value=container._money(amount);if(label.dataset.value!==value){label.dataset.value=value;labelValue(label,value,true);item.setAttribute('aria-label',value+' gold balloon');}if(item.dataset.gold!==String(score.goldStacks)){item.dataset.gold=String(score.goldStacks);paintBalloon(item,score.goldStacks?'#f4c753':item.dataset.color);paintLabel(label,score.goldStacks?'#f4c753':item.dataset.color);item.classList.toggle('is-gold',score.goldStacks>0);label.classList.toggle('is-gold',score.goldStacks>0);}}
   const point=balloonPoint(i,count,isHit?shot.landAt:time,motion);
   const deformation=balloonDeformation(old?shotAge(old,time,balloonPopAt(old)):-Infinity,motion);let alpha=used?.2:deformation.alpha;
   if(focused&&!isHit)alpha*=.38;

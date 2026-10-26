@@ -142,3 +142,8 @@
 .prize-balloon.is-gold[data-gold="1"]{animation:gold-light .8s ease-out both}.prize-balloon.is-gold[data-gold="2"]{animation:gold-light-stack .8s ease-out both}@keyframes gold-light{from{filter:brightness(1.6) drop-shadow(0 0 8px #ffe995)}to{filter:brightness(1) drop-shadow(0 0 3px #f6c95a66)}}@keyframes gold-light-stack{from{filter:brightness(1.7) drop-shadow(0 0 9px #ffe995)}to{filter:brightness(1) drop-shadow(0 0 3px #f6c95a66)}}@media(prefers-reduced-motion:reduce){.prize-balloon.is-gold{animation:none!important}}
 
 .party-decor{z-index:2}.widget .name-line span:after{content:none}.widget .name-line span,.widget[data-theme=balloons] .name-line span{font-size:12px;margin:0}.widget[data-theme=balloons] .name-line strong{font-size:14px}
+
+/* Use the balloon's own pixel shades; the cream digits carry the contrast. */
+.prize-label .candy-plaque,.prize-label.is-gold .candy-plaque,.prize-label[data-kind=gold] .candy-plaque{fill:var(--label-back);fill-opacity:.58;stroke:var(--label-edge);stroke-opacity:.35;stroke-width:1;filter:none}
+.prize-label .candy-amount,.prize-label.is-gold .candy-amount,.prize-label[data-kind=gold] .candy-amount{fill:#fff7dc;stroke:var(--label-ink);stroke-width:2.2px;paint-order:stroke fill;filter:none}
+.prize-label .candy-currency{fill:#fff0cc;stroke:var(--label-ink);stroke-width:1.8px}.bonus-balloon-note{fill:#fff7dc;stroke:var(--label-ink)}
