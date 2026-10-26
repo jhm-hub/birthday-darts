@@ -11,7 +11,7 @@ test('quicker darts retain every body and pop cel and finish recovery before unl
   assert.equal(f.finishAt-1000,(legacy.finishAt-1000)*.75);
   assert.ok(f.releaseAt+THROW_RECOVERY_MS*shotScale(f)<f.finishAt);
   const seen=new Set();for(let t=f.startAt;t<f.releaseAt+THROW_RECOVERY_MS*.75;t++)seen.add(throwCel(f,t));
-  assert.equal(seen.size,24);assert.equal(throwCel(f,f.releaseAt),8);
+  assert.equal(seen.size,25);assert.equal(throwCel(f,f.releaseAt),8);
   if(balloons){
    const pops=new Set();for(let t=f.popAt;t<f.popAt+360;t++)pops.add(popCel(shotAge(f,t,f.popAt)));
    assert.deepEqual([...pops],[0,1,2,3,4,5,6,7]);assert.equal(f.popAt-f.landAt,240);
@@ -20,7 +20,7 @@ test('quicker darts retain every body and pop cel and finish recovery before unl
 });
 
 test('new pace survives settling and serialization without changing legacy shot timing',()=>{
- const s=newWidgets([{id:'pace',name:'Pace',theme:'balloons',darts:2,outcomes:[{amountCents:1234,weight:1}]}]);
+ const s=newWidgets([{id:'pace',name:'Pace',theme:'balloons',bonuses:{enabled:false},darts:2,outcomes:[{amountCents:1234,weight:1}]}]);
  applyWidgetAction(s,{id:'pace',action:'throw',viewer:'Preview'},1000);const f=structuredClone(s.widgets[0].round.flight);
  assert.equal(f.finishAt-f.startAt,2430);
  advanceWidgets(s,f.finishAt-1);assert.ok(s.widgets[0].round.flight);

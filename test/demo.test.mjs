@@ -3,7 +3,7 @@ import {createDemo} from '../src/demo.js';
 import {newWidgets,widgetSnapshot,applyWidgetAction} from '../src/widgets.js';
 import {celebrationPerformance,CELEBRATION_CHOICES} from '../src/celebrations.js';
 
-const preset={id:'birthday',name:'Birthday balloons',theme:'balloons',darts:3,outcomes:[{amountCents:1234,weight:100},{amountCents:2500,weight:0}]};
+const preset={id:'birthday',name:'Birthday balloons',theme:'balloons',bonuses:{enabled:false},darts:3,outcomes:[{amountCents:1234,weight:100},{amountCents:2500,weight:0}]};
 test('unsaved demo values run independently of the saved game and its active round',()=>{
  const saved=newWidgets([preset]);applyWidgetAction(saved,{action:'throw',id:'birthday',viewer:'Live viewer'},1000);
  const before=structuredClone(saved),demo=createDemo(),draft={...preset,darts:1,outcomes:[{amountCents:9999,weight:1}]};

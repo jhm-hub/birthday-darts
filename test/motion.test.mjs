@@ -4,11 +4,11 @@ import {readFile} from 'node:fs/promises';
 import {THROW_RECOVERY_MS,throwCel,spriteLayout,characterFrameLayout,dartReleasePoint,balloonDeformation,popCel,fragmentMotion,confettiMotion} from '../src/motion.js';
 import {BALLOON_BURST_MS} from '../src/balloon-timing.js';
 
-test('first and later throws expose all twenty-four full-body cels and release on the empty-hand cel',()=>{
+test('first and later throws expose all twenty-five full-body cels and release on the empty-hand cel',()=>{
  for(const lead of [750,410]){
   const shot={startAt:1000,releaseAt:1000+lead},seen=new Set();
   for(let t=1000;t<shot.releaseAt+THROW_RECOVERY_MS+30;t++)seen.add(throwCel(shot,t));
-  assert.deepEqual([...seen],Array.from({length:24},(_,i)=>i));
+  assert.deepEqual([...seen],Array.from({length:25},(_,i)=>i));
   assert.equal(throwCel(shot,shot.releaseAt-1),7);
   assert.equal(throwCel(shot,shot.releaseAt),8);
   assert.equal(throwCel(shot,shot.releaseAt+THROW_RECOVERY_MS),0);
@@ -19,8 +19,8 @@ test('first and later throws expose all twenty-four full-body cels and release o
 
 test('atlas crops stay inside the sheet and the release point follows the registered hand',async()=>{
  const config=JSON.parse(await readFile(new URL('../public/character.json',import.meta.url),'utf8'));
- assert.equal(config.frames.length,24);
- for(let i=0;i<24;i++){
+ assert.equal(config.frames.length,25);
+ for(let i=0;i<25;i++){
   const f=config.frames[i];
   const bytes=await readFile(new URL('../public/'+(f.image||config.throwStudy).replace('./',''),import.meta.url));
   assert.ok(f.x>=0&&f.x+f.width<=bytes.readUInt32BE(16));
@@ -47,7 +47,7 @@ test('balloon holds through impact then transitions to eight rupture cels withou
 });
 
 test('particles sample deterministically, remain finite, finish cleanly and reduce motion',()=>{
- for(let i=0;i<24;i++)for(let t=-100;t<=1600;t+=20){
+ for(let i=0;i<25;i++)for(let t=-100;t<=1600;t+=20){
   const p=confettiMotion(i,t);assert.deepEqual(p,confettiMotion(i,t));
   assert.ok(Object.values(p).every(Number.isFinite));assert.ok(p.alpha>=0&&p.alpha<=1);
   assert.equal(confettiMotion(i,t,false).alpha,0);

@@ -1,3 +1,4 @@
+import {dartsScore} from './darts-bonuses.js';
 import {CELEBRATION_CHOICES,chooseCelebration} from './celebrations.js';
 const money=c=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:c%100?2:0,maximumFractionDigits:2}).format(c/100);
 
@@ -23,7 +24,7 @@ export function createEditorPreview(readDraft){
   soundEnabled=!!data.sound;sound.textContent=soundEnabled?'Sound on':'Sound off';sound.setAttribute('aria-pressed',String(soundEnabled));
   const selected=data.snapshot?.previewCelebration,variant=selected?CELEBRATION_CHOICES.find(c=>c.id===selected):chooseCelebration(r?.id,CELEBRATION_CHOICES);
   status.classList.toggle('error',!!data.error||artError);frame.parentElement.classList.toggle('preview-invalid',!!data.error);
-  status.textContent=artError?'The character artwork could not load. Refresh to try again.':!artReady?'Loading character artwork…':data.error||(flight?'Watch the dart land and reveal its prize.':finished?money(r.throws.reduce((sum,shot)=>sum+shot.amountCents,0))+' demo total · '+variant.label+'. The preview resets automatically.':r?'Dart '+(r.throws.length+1)+' of '+r.preset.darts+' is ready. Celebration after the last dart.':data.snapshot?.lastResult?'Last demo total: '+money(data.snapshot.lastResult.totalCents)+'. Ready to try again.':'Click once per dart, or choose Preview finale.');
+  status.textContent=artError?'The character artwork could not load. Refresh to try again.':!artReady?'Loading character artwork…':data.error||(flight?'Watch the dart land and reveal its prize.':finished?money(dartsScore(r.preset,r.throws).totalCents)+' demo total · '+variant.label+'. The preview resets automatically.':r?'Dart '+(r.throws.length+1)+' of '+dartsScore(r.preset,r.throws).allocated+' is ready. Celebration after the last dart.':data.snapshot?.lastResult?'Last demo total: '+money(data.snapshot.lastResult.totalCents)+'. Ready to try again.':'Click once per dart, or choose Preview finale.');
  }
  window.addEventListener('message',event=>{
   if(event.source!==frame.contentWindow||event.origin!==location.origin||event.data?.kind!=='darts-demo')return;

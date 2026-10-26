@@ -81,9 +81,9 @@ test('Goddess Moment joins the round selection while preserving the approved Bra
  assert.deepEqual(seen,new Set(['bratty-victory','goddess-moment','money-tease']));
 });
 
-test('Money Tease adds a third performance without changing the other two',async()=>{
+test('Money Tease adds a third performance preserves Bratty and the Goddess opening',async()=>{
  const before=JSON.parse(await readFile(new URL('../public/character-goddess-v12.json',import.meta.url),'utf8'));
- assert.deepEqual(variants.slice(0,2),before.celebrations);
+ assert.deepEqual(variants[0],before.celebrations[0]);assert.deepEqual(variants[1].frames.slice(0,24),before.celebrations[1].frames.slice(0,24));
  for(const [source,mask]of Object.entries(before.alphaMasks))assert.deepEqual(config.alphaMasks[source],mask);
  assert.equal(variants[2].id,'money-tease');
 });
@@ -100,9 +100,9 @@ test('quicker celebrations retain every painted pose and the five-second reading
  }
 });
 
-test('celebration art fits the same canvas at one common scale; existing throw and faces are unchanged',async()=>{
+test('celebration art fits the same canvas at one common scale; wind-up, release and faces are unchanged',async()=>{
  const before=JSON.parse(await readFile(new URL('../public/character-recovery-v8.json',import.meta.url),'utf8'));
- assert.deepEqual(config.frames,before.frames);assert.deepEqual(config.expressions,before.expressions);
+ assert.deepEqual(config.frames.slice(0,18),before.frames.slice(0,18));assert.deepEqual(config.expressions,before.expressions);
  assert.deepEqual(config.release,before.release);
  const sizes=new Map(),densityBySource=new Map();
  for(const variant of variants){
@@ -135,5 +135,5 @@ test('Money return adds tuck and recovery poses while preserving the approved op
  assert.deepEqual(current.frames.slice(0,17),old.frames.slice(0,17));
  assert.equal(current.duration,old.duration);assert.equal(current.reducedCel,old.reducedCel);
  assert.ok(current.frames.length>old.frames.length);
- assert.deepEqual(variants.slice(0,2),before.celebrations.slice(0,2));
+ assert.deepEqual(variants[0],before.celebrations[0]);assert.deepEqual(variants[1].frames.slice(0,24),before.celebrations[1].frames.slice(0,24));
 });

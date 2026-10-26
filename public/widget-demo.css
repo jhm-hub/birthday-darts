@@ -128,3 +128,17 @@
 .screen{aspect-ratio:1;max-width:540px;width:100%;margin-inline:auto}
 @media(max-width:480px){.screen{aspect-ratio:1}}
 @media(prefers-reduced-motion:reduce){.widget,.arcade-scene,.arcade-foot,.reveal{transition:none}.widget{transform:none}.widget.visible{transform:none}}
+
+/* Small icing labels leave the shaded balloon visible. */
+.candy-plaque{fill:#ffe9f3ed;stroke:#d2a2bd;stroke-width:1;filter:drop-shadow(0 1px 0 #68425d88)}
+.candy-amount{fill:#642f60;stroke:#fff8e8;stroke-width:.65px;filter:none;paint-order:stroke fill;font-size:26px}
+.candy-currency{fill:#9b5274;stroke:#fff8e8;stroke-width:.4px}.prize-label.is-gold .candy-plaque{fill:#fff0bdf5;stroke:#c38b42}.prize-label.is-gold .candy-amount{fill:#72401d}
+.bonus-balloon-note{font:600 10px 'Faith Candy',sans-serif;letter-spacing:.4px;fill:#fff4d7;stroke:#523455;stroke-width:2px;paint-order:stroke fill}
+.prize-label[data-kind=gold] .candy-plaque{fill:#fff0ba;stroke:#bc8645}.prize-label[data-kind=gold] .candy-amount{fill:#74401f}
+.prize-balloon.is-gold{filter:drop-shadow(0 0 3px #f6c95a66)}
+.bonus-status{position:absolute;top:424px;left:18px;max-width:210px;display:flex;flex-wrap:wrap;gap:4px;z-index:6;font:600 13px 'Faith Candy',sans-serif}.bonus-status:empty{display:none}.bonus-status span{padding:4px 7px;background:#fff0c9ef;color:#653b3a;border:1px solid #cc995c;border-radius:4px}.bonus-status .multiplier{background:#e9d9ffef;color:#58336e}
+.widget .receipts.bonus-receipts{display:flex;flex-wrap:wrap;gap:3px;align-content:center;max-height:44px;overflow:hidden}.widget .receipts.bonus-receipts span{font-size:14px;padding:1px 3px;color:#ffd0a3}.widget .receipts.bonus-receipts span.bonus{color:#a8ffe2}
+
+.prize-balloon.is-gold[data-gold="1"]{animation:gold-light .8s ease-out both}.prize-balloon.is-gold[data-gold="2"]{animation:gold-light-stack .8s ease-out both}@keyframes gold-light{from{filter:brightness(1.6) drop-shadow(0 0 8px #ffe995)}to{filter:brightness(1) drop-shadow(0 0 3px #f6c95a66)}}@keyframes gold-light-stack{from{filter:brightness(1.7) drop-shadow(0 0 9px #ffe995)}to{filter:brightness(1) drop-shadow(0 0 3px #f6c95a66)}}@media(prefers-reduced-motion:reduce){.prize-balloon.is-gold{animation:none!important}}
+
+.party-decor{z-index:2}.widget .name-line span:after{content:none}.widget .name-line span,.widget[data-theme=balloons] .name-line span{font-size:12px;margin:0}.widget[data-theme=balloons] .name-line strong{font-size:14px}

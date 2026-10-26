@@ -1,5 +1,5 @@
 {
-  "name": "Faith \u2014 three final-total celebrations",
+  "name": "Faith \u2014 matched return to ready",
   "idle": "./assets/faith-hybrid.png",
   "throwStudy": "./assets/faith-whole-body-v6.png",
   "sheetWidth": 1536,
@@ -261,61 +261,73 @@
       "scale": 1.2113821138211383
     },
     {
-      "x": 62,
-      "y": 773,
+      "x": 68,
+      "y": 8,
+      "width": 136,
+      "height": 247,
+      "anchor": 184.5,
+      "baseline": 254,
+      "image": "./assets/faith-settle-v16.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 319,
+      "y": 8,
+      "width": 136,
+      "height": 247,
+      "anchor": 435.5,
+      "baseline": 254,
+      "image": "./assets/faith-settle-v16.png",
+      "sheetWidth": 1536,
+      "sheetHeight": 1024,
+      "scale": 1.2113821138211383
+    },
+    {
+      "x": 572,
+      "y": 8,
       "width": 134,
-      "height": 251,
-      "anchor": 177.0,
-      "baseline": 1022,
-      "image": "./assets/faith-recovery-v8.png",
+      "height": 247,
+      "anchor": 687.0,
+      "baseline": 254,
+      "image": "./assets/faith-settle-v16.png",
       "sheetWidth": 1536,
       "sheetHeight": 1024,
       "scale": 1.2113821138211383
     },
     {
-      "x": 318,
-      "y": 772,
-      "width": 134,
-      "height": 252,
-      "anchor": 433.0,
-      "baseline": 1022,
-      "image": "./assets/faith-recovery-v8.png",
+      "x": 824,
+      "y": 8,
+      "width": 135,
+      "height": 247,
+      "anchor": 939.5,
+      "baseline": 254,
+      "image": "./assets/faith-settle-v16.png",
       "sheetWidth": 1536,
       "sheetHeight": 1024,
       "scale": 1.2113821138211383
     },
     {
-      "x": 570,
-      "y": 772,
-      "width": 139,
-      "height": 252,
-      "anchor": 689.5,
-      "baseline": 1022,
-      "image": "./assets/faith-recovery-v8.png",
+      "x": 1076,
+      "y": 8,
+      "width": 135,
+      "height": 247,
+      "anchor": 1191.5,
+      "baseline": 254,
+      "image": "./assets/faith-settle-v16.png",
       "sheetWidth": 1536,
       "sheetHeight": 1024,
       "scale": 1.2113821138211383
     },
     {
-      "x": 826,
-      "y": 771,
-      "width": 139,
-      "height": 253,
-      "anchor": 945.5,
-      "baseline": 1022,
-      "image": "./assets/faith-recovery-v8.png",
-      "sheetWidth": 1536,
-      "sheetHeight": 1024,
-      "scale": 1.2113821138211383
-    },
-    {
-      "x": 1088,
-      "y": 772,
-      "width": 133,
-      "height": 252,
-      "anchor": 1201.5,
-      "baseline": 1022,
-      "image": "./assets/faith-recovery-v8.png",
+      "x": 1327,
+      "y": 7,
+      "width": 137,
+      "height": 248,
+      "anchor": 1444.0,
+      "baseline": 254,
+      "image": "./assets/faith-settle-v16.png",
       "sheetWidth": 1536,
       "sheetHeight": 1024,
       "scale": 1.2113821138211383
@@ -486,7 +498,6 @@
     ]
   },
   "alphaCutoffs": {
-    "./assets/faith-recovery-v8.png": 128,
     "./assets/faith-bratty-victory-v10.png": 192,
     "./assets/faith-bratty-bridge-v10.png": 192,
     "./assets/faith-goddess-legs-v12.png": 192,
@@ -496,7 +507,8 @@
     "./assets/faith-money-legs-v13.png": 192,
     "./assets/faith-money-return-v14.png": 192,
     "./assets/faith-money-return-contours-v14.png": 192,
-    "./assets/faith-money-return-skirt-v14.png": 192
+    "./assets/faith-money-return-skirt-v14.png": 192,
+    "./assets/faith-settle-v16.png": 224
   },
   "celebrations": [
     {
@@ -1236,36 +1248,64 @@
           "sheetHeight": 1024
         },
         {
-          "x": 569,
-          "y": 7,
+          "x": 319,
+          "y": 8,
           "width": 136,
-          "height": 249,
-          "face": {
-            "x": 652.0,
-            "y": 39.0
-          },
-          "anchor": 685.0,
-          "baseline": 256,
-          "scale": 1.2113821138211383,
-          "image": "./assets/faith-goddess-legs-v12.png",
+          "height": 247,
+          "anchor": 435.5,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
           "sheetWidth": 1536,
-          "sheetHeight": 1024
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
         },
         {
-          "x": 316,
+          "x": 572,
+          "y": 8,
+          "width": 134,
+          "height": 247,
+          "anchor": 687.0,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
+        },
+        {
+          "x": 824,
+          "y": 8,
+          "width": 135,
+          "height": 247,
+          "anchor": 939.5,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
+        },
+        {
+          "x": 1076,
+          "y": 8,
+          "width": 135,
+          "height": 247,
+          "anchor": 1191.5,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
+        },
+        {
+          "x": 1327,
           "y": 7,
           "width": 137,
-          "height": 249,
-          "face": {
-            "x": 399.0,
-            "y": 39.0
-          },
-          "anchor": 432.0,
-          "baseline": 256,
-          "scale": 1.2113821138211383,
-          "image": "./assets/faith-goddess-legs-v12.png",
+          "height": 248,
+          "anchor": 1444.0,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
           "sheetWidth": 1536,
-          "sheetHeight": 1024
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
         },
         {
           "x": 67,
@@ -1310,8 +1350,11 @@
         2840,
         2950,
         3070,
-        3180,
-        3280
+        3120,
+        3170,
+        3220,
+        3270,
+        3320
       ]
     },
     {
@@ -1712,106 +1755,76 @@
           }
         },
         {
-          "x": 386,
-          "y": 632,
-          "width": 170,
-          "height": 306,
-          "anchor": 531.5,
-          "baseline": 938,
-          "scale": 0.9770491803278689,
-          "sourceDensity": 1.2398373983739837,
-          "image": "./assets/faith-money-return-skirt-v14.png",
-          "sheetWidth": 1254,
-          "sheetHeight": 1254,
-          "face": {
-            "x": 496.0,
-            "y": 675.0
-          }
+          "x": 68,
+          "y": 8,
+          "width": 136,
+          "height": 247,
+          "anchor": 184.5,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
         },
         {
-          "x": 700,
-          "y": 632,
-          "width": 170,
-          "height": 306,
-          "anchor": 845.0,
-          "baseline": 938,
-          "scale": 0.9770491803278689,
-          "sourceDensity": 1.2398373983739837,
-          "image": "./assets/faith-money-return-skirt-v14.png",
-          "sheetWidth": 1254,
-          "sheetHeight": 1254,
-          "face": {
-            "x": 810.0,
-            "y": 675.0
-          }
+          "x": 319,
+          "y": 8,
+          "width": 136,
+          "height": 247,
+          "anchor": 435.5,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
         },
         {
-          "x": 1013,
-          "y": 632,
-          "width": 171,
-          "height": 306,
-          "anchor": 1159.0,
-          "baseline": 938,
-          "scale": 0.9770491803278689,
-          "sourceDensity": 1.2398373983739837,
-          "image": "./assets/faith-money-return-skirt-v14.png",
-          "sheetWidth": 1254,
-          "sheetHeight": 1254,
-          "face": {
-            "x": 1122.0,
-            "y": 675.0
-          }
+          "x": 572,
+          "y": 8,
+          "width": 134,
+          "height": 247,
+          "anchor": 687.0,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
         },
         {
-          "x": 73,
-          "y": 945,
-          "width": 170,
-          "height": 307,
-          "anchor": 218.0,
-          "baseline": 1252,
-          "scale": 0.9770491803278689,
-          "sourceDensity": 1.2398373983739837,
-          "image": "./assets/faith-money-return-skirt-v14.png",
-          "sheetWidth": 1254,
-          "sheetHeight": 1254,
-          "face": {
-            "x": 183.0,
-            "y": 987.0
-          }
+          "x": 824,
+          "y": 8,
+          "width": 135,
+          "height": 247,
+          "anchor": 939.5,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
         },
         {
-          "x": 386,
-          "y": 945,
-          "width": 171,
-          "height": 307,
-          "anchor": 531.5,
-          "baseline": 1252,
-          "scale": 0.9770491803278689,
-          "sourceDensity": 1.2398373983739837,
-          "image": "./assets/faith-money-return-skirt-v14.png",
-          "sheetWidth": 1254,
-          "sheetHeight": 1254,
-          "face": {
-            "x": 496.0,
-            "y": 987.0
-          }
+          "x": 1076,
+          "y": 8,
+          "width": 135,
+          "height": 247,
+          "anchor": 1191.5,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
         },
         {
-          "x": 700,
-          "y": 945,
-          "width": 170,
-          "height": 307,
-          "anchor": 845.0,
-          "baseline": 1252,
-          "scale": 0.9770491803278689,
-          "sourceDensity": 1.2398373983739837,
-          "image": "./assets/faith-money-return-skirt-v14.png",
-          "sheetWidth": 1254,
-          "sheetHeight": 1254,
-          "face": {
-            "x": 809.0,
-            "y": 986.0
-          }
+          "x": 1327,
+          "y": 7,
+          "width": 137,
+          "height": 248,
+          "anchor": 1444.0,
+          "baseline": 254,
+          "image": "./assets/faith-settle-v16.png",
+          "sheetWidth": 1536,
+          "sheetHeight": 1024,
+          "scale": 1.2113821138211383
         },
         {
           "x": 67,
@@ -1856,11 +1869,11 @@
         2140,
         2200,
         2260,
-        2320,
-        2380,
-        2440,
-        2520,
-        2600,
+        2330,
+        2400,
+        2470,
+        2540,
+        2610,
         2700
       ]
     }

@@ -36,7 +36,7 @@ export function characterPerformance(round,preset,time,motion=true,celebrations=
  const scale=shotScale(shot),releaseAt=shot.releaseAt??shot.landAt-(preset.theme==='balloons'?740:560)*scale;
  const reactAt=Math.max(revealAt,releaseAt+THROW_RECOVERY_MS*scale),age=(time-reactAt)/scale;
  if(Number.isFinite(reactAt)&&age>=0&&age<REACTION_MS){
-  const tier=reactionTier(shot.amountCents,preset.outcomes);
+  const tier=shot.kind&&shot.kind!=='cash'?1:reactionTier(shot.baseAmountCents??shot.amountCents,preset.outcomes);
   return {cel:0,expression:reactionExpression(tier,age,motion),...facialMotion(age,motion),heldDart:false,active:true,reaction:['pleased','happy','big-win'][tier]};
  }
  if(flight)return {cel:throwCel(flight,time,motion),expression:null,heldDart:time<flight.releaseAt,active:true,reaction:''};

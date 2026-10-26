@@ -17,7 +17,7 @@ test('a winning amount retains its odds until its last physical balloon is gone'
 });
 
 test('the exact chosen balloon survives snapshot and serialization without exposing odds',()=>{
- const state=newWidgets([{id:'b',name:'B',theme:'balloons',darts:3,outcomes:[{amountCents:1234,weight:1}]}]);
+ const state=newWidgets([{id:'b',name:'B',theme:'balloons',bonuses:{enabled:false},darts:3,outcomes:[{amountCents:1234,weight:1}]}]);
  const targets=new Set();
  for(let i=0;i<3;i++){
   applyWidgetAction(state,{action:'throw',id:'b'},i*4000);const f=state.widgets[0].round.flight;
@@ -30,7 +30,7 @@ test('the exact chosen balloon survives snapshot and serialization without expos
 });
 
 test('an already active legacy round keeps its no-repeat prize rules',()=>{
- const state=newWidgets([{id:'b',name:'B',theme:'balloons',darts:2,outcomes:[{amountCents:1000,weight:1},{amountCents:2000,weight:1}]}]);
+ const state=newWidgets([{id:'b',name:'B',theme:'balloons',bonuses:{enabled:false},darts:2,outcomes:[{amountCents:1000,weight:1},{amountCents:2000,weight:1}]}]);
  applyWidgetAction(state,{action:'throw',id:'b'},0);const r=state.widgets[0].round;
  delete r.preset.birthdayRule;delete r.flight.balloonSlot;
  const first=r.flight.amountCents,finish=r.flight.finishAt;advanceWidgets(state,finish);

@@ -1,6 +1,6 @@
 // Two-pixel clusters, stepped contours and warm highlights echo Faith's sprite.
 // Kept as editable SVG art so decorations stay sharp on a transparent source.
-const ink='#342233';
+const ink='#392039';
 function painter(svgNode,transform,kind){
  const group=svgNode('g',{transform,'data-party-prop':kind});
  return {group,
@@ -24,15 +24,15 @@ export function birthdayCake(svgNode){
  p.path('M14 36H72V40H76V66H68V70H24V68H14Z','#edb5a0');
  p.path('M16 36H64V42H68V66H60V68H26V66H16Z','#ffd8b6');
  p.pixels('#ffe8c8',[[18,42,12,10],[30,44,22,8],[18,56,42,8],[22,64,32,2]]);
- p.path('M12 52H20V54H68V52H80V58H72V60H22V58H12Z','#b95583');
+ p.path('M12 52H20V54H68V52H80V58H72V60H22V58H12Z','#a83e74');
  p.path('M14 52H22V54H68V52H76V54H68V56H22V54H14Z','#f182aa');
  p.pixels('#ffb6c7',[[22,54,16,2],[46,54,8,2]]);
  // Lilac icing cap: light on the left, plum/lavender drips on the right.
  p.path('M22 24H68V26H78V30H84V38H80V46H76V48H72V42H64V48H60V50H56V42H44V46H38V42H28V48H24V50H20V44H14V40H8V32H12V28H22Z',ink);
- p.path('M22 26H68V28H76V32H82V36H78V44H74V38H62V46H58V38H42V42H40V38H26V46H22V40H16V36H10V32H16V30H22Z','#ae78b0');
- p.path('M22 26H66V28H74V32H78V36H60V40H56V38H42V40H38V38H24V42H20V38H14V34H12V32H20V30H22Z','#d69ac9');
- p.path('M24 26H62V28H72V30H76V32H68V34H24V32H16V30H24Z','#f4bce1');
- p.path('M26 28H60V30H66V32H28V30H20V28Z','#ffe0ea');
+ p.path('M22 26H68V28H76V32H82V36H78V44H74V38H62V46H58V38H42V42H40V38H26V46H22V40H16V36H10V32H16V30H22Z','#9d5ca6');
+ p.path('M22 26H66V28H74V32H78V36H60V40H56V38H42V40H38V38H24V42H20V38H14V34H12V32H20V30H22Z','#e694ca');
+ p.path('M24 26H62V28H72V30H76V32H68V34H24V32H16V30H24Z','#ffbee5');
+ p.path('M26 28H60V30H66V32H28V30H20V28Z','#fff0f1');
  p.pixels('#efbbd9',[[22,38,2,6],[58,38,2,6],[74,38,2,4]]);
  // Piped cream along the base; each rosette has its own shadow and highlight.
  for(const [x,y]of [[14,64],[24,68],[36,70],[48,70],[60,70],[72,66]]){
@@ -48,6 +48,10 @@ export function birthdayCake(svgNode){
  p.pixels('#bb7aa6',[[32,30,4,2],[60,32,2,2]]);
  p.pixels('#fff1ce',[[20,32,2,2],[52,30,4,2],[68,30,2,2]]);
  p.pixels('#79bda9',[[28,32,2,2],[62,28,4,2]]);
+ // Sugared berries and a tiny gold star on the front of this celebration cake.
+ for(const x of [18,70]){p.path(`M${x} 28h6v2h2v4h-2v2h-6v-2h-2v-4h2Z`,'#aa3b75');p.rect(x,28,4,4,'#f879ac');p.rect(x,28,2,2,'#ffd9e7');p.rect(x+2,26,2,2,'#77bd9e');}
+ p.path('M44 58h2v3h3v2h-2v4h-2v-2h-2v-2h-2v-2h3Z','#b27345');p.path('M44 57h2v3h3v2h-3v3h-2v-3h-3v-2h3Z','#ffe8a6');
+ p.pixels('#fff3d3',[[14,42,2,8],[18,60,2,4],[34,74,20,2]]);
  // Striped candles and individual animated amber/cream flames.
  for(const [x,base,shade]of [[24,'#f494b7','#b95f8d'],[44,'#b5a0ed','#8067ae'],[64,'#9cdbc6','#549d91']]){
   p.path(`M${x-2} 10h8v20h-8Z`,ink);p.rect(x,10,4,20,base);p.rect(x+2,12,2,18,shade);
@@ -64,8 +68,8 @@ export function birthdayGifts(svgNode){
  // Tall lavender parcel with a visible side plane and an overhanging lid.
  p.path('M2 28H40V30H50V76H44V80H4V76H0V30H2Z',ink);
  p.path('M4 34H38V76H6V74H4Z','#a783c8');
- p.rect(38,34,10,40,'#654b88');p.rect(38,34,4,40,'#81619f');
- p.rect(6,36,28,36,'#bc99dc');p.rect(6,36,4,34,'#d6b5eb');
+ p.rect(38,34,10,40,'#584078');p.rect(38,34,4,40,'#81619f');
+ p.rect(6,36,28,36,'#c4a0e9');p.rect(6,36,4,34,'#d6b5eb');
  p.rect(10,38,22,2,'#cfa9e5');p.rect(8,70,28,4,'#9772b8');
  // Scattered little wrapping-paper stars.
  for(const [x,y]of [[12,46],[30,42],[12,64],[30,60]]){
@@ -89,10 +93,14 @@ export function birthdayGifts(svgNode){
  p.path('M18 18H26V24H24V30H20V28H16V24H18Z','#e9b779');
  p.rect(20,18,4,4,'#fff0c4');p.rect(24,20,2,4,'#ba7d55');
  p.path('M16 24H20V36H16V34H14V30H16Z','#e9b779');p.rect(16,26,2,6,'#ffe9b7');
+ // A hanging heart tag and satin glints give the parcel its own finish.
+ p.path('M32 31v10h-2v4', 'none');p.rect(32,32,1,11,'#ffeab8');
+ p.path('M30 42h6v2h2v8h-2v2h-6v-2h-2v-8h2Z','#684165');p.rect(30,44,6,8,'#ffe4d9');p.path('M31 46h1v1h2v-1h1v3h-1v1h-2v-1h-1Z','#dc71a2');
+ p.pixels('#fff6d2',[[6,30,8,1],[20,38,2,12],[26,18,2,2]]);
  // A mint parcel in front, turned slightly to reveal its darker right side.
  p.path('M38 52H68V54H78V80H70V84H38V82H34V54H38Z',ink);
- p.path('M38 56H68V80H64V82H38Z','#80bba9');
- p.rect(40,58,24,20,'#a7dcc2');p.rect(40,58,4,18,'#cef0d1');
+ p.path('M38 56H68V80H64V82H38Z','#62aa98');
+ p.rect(40,58,24,20,'#a9ebce');p.rect(40,58,4,18,'#cef0d1');
  p.rect(68,56,8,24,'#4f8d87');p.rect(68,56,2,24,'#70af9f');
  p.rect(40,78,24,2,'#69a996');
  p.pixels('#e7f1d5',[[44,64,2,2],[62,70,2,2],[44,76,2,2]]);

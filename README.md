@@ -345,3 +345,35 @@ voice/music balance and OBS audio routing still belong to Faith’s stream setup
 ## Square Candy Confetti presentation
 
 Both Darts styles now share a 540 × 540 transparent stage. The birthday palette, rounded Fredoka lettering, dark plum prize plates, stepped gold trims and final-result badge match Faith’s Gift Pile. The character, all three celebrations, sound and game rules retain their existing art and timing. The scene is rearranged within the square; the character is never stretched or resized between actions. Balloon labels retain exact custom amounts, including cents. The editor preview displays at up to 420 × 420. Existing wide Browser Sources letterbox the square until their dimensions are updated; private display links remain valid.
+
+### Birthday bonuses and the v16 art pass
+
+The transparent display remains **540 × 540**. Cash labels now use small pale
+icing backings. The richer cake and wrapped gifts sit in their own arrangement,
+clear of Faith’s feet. The throw, Goddess Moment and Money Tease use matching
+return drawings and finish on the original ready cel at the original scale.
+The animation comparison page has a **Loop preview** switch; live celebrations
+still play once with the final total.
+
+New birthday rounds include bonuses by default. Turn **Include bonus balloons**
+off for the previous cash-only rules. Existing rounds keep their frozen rules.
+Each bouquet has one ×2 balloon, one extra-dart balloon and two gold balloons
+when those bonuses have positive odds and are useful with the starting settings.
+Disabled bonus types become ordinary cash balloons.
+
+- A bonus is guaranteed within the first three throws in games starting with
+  at least three darts. If gold is the only useful bonus, it is forced early
+  enough to leave a cash hit. The draw uses the enabled bonuses’ relative odds.
+- **×2 TOTAL** doubles all cash won this round, including earlier hits.
+- **+1 DART** is the default. Faith can set this to +1, +2 or +3 and set a round
+  limit up to 16. Extra darts are capped by that limit and the physical bouquet.
+- **GOLD +10%** affects future cash hits only. Each hit adds 10% of the original
+  prize: $50 becomes $55, then $60. Two gold balloons permit +20% this round.
+  Each cash award is rounded once to the nearest cent. ×2 applies afterward.
+- Each bonus uses one throw. Popped balloons stay gone. The round ends when its
+  darts or eligible balloons run out; all boosts and balloons reset per viewer.
+
+Cash and bonus weights share the draw. The editor’s cash percentages describe
+which amount wins **conditional on a cash hit**, not the chance across all throws.
+Faith can edit the multiplier (×2–×5), gold increase (1–50%), extra darts (+1–+3), and each bonus’s relative odds. These save with each widget and travel in settings backups.
+The transparent display never receives relative weights.

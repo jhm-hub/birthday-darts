@@ -19,3 +19,5 @@ h1,h2{font-family:'Faith Candy',sans-serif;font-weight:500;letter-spacing:-.025e
 .editor,.preview-panel{background:linear-gradient(145deg,#24192bf0,#1b1423fa)}
 .preview-canvas{aspect-ratio:1;max-width:420px;margin-inline:auto}
 .demo-badge{color:#fff2ac}.primary{border-color:#ffc1dc}
+
+.bonus-settings{border:1px solid #604154;border-radius:12px;margin:20px 0 0;padding:16px;background:#2e1c2c}.bonus-settings[hidden]{display:none}.bonus-settings legend{padding:0 6px;color:#ffd0a3;font-weight:600}.bonus-settings .bonus-toggle{display:flex;gap:9px;align-items:center;font-size:14px}.bonus-toggle input{width:18px;height:18px;accent-color:#f4a1ca}.bonus-settings p,.bonus-settings small{font-size:12px;line-height:1.6;color:#d4b6cd}.bonus-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}.bonus-grid label{font-size:11px!important;margin:0!important;line-height:1.5}.bonus-grid input{width:100%;margin-top:5px}.bonus-settings:has(#bonuses-enabled:not(:checked)) .bonus-grid{opacity:.5}@media(max-width:600px){.bonus-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

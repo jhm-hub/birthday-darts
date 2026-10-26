@@ -33,7 +33,7 @@ export function throwCel(shot,time,motion=true){
  if(!motion)return age>=0&&age<260?8:0;
  // Whole-body cels, sampled from the shared clock. The front boot is
  // registered in the renderer while the hips, back leg and hair move.
- const starts=[-410,-350,-290,-230,-180,-135,-90,-45,0,45,90,140,190,240,300,360,420,480,540,605,675,750,835,920];
+ const starts=[-410,-350,-290,-230,-180,-135,-90,-45,0,45,90,140,190,240,300,360,420,480,540,605,675,750,820,880,930];
  if(age<THROW_RECOVERY_MS){let cel=0;for(let i=1;i<starts.length;i++){if(age<starts[i])break;cel=i;}return cel;}
  return 0;
 }

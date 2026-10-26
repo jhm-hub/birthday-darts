@@ -45,7 +45,7 @@ test('impact and facial reactions never replace or truncate the throw body',()=>
    const pose=characterPerformance({flight:f},p,time);seen.add(pose.cel);
    assert.equal(pose.expression,null);assert.equal(pose.reaction,'');
   }
-  assert.equal(seen.size,24,'every full-body throw cel plays, including recovery after impact');
+  assert.equal(seen.size,25,'every full-body throw cel plays, including recovery after impact');
   const start=theme==='balloons'?f.popAt:f.releaseAt+THROW_RECOVERY_MS;
   for(let tier=0;tier<3;tier++)for(let age=0;age<REACTION_MS;age+=10){
    const pose=characterPerformance({flight:{...f,amountCents:p.outcomes[tier].amountCents}},p,start+age);

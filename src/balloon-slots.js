@@ -3,6 +3,7 @@ export function outcomeForShot(shot,count){return Number.isInteger(shot?.outcome
 export function balloonSlots(count){return Array.from({length:Math.max(12,Math.min(16,count*3))},(_,i)=>i%count);}
 export function balloonSlotForShot(shot,count){
  const slots=balloonSlots(count),outcome=outcomeForShot(shot,count);
+ if(shot.kind&&Number.isInteger(shot.balloonSlot)&&shot.balloonSlot>=0&&shot.balloonSlot<slots.length)return shot.balloonSlot;
  if(Number.isInteger(shot.balloonSlot)&&shot.balloonSlot>=0&&shot.balloonSlot<slots.length&&slots[shot.balloonSlot]===outcome)return shot.balloonSlot;
  // Saved rounds from the previous version derive their target from the shot ID.
  const options=slots.flatMap((value,i)=>value===outcome?[i]:[]);let hash=0;

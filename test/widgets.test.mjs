@@ -8,7 +8,7 @@ import {shotScale} from '../src/dart-timing.js';
 import {makePopSamples,createPartyAudio} from '../src/party-audio.js';
 
 test('birthday widgets remove individual balloons, hold the hit beat, and freeze active round rules',()=>{
- const s=newWidgets([{id:'birthday',name:'Birthday',theme:'balloons',darts:3,outcomes:[{amountCents:1000,weight:0},{amountCents:2500,weight:1000},{amountCents:5000,weight:1},{amountCents:10000,weight:1}]}]);
+ const s=newWidgets([{id:'birthday',name:'Birthday',theme:'balloons',bonuses:{enabled:false},darts:3,outcomes:[{amountCents:1000,weight:0},{amountCents:2500,weight:1000},{amountCents:5000,weight:1},{amountCents:10000,weight:1}]}]);
  const won=new Set();let expectedTotal=0;
  for(let i=0;i<3;i++){
   const now=i*4000;applyWidgetAction(s,{action:'throw',id:'birthday'},now);
@@ -82,7 +82,7 @@ test('widgets keep independent rounds, frozen rules, exact cents and automatic c
 });
 
 test('birthday rounds exhaust physical balloons and reset the pool for the next viewer',()=>{
- const s=newWidgets([{id:'short',name:'Short',theme:'balloons',darts:12,outcomes:[{amountCents:1000,weight:1},{amountCents:2000,weight:0}]}]);
+ const s=newWidgets([{id:'short',name:'Short',theme:'balloons',bonuses:{enabled:false},darts:12,outcomes:[{amountCents:1000,weight:1},{amountCents:2000,weight:0}]}]);
  const slots=new Set();let finish=0;
  for(let i=0;i<6;i++){
   applyWidgetAction(s,{action:'throw',id:'short',viewer:'First'},i*4000);

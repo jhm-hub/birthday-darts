@@ -9,7 +9,7 @@ const $=s=>document.querySelector(s);
 const shot={id:'preview-dart',amountCents:25000,...dartTiming(0,true,true)};
 const preset={theme:'balloons',outcomes:[{amountCents:1000},{amountCents:2500},{amountCents:25000}]};
 const end=shot.finishAt+RESULT_HOLD_MS;
-let elapsed=shot.finishAt,last=performance.now(),playing=false;
+let elapsed=shot.finishAt,last=performance.now(),playing=false,loopFrom=shot.finishAt;
 let selectedId=new URLSearchParams(location.search).get('celebration')||'bratty-victory';
 const copy={
  'bratty-victory':{number:'01',headline:'Of course I won.',intro:'Bratty Victory. A little attitude when the final total lands.',caption:'A hair flick, a knowing smile, and a cheeky palm-up finish.',phases:[[0,'Total revealed · attitude'],[600,'Hair flick'],[1220,'Knowing smile'],[2150,'Settling back']]},
@@ -19,14 +19,14 @@ const copy={
 $('#timeline').max=String(end);$('#timeline').value=String(elapsed);
 $('#reduced').checked=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function syncButton(){$('#pause').textContent=playing?'Pause':'Resume';$('#pause').disabled=false;}
-function play(from){elapsed=from;playing=true;last=performance.now();syncButton();}
+function play(from){loopFrom=from;elapsed=from;playing=true;last=performance.now();syncButton();}
 $('#play-celebration').addEventListener('click',()=>play(shot.finishAt));
 $('#play-round').addEventListener('click',()=>play(0));
 $('#pause').addEventListener('click',()=>{if(elapsed>=end)elapsed=shot.finishAt;playing=!playing;last=performance.now();syncButton();});
 $('#timeline').addEventListener('input',()=>{elapsed=Number($('#timeline').value);playing=false;syncButton();});
 function detail(source,target,focus={x:160.5,y:35.5}){const c=$(target),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.imageSmoothingEnabled=false;ctx.drawImage($(source+' canvas'),focus.x-32.5,focus.y-32.5,65,65,0,0,132,132);}
 try{
- const config=await fetch('./character.json?v=money-v14').then(r=>r.json()),images=await loadCharacterArt(config);
+ const config=await fetch('./character.json?v=settle-v16').then(r=>r.json()),images=await loadCharacterArt(config);
  let selected=config.celebrations.find(v=>v.id===selectedId)||config.celebrations[0];
  function select(variant){
   selected=variant;selectedId=variant.id;const text=copy[selectedId];
@@ -45,7 +45,7 @@ try{
  if(!$('#reduced').checked)play(shot.finishAt);else syncButton();
  function frame(now){
   const delta=Math.max(0,now-last);last=now;if(playing)elapsed=Math.min(end,elapsed+delta*Number($('#speed').value));
-  if(elapsed===end&&playing){playing=false;syncButton();}
+  if(elapsed===end&&playing){if($('#loop').checked&&!$('#reduced').checked)elapsed=loopFrom;else playing=false;syncButton();}
   const finished=elapsed>=shot.finishAt;
   const round=finished?{id:'celebration-preview',celebrationScale:CELEBRATION_TIME_SCALE,throws:[{amountCents:1000},{amountCents:2500},shot],hideAt:end}:{id:'celebration-preview',throws:[],flight:shot};
   const pose=characterPerformance(round,preset,Math.min(elapsed,end-1),!$('#reduced').checked,[selected]);

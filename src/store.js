@@ -2,7 +2,7 @@ import {newWidgets,validateWidget,library,widgetSnapshot,applyWidgetAction,advan
 import {randomKey,validKey} from './protocol.js';
 const STORE_KEY='birthday-darts-library-v1';
 const defaults=[{id:'birthday',name:'Birthday balloons',theme:'balloons',darts:3,outcomes:[{amountCents:1000,weight:40},{amountCents:2500,weight:30},{amountCents:5000,weight:20},{amountCents:10000,weight:8},{amountCents:25000,weight:2}]},{id:'classic',name:'Classic darts',theme:'dartboard',darts:3,outcomes:[{amountCents:1000,weight:40},{amountCents:2500,weight:30},{amountCents:5000,weight:20},{amountCents:10000,weight:8},{amountCents:25000,weight:2}]}];
-export function exportSettings(widgets){return {format:'birthday-darts-settings',version:1,widgets:widgets.map(({name,theme,darts,outcomes})=>({name,theme,darts,outcomes}))};}
+export function exportSettings(widgets){return {format:'birthday-darts-settings',version:1,widgets:widgets.map(({name,theme,darts,outcomes,bonuses})=>({name,theme,darts,outcomes,bonuses}))};}
 export function importSettings(raw){
  if(raw?.format!=='birthday-darts-settings'||raw.version!==1||!Array.isArray(raw.widgets)||!raw.widgets.length||raw.widgets.length>30)throw Error('Choose a Birthday Darts settings backup.');
  return raw.widgets.map(p=>validateWidget({...p,id:crypto.randomUUID()}));

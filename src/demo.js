@@ -28,7 +28,7 @@ export function createDemo(){
    // Complete a disposable sample round offscreen, using the same weighted
    // draws and balloon pool. Only its finale starts now; no live state exists.
    let cursor=now-60000;
-   for(let i=0;i<12;i++){
+   for(let i=0;i<16;i++){
     applyWidgetAction(state,{action:'throw',id:'demo',viewer:'Demo viewer'},cursor);
     cursor=state.widgets[0].round.flight.finishAt;advanceWidgets(state,cursor);
     if(state.widgets[0].round.hideAt)break;
