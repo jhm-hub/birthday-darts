@@ -11,7 +11,7 @@ export function createEditorPreview(readDraft){
  function refresh(){
   latest=readDraft();
   bonusPanel.hidden=latest.theme!=='balloons';
-  const b=latest.bonuses,labels={multiply:'×'+b.multiplier+' total',extra:'+'+b.extraDarts+' dart'+(b.extraDarts===1?'':'s'),gold:'Gold +'+b.goldPercent+'%','stacked-gold':'Stacked +'+(b.goldPercent*2)+'%'};
+  const b=latest.bonuses,labels={multiply:'×'+b.multiplier+(b.bonusDarts?' · +1 dart':' total'),extra:'+'+b.extraDarts+' dart'+(b.extraDarts===1?'':'s'),gold:'Gold +'+b.goldPercent+'%'+(b.bonusDarts?' · +1 dart':''),'stacked-gold':'Stacked +'+(b.goldPercent*2)+'%'};
   for(const control of bonusButtons){control.textContent=labels[control.dataset.demoBonus];control.disabled=true;}
   validationError=[...document.querySelectorAll('#settings input')].some(input=>!input.validity.valid)?'Finish the highlighted settings before throwing a demo dart.':'';
   frame.parentElement.style.aspectRatio='1 / 1';

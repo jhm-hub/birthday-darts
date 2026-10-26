@@ -8,7 +8,7 @@ import {remainingBalloonSlots} from './balloon-slots.js';
 export const RESULT_HOLD_MS=5000;
 export const FADE_MS=400;
 export function validateWidget(input){const p=validatePreset(input),theme=input.theme??'dartboard';if(!['dartboard','balloons'].includes(theme))throw Error('Choose the dartboard or birthday balloons style.');return {...p,theme,bonuses:validateDartBonuses(input.bonuses,theme,p.darts)};}
-const clean=p=>({id:p.id,name:p.name,darts:p.darts,theme:p.theme||'dartboard',...(p.bonuses?{bonuses:{enabled:p.bonuses.enabled,extraDarts:p.bonuses.extraDarts,maxDarts:p.bonuses.maxDarts,multiplier:p.bonuses.multiplier,goldPercent:p.bonuses.goldPercent,available:{multiply:p.bonuses.multiplyWeight>0,extra:p.bonuses.extraWeight>0,gold:p.bonuses.goldWeight>0}}}:{}),...(p.birthdayRule?{birthdayRule:p.birthdayRule}:{}),outcomes:p.outcomes.map(({amountCents})=>({amountCents}))});
+const clean=p=>({id:p.id,name:p.name,darts:p.darts,theme:p.theme||'dartboard',...(p.bonuses?{bonuses:{enabled:p.bonuses.enabled,extraDarts:p.bonuses.extraDarts,extraBalloons:p.bonuses.extraBalloons,bonusDarts:p.bonuses.bonusDarts,maxDarts:p.bonuses.maxDarts,multiplier:p.bonuses.multiplier,goldPercent:p.bonuses.goldPercent,available:{multiply:p.bonuses.multiplyWeight>0,extra:p.bonuses.extraWeight>0,gold:p.bonuses.goldWeight>0}}}:{}),...(p.birthdayRule?{birthdayRule:p.birthdayRule}:{}),outcomes:p.outcomes.map(({amountCents})=>({amountCents}))});
 const total=r=>dartsScore(r.preset,r.throws).totalCents;
 const done=r=>r.throws.length>=dartsScore(r.preset,r.throws).allocated||(r.preset.birthdayRule===BONUS_BALLOON_RULE?!eligibleDartPrizes(r).some(o=>o.weight>0):r.preset.theme==='balloons'&&!remainingRoundOutcomes(r.preset,r.throws).some(o=>o.weight>0));
 const lookup=(state,id)=>{const w=state.widgets.find(w=>w.id===id);if(!w)throw Error('That widget was not found.');return w;};
@@ -16,7 +16,7 @@ export function newWidgets(presets=[defaultPreset]){return {schema:1,revision:0,
 export function library(state){return {revision:state.revision,widgets:state.widgets.map(w=>({...validateWidget(w),active:!!w.round}))};}
 export function widgetSnapshot(state,id,now=Date.now()){
  const w=lookup(state,id),r=w.round;
- return {revision:state.revision,serverNow:now,widget:clean(w),round:r?{...structuredClone(r),preset:clean(r.preset)}:null,lastResult:structuredClone(w.lastResult)};
+ return {revision:state.revision,serverNow:now,widget:clean(validateWidget(w)),round:r?{...structuredClone(r),preset:clean(r.preset)}:null,lastResult:structuredClone(w.lastResult)};
 }
 export function advanceWidgets(state,now=Date.now()){
  let changed=false;

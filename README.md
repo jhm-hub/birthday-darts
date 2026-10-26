@@ -383,3 +383,9 @@ The transparent display never receives relative weights.
 Under **Try a bonus**, choose **×2 total**, **+1 dart**, **Gold +10%**, or **Stacked +20%**. These buttons use your edited bonus values and play the actual throw, pop, and award in a fresh four-dart sample. The stacked preview begins with one gold bonus already applied and animates the second. A sample cash hit is included so the multiplier has a visible total to change. Continue with **Throw next demo dart**, or **Reset demo** to return to your draft.
 
 Bonus previews remain available for the Birthday balloons style even when bonus odds are zero or bonuses are disabled. Sample rounds enable all bonus types and use equal cash weights; saved settings, live odds, and stream rounds are never changed. The controls are only on the private editor, never on the transparent display.
+
+### More ways to earn another throw
+
+Birthday games default to three extra-dart balloons. Each can be won once per viewer, and each awards the configured extra-dart value (+1 by default). Gold and multiplier balloons also award +1 dart by default. Gold still adds to future cash values, and the multiplier still applies to the full cash total.
+
+Under Birthday bonuses, change **Extra-dart balloons** (1–3) or toggle **+1 dart with gold and multiplier bonuses**. All extensions respect the round limit and the number of unpopped balloons. If no extra throw can be granted, gold/multiplier still apply their main effect and the prize announcement omits +1. Older active rounds retain their original bonus rules. Multiple physical extra-dart balloons share the configured extra-dart prize odds; they do not multiply those odds.

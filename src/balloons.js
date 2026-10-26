@@ -14,7 +14,7 @@ import {balloonPoint} from './darts-layout.js';
 function svgNode(tag,attrs){const node=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [key,value]of Object.entries(attrs))node.setAttribute(key,value);return node;}
 function paintBalloon(item,color){const svg=item.querySelector('svg');svg.replaceChildren();for(const layer of balloonPixelLayers(color))svg.append(svgNode('path',layer));}
 function paintLabel(label,color){for(const [key,value]of Object.entries(balloonLabelPalette(color)))label.style.setProperty('--label-'+key,value);}
-function fitLabel(label){const text=label.querySelector('text');text.style.fontSize='26px';const width=text.getComputedTextLength(),size=width>67?26*67/width:26;text.style.fontSize=size+'px';text.setAttribute('y',50+size*.28);}
+function fitLabel(label){const text=label.querySelector('text');text.style.fontSize='32px';const width=text.getComputedTextLength(),size=width>72?32*72/width:32;text.style.fontSize=size+'px';text.setAttribute('y',50+size*.28);}
 function labelValue(label,text,cash){const amount=label.querySelector('text');amount.replaceChildren();if(cash){const currency=svgNode('tspan',{class:'candy-currency'});currency.textContent='$';const digits=svgNode('tspan',{});digits.textContent=text.slice(1);amount.append(currency,digits);}else amount.textContent=text;fitLabel(label);}
 export function buildBalloons(container,preset,money){
  const outcomes=preset.outcomes,deck=balloonDeck(preset);container._preset=preset;container._money=money;container._deck=deck;
@@ -28,6 +28,7 @@ export function buildBalloons(container,preset,money){
   const lettering=svgNode('svg',{viewBox:'0 0 88 138'}),amount=svgNode('text',{x:44,y:57,'text-anchor':'middle',class:'candy-amount'});
   lettering.append(amount);
   if(kind!=='cash'){const note=svgNode('text',{x:44,y:72,'text-anchor':'middle',class:'bonus-balloon-note'});note.textContent=kind==='multiply'?'TOTAL':kind==='extra'?'DART'+(preset.bonuses.extraDarts===1?'':'S'):'GOLD';lettering.append(note);}
+  if(['multiply','gold'].includes(kind)&&preset.bonuses.bonusDarts>0){const extra=svgNode('text',{x:44,y:85,'text-anchor':'middle',class:'bonus-extra-note'});extra.textContent='+1 DART';lettering.append(extra);}
   labelBox.append(lettering);labels.append(labelBox);container.append(item);
   item.setAttribute('aria-label',kind==='cash'?money(outcome.amountCents)+' balloon':kind==='multiply'?'Multiply the total by '+preset.bonuses.multiplier+' balloon':kind==='extra'?'Extra darts balloon':'Gold +'+preset.bonuses.goldPercent+' percent balloon');
   labelBox.dataset.value=kind==='cash'?money(outcome.amountCents):kind==='multiply'?'×'+preset.bonuses.multiplier:kind==='extra'?'+'+preset.bonuses.extraDarts:'+'+preset.bonuses.goldPercent+'%';
@@ -35,7 +36,7 @@ export function buildBalloons(container,preset,money){
  }
  container.append(labels);
  // Measure the locally bundled face, so custom amounts and cents also fit.
- document.fonts.load('700 26px "Faith Candy"').then(()=>{if(labels.isConnected)for(const label of labels.children)fitLabel(label);});
+ document.fonts.load('700 32px "Faith Candy"').then(()=>{if(labels.isConnected)for(const label of labels.children)fitLabel(label);});
  buildBalloonFX(container,palette);
  buildPartyDecor(container);
 }
@@ -50,6 +51,7 @@ export function animateBalloons(container,round,count,time,motion=true){
  const labels=container.querySelector('.prize-labels'),ribbons=container.querySelector('.bouquet-ribbons');
  for(let i=0;i<balloonSlots(count).length;i++){
   const item=container.children[i],label=labels.children[i],old=popped.get(i),isHit=focused&&i===hit,used=round?.preset?.birthdayRule!==REPEAT_BALLOON_RULE&&round?.preset?.birthdayRule!==BONUS_BALLOON_RULE&&won.has(Number(item.dataset.outcome))&&!old;
+  const combo=label.querySelector('.bonus-extra-note');if(combo)combo.style.display=score.allocated<Math.min(container._preset.bonuses.maxDarts,container._deck.length)?'':'none';
   const descriptor=container._deck[i];if(descriptor.kind==='cash'&&!old){const amount=goldAmount(container._preset.outcomes[descriptor.outcomeIndex].amountCents,score.goldStacks,container._preset.bonuses?.goldPercent??10),value=container._money(amount);if(label.dataset.value!==value){label.dataset.value=value;labelValue(label,value,true);item.setAttribute('aria-label',value+' gold balloon');}if(item.dataset.gold!==String(score.goldStacks)){item.dataset.gold=String(score.goldStacks);paintBalloon(item,score.goldStacks?'#f4c753':item.dataset.color);paintLabel(label,score.goldStacks?'#f4c753':item.dataset.color);item.classList.toggle('is-gold',score.goldStacks>0);label.classList.toggle('is-gold',score.goldStacks>0);}}
   const point=balloonPoint(i,count,isHit?shot.landAt:time,motion);
   const deformation=balloonDeformation(old?shotAge(old,time,balloonPopAt(old)):-Infinity,motion);let alpha=used?.2:deformation.alpha;

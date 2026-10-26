@@ -83,7 +83,7 @@ test('every bonus shortcut lands the requested bonus through a normal animated f
   demo.advance(r.flight.finishAt);const settled=demo.snapshot().round,score=dartsScore(settled.preset,settled.throws);
   assert.equal(settled.flight,null);assert.equal(settled.hideAt,null);
   assert.equal(score.totalCents,kind==='multiply'?2000:1000);
-  assert.equal(score.allocated,kind==='extra'?5:4);
+  assert.equal(score.allocated,kind==='stacked-gold'?6:5);
   assert.equal(score.goldBoostPercent,kind==='stacked-gold'?20:kind==='gold'?10:0);
   assert.equal(new Set(settled.throws.map(t=>t.balloonSlot)).size,settled.throws.length);
   demo.reset();assert.equal(demo.snapshot().previewBonus,'');assert.deepEqual(demo.snapshot().widget,widgetBefore);
