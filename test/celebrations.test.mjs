@@ -102,7 +102,7 @@ test('quicker celebrations retain every painted pose and the five-second reading
 
 test('celebration art fits the same canvas at one common scale; wind-up, release and faces are unchanged',async()=>{
  const before=JSON.parse(await readFile(new URL('../public/character-recovery-v8.json',import.meta.url),'utf8'));
- assert.deepEqual(config.frames.slice(0,18),before.frames.slice(0,18));assert.deepEqual(config.expressions,before.expressions);
+ assert.deepEqual(config.frames.slice(0,13),before.frames.slice(0,13));assert.deepEqual(config.expressions,before.expressions);
  assert.deepEqual(config.release,before.release);
  const sizes=new Map(),densityBySource=new Map();
  for(const variant of variants){

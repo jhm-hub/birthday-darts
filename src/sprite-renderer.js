@@ -15,7 +15,7 @@ function inPolygon(x,y,points){
 // avoids a blank frame when CSS switches atlas URLs at the instant of release.
 export async function loadCharacterArt(config){
  const allFrames=[...config.frames,...(config.celebrations||[]).flatMap(c=>c.frames)];
- const sources=[...new Set([config.throwStudy,...allFrames.map(f=>f.image),config.expressions?.image,...Object.values(config.alphaMasks||{}).map(m=>m.image)].filter(Boolean))];
+ const sources=[...new Set([config.throwStudy,...allFrames.flatMap(f=>[f.image,f.patch?.image]),config.expressions?.image,...Object.values(config.alphaMasks||{}).map(m=>m.image)].filter(Boolean))];
  const images=new Map(await Promise.all(sources.map(async source=>{
   const image=new Image();image.src=source;await image.decode();return [source,image];
  })));
@@ -76,6 +76,17 @@ export function createCharacterRenderer(container,config,images){
   ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;
   ctx.drawImage(images.get(frame.image||config.throwStudy),frame.x,frame.y,frame.width,frame.height||config.frameHeight,
    box.left,box.top,box.width,box.height);
+  // The last recovery drawings change only the moving arm and trailing hair.
+  // Their face, torso, skirt and legs are the exact original ready-pose pixels.
+  // This keeps independently painted inbetweens from changing her anatomy.
+  if(frame.patch){
+   const p=frame.patch;
+   ctx.save();ctx.translate(box.left-frame.x*box.scale,box.top-frame.y*box.scale);ctx.scale(box.scale,box.scale);
+   ctx.beginPath();for(const [i,point]of p.clip.entries())ctx[i?'lineTo':'moveTo'](...point);ctx.closePath();ctx.clip();
+   ctx.clearRect(0,0,config.sheetWidth,config.sheetHeight);
+   ctx.drawImage(images.get(p.image),p.x,p.y,p.width,p.height,p.offsetX,p.offsetY,p.width,p.height);
+   ctx.restore();
+  }
   const face=config.expressions;
   if(!variant&&index===0&&face&&Number.isInteger(expression)&&face.frames[expression]){
    const source=face.frames[expression],target=face.target;

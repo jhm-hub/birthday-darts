@@ -62,7 +62,17 @@ test('particles sample deterministically, remain finite, finish cleanly and redu
 test('the wind-up and release are unchanged and win overlays are confined inside its face',async()=>{
  const read=name=>readFile(new URL('../public/'+name,import.meta.url),'utf8').then(JSON.parse);
  const [config,previous]=await Promise.all([read('character.json'),read('character-full-body-v6.json')]);
- assert.deepEqual(config.frames.slice(0,18),previous.frames.slice(0,18));
+ assert.deepEqual(config.frames.slice(0,13),previous.frames.slice(0,13));
+ for(let i=13;i<18;i++){
+  const {patch,...body}=config.frames[i];
+  assert.deepEqual(body,previous.frames[i],'follow-through keeps its original body drawing');
+ }
+ for(let i=18;i<25;i++){
+  const {patch,hand,...body}=config.frames[i],{hand:idleHand,...idle}=config.frames[0];
+  assert.deepEqual(body,idle,'late recovery uses the original idle body, scale and registration');
+  if(patch)assert.ok(patch.clip.every(([x,y])=>x<=136&&y<=138),'recovery repaint stays on the moving arm and hair');
+ }
+ for(let i=21;i<25;i++)assert.deepEqual(config.frames[i],config.frames[0],'settled cels are the exact original idle');
  assert.deepEqual(config.frames.at(-1),config.frames[0],'recovery ends on the exact idle cel');
  for(const key of ['bodyAnchorX','groundY','canvasWidth','canvasHeight','canvasOffsetX','canvasOffsetY'])assert.equal(config[key],previous[key]);
  const face=config.expressions;assert.equal(face.frames.length,6);
@@ -70,4 +80,18 @@ test('the wind-up and release are unchanged and win overlays are confined inside
  for(const f of face.frames){assert.ok(f.x>=0&&f.x+f.width<=bytes.readUInt32BE(16));assert.ok(f.y>=0&&f.y+f.height<=bytes.readUInt32BE(20));}
  for(const [x,y] of face.clip){assert.ok(x>=138&&x<=164);assert.ok(y>=27&&y<=54);}
  assert.deepEqual(face.target,{x:138,y:27,width:26,height:27});
+});
+
+test('recovery repaint sources are valid native-sized crops with no scale override',async()=>{
+ const config=JSON.parse(await readFile(new URL('../public/character.json',import.meta.url),'utf8'));
+ for(const frame of config.frames){
+  if(!frame.patch)continue;
+  const p=frame.patch,bytes=await readFile(new URL('../public/'+p.image.replace('./',''),import.meta.url));
+  assert.ok(p.x>=0&&p.x+p.width<=bytes.readUInt32BE(16));
+  assert.ok(p.y>=0&&p.y+p.height<=bytes.readUInt32BE(20));
+  assert.equal(p.width,256);assert.equal(p.height,256);
+  assert.ok(Number.isFinite(p.offsetX)&&Number.isFinite(p.offsetY));
+  assert.ok(p.clip.length>=3&&p.clip.flat().every(Number.isFinite));
+  assert.equal(p.scale,undefined,'repaint inherits the original body scale');
+ }
 });

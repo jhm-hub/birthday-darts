@@ -29,7 +29,7 @@ const bonusStatus=document.createElement('div');bonusStatus.className='bonus-sta
 $('#faith').style.left=DARTS_STAGE.character.x+'px';$('#faith').style.top=DARTS_STAGE.character.y+'px';
 
 new ResizeObserver(size).observe($('#screen'));
-fetch('./character.json?v=settle-v16').then(r=>r.json()).then(c=>{
+fetch('./character.json?v=return-v21').then(r=>r.json()).then(c=>{
  config=c;$('#faith img').src=c.idle;
  loadCharacterArt(c).then(images=>{characterRenderer=createCharacterRenderer($('#sprite'),c,images);artReady=true;poseIndex=-2;render();if(demo)parent.postMessage({kind:'darts-demo',type:'art-ready'},location.origin);}).catch(()=>{if(demo)parent.postMessage({kind:'darts-demo',type:'art-error'},location.origin);});
 }).catch(()=>{if(demo)parent.postMessage({kind:'darts-demo',type:'art-error'},location.origin);});
