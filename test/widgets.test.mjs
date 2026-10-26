@@ -33,7 +33,7 @@ test('birthday widgets remove individual balloons, hold the hit beat, and freeze
 test('full balloon bunches fit the scene and repeated balloons preserve the selected prize',()=>{
  for(let n=1;n<=8;n++){
   const slots=balloonSlots(n);assert.ok(slots.length>=12&&slots.length<=16);
-  for(let i=0;i<slots.length;i++)for(const time of [0,500,1000,1500]){const {x,y,scale}=balloonPoint(i,n,time);assert.ok(x-44*scale>400&&x+44*scale<710);assert.ok(y-48*scale>=-20&&y+49*scale<=423);}
+  for(let i=0;i<slots.length;i++)for(const time of [0,500,1000,1500]){const {x,y,scale}=balloonPoint(i,n,time);assert.ok(x-44*scale>250&&x+44*scale<534);assert.ok(y-48*scale>=0&&y+56*scale<=400);}
   for(let i=0;i<n;i++)for(let id=0;id<30;id++){
    const shot={id:String(id),bandIndex:2*n-2-i};assert.equal(outcomeForShot(shot,n),i);const slot=balloonSlotForShot(shot,n);assert.equal(slots[slot],i);assert.equal(balloonSlotForShot(shot,n),slot);
   }
@@ -41,7 +41,7 @@ test('full balloon bunches fit the scene and repeated balloons preserve the sele
  assert.equal(balloonSlots(5).length,15);
  // Even the widest labels stay separate through a full sway cycle.
  for(let t=0;t<30000;t+=250)for(let i=0;i<16;i++)for(let j=i+1;j<16;j++){
-  const a=balloonPoint(i,8,t),b=balloonPoint(j,8,t),xOverlap=36*(a.scale+b.scale)+2-Math.abs(a.x-b.x),yOverlap=11.2*(a.scale+b.scale)+2-Math.abs((a.y+a.scale*2)-(b.y+b.scale*2));assert.ok(xOverlap<=0||yOverlap<=0,`Labels ${i} and ${j} overlap at ${t}.`);
+  const a=balloonPoint(i,8,t),b=balloonPoint(j,8,t),xOverlap=38*(a.scale+b.scale)+2-Math.abs(a.x-b.x),yOverlap=15*(a.scale+b.scale)+2-Math.abs((a.y+a.scale*2)-(b.y+b.scale*2));assert.ok(xOverlap<=0||yOverlap<=0,`Labels ${i} and ${j} overlap at ${t}.`);
  }
 });
 

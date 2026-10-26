@@ -22,8 +22,8 @@ Celebrations appear with the **final total, after the last dart**. Live rounds c
 
 Copy the **private display link** from the controls into an OBS or Streamlabs Browser Source:
 
-- Birthday balloons: **720 × 540**.
-- Classic dartboard: **720 × 450**.
+- Both styles: **540 × 540** (square, transparent).
+- For an existing wide source, change both dimensions to 540 and refresh. Resize evenly in your scene; 420 × 420 is a useful compact on-stream size.
 - Keep the control page open in the browser where you saved the game. Use one control tab per widget.
 - Only the separate display goes on stream. Its background is transparent and it hides between rounds.
 - The control page reports when the display connects. A temporarily disconnected display hides stale content and reconnects automatically.
@@ -341,3 +341,7 @@ board, quiet motion, saved-game reloads, rapid clicks, reset during an unwrap,
 duplicate control tabs, and an actual browser display reconnect during a round.
 Audio checks covered complete rounds at the earliest next-pick timing. Final
 voice/music balance and OBS audio routing still belong to Faith’s stream setup.
+
+## Square Candy Confetti presentation
+
+Both Darts styles now share a 540 × 540 transparent stage. The birthday palette, rounded Fredoka lettering, dark plum prize plates, stepped gold trims and final-result badge match Faith’s Gift Pile. The character, all three celebrations, sound and game rules retain their existing art and timing. The scene is rearranged within the square; the character is never stretched or resized between actions. Balloon labels retain exact custom amounts, including cents. The editor preview displays at up to 420 × 420. Existing wide Browser Sources letterbox the square until their dimensions are updated; private display links remain valid.

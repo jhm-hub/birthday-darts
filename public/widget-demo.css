@@ -83,3 +83,48 @@
 .demo-page,.demo-page body{color-scheme:dark}
 @media(max-width:850px){.remote{grid-template-columns:1fr 1fr}.remote-caption{display:none}.remote button{width:100%}.setup-heading{align-items:flex-start;flex-direction:column}.display-link-row{flex-wrap:wrap}.display-link-row input{flex-basis:100%}}
 @media(max-width:480px){.screen{aspect-ratio:4/3}.remote{grid-template-columns:1fr}.control-links{gap:8px}.control-links a{font-size:10px}.stream-setup{padding:18px}}
+
+/* Candy Confetti family · square stream stage. Artwork retains its native scale. */
+.widget-anchor,.widget,.widget[data-theme=balloons]{width:540px;height:540px}
+.widget-anchor{transform-origin:top left;right:auto}
+.widget{border:0;--birthday-pink:#ffabe1;--birthday-peach:#ffd0a3;--birthday-mint:#a8ffe2;--birthday-lilac:#ddb5ff;--birthday-sky:#acebff;--birthday-vanilla:#fff2ac;--birthday-icing:#ffe7f7;font-family:'Faith Candy',sans-serif}
+.widget .arcade-scene,.widget[data-theme=balloons] .arcade-scene{top:70px;width:540px;height:400px}
+.widget .arcade-head,.widget[data-theme=balloons] .arcade-head{position:absolute;left:16px;right:16px;top:28px;margin:0;gap:8px;height:36px}
+.widget .arcade-brand,.widget[data-theme=balloons] .arcade-brand{font:600 19px/1 'Faith Candy',sans-serif;letter-spacing:.3px;color:var(--birthday-peach);padding:9px 12px;background:#25172ff5;border:1px solid #987279;white-space:nowrap}
+.arcade-brand b{color:var(--birthday-pink);text-shadow:0 1px #9b4173,0 2px #24132f}
+.widget .counter{font:600 15px/1 'Faith Candy',sans-serif;letter-spacing:.4px;color:var(--birthday-mint);padding:10px 12px;background:#25172ff5;border:1px solid #9f7f59;white-space:nowrap}
+.widget :is(.arcade-brand,.counter,.arcade-foot,.throw-pop){border-radius:0;clip-path:polygon(5px 0,calc(100% - 5px) 0,calc(100% - 5px) 2px,100% 2px,100% calc(100% - 5px),calc(100% - 2px) calc(100% - 5px),calc(100% - 2px) calc(100% - 2px),calc(100% - 5px) calc(100% - 2px),calc(100% - 5px) 100%,5px 100%,5px calc(100% - 2px),2px calc(100% - 2px),2px 5px,0 5px,0 2px,5px 2px);box-shadow:inset 0 1px #d0a88755,inset 0 -2px #160e20}
+.widget .name-line,.widget[data-theme=balloons] .name-line{left:18px;top:72px;max-width:225px;background:#25172feb;border-radius:3px;padding:4px 7px;display:flex;gap:5px;align-items:baseline;text-shadow:0 1px #211429}
+.widget .name-line[hidden]{display:none}
+.widget .name-line span{font:500 12px 'Faith Candy',sans-serif;letter-spacing:.5px;margin:0;color:var(--birthday-icing);white-space:nowrap}
+.widget .name-line span{font-size:0}.widget .name-line span:after{content:'FOR';font-size:12px}
+.widget .name-line strong{font:500 14px 'Faith Candy',sans-serif;min-width:0;color:var(--birthday-icing);letter-spacing:.3px}
+.widget .faith,.widget[data-theme=balloons] .faith{left:28px;top:52px}
+.bouquet-ribbons{width:540px;height:400px}
+.party-decor{top:-70px;width:540px;height:540px}
+.candy-plaque{fill:#24162ff5;stroke:#d9b48c;stroke-width:1;paint-order:stroke fill}
+.candy-amount{fill:var(--birthday-pink);stroke:#321b39;stroke-width:1;filter:drop-shadow(0 1px 0 #11091b)}
+.candy-currency{font-size:.68em;fill:var(--birthday-vanilla);stroke-width:.65px}
+.widget .target-frame{left:358px;top:72px;width:44px;height:276px;border-color:#e1b888;box-shadow:inset 2px 2px #ffe8bd,4px 4px #160e20}
+.widget .target{left:366px;top:80px;width:28px;height:260px}
+.widget .band:after{left:38px;font-family:'Faith Candy',sans-serif;background:#25172ff2;padding:1px 6px;border-radius:2px;min-width:68px;color:var(--birthday-pink)}
+.widget .arcade-foot,.overlay-page .widget .arcade-foot{left:16px;right:16px;bottom:12px;height:60px;padding:7px 12px;gap:12px;background:linear-gradient(#59404f 0 3px,#24162ff7 3px calc(100% - 3px),#130a1e calc(100% - 3px));border:1px solid #a08169;align-items:center}
+.widget .receipts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:270px;gap:4px;min-width:0}
+.widget .receipts.many{grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;max-width:270px}
+.widget .receipts span,.widget .receipts.many span{font:600 19px/1.1 'Faith Candy',sans-serif;min-width:0;padding:4px 2px;border:0;background:none;color:#bfa8c6;white-space:nowrap;text-shadow:0 1px #160c22}
+.widget .receipts span.hit{color:var(--birthday-peach)}
+.widget .running{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:2px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;min-width:0;width:174px}
+.widget .running small{font:500 11px/1 'Faith Candy',sans-serif;letter-spacing:.5px;color:var(--birthday-icing)}
+.widget .running strong{font:700 32px/1.1 'Faith Candy',sans-serif;color:var(--birthday-mint);white-space:nowrap;text-shadow:0 2px #160c22}
+.widget .throw-pop{width:166px;padding:6px 8px 8px;text-align:center;border:2px solid #d6ac80;background:linear-gradient(#59404f 0 4px,#24162f 4px calc(100% - 4px),#130a1e calc(100% - 4px));color:var(--birthday-pink);font-family:'Faith Candy',sans-serif;font-weight:700;line-height:1.05;white-space:nowrap;text-shadow:0 2px #160c22}
+.widget .reveal,.overlay-page .widget .reveal,.widget[data-theme=balloons] .reveal{inset:auto 12px 132px auto;width:280px;min-height:230px;max-height:320px;padding:20px 22px 22px;border:0;border-radius:0;background:none;box-shadow:none;isolation:isolate;filter:drop-shadow(0 4px 0 #140b21)}
+.darts-final-frame{position:absolute;inset:0;z-index:-1;pointer-events:none}.darts-final-frame svg{display:block;width:100%;height:100%}
+.reveal .reveal-star{width:40px;height:32px;margin:0 0 8px}.reveal-star svg{width:100%;height:100%}
+.widget .reveal small{font:500 13px/1.4 'Faith Candy',sans-serif;letter-spacing:.6px;color:var(--birthday-icing);max-width:232px;overflow-wrap:anywhere}
+.widget .reveal>strong{font-family:'Faith Candy',sans-serif;font-weight:700;line-height:1.05;letter-spacing:-.025em;color:var(--birthday-pink);padding:0;margin:12px 0 14px;text-shadow:0 2px #a64b7f,0 4px #22102d;white-space:nowrap}
+.widget .reveal>div{font:500 13px/1.4 'Faith Candy',sans-serif;max-width:232px;color:var(--birthday-icing);letter-spacing:.2px}
+.widget.finished .arcade-foot{opacity:.28}.widget.finished .name-line{opacity:0}
+.widget .party-shower{overflow:hidden;height:400px}
+.screen{aspect-ratio:1;max-width:540px;width:100%;margin-inline:auto}
+@media(max-width:480px){.screen{aspect-ratio:1}}
+@media(prefers-reduced-motion:reduce){.widget,.arcade-scene,.arcade-foot,.reveal{transition:none}.widget{transform:none}.widget.visible{transform:none}}

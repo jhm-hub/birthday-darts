@@ -9,7 +9,7 @@ export function createEditorPreview(readDraft){
  function refresh(){
   latest=readDraft();
   validationError=[...document.querySelectorAll('#settings input')].some(input=>!input.validity.valid)?'Finish the highlighted settings before throwing a demo dart.':'';
-  frame.parentElement.style.aspectRatio=latest.theme==='balloons'?'4 / 3':'8 / 5';
+  frame.parentElement.style.aspectRatio='1 / 1';
   button.disabled=true;finale.disabled=true;status.textContent=ready?'Updating preview…':'Loading preview…';
   configure();
  }

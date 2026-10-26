@@ -18,11 +18,11 @@ export function characterFrameLayout(config,index,frames=config.frames){
   width:f.width*scale,height:height*scale,scale};
 }
 
-export function dartReleasePoint(config,balloons){
- if(!config)return {x:228,y:balloons?128:86};
+export function dartReleasePoint(config,balloons,placement={x:37,y:balloons?50:8}){
+ if(!config)return {x:placement.x+191,y:placement.y+78};
  const release=config.release,frame=config.frames[release.frame],box=characterFrameLayout(config,release.frame);
- return {x:37+(config.canvasOffsetX||0)+box.left+(release.x-frame.x)*box.scale+(release.tipOffsetX||0),
-  y:(balloons?50:8)+(config.canvasOffsetY||0)+box.top+(release.y-frame.y)*box.scale+(release.tipOffsetY||0)};
+ return {x:placement.x+(config.canvasOffsetX||0)+box.left+(release.x-frame.x)*box.scale+(release.tipOffsetX||0),
+  y:placement.y+(config.canvasOffsetY||0)+box.top+(release.y-frame.y)*box.scale+(release.tipOffsetY||0)};
 }
 
 // All motion samples the shared shot clock. Refreshing or joining mid-throw
