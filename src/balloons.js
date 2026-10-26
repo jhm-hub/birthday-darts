@@ -14,7 +14,7 @@ import {balloonPoint} from './darts-layout.js';
 function svgNode(tag,attrs){const node=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [key,value]of Object.entries(attrs))node.setAttribute(key,value);return node;}
 function paintBalloon(item,color){const svg=item.querySelector('svg');svg.replaceChildren();for(const layer of balloonPixelLayers(color))svg.append(svgNode('path',layer));}
 function paintLabel(label,color){for(const [key,value]of Object.entries(balloonLabelPalette(color)))label.style.setProperty('--label-'+key,value);}
-function fitLabel(label){const text=label.querySelector('text'),plaque=label.querySelector('.candy-plaque');text.style.fontSize='26px';const width=text.getComputedTextLength(),size=width>67?26*67/width:26;text.style.fontSize=size+'px';text.setAttribute('y',50+size*.28);const half=Math.min(38,(Math.min(67,width)+8)/2),l=44-half,r=44+half,top=50-size*.58-3,bottom=50+size*.28+4;plaque.setAttribute('d',`M${l+3} ${top}H${r-3}V${top+2}H${r}V${bottom-2}H${r-3}V${bottom}H${l+3}V${bottom-2}H${l}V${top+2}H${l+3}Z`);}
+function fitLabel(label){const text=label.querySelector('text');text.style.fontSize='26px';const width=text.getComputedTextLength(),size=width>67?26*67/width:26;text.style.fontSize=size+'px';text.setAttribute('y',50+size*.28);}
 function labelValue(label,text,cash){const amount=label.querySelector('text');amount.replaceChildren();if(cash){const currency=svgNode('tspan',{class:'candy-currency'});currency.textContent='$';const digits=svgNode('tspan',{});digits.textContent=text.slice(1);amount.append(currency,digits);}else amount.textContent=text;fitLabel(label);}
 export function buildBalloons(container,preset,money){
  const outcomes=preset.outcomes,deck=balloonDeck(preset);container._preset=preset;container._money=money;container._deck=deck;
@@ -26,7 +26,7 @@ export function buildBalloons(container,preset,money){
   const svg=svgNode('svg',{viewBox:'0 0 88 138','aria-hidden':'true'});item.append(svg);paintBalloon(item,color);
   const labelBox=document.createElement('div');labelBox.className='prize-label';labelBox.dataset.kind=kind;paintLabel(labelBox,color);
   const lettering=svgNode('svg',{viewBox:'0 0 88 138'}),amount=svgNode('text',{x:44,y:57,'text-anchor':'middle',class:'candy-amount'});
-  lettering.append(svgNode('path',{class:'candy-plaque'}),amount);
+  lettering.append(amount);
   if(kind!=='cash'){const note=svgNode('text',{x:44,y:72,'text-anchor':'middle',class:'bonus-balloon-note'});note.textContent=kind==='multiply'?'TOTAL':kind==='extra'?'DART'+(preset.bonuses.extraDarts===1?'':'S'):'GOLD';lettering.append(note);}
   labelBox.append(lettering);labels.append(labelBox);container.append(item);
   item.setAttribute('aria-label',kind==='cash'?money(outcome.amountCents)+' balloon':kind==='multiply'?'Multiply the total by '+preset.bonuses.multiplier+' balloon':kind==='extra'?'Extra darts balloon':'Gold +'+preset.bonuses.goldPercent+' percent balloon');
