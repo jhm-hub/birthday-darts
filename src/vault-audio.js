@@ -3,6 +3,7 @@ import {vaultLevel} from './vault-game.js';
 import {renderVaultSound} from './vault-sound-design.js';
 import {presentedVaultRound,vaultLastShot,VAULT_SETTLE_LEAD_MS} from './vault-finish-motion.js';
 import {VAULT_FAREWELL_LEAD_MS} from './vault-exit-motion.js';
+import {VAULT_OPENING_REVEAL_MS} from './vault-intro-motion.js';
 
 export function createVaultAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)()}={}){
  let ctx,master,enabled=false,volume=70,disposed=false,roundId=null,generation=0;
@@ -54,7 +55,8 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    if(!r){if(roundId!==null)reset();return;}
    r=presentedVaultRound(r,time);
    if(roundId!==r.id){reset();roundId=r.id;}
-   cue(r.id+':intro',r.startedAt,time,'intro');
+   cue(r.id+':intro',r.startedAt,time,'intro-arrive');
+   cue(r.id+':balance',r.startedAt+VAULT_OPENING_REVEAL_MS,time,'intro-balance');
    const shot=r.flight??r.opened.at(-1);
    if(shot){
     cue(shot.id+':lock',shot.startAt,time,'unlock',{index:shot.index});

@@ -8,6 +8,7 @@ import {sampleVaultHandoff} from '../src/vault-finish-motion.js';
 import {advanceVault} from '../src/vault-game.js';
 import {sampleVaultReset} from '../src/vault-reset-preview.js';
 import {VAULT_FAREWELL_LEAD_MS} from '../src/vault-exit-motion.js';
+import {startVaultRound} from '../src/vault-game.js';
 const peak=data=>data.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
 function context(state='running'){
  const nodes=[],param=()=>({value:0,calls:[],setValueAtTime(...a){this.calls.push(['set',...a]);},linearRampToValueAtTime(...a){this.calls.push(['linear',...a]);},setTargetAtTime(...a){this.calls.push(['target',...a]);},cancelAndHoldAtTime(...a){this.calls.push(['hold',...a]);},cancelScheduledValues(...a){this.calls.push(['cancel',...a]);}});
@@ -94,4 +95,14 @@ test('farewell plays once on its lead-in, clears, and does not leak into the nex
  a.sync(null,s.clearAt);assert.equal(sources(ctx)[0].stops.at(-1),10.015);
  a.sync(s.next,s.nextAt);assert.equal(sources(ctx).length,2);
  a.sync(structuredClone(s.next),s.nextAt+1);assert.equal(sources(ctx).length,2);
+});
+test('opening reveal plays once on time even when the display joins after the arrival',()=>{
+ const r=startVaultRound(DEFAULT_VAULT,'Next viewer',10000,()=>0);
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
+ a.sync(r,10000);assert.equal(sources(ctx).length,1);a.sync(structuredClone(r),10619);assert.equal(sources(ctx).length,1);
+ a.sync(r,10620);assert.equal(sources(ctx).length,2);a.sync(structuredClone(r),10700);assert.equal(sources(ctx).length,2);
+ const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,10400);assert.equal(sources(late).length,0);
+ b.sync(r,10690);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.07]);
+ b.sync(r,11200);assert.equal(sources(late).length,1);b.sync(null,11300);assert.equal(sources(late)[0].stops.at(-1),10.015);
+ const old=context(),c=createVaultAudio({createContext:()=>old});c.setEnabled(true);c.sync(r,11500);assert.equal(sources(old).length,0);
 });

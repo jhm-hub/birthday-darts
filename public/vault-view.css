@@ -48,3 +48,5 @@
 .vault-final-halo{position:absolute;left:125px;top:150px;width:170px;height:110px;opacity:0;pointer-events:none;z-index:3}.vault-final-halo svg{width:100%;height:100%;display:block}
 .chamber-number[data-state="active"]>path{fill:#6c3d67;stroke:#fff3bd;stroke-width:7px}.chamber-number[data-state="open"]>path{fill:#304c49;stroke:#c9eed1}.chamber-number[data-state="open"]>text{fill:#e4fff0}
 .rim-glint{opacity:0;pointer-events:none}
+.vault-opening-pips{position:absolute;left:50%;top:40px;transform:translateX(-50%);display:flex;gap:12px;pointer-events:none}
+.vault-opening-pips i{display:block;width:8px;height:8px;opacity:0;background:#ffdfa0;box-shadow:inset 2px 2px #fff5d7,inset -2px -2px #bf8193,0 2px #362139;clip-path:polygon(2px 0,6px 0,6px 2px,8px 2px,8px 6px,6px 6px,6px 8px,2px 8px,2px 6px,0 6px,0 2px,2px 2px)}

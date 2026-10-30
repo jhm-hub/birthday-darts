@@ -602,3 +602,26 @@ scrubbable ending, empty stream and fresh round. `?scene=reset-2` opens Royal.
 Tour playback is silent; the editor's **Sound on** and **Preview finale** play
 the synchronized ending. The audio exporter includes
 `farewell-and-next-viewer.wav`. Previous motion/audio are preserved at `fbe7f05`.
+
+### New-round entrance (v8)
+
+The Crown Vault now arrives with a six-pixel settling motion, three tiny shaded
+jewel dots and a short sequence of lock glints. The exact opening balance
+appears once, in the bankroll plaque, at 620 ms. A small rise, edge highlight
+and gentle settle give the amount a clear reveal. The calculation arrives
+afterwards, then OPENING BALANCE fades into BANKROLL before the first unlock.
+The full entrance still takes 1.2 seconds inside the same 420 × 460 transparent
+source. The approved sprites stay the same size. Reduced motion uses fades
+with stationary art and preserves the reveal timing.
+
+The original opening cue now uses soft lock clicks, a short rising celesta
+phrase and a warm jewel chord on the balance reveal. Its tail ends before
+the earliest chamber click. Arrival and reveal are separate clocked cues, so
+a display joining during anticipation can hear the reveal without replaying
+the arrival. The sound-palette audition combines the identical layers; volume,
+mute and reset work as before. No opening draw, prizes or rules change.
+
+The silent Chamber Tour includes **New-round entrance** (`?scene=intro`). In
+the game demo, use **Sound on**, then **Roll opening balance** for combined
+audio/animation. The WAV exporter adds `opening-and-first-chamber.wav`.
+Previous rendering and sound are preserved at `ff78234`.
