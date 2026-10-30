@@ -523,3 +523,35 @@ This pass keeps the two-second chamber pace, reveal time, sounds, prizes,
 settings and bonus rules. Reduced motion disables the added lighting/travel
 and shows the final amount immediately. Refresh the controller and OBS source
 to load the update. Previous Crown rendering is preserved in Git at `6f38ce4`.
+
+### Crown Vault original audio (v5)
+
+The vault has its own synthesized sound palette: D-major jewel/celesta notes,
+damped metal clicks, sliding bolts, a low hinge rumble, coin receipts and a
+warm Royal fanfare. Eleven action families cover the opening balance, chamber
+mechanism, cash, multiplier, extra unlock, collection, new wing, three finales
+and the final clear. Five room accents and three cash ornaments add variation.
+No external samples, network audio downloads or background music are needed.
+
+Lock clicks land at 45/190 ms, the bolt at 285 ms, and the door travels from
+330–940 ms. Cash, bonus and coin cues follow the existing 780/1040/1240 ms
+animation beats. Final chords resolve at 180/220/600 ms for Standard/Big/Royal.
+Royal adds a short rise, warm layered chord and jewel shower, ending in 2.24 s.
+The bus uses the existing preview/stream volume controls. All tested chamber
+overlaps remain below −14 dBFS at full volume; the Royal peak is about 1.7 dB
+above Big, leaving room for voice/music. Actual stream balance still depends
+on Faith's OBS mix. No automatic volume or game-setting changes are made.
+
+Under the editor's preview mixer, **Crown Vault sound palette** lets Faith
+audition any cue, replay or stop it at the preview volume. It resets only the
+sample round, never a saved or live round. Use **Sound on** and the normal
+sample game to hear the complete timing. The silent Chamber Tour is unchanged.
+Refresh both the control page and the OBS Browser Source after updating.
+
+`src/vault-sound-design.js` authors deterministic mono PCM shared by live audio
+and offline previews. `src/vault-audio.js` schedules against saved event times,
+skips old events, joins slightly late cues at their current offset, and fades
+tails on mute/reset/new viewers. Buffers are reused per context; no events replay
+on repeated snapshots. To generate WAV listening previews and mix measurements,
+run `node scripts/render-vault-audio.mjs /path/to/output`. Exports use the default
+70% volume; reports include full-volume peaks. Previous sound is in `84dcd6f`.

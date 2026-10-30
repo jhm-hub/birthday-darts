@@ -2,6 +2,7 @@ import {vaultStore,exportVaultSettings,importVaultSettings} from './vault-store.
 import {DEFAULT_VAULT,validateVault,startVaultRound,unlockVault,advanceVault,vaultTotal,vaultBonuses,vaultBonusDue,money,sampleVaultFinale,VAULT_CLEAR_MS} from './vault-game.js';
 import {createVaultView} from './vault-view.js';
 import {createVaultAudio} from './vault-audio.js';
+import {VAULT_SOUND_LABELS} from './vault-sound-design.js';
 import {bindGiftVolume} from './gift-mixer.js';
 const $=s=>document.querySelector(s),audio=createVaultAudio(),view=createVaultView($('#vault-preview'),{audio});
 bindGiftVolume($('#vault-mixer'),audio,()=>{});
@@ -43,6 +44,15 @@ $('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-reset').onclick=(
 $('#demo-auto').onclick=()=>{if(auto){auto=false;render();return;}resetDemo(false);auto=true;pick();nextAuto=Date.now()+1550;render();showPreview();};
 $('#preview-finale').onclick=()=>{if(draftError||!draft)return;resetDemo(false);demo=sampleVaultFinale(draft,Number($('#demo-finale').value));render();showPreview();};
 $('#demo-sound').onclick=()=>{audio.setEnabled(!audio.enabled);$('#demo-sound').textContent=audio.enabled?'Sound on':'Sound off';$('#demo-sound').setAttribute('aria-pressed',String(audio.enabled));};
+for(const [value,label] of Object.entries(VAULT_SOUND_LABELS))$('#sound-cue').add(new Option(label,value));
+$('#sound-cue').value='royal';
+$('#listen-cue').onclick=async()=>{
+ resetDemo();const sound=$('#sound-cue').value;
+ $('#demo-sound').textContent='Sound on';$('#demo-sound').setAttribute('aria-pressed','true');
+ try{const played=await audio.preview(sound,{tier:2,index:4});$('#sound-status').textContent=played?(audio.volume===0?'Preview volume is muted. Raise the slider to listen.':'Preview: '+VAULT_SOUND_LABELS[sound]+'. Use Listen to replay.'):'Sound stopped. Click Listen to try again.';}
+ catch{$('#sound-status').textContent='Audio could not start. Try Sound off, then Sound on.';}
+};
+$('#stop-cue').onclick=()=>{audio.reset();$('#sound-status').textContent='Sound stopped.';};
 document.querySelectorAll('[data-background]').forEach(b=>b.onclick=()=>{$('#vault-preview').dataset.background=b.dataset.background;document.querySelectorAll('button[data-background]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
 for(const id of ['game-name',...Object.keys(fields),'guarantee','celebration-big','celebration-royal'])$('#'+id).addEventListener('input',changed);
 $('#add-cash').onclick=()=>{cashRow();changed();};

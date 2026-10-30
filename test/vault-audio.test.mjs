@@ -1,0 +1,76 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {VAULT_SOUND_LABELS,vaultSoundScore,renderVaultSound,renderVaultSequence} from '../src/vault-sound-design.js';
+import {createVaultAudio} from '../src/vault-audio.js';
+import {finalePose} from '../src/vault-effects.js';
+import {sampleVaultFinale,DEFAULT_VAULT} from '../src/vault-game.js';
+const peak=data=>data.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
+function context(state='running'){
+ const nodes=[],param=()=>({value:0,calls:[],setValueAtTime(...a){this.calls.push(['set',...a]);},linearRampToValueAtTime(...a){this.calls.push(['linear',...a]);},setTargetAtTime(...a){this.calls.push(['target',...a]);},cancelAndHoldAtTime(...a){this.calls.push(['hold',...a]);},cancelScheduledValues(...a){this.calls.push(['cancel',...a]);}});
+ const node=kind=>{const n={kind,gain:param(),stops:[],connect(next){this.connectedTo=next;return next;},disconnect(){this.disconnected=true;},start(...a){this.started=a;},stop(t){this.stops.push(t);}};nodes.push(n);return n;};
+ return {state,nodes,currentTime:10,destination:{},sampleRate:48000,createGain:()=>node('gain'),createBufferSource:()=>node('buffer'),createBuffer:(_,length)=>{const data=new Float32Array(length);return {length,getChannelData:()=>data};},async resume(){this.state='running';},async close(){this.state='closed';}};
+}
+const sources=ctx=>ctx.nodes.filter(n=>n.kind==='buffer');
+const round=(patch={})=>({id:'round',startedAt:0,flight:{id:'shot',index:0,startAt:2000,revealAt:2780,cashCents:2500,bonus:{kind:'multiply',value:2}},opened:[],completedAt:null,...patch});
+
+test('five locks use distinct accents and the mechanism follows the exact hinge clock',()=>{
+ const scores=Array.from({length:5},(_,index)=>vaultSoundScore('unlock',{index}));
+ assert.equal(new Set(scores.map(JSON.stringify)).size,5);
+ for(const s of scores){assert.deepEqual(s.filter(c=>c.voice==='click').map(c=>c.at),[.045,.19]);const hinge=s.find(c=>c.voice==='hinge');assert.equal(hinge.at,.33);assert.equal(hinge.at+hinge.length,.94);assert.ok(Math.max(...s.map(c=>c.at+c.length))<1.2);}
+ for(const [tier,name] of ['standard','big','royal'].entries())assert.ok(vaultSoundScore(name).some(c=>c.at===finalePose(0,tier).build/1000));
+});
+test('all original buffers are deterministic, finite, click-free at their edges and leave headroom',()=>{
+ for(const rate of [44100,48000])for(const name of Object.keys(VAULT_SOUND_LABELS)){
+  const data=renderVaultSound(name,{index:4,tier:2},rate);
+  assert.ok(data.every(Number.isFinite));assert.ok(peak(data)>0&&peak(data)<.2,name+' peak');
+  assert.equal(data[0],0);assert.equal(data.at(-1),0);assert.ok(data.length/rate<2.3);
+  assert.deepEqual(data,renderVaultSound(name,{index:4,tier:2},rate));
+ }
+});
+test('busy cash/bonus/wing/coin overlaps remain below -14 dBFS at full volume',()=>{
+ for(let index=0;index<5;index++)for(const bonus of ['multiply','extra']){
+  const data=renderVaultSequence([{at:0,sound:'unlock',options:{index}},{at:0,sound:'wing'},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:bonus},{at:1.24,sound:'collect'}]);
+  assert.ok(peak(data)<.2);assert.ok(data.length/48000<2,'all chamber tails clear before another pick');
+ }
+ const levels=['standard','big','royal'].map(name=>peak(renderVaultSound(name)));
+ assert.ok(levels[0]<levels[1]&&levels[1]<levels[2]);
+ assert.ok(20*Math.log10(levels[2]/levels[1])<3,'Royal uses arrangement instead of a large volume jump');
+});
+test('each action plays once at its animation time, including a separately timed bonus and coin trail',()=>{
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);const r=round();
+ a.sync(r,1999);assert.equal(sources(ctx).length,0);
+ for(const [time,count] of [[2000,1],[2001,1],[2779,1],[2780,2],[3039,2],[3040,3],[3239,3],[3240,4],[3500,4]]){a.sync(r,time);assert.equal(sources(ctx).length,count);}
+ assert.ok(ctx.nodes.slice(1).filter(n=>n.kind==='gain').every(n=>n.connectedTo===ctx.nodes[0]));
+});
+test('reconnects join the current sound offset without replaying stale events or resetting on a snapshot',()=>{
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);const r=round();
+ a.sync(r,2100);assert.deepEqual(sources(ctx)[0].started,[10,.1]);
+ a.sync(structuredClone(r),2110);assert.equal(sources(ctx).length,1);
+ const late=createVaultAudio({createContext:()=>ctx});late.setEnabled(true);late.sync(r,3500);assert.equal(sources(ctx).length,1);
+});
+test('mute, reset, new viewers, null rounds and disposal cancel current tails with a short fade',()=>{
+ for(const action of ['mute','reset','new-round','null','dispose']){
+  const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(round(),2000);const old=sources(ctx)[0];
+  if(action==='mute')a.setEnabled(false);if(action==='reset')a.reset();if(action==='new-round')a.sync(round({id:'new',flight:null}),10000);if(action==='null')a.sync(null,2100);if(action==='dispose')a.dispose();
+  assert.equal(old.stops.at(-1),10.015);const envelope=ctx.nodes[2];assert.deepEqual(envelope.gain.calls.at(-1),['linear',0,10.012]);old.onended();assert.ok(old.disconnected&&envelope.disconnected);
+  if(action==='dispose'){const count=ctx.nodes.length;a.setEnabled(true);a.sync(round(),2780);assert.equal(ctx.nodes.length,count);assert.equal(a.enabled,false);assert.equal(ctx.state,'closed');}
+ }
+});
+test('muted events stay consumed and volume changes use the common bus without restarting cues',()=>{
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});const r=round();a.sync(r,2000);a.setEnabled(true);a.sync(r,2001);assert.equal(sources(ctx).length,0);
+ a.sync(r,2780);a.setVolume(25);assert.deepEqual(ctx.nodes[0].gain.calls.at(-1),['target',.25,10,.015]);const count=ctx.nodes[0].gain.calls.length;a.setVolume(25);assert.equal(ctx.nodes[0].gain.calls.length,count);
+ a.setVolume(0);assert.equal(a.volume,0);assert.deepEqual(ctx.nodes[0].gain.calls.at(-1),['target',0,10,.015]);
+});
+test('fallback mute holds the active gain, and repeated stops never create a fresh transient',()=>{
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(round(),2000);
+ const envelope=ctx.nodes[2];delete envelope.gain.cancelAndHoldAtTime;envelope.gain.value=.7;
+ a.setEnabled(false);assert.ok(envelope.gain.calls.some(c=>c[0]==='set'&&c[1]===.7));
+ const count=envelope.gain.calls.length;a.setEnabled(false);assert.equal(envelope.gain.calls.length,count);assert.equal(sources(ctx)[0].stops.length,1);
+});
+test('finale and farewell play once, and sampler cancellation wins over a pending audio resume',async()=>{
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);const r=sampleVaultFinale(DEFAULT_VAULT,2,1000);
+ a.sync(r,1000);assert.equal(sources(ctx).length,1);a.sync(r,1001);assert.equal(sources(ctx).length,1);a.sync(r,r.hideAt);assert.equal(sources(ctx).length,2);
+ let resume;const blocked=context('suspended');blocked.resume=()=>new Promise(resolve=>{resume=()=>{blocked.state='running';resolve();};});const b=createVaultAudio({createContext:()=>blocked});
+ const promise=b.preview('royal');b.setEnabled(false);resume();assert.equal(await promise,false);assert.equal(sources(blocked).length,0);
+ assert.equal(await b.preview('cash'),true);assert.equal(sources(blocked).length,1);b.sync(null,1000);assert.equal(sources(blocked)[0].stops.length,0,'empty demo must not cancel an audition');
+});

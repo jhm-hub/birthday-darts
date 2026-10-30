@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {chamberPose,chamberBirths,vaultBankPose,vaultTrail,CHAMBER_SLOTS} from '../src/vault-motion.js';
 import {DEFAULT_VAULT,startVaultRound,unlockVault,advanceVault,projectedVault} from '../src/vault-game.js';
 import {VAULT_ART,chamberDoorTransforms} from '../src/vault-layout.js';
-import {vaultUnlockScore} from '../src/vault-audio.js';
 const shot={index:0,startAt:10000,revealAt:10780,finishAt:12000};
 test('chambers open monotonically and stay open after their committed award',()=>{
  let before=0;
@@ -28,10 +27,6 @@ test('twenty possible chamber coin trails stay inside the compact overlay and fi
 });
 test('reduced motion is stationary until reveal and disables travel or wing movement',()=>{
  assert.equal(chamberPose(shot,10779,true).open,0);assert.equal(chamberPose(shot,10780,true).open,1);assert.equal(chamberPose(shot,11500,true).glow,0);assert.equal(vaultTrail(0,0,11500,shot,true).visible,false);assert.equal(vaultBankPose({flight:{...shot,index:5}},10000,true).blend,1);
-});
-test('five lock phrases have distinct pitches within the existing stream volume envelope',()=>{
- const scores=Array.from({length:5},(_,i)=>vaultUnlockScore(i));assert.equal(new Set(scores.map(s=>JSON.stringify(s))).size,5);
- for(const score of scores)for(const n of score){assert.ok(n.at>=0&&n.at+n.length<=.87);assert.ok(n.gain<=.025);assert.ok(n.frequency>20&&n.frequency<10000);}
 });
 
 test('Crown door projections remain finite and all reward origins belong to their physical rooms',()=>{
