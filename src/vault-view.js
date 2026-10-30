@@ -4,21 +4,24 @@ import {vaultExit,vaultResetAt,vaultIdleOpacity} from './vault-exit-motion.js';
 import {vaultIntro} from './vault-intro-motion.js';
 import {vaultOpeningHandoff,vaultOpeningTrail} from './vault-opening-handoff.js';
 import {vaultChamberHandoff,vaultChamberTrail,vaultOtherAwardOpacity} from './vault-chamber-handoff.js';
+import {vaultBonusPose,vaultBonusReadout,vaultBonusBirth,vaultBonusSpark} from './vault-bonus-motion.js';
+import {vaultBonusGlyph} from './vault-bonus-art.js';
 import {chamberDoorTransforms,VAULT_ART} from './vault-layout.js';
 import {vaultSVG,vaultLock,crownVaultCrest,vaultHaloSVG} from './vault-art.js';
 import {giftFinalBadge,giftFinalBow} from './gift-finale-art.js';
-import {projectedVault,vaultTotal,vaultLevel,money} from './vault-game.js';
+import {projectedVault,vaultLevel,money} from './vault-game.js';
 import {clamp,ease,CHAMBER_SLOTS,chamberTheme,chamberBirths,chamberPose,vaultBankPose,chamberPoint,vaultTrail} from './vault-motion.js';
 export function createVaultView(root,{audio}={}){
- root.innerHTML=`<section class="vault-stage" aria-label="Birthday vault"><div class="vault-heading">FAITH’S <b>BIRTHDAY VAULT</b></div><div class="vault-topline"><span class="vault-viewer"></span><span class="vault-count"></span></div><div class="vault-progress" aria-label="Chamber progress"></div><div class="vault-machine">${vaultSVG()}</div><div class="vault-reveal"><small></small><strong></strong><span class="vault-bonus"></span></div><div class="vault-loot-trail" aria-hidden="true">${Array.from({length:10},()=>`<i></i>`).join('')}</div><div class="vault-final-halo">${vaultHaloSVG()}</div><div class="vault-final-crest"></div><div class="vault-bankroll"><small>BANKROLL</small><strong>$0</strong><span class="vault-calculation"></span></div><div class="vault-particles" aria-hidden="true">${Array.from({length:100},(_,i)=>`<i style="--confetti:${['#fff1b4','#f7add5','#c9b6f8','#a9efdc','#aae3f6'][i%5]}"></i>`).join('')}</div></section>`;
- const $=s=>root.querySelector(s),stage=$('.vault-stage'),els={viewer:$('.vault-viewer'),count:$('.vault-count'),progress:$('.vault-progress'),machine:$('.vault-machine'),reveal:$('.vault-reveal'),small:$('.vault-reveal small'),cash:$('.vault-reveal strong'),bonus:$('.vault-bonus'),bank:$('.vault-bankroll strong'),bankLabel:$('.vault-bankroll small'),calc:$('.vault-calculation'),halo:$('.vault-final-halo'),crest:$('.vault-final-crest'),bankWrap:$('.vault-bankroll')},particles=[...root.querySelectorAll('.vault-particles i')],reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ root.innerHTML=`<section class="vault-stage" aria-label="Birthday vault"><div class="vault-heading">FAITH’S <b>BIRTHDAY VAULT</b></div><div class="vault-topline"><span class="vault-viewer"></span><span class="vault-count"></span></div><div class="vault-progress" aria-label="Chamber progress"></div><div class="vault-machine">${vaultSVG()}</div><div class="vault-reveal"><small></small><strong></strong><div class="vault-bonus-shell"><span class="vault-bonus"><span class="vault-bonus-icon" aria-hidden="true"></span><span class="vault-bonus-text"></span><i class="vault-bonus-sheen" aria-hidden="true"></i></span>${Array.from({length:8},(_,i)=>`<i class="vault-bonus-spark" data-side="${i<4?'left':'right'}" aria-hidden="true"></i>`).join('')}</div></div><div class="vault-loot-trail" aria-hidden="true">${Array.from({length:10},()=>`<i></i>`).join('')}</div><div class="vault-final-halo">${vaultHaloSVG()}</div><div class="vault-final-crest"></div><div class="vault-bankroll"><small>BANKROLL</small><strong>$0</strong><span class="vault-calculation"></span></div><div class="vault-particles" aria-hidden="true">${Array.from({length:100},(_,i)=>`<i style="--confetti:${['#fff1b4','#f7add5','#c9b6f8','#a9efdc','#aae3f6'][i%5]}"></i>`).join('')}</div></section>`;
+ const $=s=>root.querySelector(s),stage=$('.vault-stage'),els={viewer:$('.vault-viewer'),count:$('.vault-count'),progress:$('.vault-progress'),machine:$('.vault-machine'),reveal:$('.vault-reveal'),small:$('.vault-reveal small'),cash:$('.vault-reveal strong'),bonus:$('.vault-bonus'),bonusShell:$('.vault-bonus-shell'),bonusIcon:$('.vault-bonus-icon'),bonusText:$('.vault-bonus-text'),bonusSheen:$('.vault-bonus-sheen'),bank:$('.vault-bankroll strong'),bankLabel:$('.vault-bankroll small'),calc:$('.vault-calculation'),halo:$('.vault-final-halo'),crest:$('.vault-final-crest'),bankWrap:$('.vault-bankroll')},particles=[...root.querySelectorAll('.vault-particles i')],reduced=matchMedia('(prefers-reduced-motion: reduce)');
  els.machine.style.cssText=`left:${VAULT_ART.x}px;top:${VAULT_ART.y}px;width:${VAULT_ART.size}px;height:${VAULT_ART.size}px`;
  const banks=[...root.querySelectorAll('.vault-bank')],trails=[...root.querySelectorAll('.vault-loot-trail i')];
  const rim=[...root.querySelectorAll('.rim-glint')].map(el=>({el,origin:el.getAttribute('transform')}));
  const chambers=[...root.querySelectorAll('.vault-chamber')].map((el,i)=>({el,i,slot:CHAMBER_SLOTS[i%5],left:el.querySelector('.chamber-leaf-left'),leftEdge:el.querySelector('.chamber-edge-left'),rightEdge:el.querySelector('.chamber-edge-right'),shades:[...el.querySelectorAll('.door-shade')],sheens:[...el.querySelectorAll('.door-sheen')],lock:el.querySelector('.chamber-lock-glint'),attention:el.querySelector('.chamber-attention'),right:el.querySelector('.chamber-leaf-right'),loot:el.querySelector('.chamber-loot'),glow:el.querySelector('.chamber-radiance'),focus:el.querySelector('.chamber-focus'),spark:el.querySelector('.chamber-spark'),award:el.querySelector('.chamber-award'),bonus:el.querySelector('.chamber-bonus-mark'),number:el.querySelector('.chamber-number'),dormant:el.querySelector('.chamber-dormant')}));
  const heading=$('.vault-heading'),topline=$('.vault-topline');
  const openingPips=document.createElement('span');openingPips.className='vault-opening-pips';openingPips.setAttribute('aria-hidden','true');openingPips.innerHTML='<i></i><i></i><i></i>';els.bankWrap.append(openingPips);
- const pips=[...openingPips.children];
+ const pips=[...openingPips.children],bonusSparks=[...root.querySelectorAll('.vault-bonus-spark')];
+ let bonusKind='';
  let snapshot=null,options={preview:true,show:true},offset=0,raf,disposed=false,progressKey='',tier=-1,idleAt=null;
  const resize=()=>{stage.style.transform=`translate(-50%,-50%) scale(${Math.min(root.clientWidth/420,root.clientHeight/460)})`;};
  const observer=new ResizeObserver(resize);observer.observe(root);resize();
@@ -26,7 +29,7 @@ export function createVaultView(root,{audio}={}){
  function render(){
   if(disposed)return;raf=requestAnimationFrame(render);
   const quiet=options.quiet??reduced.matches;
-  const time=options.frozenAt??Date.now()+offset,r=presentedVaultRound(snapshot?.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time);
+  const time=options.frozenAt??Date.now()+offset,r=presentedVaultRound(snapshot?.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=vaultBonusReadout(r,now,time),bonusPose=vaultBonusPose(r?.flight,time,quiet);
   const visible=options.show!==false&&(options.preview||!!r),exit=vaultExit(r,time,quiet),entrance=vaultIntro(r,time,quiet),opening=vaultOpeningHandoff(r,time,quiet),between=vaultChamberHandoff(r,time,quiet);
   stage.style.opacity=visible?exit.stage*(r?entrance.stage:vaultIdleOpacity(idleAt,time)):0;
   stage.setAttribute('aria-hidden',String(!visible||exit.done));
@@ -38,31 +41,32 @@ export function createVaultView(root,{audio}={}){
   stage.classList.toggle('is-finished',finished);stage.classList.toggle('is-opening',!!r?.flight);stage.classList.toggle('is-idle',!r);
   const allocated=now?.allocated??p.chambers,opened=finished?allocated:now?.opened.length??0,key=allocated+':'+opened+':'+(r?.flight?.index??'');
   if(key!==progressKey){els.progress.innerHTML=Array.from({length:allocated},(_,i)=>`<span class="vault-step ${i<opened?'done':i===opened&&r?.flight?'active':''}" aria-label="Chamber ${i+1}${i<opened?', unlocked':''}">${vaultLock(i<opened)}<b>${i+1}</b></span>`).join('');progressKey=key;}
-  els.progress.style.setProperty('--steps',allocated);els.viewer.textContent=r?.viewer||'A LITTLE LUCK. A LOT OF GOLD.';els.count.textContent=finished?'VAULT CLEARED':r?now.remaining+' UNLOCK'+(now.remaining===1?'':'S')+' LEFT':allocated+' CHAMBERS';
+  els.progress.style.setProperty('--steps',allocated);els.viewer.textContent=r?.viewer||'A LITTLE LUCK. A LOT OF GOLD.';els.count.textContent=finished?'VAULT CLEARED':r?readout.pendingExtra&&readout.remaining===0?'BONUS INCOMING':readout.remaining+' UNLOCK'+(readout.remaining===1?'':'S')+' LEFT':allocated+' CHAMBERS';
+  els.count.style.transform=`scale(${bonusPose.countScale})`;
   const shot=r?.flight,age=shot?time-shot.startAt:0,finalAge=finished?time-r.completedAt:0,level=finished?vaultLevel(r):0;
   stage.dataset.tier=finished?String(level):'';
   rim.forEach(({el,origin},i)=>{const sparkle=rimSparkle(i,time,quiet);el.style.opacity=sparkle.opacity*(shot?.45:1)*exit.heading;el.setAttribute('transform',origin+` scale(${sparkle.scale})`);});
   const bankPose=between.linked?between.bank:vaultBankPose(r,time,quiet),births=chamberBirths(r),point=chamberPoint(shot?.index??r?.opened.at(-1)?.index??0);
-  if(bankPose.bank>0&&!finished)els.count.textContent=(r&&(between.linked&&between.link.wing?between.link.index:shot?.index??r.opened.at(-1)?.index??0)>=r.preset.chambers?'BONUS WING':'WING '+(bankPose.bank+1))+' · '+(now?.remaining??allocated)+' LEFT';
+  if(bankPose.bank>0&&!finished)els.count.textContent=readout.pendingExtra&&readout.remaining===0?'BONUS INCOMING':(r&&(between.linked&&between.link.wing?between.link.index:shot?.index??r.opened.at(-1)?.index??0)>=r.preset.chambers?'BONUS WING':'WING '+(bankPose.bank+1))+' · '+(r?readout.remaining:allocated)+' LEFT';
   banks.forEach((bank,i)=>{const current=i===bankPose.bank,previous=i===bankPose.previous;bank.style.display=current||previous?'':'none';bank.style.opacity=current?bankPose.blend:previous?1-bankPose.blend:0;});
   chambers.forEach(c=>{
    if(Math.floor(c.i/5)!==bankPose.bank&&Math.floor(c.i/5)!==bankPose.previous)return;
    const eligible=c.i<allocated,current=c.i===shot?.index,award=r?.opened.find(s=>s.index===c.i)??(current?shot:null),pose=chamberPose(award,time,quiet);
    if(finished&&r.celebrationPreview)pose.open=pose.bolt=1;
    pose.open*=1-exit.doors[c.i%5];
-   const born=births.get(c.i),arrive=quiet||born===undefined?1:ease((time-born)/300);
+   const born=births.get(c.i),birth=vaultBonusBirth(born,time,quiet);
    c.el.style.opacity=1;
-   c.dormant.style.display=eligible?'none':'';c.number.style.opacity=eligible?1:0;
-   c.number.setAttribute('transform',`translate(${c.slot.numberX} ${c.slot.numberY}) scale(${1+(!quiet?Math.sin(arrive*Math.PI)*.12:0)})`);
+   c.dormant.style.display=eligible&&birth.opacity===1?'none':'';c.dormant.style.opacity=eligible?1-birth.opacity:1;c.number.style.opacity=eligible?birth.opacity:0;
+   c.number.setAttribute('transform',`translate(${c.slot.numberX} ${c.slot.numberY}) scale(${birth.scale})`);
    const doors=chamberDoorTransforms(c.i,pose.open),edgeOpacity=1-ease((pose.open-.91)/.09),finish=doorFinish(award?time-award.startAt:0,pose.open,quiet);
    c.left.setAttribute('transform',doors.left);c.left.style.opacity=edgeOpacity;
    c.leftEdge.setAttribute('transform',doors.leftEdge);c.leftEdge.style.opacity=finish.edge;
    if(c.right){c.right.setAttribute('transform',doors.right);c.right.style.opacity=edgeOpacity;c.rightEdge.setAttribute('transform',doors.rightEdge);c.rightEdge.style.opacity=finish.edge;}
    c.shades.forEach(el=>el.style.opacity=finish.shade);
    c.sheens.forEach(el=>{el.style.opacity=finish.sheen;el.setAttribute('transform',`translate(${c.slot.x-c.slot.w+finish.sweep*c.slot.w*2} 0)`);});
-   c.lock.style.opacity=Math.max(finish.lock*.85,eligible&&c.i<5?entrance.locks[c.i]*.85:0,c.i===0&&opening.linked?opening.lock:0,between.linked&&c.i===between.link.index?between.lock:0);
+   c.lock.style.opacity=Math.max(finish.lock*.85,eligible&&c.i<5?entrance.locks[c.i]*.85:0,c.i===0&&opening.linked?opening.lock:0,between.linked&&c.i===between.link.index?between.lock:0,birth.lock);
    c.attention.style.opacity=between.linked?between.attention[c.i]:opening.linked?(c.i===0?0:opening.attention):shot&&!current?.18*(1-ease((age-1520)/480)):0;
-   c.glow.style.opacity=pose.glow*.12;c.loot.style.opacity=1-pose.loot;c.focus.style.opacity=between.linked?between.focuses[c.i]:c.i===0&&opening.linked?opening.focus:current?finish.focus*.85:0;c.spark.style.opacity=quiet?0:pose.glow*.75;
+   c.glow.style.opacity=pose.glow*.12;c.loot.style.opacity=1-pose.loot;c.focus.style.opacity=Math.max(birth.glow,between.linked?between.focuses[c.i]:c.i===0&&opening.linked?opening.focus:current?finish.focus*.85:0);c.focus.style.stroke=birth.glow?'#c2ffe3':'';c.spark.style.opacity=quiet?0:pose.glow*.75;
    const revealed=eligible&&award&&time>=award.revealAt;
    c.number.dataset.state=current?'active':revealed?'open':'closed';
    const label=revealed?money(award.cashCents):'';if(c.award.textContent!==label)c.award.textContent=label;
@@ -79,8 +83,16 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.small.textContent=reward?(reward.index+1)+' · '+chamberTheme(reward.index).name:'OPENING BALANCE';
   fit(els.cash,reward?'+'+money(reward.cashCents):money(r?.openingCents??0),38,184);
   els.cash.style.transform=quiet?'none':`translateY(${showingShot?(1-ease((age-780)/220))*7:0}px) scale(${showingShot?1+Math.sin(clamp((age-780)/360)*Math.PI)*.07:1})`;
-  els.bonus.textContent=reward?.bonus?(reward.bonus.kind==='multiply'?'×'+reward.bonus.value+' TOTAL':'+1 UNLOCK'):'';
-  els.bonus.dataset.kind=reward?.bonus?.kind??'';els.bonus.style.opacity=showingShot?ease((age-1040)/180):1;
+  const kind=reward?.bonus?.kind??'';
+  els.bonusShell.style.display=kind?'':'none';els.bonusShell.dataset.kind=kind;
+  els.bonusText.textContent=kind?(kind==='multiply'?'×'+reward.bonus.value+' TOTAL':'+1 UNLOCK'):'';
+  els.bonus.dataset.kind=kind;els.bonusShell.style.opacity=bonusPose.opacity;
+  els.bonusShell.setAttribute('aria-hidden',String(!bonusPose.visible));
+  els.bonusShell.style.transform=`translateY(${bonusPose.y}px) scale(${bonusPose.scale})`;
+  if(kind!==bonusKind){els.bonusIcon.innerHTML=vaultBonusGlyph(kind);bonusKind=kind;}
+  els.bonusIcon.querySelectorAll('.bonus-gem').forEach(g=>g.setAttribute('transform',`translate(${Number(g.dataset.x)+Number(g.dataset.side)*bonusPose.iconOffset} 0)`));
+  els.bonusSheen.style.opacity=bonusPose.shine;els.bonusSheen.style.left=(bonusPose.sweep*110-10)+'%';
+  bonusSparks.forEach((el,i)=>{const spark=vaultBonusSpark(i,bonusPose,shot,time,quiet);el.style.opacity=spark.opacity;el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});
   trails.forEach((el,i)=>{const openingGuide=vaultOpeningTrail(r,i,time,quiet),guide=openingGuide.visible?openingGuide:vaultChamberTrail(between,i,time,quiet),t=guide.visible?guide:vaultTrail(shot?.index??0,i,time,shot,quiet);el.dataset.guide=String(guide.visible);el.style.opacity=t.visible&&!finished?t.opacity:0;el.style.transform=`translate(${t.x}px,${t.y}px)`;});
   if(finished&&level!==tier){els.crest.innerHTML=[giftFinalBadge,giftFinalBow,crownVaultCrest][level]();tier=level;}
   const finale=finalePose(finalAge,level,quiet),build=finale.build,handoff=vaultHandoff(r,time,level,quiet);
@@ -93,21 +105,23 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.crest.style.opacity=finished?finale.crest*exit.crest:0;els.crest.style.transform=`translateY(${finale.rise}px) scale(${finale.scale})`;
   els.bankLabel.textContent=finished&&(!handoff.linked||handoff.showTitle)?['VAULT TOTAL','BIG WIN','ROYAL WIN'][level]:entrance.active&&!entrance.bankTitle?'OPENING BALANCE':'BANKROLL';
   els.bankLabel.style.opacity=handoff.linked?handoff.titleOpacity:entrance.title;
-  const total=vaultTotal(now);
+  const total=readout.total;
   fit(els.bank,entrance.pending?'···':r?money(total):'$ —',handoff.linked?handoff.fontSize:finished?50+18*(quiet?1:ease(finalAge/440)):50,340);
   els.bank.setAttribute('aria-hidden',String(entrance.pending));
   els.bank.style.opacity=handoff.linked?1:finished?finale.amount:entrance.amount;
   els.bank.style.transform=handoff.linked?`scale(${handoff.pulse+(finished?finale.scale-1:0)})`:finished?`translateY(${finale.rise}px) scale(${finale.scale})`:`translateY(${entrance.amountY}px) scale(${entrance.amountScale})`;
+  if(bonusPose.bankScale!==1)els.bank.style.transform+=` scale(${bonusPose.bankScale})`;
   els.bank.style.color=handoff.linked?handoff.color:'';
   els.bank.style.backgroundColor=handoff.linked?handoff.background:'';
   els.bank.style.boxShadow=handoff.linked?`inset 0 2px rgba(255,236,174,${.6+.4*handoff.gleam}),inset 0 -2px #a56788`:entrance.active?`inset 0 ${1+entrance.gleam}px rgb(${234+21*entrance.gleam} ${201+35*entrance.gleam} ${154+20*entrance.gleam}),inset 0 -2px #8a5d81`:'';
-  els.calc.textContent=now?money(now.cashCents)+' collected  ·  ×'+now.multiplier:'Cash in every chamber. Bonuses on top.';
+  if(bonusPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(241,210,255,${.65+.35*bonusPose.gleam}),inset 0 -2px #a567a7`;
+  els.calc.textContent=now?money(now.cashCents)+' collected  ·  ×'+readout.multiplier:'Cash in every chamber. Bonuses on top.';
   els.calc.style.marginTop=handoff.linked?handoff.gap+'px':'';
   els.calc.style.opacity=exit.labels*entrance.calc;
   els.calc.setAttribute('aria-hidden',String(entrance.calc===0));
   els.calc.style.fontSize=Math.min(14,376/(els.calc.textContent.length*.56))+'px';
   const burstAge=finished?finalAge-build:shot?age-780:10000;
-  particles.forEach((el,i)=>{const particle=vaultParticle(i,burstAge,{final:finished,level:finished?level:Number(!!reward?.bonus),x:finished?210:point.x,y:finished?220:point.y,quiet});el.style.opacity=particle.visible?particle.opacity:0;el.style.transform=`translate(${particle.x}px,${particle.y}px) rotate(${particle.rotation}deg)`;});
+  particles.forEach((el,i)=>{const particle=vaultParticle(i,burstAge,{final:finished,level:finished?level:0,x:finished?210:point.x,y:finished?220:point.y,quiet});el.style.opacity=particle.visible?particle.opacity:0;el.style.transform=`translate(${particle.x}px,${particle.y}px) rotate(${particle.rotation}deg)`;});
   audio?.sync(r,time);
  }
  render();

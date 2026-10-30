@@ -35,6 +35,11 @@ for(const [label,click,wing] of [['immediate',2,false],['normal',2.4,false],['pa
  const data=renderVaultSequence([{at:0,sound:'unlock',options:{index:wing?4:0}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:wing?'extra':'multiply'},{at:1.24,sound:'collect'},{at:1.78,sound:'next',options:{index:wing?5:1}},...(wing?[{at:1.96,sound:'wing'}]:[]),{at:click,sound:'unlock',options:{index:wing?5:1}},{at:click+.78,sound:'cash',options:{tier:1}},{at:click+1.24,sound:'collect'}],rate);
  report['between-'+label]=metrics(data);await writeFile(join(output,'between-'+label+'.wav'),wav(data));
 }
+const bonusComparison=[];
+for(const [i,bonus] of ['multiply','extra'].entries()){
+ const at=i*3.6;bonusComparison.push({at,sound:'unlock',options:{index:i}},{at:at+.78,sound:'cash',options:{tier:1}},{at:at+1.04,sound:bonus},{at:at+1.24,sound:'collect'},{at:at+1.78,sound:'next',options:{index:i+1}});
+}
+const comparison=renderVaultSequence(bonusComparison,rate);report['bonus-reveals']=metrics(comparison);await writeFile(join(output,'bonus-reveals.wav'),wav(comparison));
 await writeFile(join(output,'crown-vault-quick-listen.wav'),wav(renderVaultSequence([
  {at:0,sound:'intro'},{at:1.4,sound:'unlock',options:{index:4}},
  {at:2.18,sound:'cash',options:{tier:2}},{at:2.44,sound:'multiply'},

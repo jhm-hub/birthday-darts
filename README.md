@@ -676,3 +676,35 @@ reconnect/mute cue deduplication, extra-unlock continuation, all four wings up t
 20 chambers, and mixed sound headroom at 44.1/48kHz. Audio exports include normal,
 immediate, paused and bonus-wing sequences. Waveform checks and browser playback
 are not a human listening or physical OBS mix review.
+
+
+### Multiplier and extra-unlock reveals (v11)
+
+Each bonus has a shaded pixel sprite and its own compact text-sized badge:
+lilac/pink jewels for ×Y, and a gold lock with mint accents for +1 unlock.
+The badge gathers over180ms, lands with a small burst and stepped highlight,
+then settles before the chamber handoff. Effects stay within420×460 and leave
+the bankroll clear. Reduced motion uses a static badge with the same reveal clock.
+
+Cash appears at the original780ms. Presentation then resolves the bonus at
+1.22s: the multiplied bankroll gets a restrained pulse, or the unlock count
+increases as the added chamber brightens and its number appears. A future-wing
+chamber waits for its existing wing transition. On a last-pick extra bonus,
+BONUS INCOMING avoids briefly suggesting the round is over. Saved award math,
+chamber readiness, bonus odds and transport remain unchanged; no total is
+interpolated or rounded. Reconnects sample the same clock and exact integer total.
+
+Both bonus sounds were rewritten: a plucked rise into a glass-jewel chord for
+×Y, and a crisp lock click with ascending celesta for +1. Their accents align
+with the180ms landing, and their tails finish before the next-lock phrase.
+The common volume slider applies.13 other sound families remain identical.
+The audio renderer adds bonus-reveals.wav for comparing both within a sequence.
+
+The silent tour adds `?scene=bonus-multiply` and `?scene=bonus-extra`, with
+slow playback and scrubbing. For audio, use the editor's Next demo bonus, Sound
+on, then roll and unlock a chamber. These previews do not change saved rounds.
+
+Validation:297 tests/build, including exact large/stacked multipliers, cash-first
+readouts, late commits, added-lock timing, quiet mode, final/continuing chambers,
+and bounded badge/sparkle motion. Sound overlaps checked at44.1/48kHz; no clipping.
+These are timing/headroom checks, not a human listening or physical OBS mix review.

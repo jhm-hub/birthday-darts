@@ -1,4 +1,5 @@
 import {giftVolume} from './gift-volume.js';
+import {vaultBonusAt} from './vault-bonus-motion.js';
 import {vaultLevel} from './vault-game.js';
 import {renderVaultSound} from './vault-sound-design.js';
 import {presentedVaultRound,vaultLastShot,VAULT_SETTLE_LEAD_MS} from './vault-finish-motion.js';
@@ -64,7 +65,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    if(shot){
     cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'unlock',{index:shot.index});
     cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:shot.cashCents>=10000?2:shot.cashCents>=2500?1:0});
-    if(shot.bonus)cue(shot.id+':bonus',shot.revealAt+260,time,shot.bonus.kind==='multiply'?'multiply':'extra');
+    if(shot.bonus)cue(shot.id+':bonus',vaultBonusAt(shot),time,shot.bonus.kind==='multiply'?'multiply':'extra');
     cue(shot.id+':collect',shot.startAt+1240,time,'collect');
    }
    for(const link of vaultChamberLinks(r,time)){
