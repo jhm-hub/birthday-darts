@@ -31,6 +31,10 @@ for(const [label,click] of [['immediate',1.2],['normal',1.55],['paused',3.2]]){
  const data=renderVaultSequence([{at:0,sound:'intro'},{at:.94,sound:'ready'},{at:click,sound:'first-unlock'},{at:click+.78,sound:'cash'},{at:click+1.24,sound:'collect'}],rate);
  report['opening-first-'+label]=metrics(data);await writeFile(join(output,label==='normal'?'opening-and-first-chamber.wav':'opening-first-'+label+'.wav'),wav(data));
 }
+for(const [label,click,wing] of [['immediate',2,false],['normal',2.4,false],['paused',3.2,false],['bonus-wing',2.4,true]]){
+ const data=renderVaultSequence([{at:0,sound:'unlock',options:{index:wing?4:0}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:wing?'extra':'multiply'},{at:1.24,sound:'collect'},{at:1.78,sound:'next',options:{index:wing?5:1}},...(wing?[{at:1.96,sound:'wing'}]:[]),{at:click,sound:'unlock',options:{index:wing?5:1}},{at:click+.78,sound:'cash',options:{tier:1}},{at:click+1.24,sound:'collect'}],rate);
+ report['between-'+label]=metrics(data);await writeFile(join(output,'between-'+label+'.wav'),wav(data));
+}
 await writeFile(join(output,'crown-vault-quick-listen.wav'),wav(renderVaultSequence([
  {at:0,sound:'intro'},{at:1.4,sound:'unlock',options:{index:4}},
  {at:2.18,sound:'cash',options:{tier:2}},{at:2.44,sound:'multiply'},

@@ -3,6 +3,7 @@ import {presentedVaultRound,vaultHandoff} from './vault-finish-motion.js';
 import {vaultExit,vaultResetAt,vaultIdleOpacity} from './vault-exit-motion.js';
 import {vaultIntro} from './vault-intro-motion.js';
 import {vaultOpeningHandoff,vaultOpeningTrail} from './vault-opening-handoff.js';
+import {vaultChamberHandoff,vaultChamberTrail,vaultOtherAwardOpacity} from './vault-chamber-handoff.js';
 import {chamberDoorTransforms,VAULT_ART} from './vault-layout.js';
 import {vaultSVG,vaultLock,crownVaultCrest,vaultHaloSVG} from './vault-art.js';
 import {giftFinalBadge,giftFinalBow} from './gift-finale-art.js';
@@ -26,7 +27,7 @@ export function createVaultView(root,{audio}={}){
   if(disposed)return;raf=requestAnimationFrame(render);
   const quiet=options.quiet??reduced.matches;
   const time=options.frozenAt??Date.now()+offset,r=presentedVaultRound(snapshot?.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time);
-  const visible=options.show!==false&&(options.preview||!!r),exit=vaultExit(r,time,quiet),entrance=vaultIntro(r,time,quiet),opening=vaultOpeningHandoff(r,time,quiet);
+  const visible=options.show!==false&&(options.preview||!!r),exit=vaultExit(r,time,quiet),entrance=vaultIntro(r,time,quiet),opening=vaultOpeningHandoff(r,time,quiet),between=vaultChamberHandoff(r,time,quiet);
   stage.style.opacity=visible?exit.stage*(r?entrance.stage:vaultIdleOpacity(idleAt,time)):0;
   stage.setAttribute('aria-hidden',String(!visible||exit.done));
   if(!visible){if(!r)audio?.sync(null,time);return;}
@@ -41,8 +42,8 @@ export function createVaultView(root,{audio}={}){
   const shot=r?.flight,age=shot?time-shot.startAt:0,finalAge=finished?time-r.completedAt:0,level=finished?vaultLevel(r):0;
   stage.dataset.tier=finished?String(level):'';
   rim.forEach(({el,origin},i)=>{const sparkle=rimSparkle(i,time,quiet);el.style.opacity=sparkle.opacity*(shot?.45:1)*exit.heading;el.setAttribute('transform',origin+` scale(${sparkle.scale})`);});
-  const bankPose=vaultBankPose(r,time,quiet),births=chamberBirths(r),point=chamberPoint(shot?.index??r?.opened.at(-1)?.index??0);
-  if(bankPose.bank>0&&!finished)els.count.textContent=(r&&(shot?.index??r.opened.at(-1)?.index??0)>=r.preset.chambers?'BONUS WING':'WING '+(bankPose.bank+1))+' · '+(now?.remaining??allocated)+' LEFT';
+  const bankPose=between.linked?between.bank:vaultBankPose(r,time,quiet),births=chamberBirths(r),point=chamberPoint(shot?.index??r?.opened.at(-1)?.index??0);
+  if(bankPose.bank>0&&!finished)els.count.textContent=(r&&(between.linked&&between.link.wing?between.link.index:shot?.index??r.opened.at(-1)?.index??0)>=r.preset.chambers?'BONUS WING':'WING '+(bankPose.bank+1))+' · '+(now?.remaining??allocated)+' LEFT';
   banks.forEach((bank,i)=>{const current=i===bankPose.bank,previous=i===bankPose.previous;bank.style.display=current||previous?'':'none';bank.style.opacity=current?bankPose.blend:previous?1-bankPose.blend:0;});
   chambers.forEach(c=>{
    if(Math.floor(c.i/5)!==bankPose.bank&&Math.floor(c.i/5)!==bankPose.previous)return;
@@ -59,15 +60,15 @@ export function createVaultView(root,{audio}={}){
    if(c.right){c.right.setAttribute('transform',doors.right);c.right.style.opacity=edgeOpacity;c.rightEdge.setAttribute('transform',doors.rightEdge);c.rightEdge.style.opacity=finish.edge;}
    c.shades.forEach(el=>el.style.opacity=finish.shade);
    c.sheens.forEach(el=>{el.style.opacity=finish.sheen;el.setAttribute('transform',`translate(${c.slot.x-c.slot.w+finish.sweep*c.slot.w*2} 0)`);});
-   c.lock.style.opacity=Math.max(finish.lock*.85,eligible&&c.i<5?entrance.locks[c.i]*.85:0,c.i===0&&opening.linked?opening.lock:0);
-   c.attention.style.opacity=opening.linked?(c.i===0?0:opening.attention):shot&&!current?.18*(1-ease((age-1520)/480)):0;
-   c.glow.style.opacity=pose.glow*.12;c.loot.style.opacity=1-pose.loot;c.focus.style.opacity=c.i===0&&opening.linked?opening.focus:current?finish.focus*.85:0;c.spark.style.opacity=quiet?0:pose.glow*.75;
+   c.lock.style.opacity=Math.max(finish.lock*.85,eligible&&c.i<5?entrance.locks[c.i]*.85:0,c.i===0&&opening.linked?opening.lock:0,between.linked&&c.i===between.link.index?between.lock:0);
+   c.attention.style.opacity=between.linked?between.attention[c.i]:opening.linked?(c.i===0?0:opening.attention):shot&&!current?.18*(1-ease((age-1520)/480)):0;
+   c.glow.style.opacity=pose.glow*.12;c.loot.style.opacity=1-pose.loot;c.focus.style.opacity=between.linked?between.focuses[c.i]:c.i===0&&opening.linked?opening.focus:current?finish.focus*.85:0;c.spark.style.opacity=quiet?0:pose.glow*.75;
    const revealed=eligible&&award&&time>=award.revealAt;
    c.number.dataset.state=current?'active':revealed?'open':'closed';
    const label=revealed?money(award.cashCents):'';if(c.award.textContent!==label)c.award.textContent=label;
-   const bonusLabel=revealed&&award.bonus?(award.bonus.kind==='multiply'?'×'+award.bonus.value:'+1'):'';if(c.bonus.textContent!==bonusLabel)c.bonus.textContent=bonusLabel;c.bonus.style.opacity=(quiet?1:ease((time-(award?.startAt??time)-1760)/240))*(shot&&!current?.55:1)*exit.labels;
+   const bonusLabel=revealed&&award.bonus?(award.bonus.kind==='multiply'?'×'+award.bonus.value:'+1'):'';if(c.bonus.textContent!==bonusLabel)c.bonus.textContent=bonusLabel;c.bonus.style.opacity=(quiet?1:ease((time-(award?.startAt??time)-1760)/240))*(current?1:vaultOtherAwardOpacity(shot,time,quiet))*exit.labels;
 c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(Math.max(1,c.award.textContent.length)*.61)));
-   c.award.style.opacity=revealed?(quiet?1:ease((time-award.startAt-1760)/240))*(shot&&!current?.55:1)*exit.labels:0;
+   c.award.style.opacity=revealed?(quiet?1:ease((time-award.startAt-1760)/240))*(current?1:vaultOtherAwardOpacity(shot,time,quiet))*exit.labels:0;
   });
   [...els.progress.children].forEach((el,i)=>{const born=births.get(i),arrive=born===undefined||quiet?1:clamp((time-born)/400);el.style.transform=`scale(${1+Math.sin(arrive*Math.PI)*.25})`;el.classList.toggle('in-bank',Math.floor(i/5)===bankPose.bank);});
   const showingShot=shot&&time>=shot.revealAt,reward=showingShot?shot:null,pose=chamberPose(shot,time,quiet);
@@ -80,7 +81,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.cash.style.transform=quiet?'none':`translateY(${showingShot?(1-ease((age-780)/220))*7:0}px) scale(${showingShot?1+Math.sin(clamp((age-780)/360)*Math.PI)*.07:1})`;
   els.bonus.textContent=reward?.bonus?(reward.bonus.kind==='multiply'?'×'+reward.bonus.value+' TOTAL':'+1 UNLOCK'):'';
   els.bonus.dataset.kind=reward?.bonus?.kind??'';els.bonus.style.opacity=showingShot?ease((age-1040)/180):1;
-  trails.forEach((el,i)=>{const guide=vaultOpeningTrail(r,i,time,quiet),t=guide.visible?guide:vaultTrail(shot?.index??0,i,time,shot,quiet);el.dataset.guide=String(guide.visible);el.style.opacity=t.visible&&!finished?t.opacity:0;el.style.transform=`translate(${t.x}px,${t.y}px)`;});
+  trails.forEach((el,i)=>{const openingGuide=vaultOpeningTrail(r,i,time,quiet),guide=openingGuide.visible?openingGuide:vaultChamberTrail(between,i,time,quiet),t=guide.visible?guide:vaultTrail(shot?.index??0,i,time,shot,quiet);el.dataset.guide=String(guide.visible);el.style.opacity=t.visible&&!finished?t.opacity:0;el.style.transform=`translate(${t.x}px,${t.y}px)`;});
   if(finished&&level!==tier){els.crest.innerHTML=[giftFinalBadge,giftFinalBow,crownVaultCrest][level]();tier=level;}
   const finale=finalePose(finalAge,level,quiet),build=finale.build,handoff=vaultHandoff(r,time,level,quiet);
   const dim=handoff.linked?handoff.dim:finished?finale.dim:0;

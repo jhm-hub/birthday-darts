@@ -9,6 +9,7 @@ import {advanceVault} from '../src/vault-game.js';
 import {sampleVaultReset} from '../src/vault-reset-preview.js';
 import {VAULT_FAREWELL_LEAD_MS} from '../src/vault-exit-motion.js';
 import {startVaultRound,unlockVault} from '../src/vault-game.js';
+import {sampleVaultChamberHandoff} from '../src/vault-chamber-handoff.js';
 const peak=data=>data.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
 function context(state='running'){
  const nodes=[],param=()=>({value:0,calls:[],setValueAtTime(...a){this.calls.push(['set',...a]);},linearRampToValueAtTime(...a){this.calls.push(['linear',...a]);},setTargetAtTime(...a){this.calls.push(['target',...a]);},cancelAndHoldAtTime(...a){this.calls.push(['hold',...a]);},cancelScheduledValues(...a){this.calls.push(['cancel',...a]);}});
@@ -113,4 +114,20 @@ test('first-chamber invitation and click resolve once, including delayed viewers
  assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('first-unlock'));
  const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,11280);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.08]);
  advanceVault(r,13200);unlockVault(r,13200,{forcedCash:0,forcedBonus:null});a.sync(r,13200);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('unlock',{index:1}));
+});
+test('next-lock cues survive award commits once and do not restart on a paused or reconnecting display',()=>{
+ const s=sampleVaultChamberHandoff(),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
+ const at=s.readyAt-220;a.sync(s.before,at-1);assert.equal(sources(ctx).length,0);
+ a.sync(s.before,at);assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('next',{index:1}));
+ a.sync(s.waiting,s.readyAt);a.sync(s.waiting,s.readyAt+60000);assert.equal(sources(ctx).length,1);
+ const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(s.before,at+80);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.08]);
+ const muted=context(),c=createVaultAudio({createContext:()=>muted});c.sync(s.before,at);c.setEnabled(true);c.sync(s.before,at+1);assert.equal(sources(muted).length,0);
+});
+test('the bonus-wing sound follows its prepared wing, not a second playback on the next click',()=>{
+ const s=sampleVaultChamberHandoff(4),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
+ a.sync(s.before,s.readyAt-41);assert.equal(sources(ctx).length,1,'next-lock invitation is still fresh');
+ a.sync(s.before,s.readyAt-40);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('wing'));
+ a.sync(s.waiting,s.readyAt+100);assert.equal(sources(ctx).length,2);
+ a.sync(s.flight,s.clickAt);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('unlock',{index:5}));
+ a.sync(s.settled,s.finishAt);assert.equal(sources(ctx).length,4,'only the finale, never a seventh-lock invitation');
 });

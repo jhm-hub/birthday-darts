@@ -5,6 +5,7 @@ import {presentedVaultRound,vaultLastShot,VAULT_SETTLE_LEAD_MS} from './vault-fi
 import {VAULT_FAREWELL_LEAD_MS} from './vault-exit-motion.js';
 import {VAULT_OPENING_REVEAL_MS} from './vault-intro-motion.js';
 import {VAULT_OPENING_GUIDE_MS} from './vault-opening-handoff.js';
+import {vaultChamberLinks,VAULT_CHAMBER_GUIDE_LEAD_MS,VAULT_WING_LEAD_MS} from './vault-chamber-handoff.js';
 
 export function createVaultAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)()}={}){
  let ctx,master,enabled=false,volume=70,disposed=false,roundId=null,generation=0;
@@ -62,10 +63,13 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    const shot=r.flight??r.opened.at(-1);
    if(shot){
     cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'unlock',{index:shot.index});
-    if(shot.index>0&&shot.index%5===0)cue(shot.id+':wing',shot.startAt,time,'wing');
     cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:shot.cashCents>=10000?2:shot.cashCents>=2500?1:0});
     if(shot.bonus)cue(shot.id+':bonus',shot.revealAt+260,time,shot.bonus.kind==='multiply'?'multiply':'extra');
     cue(shot.id+':collect',shot.startAt+1240,time,'collect');
+   }
+   for(const link of vaultChamberLinks(r,time)){
+    cue(link.from.id+':next',link.from.finishAt-VAULT_CHAMBER_GUIDE_LEAD_MS,time,'next',{index:link.index});
+    if(link.wing)cue(link.from.id+':wing',link.from.finishAt-VAULT_WING_LEAD_MS,time,'wing');
    }
    const last=vaultLastShot(r);
    if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle');

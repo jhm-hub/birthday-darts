@@ -649,3 +649,30 @@ and **Watch a sample round** for the combined sequence. The sound palette adds
 First chamber invitation and First chamber unlock. The WAV exporter includes
 normal, immediate and paused versions of the opening/first chamber sequence.
 Previous rendering and audio are preserved at `8f48760`.
+
+
+### Chamber-to-chamber flow (v10)
+
+The last 320ms of a non-final chamber prepares the next lock. Three small pixel
+stars travel between rooms at 1.78s, after those coin particles have banked.
+The next lock holds a warm outline through any pause and blends into the clicked
+unlock over 160ms. Earlier prize labels ease into and out of the spotlight.
+Faith still clicks once per chamber; the 2s unlock, cash/bonus rules and exact
+420×460 transparent footprint are unchanged.
+
+A bonus wing now crossfades inside the fixed Crown frame from 1.96–2.26s of the
+preceding chamber, with its existing wing sound at the start of the transition.
+A new quiet, room-specific D-major sparkle phrase connects each pair. It plays
+once and never loops while waiting. All 14 existing sound buffers and both Crown
+PNG assets are unchanged. The common volume control still applies.
+
+The Chamber tour adds `?scene=between` and `?scene=wing`: silent, scrub-able
+sequences with two sample clicks and a 400ms pause. In the editor, enable Sound
+and choose Watch a sample round for audio. The preview never affects saved games.
+Reduced motion uses a steady outline and a single wing swap without particles.
+
+Validation: 290 tests, including immediate/60s-paused clicks, late commits,
+reconnect/mute cue deduplication, extra-unlock continuation, all four wings up to
+20 chambers, and mixed sound headroom at 44.1/48kHz. Audio exports include normal,
+immediate, paused and bonus-wing sequences. Waveform checks and browser playback
+are not a human listening or physical OBS mix review.
