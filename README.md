@@ -389,3 +389,56 @@ Bonus previews remain available for the Birthday balloons style even when bonus 
 Birthday games default to three extra-dart balloons. Each can be won once per viewer, and each awards the configured extra-dart value (+1 by default). Gold and multiplier balloons also award +1 dart by default. Gold still adds to future cash values, and the multiplier still applies to the full cash total.
 
 Under Birthday bonuses, change **Extra-dart balloons** (1–3) or toggle **+1 dart with gold and multiplier bonuses**. All extensions respect the round limit and the number of unpopped balloons. If no extra throw can be granted, gold/multiplier still apply their main effect and the prize announcement omits +1. Older active rounds retain their original bonus rules. Multiple physical extra-dart balloons share the configured extra-dart prize odds; they do not multiply those odds.
+
+
+## Birthday Vault — first prototype
+
+**Configure and demo:** https://jhm-hub.github.io/birthday-darts/vault.html
+
+Faith rolls a fresh opening balance, then clicks once per chamber. The default
+is five chambers. Every chamber adds a weighted cash prize; a separate bonus draw
+can add a total multiplier or one more unlock. The opening balance is a uniform
+whole-dollar draw from an inclusive minimum/maximum range. Defaults of $100–$300
+are sample settings, editable alongside all cash values and odds.
+
+- Bonuses have a **35% normal chance**, with equal relative weights for ×2 and
+  +1 unlock. If no bonus lands in the first two chambers, the third guarantees
+  one. The guarantee requires at least three starting chambers and enabled,
+  eligible bonuses; it makes overall bonus frequency higher than 35%.
+- Multipliers stack and apply to the opening balance plus **all** chamber cash,
+  including future cash. A $200 opening plus $25, with ×2, becomes $450.
+- A +1 unlock is in addition to that chamber’s cash. It adds one chamber to the
+  progress row. The default round limit is 12, adjustable up to 20. At the limit,
+  +1 leaves the eligible bonus pool and weights renormalize. If no bonus is
+  eligible, that chamber still awards cash.
+- Faith can save independent vaults, duplicate them, and export/import settings.
+  Active rounds freeze their settings. Reloading resumes the chosen outcome.
+  Display links and viewer history are omitted from settings backups.
+- The editor has a disposable preview, a complete sample-round button, explicit
+  cash/bonus previews, and Standard/Big/Royal finale samples. These controls never
+  select outcomes in a real round. Sample Big/Royal thresholds are $500 / $1,500.
+- Candy Confetti gifts, gold coins, a jeweled crown and a turning vault wheel use
+  crisp pixel art. Sounds reuse the Presents mix with a new lock sequence and
+  extra-unlock chime. The final amount holds for 6.5 seconds, then fades and clears.
+
+### Faith’s quick Vault setup
+
+1. Open **vault.html**, adjust the sample settings, and **Save vault**. Use
+   **Roll opening balance** or **Watch a sample round** to test the preview.
+2. Choose **Open controls**. Enter a viewer name, roll their opening balance,
+   then press **Unlock chamber** for each reveal. Space also works outside inputs.
+3. Copy the **private display link** into an OBS/Streamlabs **Browser Source**,
+   **420 × 460**. Keep the controls page open. Only this display goes on stream;
+   it has a transparent background and hides between viewers.
+4. Enable Browser Source audio in the streaming software. Set **Stream volume**
+   in Faith’s controls and keep **Preview sound off** to avoid duplicate audio.
+   Check the voice/music balance in her actual scene before streaming.
+5. Download a settings backup before changing browser or computer. Settings live
+   in the browser where they were saved; importing creates fresh display links.
+
+Vault settings, rounds and display messages have their own namespace. Darts and
+Presents remain separate. No payment, chat-command or Twitch-account integration
+is included. The authenticated read-only display transport is shared with the
+existing games. The first prototype has browser checks for paired playback,
+reload recovery, mobile fit, transparent idle state and all three finales; actual
+OBS audio routing remains a setup check on Faith’s machine.
