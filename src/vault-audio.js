@@ -2,6 +2,7 @@ import {giftVolume} from './gift-volume.js';
 import {vaultLevel} from './vault-game.js';
 import {renderVaultSound} from './vault-sound-design.js';
 import {presentedVaultRound,vaultLastShot,VAULT_SETTLE_LEAD_MS} from './vault-finish-motion.js';
+import {VAULT_FAREWELL_LEAD_MS} from './vault-exit-motion.js';
 
 export function createVaultAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)()}={}){
  let ctx,master,enabled=false,volume=70,disposed=false,roundId=null,generation=0;
@@ -64,7 +65,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    }
    const last=vaultLastShot(r);
    if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle');
-   if(r.completedAt!==null){cue(r.id+':final',r.completedAt,time,['standard','big','royal'][vaultLevel(r)]);cue(r.id+':clear',r.hideAt,time,'clear');}
+   if(r.completedAt!==null){cue(r.id+':final',r.completedAt,time,['standard','big','royal'][vaultLevel(r)]);cue(r.id+':clear',r.hideAt-VAULT_FAREWELL_LEAD_MS,time,'clear');}
   },reset,dispose(){if(disposed)return;reset();disposed=true;enabled=false;if(ctx)void ctx.close().catch(()=>{});}
  };
 }

@@ -6,6 +6,8 @@ import {finalePose} from '../src/vault-effects.js';
 import {sampleVaultFinale,DEFAULT_VAULT} from '../src/vault-game.js';
 import {sampleVaultHandoff} from '../src/vault-finish-motion.js';
 import {advanceVault} from '../src/vault-game.js';
+import {sampleVaultReset} from '../src/vault-reset-preview.js';
+import {VAULT_FAREWELL_LEAD_MS} from '../src/vault-exit-motion.js';
 const peak=data=>data.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
 function context(state='running'){
  const nodes=[],param=()=>({value:0,calls:[],setValueAtTime(...a){this.calls.push(['set',...a]);},linearRampToValueAtTime(...a){this.calls.push(['linear',...a]);},setTargetAtTime(...a){this.calls.push(['target',...a]);},cancelAndHoldAtTime(...a){this.calls.push(['hold',...a]);},cancelScheduledValues(...a){this.calls.push(['cancel',...a]);}});
@@ -82,4 +84,14 @@ test('last-prize bridge flows into one clock-timed finale even before the contro
  a.sync(r,11999);assert.equal(sources(ctx).length,count+1);
  a.sync(r,12000);assert.equal(sources(ctx).length,count+2);assert.equal(r.completedAt,null);
  advanceVault(r,12120);a.sync(r,12120);assert.equal(sources(ctx).length,count+2,'stored commit must not replay the final cue');
+});
+test('farewell plays once on its lead-in, clears, and does not leak into the next viewer',()=>{
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),s=sampleVaultReset();a.setEnabled(true);
+ const at=s.outgoing.hideAt-VAULT_FAREWELL_LEAD_MS;
+ a.sync(s.outgoing,at-1);assert.equal(sources(ctx).length,0);
+ a.sync(s.outgoing,at);assert.equal(sources(ctx).length,1);
+ a.sync(structuredClone(s.outgoing),at+100);assert.equal(sources(ctx).length,1);
+ a.sync(null,s.clearAt);assert.equal(sources(ctx)[0].stops.at(-1),10.015);
+ a.sync(s.next,s.nextAt);assert.equal(sources(ctx).length,2);
+ a.sync(structuredClone(s.next),s.nextAt+1);assert.equal(sources(ctx).length,2);
 });

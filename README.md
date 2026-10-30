@@ -582,3 +582,23 @@ review; `?scene=handoff-2` opens the Royal version directly. Tour playback is
 silent; use the editor's Sound on sample round for synchronized audio. The WAV
 preview generator also exports `last-chamber-{standard,big,royal}.wav` with the
 same cue offsets. Previous rendering and sound are preserved at `a4ebea3`.
+
+### Celebration into the next viewer (v7)
+
+The ending now clears in layers: the halo and crest settle away first, the
+chamber receipts soften, then the five doors close with a short stagger while
+the vault fades. The final total remains readable longest and rises only four
+pixels as it leaves. The source remains transparent at 420 × 460, with the same
+hold and clear deadlines. Reduced motion uses a stationary fade.
+
+A quiet descending D–A–D farewell begins 120 ms before the fade, with a soft
+latch as the last doors close. Its tail ends before the round clears. Repeated
+updates do not replay it; reset/mute still fades active sound. The editor's
+closed idle vault returns over 280 ms. The stream display stays empty until
+Faith starts the next viewer, whose opening balance uses the normal intro.
+
+The Chamber Tour adds **Standard / Big win / Royal → Next viewer** with a
+scrubbable ending, empty stream and fresh round. `?scene=reset-2` opens Royal.
+Tour playback is silent; the editor's **Sound on** and **Preview finale** play
+the synchronized ending. The audio exporter includes
+`farewell-and-next-viewer.wav`. Previous motion/audio are preserved at `fbe7f05`.

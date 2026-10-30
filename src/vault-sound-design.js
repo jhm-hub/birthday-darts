@@ -19,7 +19,7 @@ export function vaultSoundScore(name,{index=0,tier=0}={}){
  case 'standard':return [note(0,81,.18,.035,'celesta'),note(.18,62,.46,.042,'warm'),note(.18,86,.42,.053),note(.33,90,.3,.032),note(.49,93,.3,.028),note(.72,86,.38,.035,'glass')];
  case 'big':return [note(0,78,.21,.031,'celesta'),note(.11,81,.2,.034,'celesta'),foley(.22,'seat',.26,.055),note(.22,50,.65,.046,'warm'),note(.22,74,.65,.041,'brass'),note(.22,78,.57,.027,'brass'),note(.22,81,.5,.022,'brass'),note(.22,86,.5,.044,'glass'),...[90,93,98].map((p,i)=>note(.38+i*.12,p,.28,.026)),note(.94,86,.48,.035,'glass')];
  case 'royal':return [note(0,50,.68,.025,'warm'),foley(.09,'air',.5,.055,501),...[74,78,81].map((p,i)=>note(.06+i*.18,p,.23,.034,'celesta')),note(.5,86,.12,.032),foley(.6,'seat',.42,.08),note(.6,38,.8,.042,'warm'),note(.6,62,.95,.049,'brass'),note(.6,66,.83,.032,'brass'),note(.6,69,.78,.026,'brass'),note(.6,86,.85,.048,'glass'),note(.6,90,.7,.03,'glass'),note(.6,93,.64,.023),...[98,102,105,102,98,93].map((p,i)=>note(.76+i*.115,p,.3,.022)),note(1.57,86,.62,.031,'glass'),note(1.57,74,.64,.027,'warm'),note(1.74,93,.47,.022)];
- case 'clear':return [foley(0,'air',.31,.018,601),note(.02,86,.31,.015,'glass'),note(.1,74,.22,.014,'warm')];
+ case 'clear':return [foley(0,'air',.47,.014,601),note(0,86,.3,.015,'glass'),note(.12,81,.25,.014,'glass'),note(.24,74,.22,.013,'warm'),foley(.44,'click',.055,.028,607),foley(.44,'seat',.08,.024,613)];
  default:throw Error('Unknown vault sound: '+name);
  }
 }

@@ -26,6 +26,7 @@ for(const sound of ['standard','big','royal']){
  report['last-chamber-'+sound]=metrics(data);await writeFile(join(output,'last-chamber-'+sound+'.wav'),wav(data));
 }
 await writeFile(join(output,'crown-vault-sound-reel.wav'),wav(renderVaultSequence(reel,rate)));
+await writeFile(join(output,'farewell-and-next-viewer.wav'),wav(renderVaultSequence([{at:.88,sound:'clear'},{at:1.9,sound:'intro'}],rate)));
 await writeFile(join(output,'crown-vault-quick-listen.wav'),wav(renderVaultSequence([
  {at:0,sound:'intro'},{at:1.4,sound:'unlock',options:{index:4}},
  {at:2.18,sound:'cash',options:{tier:2}},{at:2.44,sound:'multiply'},
