@@ -16,7 +16,7 @@ function paint(){
  let round=sample;const now=sample.flight.startAt+elapsed;
  if(showOpen){round=projectedVault(sample,sample.flight.finishAt);round.flight=null;}
  view.update({widget:sample.preset,round},{preview:true,frozenAt:now,quiet:$('#tour-quiet').checked});
- $('#tour-time').value=elapsed;$('#tour-play').textContent=playing?'Pause':'Play opening';$('#tour-status').textContent=showOpen?'Treasures remain in their opened chambers.':(elapsed/1000).toFixed(2)+'s · '+(elapsed<330?'Selecting and releasing the bolts':elapsed<780?'Opening the chamber':elapsed<1240?'Revealing the prize':elapsed<1800?'Collecting the coins':'Ready for the next chamber');
+ $('#tour-time').value=elapsed;$('#tour-play').textContent=playing?'Pause':'Play opening';$('#tour-status').textContent=showOpen?'Treasures remain in their opened chambers.':(elapsed/1000).toFixed(2)+'s · '+(elapsed<330?'Unlocking the chamber':elapsed<780?'Opening the chamber':elapsed<1240?'Revealing the prize':elapsed<1800?'Collecting the coins':'Ready for the next chamber');
 }
 $('#tour-play').onclick=()=>{if(playing){playing=false;paint();return;}if(elapsed>=2000||showOpen)elapsed=0;showOpen=false;playing=true;last=performance.now();paint();};
 $('#tour-time').oninput=()=>{playing=false;showOpen=false;elapsed=Number($('#tour-time').value);paint();};

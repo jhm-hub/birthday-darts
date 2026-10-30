@@ -474,3 +474,27 @@ for sounds. Refresh both the controller and OBS Browser Source after updating.
 This is a presentation update: saved settings, prize pools, bonus guarantees,
 opening ranges, weights, multiplication, caps and celebration thresholds are
 unchanged. Previous art is preserved in Git at `a2d05fb`.
+
+
+### Crown Vault art (v3)
+
+Faith selected concept A: a round gold vault with four treasure chambers around
+a central diamond crown door. The approved locked and revealed sprites are in
+`public/assets/vault/crown-v3-{closed,open}.png`. Both have real alpha. The outer
+frame always uses the same open sprite; registered door cutouts hinge within
+individual chamber masks. The center splits into two leaves. No full-vault
+scaling, body morph or crossfade between differently drawn silhouettes occurs.
+
+`src/vault-layout.js` owns the1254px art coordinates, hinges, masks, labels and
+304px placement in the420×460 display. Existing absolute award clocks control
+the projection and reduced motion. Prize origins and coin paths follow the
+circular layout; the duplicate external lock strip is visually hidden because
+the five doors now carry their own chamber numbers. Extra unlocks still use
+numbered wings, and completed doors stay open. Cash, odds, round timing, saved
+settings and celebrations are unchanged. The Chamber Tour supports the new art.
+
+The two production sprites were created with built-in image generation from
+the approved Crown Vault concept. The concept options and original v2 art are
+preserved externally in the FaithHQ Vault Concepts/Review folders and Git.
+Exact prompts, asset hashes and verification are in
+`Stream-Games/Vault/Review/crown-v3-2026-10-29/` in the parent workspace.

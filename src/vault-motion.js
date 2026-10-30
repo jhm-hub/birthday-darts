@@ -1,17 +1,8 @@
+import {CHAMBER_SLOTS,VAULT_ART} from './vault-layout.js';
+export {CHAMBER_SLOTS} from './vault-layout.js';
 // Presentation only: each award belongs to one physical chamber. The saved
 // award clock drives every pose, including after refresh or display reconnect.
-export const CHAMBER_THEMES=[
- {name:'GOLDEN WELCOME',motion:'hinge',light:'#ffe5a3',metal:'#d5a070',shade:'#88585b'},
- {name:'CANDY CACHE',motion:'split',light:'#ffe0ef',metal:'#d58bb5',shade:'#8b537f'},
- {name:'JEWEL ROOM',motion:'shutter',light:'#e9ddff',metal:'#aa99d4',shade:'#655c97'},
- {name:'BIRTHDAY TREATS',motion:'hinge-right',light:'#d8fff1',metal:'#8ecbc0',shade:'#467d89'},
- {name:'CROWN CHAMBER',motion:'double',light:'#fff0ba',metal:'#e1b57c',shade:'#956175'}
-];
-export const CHAMBER_SLOTS=[
- {x:21,y:28,w:63,h:31},{x:96,y:28,w:63,h:31},
- {x:21,y:66,w:63,h:31},{x:96,y:66,w:63,h:31},
- {x:21,y:104,w:138,h:31}
-];
+export const CHAMBER_THEMES=['GOLDEN WELCOME','CANDY CACHE','JEWEL ROOM','BIRTHDAY TREATS','CROWN CHAMBER'].map(name=>({name}));
 export const clamp=v=>Math.max(0,Math.min(1,v));
 export const ease=v=>{v=clamp(v);return v*v*(3-2*v);};
 export const chamberTheme=index=>CHAMBER_THEMES[index%5];
@@ -43,7 +34,7 @@ export function vaultBankPose(round,time,quiet=false){
  const blend=quiet?1:arriving?ease(age/300):1;
  return {bank,previous:arriving?bank-1:null,blend};
 }
-export function chamberPoint(index){const s=CHAMBER_SLOTS[index%5];return {x:30+(s.x+s.w/2)*2,y:77+(s.y+s.h/2)*2};}
+export function chamberPoint(index){const s=CHAMBER_SLOTS[index%5],a=VAULT_ART;return {x:a.x+s.cx*a.size/a.source,y:a.y+s.cy*a.size/a.source};}
 export function vaultTrail(index,particle,time,shot,quiet=false){
  if(!shot||quiet)return {visible:false,x:210,y:405,opacity:0};
  const t=(time-shot.startAt-1240-particle*22)/500;
