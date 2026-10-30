@@ -50,3 +50,4 @@
 .rim-glint{opacity:0;pointer-events:none}
 .vault-opening-pips{position:absolute;left:50%;top:40px;transform:translateX(-50%);display:flex;gap:12px;pointer-events:none}
 .vault-opening-pips i{display:block;width:8px;height:8px;opacity:0;background:#ffdfa0;box-shadow:inset 2px 2px #fff5d7,inset -2px -2px #bf8193,0 2px #362139;clip-path:polygon(2px 0,6px 0,6px 2px,8px 2px,8px 6px,6px 6px,6px 8px,2px 8px,2px 6px,0 6px,0 2px,2px 2px)}
+.vault-loot-trail i[data-guide="true"]{width:8px;height:8px;background:#fff0b1;box-shadow:inset 2px 2px #fffbe4,inset -2px -2px #bf8193;clip-path:polygon(3px 0,5px 0,5px 3px,8px 3px,8px 5px,5px 5px,5px 8px,3px 8px,3px 5px,0 5px,0 3px,3px 3px)}

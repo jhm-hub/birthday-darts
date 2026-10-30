@@ -4,6 +4,7 @@ import {renderVaultSound} from './vault-sound-design.js';
 import {presentedVaultRound,vaultLastShot,VAULT_SETTLE_LEAD_MS} from './vault-finish-motion.js';
 import {VAULT_FAREWELL_LEAD_MS} from './vault-exit-motion.js';
 import {VAULT_OPENING_REVEAL_MS} from './vault-intro-motion.js';
+import {VAULT_OPENING_GUIDE_MS} from './vault-opening-handoff.js';
 
 export function createVaultAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)()}={}){
  let ctx,master,enabled=false,volume=70,disposed=false,roundId=null,generation=0;
@@ -57,9 +58,10 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    if(roundId!==r.id){reset();roundId=r.id;}
    cue(r.id+':intro',r.startedAt,time,'intro-arrive');
    cue(r.id+':balance',r.startedAt+VAULT_OPENING_REVEAL_MS,time,'intro-balance');
+   cue(r.id+':ready',r.startedAt+VAULT_OPENING_GUIDE_MS,time,'ready');
    const shot=r.flight??r.opened.at(-1);
    if(shot){
-    cue(shot.id+':lock',shot.startAt,time,'unlock',{index:shot.index});
+    cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'unlock',{index:shot.index});
     if(shot.index>0&&shot.index%5===0)cue(shot.id+':wing',shot.startAt,time,'wing');
     cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:shot.cashCents>=10000?2:shot.cashCents>=2500?1:0});
     if(shot.bonus)cue(shot.id+':bonus',shot.revealAt+260,time,shot.bonus.kind==='multiply'?'multiply':'extra');

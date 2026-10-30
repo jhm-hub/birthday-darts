@@ -27,7 +27,10 @@ for(const sound of ['standard','big','royal']){
 }
 await writeFile(join(output,'crown-vault-sound-reel.wav'),wav(renderVaultSequence(reel,rate)));
 await writeFile(join(output,'farewell-and-next-viewer.wav'),wav(renderVaultSequence([{at:.88,sound:'clear'},{at:1.9,sound:'intro'}],rate)));
-await writeFile(join(output,'opening-and-first-chamber.wav'),wav(renderVaultSequence([{at:0,sound:'intro'},{at:1.2,sound:'unlock'},{at:1.98,sound:'cash'},{at:2.44,sound:'collect'}],rate)));
+for(const [label,click] of [['immediate',1.2],['normal',1.55],['paused',3.2]]){
+ const data=renderVaultSequence([{at:0,sound:'intro'},{at:.94,sound:'ready'},{at:click,sound:'first-unlock'},{at:click+.78,sound:'cash'},{at:click+1.24,sound:'collect'}],rate);
+ report['opening-first-'+label]=metrics(data);await writeFile(join(output,label==='normal'?'opening-and-first-chamber.wav':'opening-first-'+label+'.wav'),wav(data));
+}
 await writeFile(join(output,'crown-vault-quick-listen.wav'),wav(renderVaultSequence([
  {at:0,sound:'intro'},{at:1.4,sound:'unlock',options:{index:4}},
  {at:2.18,sound:'cash',options:{tier:2}},{at:2.44,sound:'multiply'},

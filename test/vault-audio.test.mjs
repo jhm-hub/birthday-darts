@@ -8,7 +8,7 @@ import {sampleVaultHandoff} from '../src/vault-finish-motion.js';
 import {advanceVault} from '../src/vault-game.js';
 import {sampleVaultReset} from '../src/vault-reset-preview.js';
 import {VAULT_FAREWELL_LEAD_MS} from '../src/vault-exit-motion.js';
-import {startVaultRound} from '../src/vault-game.js';
+import {startVaultRound,unlockVault} from '../src/vault-game.js';
 const peak=data=>data.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
 function context(state='running'){
  const nodes=[],param=()=>({value:0,calls:[],setValueAtTime(...a){this.calls.push(['set',...a]);},linearRampToValueAtTime(...a){this.calls.push(['linear',...a]);},setTargetAtTime(...a){this.calls.push(['target',...a]);},cancelAndHoldAtTime(...a){this.calls.push(['hold',...a]);},cancelScheduledValues(...a){this.calls.push(['cancel',...a]);}});
@@ -105,4 +105,12 @@ test('opening reveal plays once on time even when the display joins after the ar
  b.sync(r,10690);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.07]);
  b.sync(r,11200);assert.equal(sources(late).length,1);b.sync(null,11300);assert.equal(sources(late)[0].stops.at(-1),10.015);
  const old=context(),c=createVaultAudio({createContext:()=>old});c.setEnabled(true);c.sync(r,11500);assert.equal(sources(old).length,0);
+});
+test('first-chamber invitation and click resolve once, including delayed viewers and later locks',()=>{
+ const r=startVaultRound(DEFAULT_VAULT,'Next viewer',10000,()=>0),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
+ a.sync(r,10939);assert.equal(sources(ctx).length,0);a.sync(r,10940);assert.equal(sources(ctx).length,1);a.sync(structuredClone(r),11000);assert.equal(sources(ctx).length,1);
+ unlockVault(r,11200,{forcedCash:0,forcedBonus:null});a.sync(r,11200);assert.equal(sources(ctx).length,2);a.sync(structuredClone(r),11300);assert.equal(sources(ctx).length,2);
+ assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('first-unlock'));
+ const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,11280);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.08]);
+ advanceVault(r,13200);unlockVault(r,13200,{forcedCash:0,forcedBonus:null});a.sync(r,13200);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('unlock',{index:1}));
 });

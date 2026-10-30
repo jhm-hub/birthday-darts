@@ -625,3 +625,27 @@ The silent Chamber Tour includes **New-round entrance** (`?scene=intro`). In
 the game demo, use **Sound on**, then **Roll opening balance** for combined
 audio/animation. The WAV exporter adds `opening-and-first-chamber.wav`.
 Previous rendering and sound are preserved at `ff78234`.
+
+### Opening balance into the first chamber (v9)
+
+Four small pixel sparkles now rise from beside the settled bankroll toward the
+first lock. Its warm outline builds before the first click and carries into
+the active-door highlight over 160 ms. The other rooms dim gently through the
+same handoff. The amount stays fully visible and its plaque edge settles to
+the resting style without a brightness jump. Faith still clicks once per
+chamber; if she pauses, the first lock holds a quiet, steady ready pose.
+
+A short jewel phrase at 940 ms links the opening chord to the first mechanism.
+The first click has a warm note and slightly softer clicks; the heavy hinge,
+door timings and later chamber sounds remain the same. Nothing loops while
+waiting. Cue IDs and saved event times prevent repeated or stale playback.
+The 620 ms opening reveal, 1.2-second readiness, two-second unlock and all
+awards remain unchanged. The source stays transparent at 420 × 460. Reduced
+motion uses a static first-door outline with no travelling sparkles.
+
+**Opening → First chamber** (`?scene=first`) in the silent Chamber Tour includes
+a sample click, timeline and slow playback. In the game, choose **Sound on**
+and **Watch a sample round** for the combined sequence. The sound palette adds
+First chamber invitation and First chamber unlock. The WAV exporter includes
+normal, immediate and paused versions of the opening/first chamber sequence.
+Previous rendering and audio are preserved at `8f48760`.
