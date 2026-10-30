@@ -3,8 +3,8 @@
 const midi=p=>440*2**((p-69)/12);
 const note=(at,pitch,length,gain=.04,voice='jewel')=>({at,frequency:midi(pitch),length,gain,voice});
 const foley=(at,voice,length,gain,seed=41)=>({at,voice,length,gain,seed});
-export const VAULT_SOUND_LABELS={intro:'Opening balance',unlock:'Lock & heavy door',cash:'Cash treasure',multiply:'Total multiplier',extra:'Extra unlock',collect:'Coins collected',wing:'Bonus wing',standard:'Standard win',big:'Big win',royal:'Royal win',clear:'Round farewell'};
-const trims={intro:1.2,unlock:1.35,cash:1.6,multiply:1,extra:1.85,collect:1.6,wing:1.1,standard:1.25,big:1.04,royal:1,clear:1};
+export const VAULT_SOUND_LABELS={intro:'Opening balance',unlock:'Lock & heavy door',cash:'Cash treasure',multiply:'Total multiplier',extra:'Extra unlock',collect:'Coins collected',wing:'Bonus wing',settle:'Last treasure settles',standard:'Standard win',big:'Big win',royal:'Royal win',clear:'Round farewell'};
+const trims={intro:1.2,unlock:1.35,cash:1.6,multiply:1,extra:1.85,collect:1.6,wing:1.1,settle:1,standard:1.25,big:1.04,royal:1,clear:1};
 export function vaultSoundScore(name,{index=0,tier=0}={}){
  const room=((index%5)+5)%5,accent=[74,78,81,76,86][room];
  switch(name){
@@ -15,6 +15,7 @@ export function vaultSoundScore(name,{index=0,tier=0}={}){
  case 'extra':return [foley(0,'click',.06,.055,301),...[74,76,78,81,86].map((p,i)=>note(.05+i*.1,p,.25,.038,'celesta')),foley(.47,'coin',.16,.025)];
  case 'collect':return [foley(0,'coin',.105,.032,401),foley(.11,'coin',.09,.027,409),foley(.23,'coin',.09,.022,419)];
  case 'wing':return [foley(0,'air',.3,.025),note(.015,74,.24,.019,'glass'),note(.1,81,.23,.021,'glass')];
+ case 'settle':return [foley(0,'coin',.12,.032,701),note(.055,74,.25,.025,'warm'),note(.16,81,.23,.021,'glass')];
  case 'standard':return [note(0,81,.18,.035,'celesta'),note(.18,62,.46,.042,'warm'),note(.18,86,.42,.053),note(.33,90,.3,.032),note(.49,93,.3,.028),note(.72,86,.38,.035,'glass')];
  case 'big':return [note(0,78,.21,.031,'celesta'),note(.11,81,.2,.034,'celesta'),foley(.22,'seat',.26,.055),note(.22,50,.65,.046,'warm'),note(.22,74,.65,.041,'brass'),note(.22,78,.57,.027,'brass'),note(.22,81,.5,.022,'brass'),note(.22,86,.5,.044,'glass'),...[90,93,98].map((p,i)=>note(.38+i*.12,p,.28,.026)),note(.94,86,.48,.035,'glass')];
  case 'royal':return [note(0,50,.68,.025,'warm'),foley(.09,'air',.5,.055,501),...[74,78,81].map((p,i)=>note(.06+i*.18,p,.23,.034,'celesta')),note(.5,86,.12,.032),foley(.6,'seat',.42,.08),note(.6,38,.8,.042,'warm'),note(.6,62,.95,.049,'brass'),note(.6,66,.83,.032,'brass'),note(.6,69,.78,.026,'brass'),note(.6,86,.85,.048,'glass'),note(.6,90,.7,.03,'glass'),note(.6,93,.64,.023),...[98,102,105,102,98,93].map((p,i)=>note(.76+i*.115,p,.3,.022)),note(1.57,86,.62,.031,'glass'),note(1.57,74,.64,.027,'warm'),note(1.74,93,.47,.022)];

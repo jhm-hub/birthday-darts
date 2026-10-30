@@ -4,6 +4,8 @@ import {VAULT_SOUND_LABELS,vaultSoundScore,renderVaultSound,renderVaultSequence}
 import {createVaultAudio} from '../src/vault-audio.js';
 import {finalePose} from '../src/vault-effects.js';
 import {sampleVaultFinale,DEFAULT_VAULT} from '../src/vault-game.js';
+import {sampleVaultHandoff} from '../src/vault-finish-motion.js';
+import {advanceVault} from '../src/vault-game.js';
 const peak=data=>data.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
 function context(state='running'){
  const nodes=[],param=()=>({value:0,calls:[],setValueAtTime(...a){this.calls.push(['set',...a]);},linearRampToValueAtTime(...a){this.calls.push(['linear',...a]);},setTargetAtTime(...a){this.calls.push(['target',...a]);},cancelAndHoldAtTime(...a){this.calls.push(['hold',...a]);},cancelScheduledValues(...a){this.calls.push(['cancel',...a]);}});
@@ -73,4 +75,11 @@ test('finale and farewell play once, and sampler cancellation wins over a pendin
  let resume;const blocked=context('suspended');blocked.resume=()=>new Promise(resolve=>{resume=()=>{blocked.state='running';resolve();};});const b=createVaultAudio({createContext:()=>blocked});
  const promise=b.preview('royal');b.setEnabled(false);resume();assert.equal(await promise,false);assert.equal(sources(blocked).length,0);
  assert.equal(await b.preview('cash'),true);assert.equal(sources(blocked).length,1);b.sync(null,1000);assert.equal(sources(blocked)[0].stops.length,0,'empty demo must not cancel an audition');
+});
+test('last-prize bridge flows into one clock-timed finale even before the controller commit arrives',()=>{
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),r=sampleVaultHandoff(2,10000);a.setEnabled(true);
+ a.sync(r,11719);const count=sources(ctx).length;a.sync(r,11720);assert.equal(sources(ctx).length,count+1);
+ a.sync(r,11999);assert.equal(sources(ctx).length,count+1);
+ a.sync(r,12000);assert.equal(sources(ctx).length,count+2);assert.equal(r.completedAt,null);
+ advanceVault(r,12120);a.sync(r,12120);assert.equal(sources(ctx).length,count+2,'stored commit must not replay the final cue');
 });

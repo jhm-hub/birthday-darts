@@ -1,4 +1,5 @@
 import {doorFinish,rimSparkle,finalePose,vaultParticle} from './vault-effects.js';
+import {presentedVaultRound,vaultHandoff} from './vault-finish-motion.js';
 import {chamberDoorTransforms,VAULT_ART} from './vault-layout.js';
 import {vaultSVG,vaultLock,crownVaultCrest,vaultHaloSVG} from './vault-art.js';
 import {giftFinalBadge,giftFinalBow} from './gift-finale-art.js';
@@ -18,7 +19,7 @@ export function createVaultView(root,{audio}={}){
  function render(){
   if(disposed)return;raf=requestAnimationFrame(render);
   const quiet=options.quiet??reduced.matches;
-  const r=snapshot?.round,time=options.frozenAt??Date.now()+offset,p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),intro=r?clamp((time-r.startedAt)/VAULT_INTRO_MS):1;
+  const time=options.frozenAt??Date.now()+offset,r=presentedVaultRound(snapshot?.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),intro=r?clamp((time-r.startedAt)/VAULT_INTRO_MS):1;
   const visible=options.show!==false&&(options.preview||!!r),exit=finished?1-ease((time-r.hideAt)/VAULT_CLEAR_MS):1;
   stage.style.opacity=visible?exit*(quiet?1:ease(intro*4)):0;stage.setAttribute('aria-hidden',String(!visible));if(!visible)return;
   stage.classList.toggle('is-finished',finished);stage.classList.toggle('is-opening',!!r?.flight);stage.classList.toggle('is-idle',!r);
@@ -66,19 +67,25 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.bonus.dataset.kind=reward?.bonus?.kind??'';els.bonus.style.opacity=showingShot?ease((age-1040)/180):1;
   trails.forEach((el,i)=>{const t=vaultTrail(shot?.index??0,i,time,shot,quiet);el.style.opacity=t.visible&&!finished?t.opacity:0;el.style.transform=`translate(${t.x}px,${t.y}px)`;});
   if(finished&&level!==tier){els.crest.innerHTML=[giftFinalBadge,giftFinalBow,crownVaultCrest][level]();tier=level;}
-  const finale=finalePose(finalAge,level,quiet),build=finale.build;
-  els.machine.style.filter=finished?`brightness(${1-finale.dim*.42}) saturate(${1-finale.dim*.14})`:'none';
-  els.bankWrap.style.transition='none';els.bankWrap.style.bottom=(finished?9+63*(quiet?1:ease(finalAge/400)):9)+'px';
+  const finale=finalePose(finalAge,level,quiet),build=finale.build,handoff=vaultHandoff(r,time,level,quiet);
+  const dim=handoff.linked?handoff.dim:finished?finale.dim:0;
+  els.machine.style.filter=dim?`brightness(${1-dim*.42}) saturate(${1-dim*.14})`:'none';
+  els.bankWrap.style.transition='none';els.bankWrap.style.bottom=(handoff.linked?handoff.bottom:finished?9+63*(quiet?1:ease(finalAge/400)):9)+'px';
   els.halo.style.opacity=finished?finale.halo:0;
   els.halo.style.transform=`translateY(${finale.rise}px)`;
   els.crest.style.opacity=finished?finale.crest:0;els.crest.style.transform=`translateY(${finale.rise}px) scale(${finale.scale})`;
-  els.bankLabel.textContent=finished?['VAULT TOTAL','BIG WIN','ROYAL WIN'][level]:r&&intro<1?'OPENING BALANCE':'BANKROLL';
+  els.bankLabel.textContent=finished&&(!handoff.linked||handoff.showTitle)?['VAULT TOTAL','BIG WIN','ROYAL WIN'][level]:r&&intro<1?'OPENING BALANCE':'BANKROLL';
+  els.bankLabel.style.opacity=handoff.linked?handoff.titleOpacity:1;
   const total=vaultTotal(now),openingFactor=r&&!r.opened.length&&!r.flight?ease((intro-.2)/.7):1;
   const amount=openingFactor<1?(BigInt(total)*BigInt(Math.floor(openingFactor*1000))/1000n).toString():total;
-  fit(els.bank,r?money(amount):'$ —',finished?50+18*(quiet?1:ease(finalAge/440)):50,340);
-  els.bank.style.opacity=finished?finale.amount:1;
-  els.bank.style.transform=finished?`translateY(${finale.rise}px) scale(${finale.scale})`:'none';
+  fit(els.bank,r?money(amount):'$ —',handoff.linked?handoff.fontSize:finished?50+18*(quiet?1:ease(finalAge/440)):50,340);
+  els.bank.style.opacity=handoff.linked?1:finished?finale.amount:1;
+  els.bank.style.transform=handoff.linked?`scale(${handoff.pulse+(finished?finale.scale-1:0)})`:finished?`translateY(${finale.rise}px) scale(${finale.scale})`:'none';
+  els.bank.style.color=handoff.linked?handoff.color:'';
+  els.bank.style.backgroundColor=handoff.linked?handoff.background:'';
+  els.bank.style.boxShadow=handoff.linked?`inset 0 2px rgba(255,236,174,${.6+.4*handoff.gleam}),inset 0 -2px #a56788`:'';
   els.calc.textContent=now?money(now.cashCents)+' collected  ·  ×'+now.multiplier:'Cash in every chamber. Bonuses on top.';
+  els.calc.style.marginTop=handoff.linked?handoff.gap+'px':'';
   els.calc.style.fontSize=Math.min(14,376/(els.calc.textContent.length*.56))+'px';
   const burstAge=finished?finalAge-build:shot?age-780:10000;
   particles.forEach((el,i)=>{const particle=vaultParticle(i,burstAge,{final:finished,level:finished?level:Number(!!reward?.bonus),x:finished?210:point.x,y:finished?220:point.y,quiet});el.style.opacity=particle.visible?particle.opacity:0;el.style.transform=`translate(${particle.x}px,${particle.y}px) rotate(${particle.rotation}deg)`;});

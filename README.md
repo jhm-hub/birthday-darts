@@ -555,3 +555,30 @@ tails on mute/reset/new viewers. Buffers are reused per context; no events repla
 on repeated snapshots. To generate WAV listening previews and mix measurements,
 run `node scripts/render-vault-audio.mjs /path/to/output`. Exports use the default
 70% volume; reports include full-volume peaks. Previous sound is in `84dcd6f`.
+
+### Last chamber into finale (v6)
+
+On the final cash/multiplier chamber, the displayed bankroll stays visible as
+it rises and grows into its final position. Its border catches the arriving
+coins, the label fades from BANKROLL into the win tier, and the mint amount
+blends to the tier color at the musical resolution. The final receipt has time
+to settle into its room. No transparent flash or restart of the total occurs.
+The outer vault and 420 × 460 transparent source remain fixed.
+
+A quiet collected-coin / D–A phrase starts 280 ms before completion and joins
+the existing Standard, Big or Royal pickup. The main fanfare/burst beats remain
+180/220/600 ms after completion. The two-second chamber duration, exact awards,
+round hold/clear timing and existing volume controls are unchanged. An extra
+unlock keeps the round going and does not trigger this final-chamber treatment.
+
+`vault-finish-motion.js` projects the final visual on the saved event clock while
+waiting for the controller's commit. It does not mutate the stored round or
+award twice; the audio and visual use the same clock. Reduced motion keeps the
+bank still until completion and uses the static finale. Standalone finale
+samples retain their existing entrance.
+
+The Chamber Tour now has three **Last chamber → …** scenes for scrub/slow-motion
+review; `?scene=handoff-2` opens the Royal version directly. Tour playback is
+silent; use the editor's Sound on sample round for synchronized audio. The WAV
+preview generator also exports `last-chamber-{standard,big,royal}.wav` with the
+same cue offsets. Previous rendering and sound are preserved at `a4ebea3`.
