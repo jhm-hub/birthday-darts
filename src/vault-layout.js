@@ -16,5 +16,6 @@ export const CHAMBER_SLOTS=[
 export function chamberDoorTransforms(index,open){
  const s=CHAMBER_SLOTS[index%5],p=Math.max(0,Math.min(1,open)),width=Math.cos(p*Math.PI*.485);
  const hinge=(x,side)=>`translate(${x} ${s.pivotY}) matrix(${width} ${side*p*.022} 0 1 0 0) translate(${-x} ${-s.pivotY})`;
- return {left:hinge(s.pivotX,s.side===1?-1:1),right:s.side===0?hinge(771,-1):null};
+ const left=hinge(s.pivotX,s.side===1?-1:1),right=s.side===0?hinge(771,-1):null,thickness=Math.sin(p*Math.PI*.485)*13;
+ return {left,right,leftEdge:`translate(${s.side===1?-thickness:thickness} 0) ${left}`,rightEdge:right?`translate(${-thickness} 0) ${right}`:null};
 }

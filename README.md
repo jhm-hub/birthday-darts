@@ -485,8 +485,8 @@ frame always uses the same open sprite; registered door cutouts hinge within
 individual chamber masks. The center splits into two leaves. No full-vault
 scaling, body morph or crossfade between differently drawn silhouettes occurs.
 
-`src/vault-layout.js` owns the1254px art coordinates, hinges, masks, labels and
-304px placement in the420×460 display. Existing absolute award clocks control
+`src/vault-layout.js` owns the 1254px art coordinates, hinges, masks, labels and
+304px placement in the 420×460 display. Existing absolute award clocks control
 the projection and reduced motion. Prize origins and coin paths follow the
 circular layout; the duplicate external lock strip is visually hidden because
 the five doors now carry their own chamber numbers. Extra unlocks still use
@@ -498,3 +498,28 @@ the approved Crown Vault concept. The concept options and original v2 art are
 preserved externally in the FaithHQ Vault Concepts/Review folders and Git.
 Exact prompts, asset hashes and verification are in
 `Stream-Games/Vault/Review/crown-v3-2026-10-29/` in the parent workspace.
+
+### Crown Vault motion and finish (v4)
+
+The approved Crown sprites stay intact. Moving door leaves now have a bronze
+edge, changing face shade and a brief light sweep. A lock glint precedes each
+opening; a smoother acceleration/deceleration gives the hinge more weight.
+The selected chamber has a restrained focus outline, while the other rooms
+darken slightly until its prize has settled. Completed doors remain opaque
+until they open, avoiding a ghosted view of the treasure beneath them.
+
+Cash, bonus and bankroll text use compact stepped plum backings with cream
+and gold trim. Each receipt fades into its permanent chamber label before
+the next pick. Standard, Big and Royal finales use mint, pink and gold totals,
+a stepped halo, a small settling motion and three sizes of upward confetti.
+The vault darkens behind the finale without becoming transparent. Confetti
+stays above the total. The frame itself remains stationary and the stream
+source stays transparent at 420 × 460.
+
+The Chamber Tour now includes all three celebration scenes, with a scrubber,
+slow playback and reduced-motion preview. All motion samples the round's saved
+clock, including final total movement, so reconnecting does not replay effects.
+This pass keeps the two-second chamber pace, reveal time, sounds, prizes,
+settings and bonus rules. Reduced motion disables the added lighting/travel
+and shows the final amount immediately. Refresh the controller and OBS source
+to load the update. Previous Crown rendering is preserved in Git at `6f38ce4`.

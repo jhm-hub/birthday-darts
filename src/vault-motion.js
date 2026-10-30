@@ -5,6 +5,7 @@ export {CHAMBER_SLOTS} from './vault-layout.js';
 export const CHAMBER_THEMES=['GOLDEN WELCOME','CANDY CACHE','JEWEL ROOM','BIRTHDAY TREATS','CROWN CHAMBER'].map(name=>({name}));
 export const clamp=v=>Math.max(0,Math.min(1,v));
 export const ease=v=>{v=clamp(v);return v*v*(3-2*v);};
+const smoother=v=>{v=clamp(v);return v*v*v*(v*(v*6-15)+10);};
 export const chamberTheme=index=>CHAMBER_THEMES[index%5];
 export function chamberBirths(round){
  const births=new Map();if(!round)return births;
@@ -20,9 +21,9 @@ export function chamberPose(shot,time,quiet=false){
  const age=time-shot.startAt,shown=time>=shot.revealAt;
  if(quiet)return {open:Number(shown),bolt:Number(shown),turn:shown?120:0,glow:0,reward:0,loot:1};
  return {
-  open:ease((age-330)/530),bolt:ease((age-190)/220),turn:ease((age-60)/430)*150,
+  open:smoother((age-330)/610),bolt:ease((age-190)/220),turn:ease((age-60)/430)*150,
   glow:shown&&age<1430?Math.sin(clamp((age-780)/650)*Math.PI):0,
-  reward:ease((age-780)/120)*(1-ease((age-1800)/200)),
+  reward:ease((age-780)/180)*(1-ease((age-1640)/360)),
   loot:1-.55*ease((age-780)/180)*(1-ease((age-1650)/350))
  };
 }
