@@ -9,14 +9,17 @@
 .vault-progress{position:absolute;left:15px;right:15px;top:55px;height:32px;display:flex;justify-content:center;gap:4px;align-items:center}
 .vault-step{position:relative;display:block;width:min(25px,calc((390px - (var(--steps) - 1)*4px)/var(--steps)));color:#a98ab5;opacity:.7;transition:color .18s,opacity .18s;filter:drop-shadow(0 1px 0 #fff1c5)}
 .vault-step svg{display:block;width:100%;height:25px}.vault-step b{display:none}.vault-step.done{color:#a7e2c5;opacity:1}.vault-step.active{color:#ffe2a0;opacity:1;filter:drop-shadow(0 0 3px #ffc68d)}
-.vault-machine{position:absolute;left:50px;top:83px;width:320px;height:296px;filter:drop-shadow(0 4px 0 #3a253b35);transition:opacity .35s}
+.vault-machine{position:absolute;left:30px;top:77px;width:360px;height:284px;filter:drop-shadow(0 3px 0 #3a253b35);transition:opacity .35s}
 .vault-machine>svg{width:100%;height:100%;display:block;overflow:visible}
-.vault-door{transform-box:view-box;transform-origin:28px 72px}
-.vault-wheel{transform-box:view-box;transform-origin:80px 72px}.vault-bolts{transform-box:view-box}.vault-spill{opacity:0}
-.vault-reveal{position:absolute;left:54px;right:54px;top:202px;text-align:center;pointer-events:none;z-index:2;opacity:0}
-.vault-reveal small{display:block;font-size:12px;line-height:18px;font-weight:600;color:#fff0d4;letter-spacing:1px;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
+.vault-bank{opacity:0}.chamber-award{font-family:Fredoka,Arial,sans-serif;font-weight:600;fill:#fff3c6;stroke:#362139;stroke-width:2px;paint-order:stroke fill}
+.chamber-bonus-mark{font:600 6px Fredoka,sans-serif;fill:#c5ffea;stroke:#362139;stroke-width:2px;paint-order:stroke fill}
+.vault-step.in-bank{filter:drop-shadow(0 1px 0 #fff1c5)}.vault-step:not(.in-bank){opacity:.4}
+.vault-step b{display:block;position:absolute;left:0;right:0;top:8px;font:600 10px Fredoka,sans-serif;text-align:center;color:#fff0d5;-webkit-text-stroke:2px #362139;paint-order:stroke fill}.vault-step.done b{display:none}
+.vault-loot-trail{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}.vault-loot-trail i{position:absolute;left:-4px;top:-3px;width:8px;height:6px;background:#ffdfa0;border:1px solid #885955;box-shadow:inset 1px 1px #fff4c7,inset -1px -1px #c18b62;clip-path:polygon(25% 0,75% 0,75% 16%,100% 16%,100% 83%,75% 83%,75% 100%,25% 100%,25% 83%,0 83%,0 16%,25% 16%);opacity:0}
+.vault-reveal{position:absolute;left:54px;right:54px;top:202px;text-align:center;pointer-events:none;z-index:6;opacity:0}
+.vault-reveal small{display:block;font-size:11px;line-height:18px;font-weight:600;color:#fff0d4;letter-spacing:1px;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
 .vault-reveal strong{display:block;height:45px;font-weight:700;line-height:45px;color:#ffbfe3;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;text-shadow:0 2px var(--ink);transform-origin:center}
-.vault-bonus{display:inline-block;min-height:27px;margin-top:3px;padding:1px 5px;font-size:22px;line-height:26px;font-weight:700;color:#b4f5df;-webkit-text-stroke:3.5px var(--ink);paint-order:stroke fill;text-shadow:0 2px var(--ink)}
+.vault-bonus{display:inline-block;min-height:27px;margin-top:3px;padding:1px 5px;font-size:20px;line-height:26px;font-weight:700;color:#b4f5df;-webkit-text-stroke:3.5px var(--ink);paint-order:stroke fill;text-shadow:0 2px var(--ink)}
 .vault-bonus[data-kind=multiply]{color:#e2bfff}
 .vault-bankroll{position:absolute;left:15px;right:15px;bottom:9px;text-align:center;z-index:4;transition:bottom .4s cubic-bezier(.2,.8,.2,1)}
 .vault-bankroll small{display:block;line-height:20px;font-size:14px;letter-spacing:1.7px;font-weight:600;color:#fff2cb;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}

@@ -39,7 +39,7 @@ function render(){
  const bonuses=draft?vaultBonuses(demo??{preset:draft,allocated:draft.chambers}):[];for(const option of $('#demo-bonus').options)if(option.value)option.disabled=!draft||draft.bonusChance===0||!bonuses.some(b=>b.kind===option.value&&b.weight>0);if($('#demo-bonus').selectedOptions[0]?.disabled)$('#demo-bonus').value='';
 }
 function pick(){if(!draft||draftError||demo?.flight||demo&&demo.completedAt!==null||demo&&Date.now()<demo.readyAt)return;try{if(audio.enabled)audio.unlock();if(!demo)demo=startVaultRound(draft,'Demo viewer');else unlockVault(demo,Date.now(),{forcedCash:$('#demo-cash').value===''?null:Number($('#demo-cash').value),forcedBonus:$('#demo-bonus').value||undefined});nextAuto=Date.now()+2400;render();}catch(e){auto=false;$('#demo-status').textContent=e.message;}}
-$('#demo-unlock').onclick=pick;$('#demo-reset').onclick=()=>resetDemo();
+$('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-reset').onclick=()=>resetDemo();
 $('#demo-auto').onclick=()=>{if(auto){auto=false;render();return;}resetDemo(false);auto=true;pick();nextAuto=Date.now()+1550;render();showPreview();};
 $('#preview-finale').onclick=()=>{if(draftError||!draft)return;resetDemo(false);demo=sampleVaultFinale(draft,Number($('#demo-finale').value));render();showPreview();};
 $('#demo-sound').onclick=()=>{audio.setEnabled(!audio.enabled);$('#demo-sound').textContent=audio.enabled?'Sound on':'Sound off';$('#demo-sound').setAttribute('aria-pressed',String(audio.enabled));};

@@ -442,3 +442,35 @@ is included. The authenticated read-only display transport is shared with the
 existing games. The first prototype has browser checks for paired playback,
 reload recovery, mobile fit, transparent idle state and all three finales; actual
 OBS audio routing remains a setup check on Faith’s machine.
+
+
+### Vault chamber art and motion — v2
+
+The vault now contains five separate, numbered compartments: **Golden Welcome**,
+**Candy Cache**, **Jewel Room**, **Birthday Treats** and **Crown Chamber**. Each
+has a shaded interior and a different opening: left hinge with turning wheel,
+split gift doors, a rising jewel shutter, a right hinge, and double crown doors.
+Opened doors stay open; their treasure, cash amount and small bonus marker remain
+visible. Cash and bonus odds are independent of these cosmetic chamber themes.
+
+At each unlock the selected frame lights up, bolts withdraw, its door opens,
+and the prize appears over that compartment. A short pixel-coin trail travels
+to the bankroll; the receipt settles into the chamber before the next click.
+The original two-second unlock pace and exact award clock are retained. Lock
+phrases have distinct pitches/instruments within the original gain envelope.
+
+Extra unlocks add numbered chambers. After five, the inner rooms transition to
+the next wing while the outer vault stays fixed. Up to twenty chambers fit in
+four wings; unused spaces are ornamental panels, not eligible mystery prizes.
+The transparent source stays **420 × 460** and the main total retains its size.
+Reduced motion uses stationary reveals and disables coin travel and wing motion.
+
+**Chamber tour** (`vault-art-preview.html`), linked from the editor preview,
+lets you choose any chamber, replay or scrub its opening, inspect the treasures,
+select a sample bonus, compare backdrops and try half/quarter speed. It uses
+sample data and never reads or changes saved rounds. Use the normal game demo
+for sounds. Refresh both the controller and OBS Browser Source after updating.
+
+This is a presentation update: saved settings, prize pools, bonus guarantees,
+opening ranges, weights, multiplication, caps and celebration thresholds are
+unchanged. Previous art is preserved in Git at `a2d05fb`.
