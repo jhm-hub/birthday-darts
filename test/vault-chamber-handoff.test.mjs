@@ -86,7 +86,7 @@ test('all four wings preserve the same boundary poses through a maximum-length r
   const pending=vaultChamberHandoff(r,time);advanceVault(r,time);
   if(i<19){const committed=vaultChamberHandoff(r,time);assert.deepEqual(pending.focuses,committed.focuses);assert.deepEqual(pending.bank,committed.bank);}
  }
- assert.equal(r.opened.length,20);assert.equal(r.allocated,20);assert.equal(r.remaining,0);assert.equal(vaultChamberHandoff(r,time).linked,false);assert.equal(vaultTotal(r),'30000');
+ assert.equal(r.opened.length,20);assert.equal(r.allocated,20);assert.equal(r.remaining,0);assert.equal(vaultChamberHandoff(r,time).linked,false);assert.equal(vaultTotal(r),'45000'); // $100 opening + ten $10 chambers + ten $25 special vaults.
 });
 
 test('the next guide begins at the fitted bankroll catch and stays outside its digits for every room',()=>{

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DEFAULT_VAULT,VAULT_INTRO_MS,VAULT_UNLOCK_MS,VAULT_REVEAL_MS,VAULT_CLEAR_MS,validateVault,startVaultRound,unlockVault,advanceVault,projectedVault,vaultTotal,vaultBonuses,vaultBonusDue,cleanVaultRound,sampleVaultFinale,vaultLevel} from '../src/vault-game.js';
+import {DEFAULT_VAULT,VAULT_INTRO_MS,VAULT_UNLOCK_MS,VAULT_REVEAL_MS,VAULT_CLEAR_MS,validateVault,startVaultRound,unlockVault,advanceVault,projectedVault,vaultTotal,vaultBonuses,vaultBonusDue,vaultCashPrizes,cleanVaultRound,sampleVaultFinale,vaultLevel} from '../src/vault-game.js';
 import {createVaultStore,exportVaultSettings,importVaultSettings,VAULT_STORE_KEY} from '../src/vault-store.js';
 const preset=patch=>({...structuredClone(DEFAULT_VAULT),...patch});
 function finish(r,options={}){const time=Math.max(r.readyAt,r.opened.at(-1)?.finishAt??0);const shot=unlockVault(r,time,options);advanceVault(r,shot.finishAt);return shot;}
@@ -72,3 +72,60 @@ test('round clears automatically and next viewer gets a fresh opening draw',asyn
  await f.store.action(id,'First',10000);await f.store.action(id,'First',11200);await f.store.advance(13200);const done=f.store.snapshot(id).round;assert.equal(done.opened.length,1);await f.store.advance(done.hideAt+VAULT_CLEAR_MS);assert.equal(f.store.snapshot(id).round,null);assert.equal(f.store.snapshot(id).lastResult.viewer,'First');await f.store.action(id,'Second',done.hideAt+500);assert.equal(f.store.snapshot(id).round.openingCents,32100);assert.equal(f.store.snapshot(id).round.multiplier,1);
 });
 test('corrupt storage is preserved and never silently overwritten',async()=>{const f=fixture();f.data.set(VAULT_STORE_KEY,'broken');await assert.rejects(f.store.init());assert.equal(f.data.get(VAULT_STORE_KEY),'broken');});
+
+test('special cash begins only at earned extra chambers for every allowed starting count',()=>{
+ for(let chambers=1;chambers<=10;chambers++){
+  const r=startVaultRound(preset({chambers,maxChambers:chambers+2,guarantee:false,outcomes:[{value:7,weight:1}],specialOutcomes:[{value:99,weight:1}]}),'',0,()=>0);
+  for(let i=0;i<chambers;i++)assert.equal(finish(r,{forcedCash:0,forcedBonus:i===0?'extra':null}).cashCents,700);
+  assert.deepEqual(vaultCashPrizes(r),[{value:99,weight:1}]);
+  assert.equal(finish(r,{forcedCash:0,forcedBonus:'extra'}).cashCents,9900);
+  assert.equal(finish(r,{forcedCash:0,forcedBonus:null}).cashCents,9900);
+  assert.equal(r.opened.length,chambers+2);assert.equal(r.cashCents,10000+chambers*700+19800);
+ }
+});
+test('special prizes use their own exact weighted draw, skip disabled entries and reject invalid forced choices',()=>{
+ const expected=[[0,2500],[99,2500],[100,25000],[399,25000]];
+ for(const [drawValue,cash]of expected){
+  const r=startVaultRound(preset({chambers:1,guarantee:false,outcomes:[{value:1,weight:100}],specialOutcomes:[{value:25,weight:1},{value:50,weight:0},{value:250,weight:3}]}),'',0,()=>0);
+  finish(r,{forcedCash:0,forcedBonus:'extra'});
+  for(const forcedCash of [1,3,-1,.5])assert.throws(()=>finish(r,{forcedCash,forcedBonus:null}),/unavailable/);
+  let bound;const shot=finish(r,{draw:max=>{bound=max;return drawValue;},forcedBonus:null});
+  assert.equal(bound,400);assert.equal(shot.cashCents,cash);
+ }
+});
+test('special cash remains exact with stacked total multipliers and a round reload',()=>{
+ let r=startVaultRound(preset({openingMin:1,openingMax:1,chambers:2,guarantee:false,outcomes:[{value:.11,weight:1}],specialOutcomes:[{value:25.25,weight:1}]}),'',0,()=>0);
+ finish(r,{forcedCash:0,forcedBonus:'extra'});finish(r,{forcedCash:0,forcedBonus:'multiply'});
+ r=JSON.parse(JSON.stringify(r));const shot=unlockVault(r,r.opened.at(-1).finishAt,{forcedCash:0,forcedBonus:'multiply'});
+ assert.equal(vaultTotal(projectedVault(r,shot.revealAt)),'10588');
+ assert.equal(vaultTotal(r),'244');advanceVault(r,shot.finishAt);assert.equal(vaultTotal(r),'10588');assert.equal(advanceVault(r,shot.finishAt+1),false);
+});
+test('both prize lists validate independently and survive backup, without leaking to the overlay',()=>{
+ for(const specialOutcomes of [null,[],Array(11).fill({value:1,weight:1}),[{value:0,weight:1}],[{value:1000001,weight:1}],[{value:1.001,weight:1}],[{value:25,weight:-1}],[{value:25,weight:0}]])assert.throws(()=>validateVault(preset({specialOutcomes})),/Special vault cash/);
+ const p=preset({specialOutcomes:[{value:333.33,weight:2},{value:500,weight:3}]});
+ const imported=importVaultSettings(exportVaultSettings([p]))[0];assert.deepEqual(imported.specialOutcomes,p.specialOutcomes);
+ const clean=cleanVaultRound(startVaultRound(p,'',0,()=>0));assert.equal(clean.preset.specialOutcomes,undefined);assert.equal(clean.preset.outcomes,undefined);
+});
+test('older settings gain richer prizes without modifying their base amounts, weights or source object',()=>{
+ const legacy=preset();delete legacy.specialOutcomes;const before=structuredClone(legacy);
+ assert.deepEqual(validateVault(legacy).specialOutcomes,DEFAULT_VAULT.specialOutcomes);assert.deepEqual(legacy,before);
+ const custom={...legacy,outcomes:[{value:12.35,weight:3.21},{value:999999,weight:0},{value:900,weight:4}]};
+ const migrated=importVaultSettings({format:'faith-birthday-vault',version:1,widgets:[custom]})[0];
+ assert.deepEqual(migrated.outcomes,custom.outcomes);assert.deepEqual(migrated.specialOutcomes,[{value:24.7,weight:3.21},{value:1000000,weight:0},{value:1800,weight:4}]);
+});
+test('saving richer special prizes preserves active and legacy rounds; only a new round uses the saved pool',async()=>{
+ const f=fixture();await f.store.init();const id=DEFAULT_VAULT.id;
+ const legacy=startVaultRound(preset({chambers:1,maxChambers:2,outcomes:[{value:7,weight:1}],guarantee:false}),'Old viewer',1000,()=>0);delete legacy.preset.specialOutcomes;
+ finish(legacy,{forcedCash:0,forcedBonus:'extra'});
+ const saved=JSON.parse(f.data.get(VAULT_STORE_KEY));saved.widgets[0].round=legacy;delete saved.widgets[0].specialOutcomes;f.data.set(VAULT_STORE_KEY,JSON.stringify(saved));
+ const oldRound=structuredClone(legacy);
+ await f.store.save(preset({chambers:1,maxChambers:2,specialOutcomes:[{value:222,weight:1}]}));
+ const raw=JSON.parse(f.data.get(VAULT_STORE_KEY));assert.deepEqual(raw.widgets[0].round,oldRound);
+ const resumed=createVaultStore(f.storage,f.locks);await resumed.action(id,'',legacy.opened[0].finishAt);
+ const shot=resumed.snapshot(id).round.flight;assert.equal(shot.cashCents,700);
+ await resumed.advance(shot.finishAt);const done=resumed.snapshot(id).round;
+ await resumed.advance(done.hideAt+VAULT_CLEAR_MS);await resumed.action(id,'New viewer',done.hideAt+500);
+ const next=JSON.parse(f.data.get(VAULT_STORE_KEY)).widgets[0].round;assert.deepEqual(next.preset.specialOutcomes,[{value:222,weight:1}]);
+ const frozen=structuredClone(next.preset);await resumed.save(preset({specialOutcomes:[{value:999,weight:1}]}));
+ assert.deepEqual(JSON.parse(f.data.get(VAULT_STORE_KEY)).widgets[0].round.preset,frozen);
+});
