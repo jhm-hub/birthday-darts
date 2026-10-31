@@ -1,3 +1,4 @@
+import {vaultCashLevel} from './vault-cash-motion.js';
 import {giftVolume} from './gift-volume.js';
 import {vaultBonusAt} from './vault-bonus-motion.js';
 import {vaultLevel} from './vault-game.js';
@@ -64,7 +65,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    const shot=r.flight??r.opened.at(-1);
    if(shot){
     cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'unlock',{index:shot.index});
-    cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:shot.cashCents>=10000?2:shot.cashCents>=2500?1:0});
+    cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:vaultCashLevel(shot.cashCents)});
     if(shot.bonus)cue(shot.id+':bonus',vaultBonusAt(shot),time,shot.bonus.kind==='multiply'?'multiply':'extra');
     cue(shot.id+':collect',shot.startAt+1240,time,'collect');
    }

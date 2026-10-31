@@ -35,6 +35,12 @@ for(const [label,click,wing] of [['immediate',2,false],['normal',2.4,false],['pa
  const data=renderVaultSequence([{at:0,sound:'unlock',options:{index:wing?4:0}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:wing?'extra':'multiply'},{at:1.24,sound:'collect'},{at:1.78,sound:'next',options:{index:wing?5:1}},...(wing?[{at:1.96,sound:'wing'}]:[]),{at:click,sound:'unlock',options:{index:wing?5:1}},{at:click+.78,sound:'cash',options:{tier:1}},{at:click+1.24,sound:'collect'}],rate);
  report['between-'+label]=metrics(data);await writeFile(join(output,'between-'+label+'.wav'),wav(data));
 }
+const cashComparison=[];
+for(let tier=0;tier<3;tier++){
+ const data=renderVaultSound('cash',{tier},rate);report['cash-tier-'+tier]=metrics(data);await writeFile(join(output,'cash-tier-'+tier+'.wav'),wav(data));
+ const start=tier*3.1;cashComparison.push({at:start,sound:'unlock',options:{index:tier}},{at:start+.78,sound:'cash',options:{tier}},{at:start+1.24,sound:'collect'},{at:start+1.78,sound:'next',options:{index:tier+1}});
+}
+const cashMix=renderVaultSequence(cashComparison,rate);report['cash-tiers']=metrics(cashMix);await writeFile(join(output,'cash-tiers.wav'),wav(cashMix));
 const bonusComparison=[];
 for(const [i,bonus] of ['multiply','extra'].entries()){
  const at=i*3.6;bonusComparison.push({at,sound:'unlock',options:{index:i}},{at:at+.78,sound:'cash',options:{tier:1}},{at:at+1.04,sound:bonus},{at:at+1.24,sound:'collect'},{at:at+1.78,sound:'next',options:{index:i+1}});

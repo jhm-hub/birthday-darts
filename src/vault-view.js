@@ -5,6 +5,8 @@ import {vaultIntro} from './vault-intro-motion.js';
 import {vaultOpeningHandoff,vaultOpeningTrail} from './vault-opening-handoff.js';
 import {vaultChamberHandoff,vaultChamberTrail,vaultOtherAwardOpacity} from './vault-chamber-handoff.js';
 import {vaultBonusPose,vaultBonusReadout,vaultBonusBirth,vaultBonusSpark} from './vault-bonus-motion.js';
+import {vaultCashPose,vaultCashSpark} from './vault-cash-motion.js';
+import {vaultCashGlyph} from './vault-cash-art.js';
 import {vaultBonusGlyph} from './vault-bonus-art.js';
 import {chamberDoorTransforms,VAULT_ART} from './vault-layout.js';
 import {vaultSVG,vaultLock,crownVaultCrest,vaultHaloSVG} from './vault-art.js';
@@ -12,16 +14,16 @@ import {giftFinalBadge,giftFinalBow} from './gift-finale-art.js';
 import {projectedVault,vaultLevel,money} from './vault-game.js';
 import {clamp,ease,CHAMBER_SLOTS,chamberTheme,chamberBirths,chamberPose,vaultBankPose,chamberPoint,vaultTrail} from './vault-motion.js';
 export function createVaultView(root,{audio}={}){
- root.innerHTML=`<section class="vault-stage" aria-label="Birthday vault"><div class="vault-heading">FAITH’S <b>BIRTHDAY VAULT</b></div><div class="vault-topline"><span class="vault-viewer"></span><span class="vault-count"></span></div><div class="vault-progress" aria-label="Chamber progress"></div><div class="vault-machine">${vaultSVG()}</div><div class="vault-reveal"><small></small><strong></strong><div class="vault-bonus-shell"><span class="vault-bonus"><span class="vault-bonus-icon" aria-hidden="true"></span><span class="vault-bonus-text"></span><i class="vault-bonus-sheen" aria-hidden="true"></i></span>${Array.from({length:8},(_,i)=>`<i class="vault-bonus-spark" data-side="${i<4?'left':'right'}" aria-hidden="true"></i>`).join('')}</div></div><div class="vault-loot-trail" aria-hidden="true">${Array.from({length:10},()=>`<i></i>`).join('')}</div><div class="vault-final-halo">${vaultHaloSVG()}</div><div class="vault-final-crest"></div><div class="vault-bankroll"><small>BANKROLL</small><strong>$0</strong><span class="vault-calculation"></span></div><div class="vault-particles" aria-hidden="true">${Array.from({length:100},(_,i)=>`<i style="--confetti:${['#fff1b4','#f7add5','#c9b6f8','#a9efdc','#aae3f6'][i%5]}"></i>`).join('')}</div></section>`;
- const $=s=>root.querySelector(s),stage=$('.vault-stage'),els={viewer:$('.vault-viewer'),count:$('.vault-count'),progress:$('.vault-progress'),machine:$('.vault-machine'),reveal:$('.vault-reveal'),small:$('.vault-reveal small'),cash:$('.vault-reveal strong'),bonus:$('.vault-bonus'),bonusShell:$('.vault-bonus-shell'),bonusIcon:$('.vault-bonus-icon'),bonusText:$('.vault-bonus-text'),bonusSheen:$('.vault-bonus-sheen'),bank:$('.vault-bankroll strong'),bankLabel:$('.vault-bankroll small'),calc:$('.vault-calculation'),halo:$('.vault-final-halo'),crest:$('.vault-final-crest'),bankWrap:$('.vault-bankroll')},particles=[...root.querySelectorAll('.vault-particles i')],reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ root.innerHTML=`<section class="vault-stage" aria-label="Birthday vault"><div class="vault-heading">FAITH’S <b>BIRTHDAY VAULT</b></div><div class="vault-topline"><span class="vault-viewer"></span><span class="vault-count"></span></div><div class="vault-progress" aria-label="Chamber progress"></div><div class="vault-machine">${vaultSVG()}</div><div class="vault-reveal"><small></small><div class="vault-cash-shell"><span class="vault-cash-icon" aria-hidden="true"></span><strong><span class="vault-cash-text"></span><i class="vault-cash-sheen" aria-hidden="true"></i></strong>${Array.from({length:16},(_,i)=>`<i class="vault-cash-spark" data-side="${i%2?'left':'right'}" aria-hidden="true"></i>`).join('')}</div><div class="vault-bonus-shell"><span class="vault-bonus"><span class="vault-bonus-icon" aria-hidden="true"></span><span class="vault-bonus-text"></span><i class="vault-bonus-sheen" aria-hidden="true"></i></span>${Array.from({length:8},(_,i)=>`<i class="vault-bonus-spark" data-side="${i<4?'left':'right'}" aria-hidden="true"></i>`).join('')}</div></div><div class="vault-loot-trail" aria-hidden="true">${Array.from({length:10},()=>`<i></i>`).join('')}</div><div class="vault-final-halo">${vaultHaloSVG()}</div><div class="vault-final-crest"></div><div class="vault-bankroll"><small>BANKROLL</small><strong>$0</strong><span class="vault-calculation"></span></div><div class="vault-particles" aria-hidden="true">${Array.from({length:100},(_,i)=>`<i style="--confetti:${['#fff1b4','#f7add5','#c9b6f8','#a9efdc','#aae3f6'][i%5]}"></i>`).join('')}</div></section>`;
+ const $=s=>root.querySelector(s),stage=$('.vault-stage'),els={viewer:$('.vault-viewer'),count:$('.vault-count'),progress:$('.vault-progress'),machine:$('.vault-machine'),reveal:$('.vault-reveal'),small:$('.vault-reveal small'),cash:$('.vault-reveal strong'),cashShell:$('.vault-cash-shell'),cashText:$('.vault-cash-text'),cashIcon:$('.vault-cash-icon'),cashSheen:$('.vault-cash-sheen'),bonus:$('.vault-bonus'),bonusShell:$('.vault-bonus-shell'),bonusIcon:$('.vault-bonus-icon'),bonusText:$('.vault-bonus-text'),bonusSheen:$('.vault-bonus-sheen'),bank:$('.vault-bankroll strong'),bankLabel:$('.vault-bankroll small'),calc:$('.vault-calculation'),halo:$('.vault-final-halo'),crest:$('.vault-final-crest'),bankWrap:$('.vault-bankroll')},particles=[...root.querySelectorAll('.vault-particles i')],reduced=matchMedia('(prefers-reduced-motion: reduce)');
  els.machine.style.cssText=`left:${VAULT_ART.x}px;top:${VAULT_ART.y}px;width:${VAULT_ART.size}px;height:${VAULT_ART.size}px`;
  const banks=[...root.querySelectorAll('.vault-bank')],trails=[...root.querySelectorAll('.vault-loot-trail i')];
  const rim=[...root.querySelectorAll('.rim-glint')].map(el=>({el,origin:el.getAttribute('transform')}));
  const chambers=[...root.querySelectorAll('.vault-chamber')].map((el,i)=>({el,i,slot:CHAMBER_SLOTS[i%5],left:el.querySelector('.chamber-leaf-left'),leftEdge:el.querySelector('.chamber-edge-left'),rightEdge:el.querySelector('.chamber-edge-right'),shades:[...el.querySelectorAll('.door-shade')],sheens:[...el.querySelectorAll('.door-sheen')],lock:el.querySelector('.chamber-lock-glint'),attention:el.querySelector('.chamber-attention'),right:el.querySelector('.chamber-leaf-right'),loot:el.querySelector('.chamber-loot'),glow:el.querySelector('.chamber-radiance'),focus:el.querySelector('.chamber-focus'),spark:el.querySelector('.chamber-spark'),award:el.querySelector('.chamber-award'),bonus:el.querySelector('.chamber-bonus-mark'),number:el.querySelector('.chamber-number'),dormant:el.querySelector('.chamber-dormant')}));
  const heading=$('.vault-heading'),topline=$('.vault-topline');
  const openingPips=document.createElement('span');openingPips.className='vault-opening-pips';openingPips.setAttribute('aria-hidden','true');openingPips.innerHTML='<i></i><i></i><i></i>';els.bankWrap.append(openingPips);
- const pips=[...openingPips.children],bonusSparks=[...root.querySelectorAll('.vault-bonus-spark')];
- let bonusKind='';
+ const pips=[...openingPips.children],bonusSparks=[...root.querySelectorAll('.vault-bonus-spark')],cashSparks=[...root.querySelectorAll('.vault-cash-spark')];
+ let bonusKind='',cashLevel=-1;
  let snapshot=null,options={preview:true,show:true},offset=0,raf,disposed=false,progressKey='',tier=-1,idleAt=null;
  const resize=()=>{stage.style.transform=`translate(-50%,-50%) scale(${Math.min(root.clientWidth/420,root.clientHeight/460)})`;};
  const observer=new ResizeObserver(resize);observer.observe(root);resize();
@@ -29,7 +31,7 @@ export function createVaultView(root,{audio}={}){
  function render(){
   if(disposed)return;raf=requestAnimationFrame(render);
   const quiet=options.quiet??reduced.matches;
-  const time=options.frozenAt??Date.now()+offset,r=presentedVaultRound(snapshot?.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=vaultBonusReadout(r,now,time),bonusPose=vaultBonusPose(r?.flight,time,quiet);
+  const time=options.frozenAt??Date.now()+offset,r=presentedVaultRound(snapshot?.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=vaultBonusReadout(r,now,time),bonusPose=vaultBonusPose(r?.flight,time,quiet),cashPose=vaultCashPose(r?.flight,time,quiet);
   const visible=options.show!==false&&(options.preview||!!r),exit=vaultExit(r,time,quiet),entrance=vaultIntro(r,time,quiet),opening=vaultOpeningHandoff(r,time,quiet),between=vaultChamberHandoff(r,time,quiet);
   stage.style.opacity=visible?exit.stage*(r?entrance.stage:vaultIdleOpacity(idleAt,time)):0;
   stage.setAttribute('aria-hidden',String(!visible||exit.done));
@@ -81,8 +83,13 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.reveal.style.left=(reward?Math.max(8,Math.min(192,point.x-110)):100)+'px';els.reveal.style.right='auto';els.reveal.style.width='220px';els.reveal.style.top=(reward?Math.max(112,Math.min(255,point.y-39)):170)+'px';
   els.reveal.classList.toggle('has-bonus',!!reward?.bonus);
   els.small.textContent=reward?(reward.index+1)+' · '+chamberTheme(reward.index).name:'OPENING BALANCE';
-  fit(els.cash,reward?'+'+money(reward.cashCents):money(r?.openingCents??0),38,184);
-  els.cash.style.transform=quiet?'none':`translateY(${showingShot?(1-ease((age-780)/220))*7:0}px) scale(${showingShot?1+Math.sin(clamp((age-780)/360)*Math.PI)*.07:1})`;
+  const cashText=reward?'+'+money(reward.cashCents):money(r?.openingCents??0),showCashIcon=cashText.length<=7;
+  fit(els.cashText,cashText,cashPose.fontSize,showCashIcon?158:184);
+  els.cashShell.dataset.level=cashPose.level;els.cashShell.style.transform=`translateY(${cashPose.y}px) scale(${cashPose.scale})`;
+  els.cashIcon.style.display=showCashIcon?'':'none';
+  if(cashLevel!==cashPose.level){els.cashIcon.innerHTML=vaultCashGlyph(cashPose.level);cashLevel=cashPose.level;}
+  els.cashSheen.style.opacity=cashPose.shine;els.cashSheen.style.left=(cashPose.sweep*110-10)+'%';
+  cashSparks.forEach((el,i)=>{const spark=vaultCashSpark(i,cashPose,shot,time,quiet);el.style.opacity=spark.opacity;el.style.width=spark.width+'px';el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});
   const kind=reward?.bonus?.kind??'';
   els.bonusShell.style.display=kind?'':'none';els.bonusShell.dataset.kind=kind;
   els.bonusText.textContent=kind?(kind==='multiply'?'×'+reward.bonus.value+' TOTAL':'+1 UNLOCK'):'';
@@ -110,10 +117,12 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.bank.setAttribute('aria-hidden',String(entrance.pending));
   els.bank.style.opacity=handoff.linked?1:finished?finale.amount:entrance.amount;
   els.bank.style.transform=handoff.linked?`scale(${handoff.pulse+(finished?finale.scale-1:0)})`:finished?`translateY(${finale.rise}px) scale(${finale.scale})`:`translateY(${entrance.amountY}px) scale(${entrance.amountScale})`;
+  if(cashPose.bankScale!==1)els.bank.style.transform+=` scale(${cashPose.bankScale})`;
   if(bonusPose.bankScale!==1)els.bank.style.transform+=` scale(${bonusPose.bankScale})`;
   els.bank.style.color=handoff.linked?handoff.color:'';
   els.bank.style.backgroundColor=handoff.linked?handoff.background:'';
   els.bank.style.boxShadow=handoff.linked?`inset 0 2px rgba(255,236,174,${.6+.4*handoff.gleam}),inset 0 -2px #a56788`:entrance.active?`inset 0 ${1+entrance.gleam}px rgb(${234+21*entrance.gleam} ${201+35*entrance.gleam} ${154+20*entrance.gleam}),inset 0 -2px #8a5d81`:'';
+  if(cashPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,235,173,${.5+.5*cashPose.gleam}),inset 0 -2px #a57968`;
   if(bonusPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(241,210,255,${.65+.35*bonusPose.gleam}),inset 0 -2px #a567a7`;
   els.calc.textContent=now?money(now.cashCents)+' collected  ·  ×'+readout.multiplier:'Cash in every chamber. Bonuses on top.';
   els.calc.style.marginTop=handoff.linked?handoff.gap+'px':'';
@@ -121,7 +130,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.calc.setAttribute('aria-hidden',String(entrance.calc===0));
   els.calc.style.fontSize=Math.min(14,376/(els.calc.textContent.length*.56))+'px';
   const burstAge=finished?finalAge-build:shot?age-780:10000;
-  particles.forEach((el,i)=>{const particle=vaultParticle(i,burstAge,{final:finished,level:finished?level:0,x:finished?210:point.x,y:finished?220:point.y,quiet});el.style.opacity=particle.visible?particle.opacity:0;el.style.transform=`translate(${particle.x}px,${particle.y}px) rotate(${particle.rotation}deg)`;});
+  particles.forEach((el,i)=>{const particle=finished?vaultParticle(i,burstAge,{final:finished,level:finished?level:0,x:finished?210:point.x,y:finished?220:point.y,quiet}):{visible:false,opacity:0,x:0,y:0,rotation:0};el.style.opacity=particle.visible?particle.opacity:0;el.style.transform=`translate(${particle.x}px,${particle.y}px) rotate(${particle.rotation}deg)`;});
   audio?.sync(r,time);
  }
  render();

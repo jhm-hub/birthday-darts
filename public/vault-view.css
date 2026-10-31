@@ -63,3 +63,15 @@
 .vault-bonus-sheen{position:absolute;top:0;bottom:0;width:13px;background:#fff6d2;opacity:0;pointer-events:none;clip-path:polygon(6px 0,13px 0,13px 10px,10px 10px,10px 23px,6px 23px,6px 100%,0 100%,0 23px,3px 23px,3px 10px,6px 10px)}
 .vault-bonus-spark{position:absolute;top:18px;width:6px;height:6px;opacity:0;background:var(--bonus-light);box-shadow:inset 2px 2px #fff4d1,inset -2px -2px var(--bonus-dark);pointer-events:none;clip-path:polygon(2px 0,4px 0,4px 2px,6px 2px,6px 4px,4px 4px,4px 6px,2px 6px,2px 4px,0 4px,0 2px,2px 2px)}
 .vault-bonus-spark[data-side="left"]{left:0}.vault-bonus-spark[data-side="right"]{left:100%}
+
+/* Coins frame the prize instead of crossing its digits or the running total. */
+.vault-cash-shell{position:relative;display:flex;align-items:center;justify-content:center;gap:3px;width:max-content;max-width:214px;margin:0 auto;transform-origin:center;--cash-color:#ffbfe3;--cash-edge:#b37592}
+.vault-cash-shell[data-level="1"]{--cash-color:#ffdfa6;--cash-edge:#bd895b}
+.vault-cash-shell[data-level="2"]{--cash-color:#fff0b5;--cash-edge:#e4aa62}
+.vault-cash-shell strong{position:relative;display:flex;align-items:center;flex:0 1 auto;max-width:202px;min-height:45px;line-height:1;padding:2px 9px 3px;color:var(--cash-color);white-space:nowrap;box-shadow:inset 0 2px #fff0bc,inset 0 -2px var(--cash-edge)}
+.vault-cash-text{position:relative;display:block;line-height:1.04;z-index:1}
+.vault-cash-icon{display:block;flex:0 0 26px;width:26px;height:28px;filter:drop-shadow(0 1px 0 #362139)}
+.vault-cash-icon svg{display:block;width:100%;height:100%;overflow:visible;image-rendering:pixelated}
+.vault-cash-sheen{position:absolute;top:0;bottom:0;width:12px;background:#fff6d1;opacity:0;pointer-events:none;clip-path:polygon(7px 0,12px 0,12px 14px,8px 14px,8px 30px,4px 30px,4px 100%,0 100%,0 30px,3px 30px,3px 14px,7px 14px)}
+.vault-cash-spark{position:absolute;top:20px;width:8px;height:7px;opacity:0;pointer-events:none;background:#efc47b;border:1px solid #6c414b;box-shadow:inset 1px 1px #fff6c9,inset -1px -1px #b5784f;clip-path:polygon(25% 0,75% 0,75% 14%,100% 14%,100% 86%,75% 86%,75% 100%,25% 100%,25% 86%,0 86%,0 14%,25% 14%)}
+.vault-cash-spark[data-side="left"]{left:0}.vault-cash-spark[data-side="right"]{left:100%}

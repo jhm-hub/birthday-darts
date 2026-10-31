@@ -708,3 +708,32 @@ Validation:297 tests/build, including exact large/stacked multipliers, cash-firs
 readouts, late commits, added-lock timing, quiet mode, final/continuing chambers,
 and bounded badge/sparkle motion. Sound overlaps checked at44.1/48kHz; no clipping.
 These are timing/headroom checks, not a human listening or physical OBS mix review.
+
+
+### Cash prize reveals (v12)
+
+Individual cash prizes now use three coordinated visual and audio levels: below
+$25, $25–$99.99, and $100+. Each has a richer shaded coin stack, pink-to-gold
+lettering, and 6/10/16 small flipping coins beside the amount. A 140ms landing
+and short stepped gleam give larger prizes more emphasis without extending
+the two-second chamber. Coins clear before the bonus resolves; the exact
+bankroll remains readable. The fixed 420×460 transparent stage, approved Crown
+art, prize math and configurable final-celebration thresholds are unchanged.
+Reduced motion uses the static amount and coin stack.
+
+Cash sounds share that 140ms accent: a coin tick and bright jewel notes, with
+additional gold/low notes for larger prizes. The richest cue finishes within
+420ms. All 14 non-cash sound families are unchanged and the common volume slider
+still applies. Headroom and timing checks passed at 44.1/48kHz; this is not a
+human listening or physical OBS mix review.
+
+The silent Chamber Tour adds Cash · $10, $25 and $100 (query scenes cash-0,
+cash-1 and cash-2), with scrubbing and half speed. In the game, choose Next demo
+cash, enable Sound, roll the opening balance and unlock a chamber to hear it.
+These previews never change saved viewer rounds.
+
+Validation: 305 tests and build passed. Covered boundaries, bounded motion,
+bonus spacing, exact award math, quiet/reconnect behavior and mixed sound
+headroom. Browser checks cover all three tiers, lower-chamber clearance,
+transparency, and a sound-enabled unsaved $204 + $100 ×2 demo yielding $608.
+Previous version and sounds remain preserved at commit 289de27.

@@ -131,3 +131,10 @@ test('the bonus-wing sound follows its prepared wing, not a second playback on t
  a.sync(s.flight,s.clickAt);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('unlock',{index:5}));
  a.sync(s.settled,s.finishAt);assert.equal(sources(ctx).length,4,'only the finale, never a seventh-lock invitation');
 });
+test('cash audio selects the same boundary tier as its visual and joins without replaying',()=>{
+ for(const [cashCents,tier] of [[2499,0],[2500,1],[9999,1],[10000,2]]){
+  const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),r=round();r.flight.cashCents=cashCents;r.multiplier='100';a.setEnabled(true);
+  a.sync(r,2820);assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('cash',{tier}));assert.deepEqual(sources(ctx)[0].started,[10,.04]);
+  a.sync(structuredClone(r),2850);assert.equal(sources(ctx).length,1);
+ }
+});
