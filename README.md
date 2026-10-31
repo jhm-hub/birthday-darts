@@ -999,3 +999,26 @@ and `pinata-art-preview.html?scene=extra`. The main three-hit sample includes a
 multiplier; **Next practice reward → +1 Encore swing** lets you try Encore after
 the guaranteed opening cash hit. These previews do not change saved games.
 Review evidence: `Stream-Games/Pinata/Review/bonuses-impact-v7-2026-10-30/`.
+
+### Piñata — royal multiplier and Encore sounds (v8)
+
+The multiplier now combines a warm E-major foundation with upward jewel bells;
+a second small chord lands on the total pulse. Encore uses a rounded, rhythmic
+mallet phrase and a bright catch when the extra-swing token reaches the counter.
+Both begin at the existing hit+160ms bonus reveal. The multiplier resolves at
+hit+650ms and clears before the finale build-up; Encore catches at hit+820ms.
+
+The existing slider/default45%, mute, reset and stale-cue handling apply to the
+whole sound, including its tail. Bonus peaks are within0.3dB of each other:
+−22.65/−22.93dBFS at100%,−29.59/−29.87dBFS at45%. The busiest round remains at
+−15.36dBFS full volume; the royal finale retains the largest musical payoff.
+Swing, hit, cash, burst, rise and final samples are byte-identical to v7.
+
+Enable **Sound on** and **Watch a 3-hit sample** for the multiplier. For Encore,
+start a fresh practice round, take the opening cash swing, then choose
+**Next practice reward → +1 Encore swing** and swing again. The art close-up
+remains silent. The audio export script adds `bonus-comparison.wav` (multiplier,
+then Encore), individual `multiply-hit.wav`/`extra-hit.wav` and a final-multiplier
+round. Review: `Stream-Games/Pinata/Review/bonus-sound-v8-2026-10-30/`.
+Timing/headroom verified at44.1/48kHz; direct listening and Faith's physical
+voice/music mix remain unverified.
