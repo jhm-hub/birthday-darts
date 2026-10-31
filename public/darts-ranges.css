@@ -8,3 +8,5 @@
 .viewer-ranges .range-note{font-size:12px;margin-bottom:0}.range-match{color:#ffe1a1!important;font-size:13px!important;line-height:1.55;margin:8px 0 0;grid-column:1/-1}.range-match:empty{display:none}
 .demo-viewer-field{margin:16px 0}.demo-viewer-field input{width:100%;box-sizing:border-box}
 @media(max-width:520px){.viewer-range-form{grid-template-columns:1fr 1fr}.viewer-range-form label:first-child{grid-column:1/-1}.viewer-ranges{padding:16px}.viewer-range-row strong{min-width:0;flex-basis:100%}}
+
+.viewer-range-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.viewer-range-actions .range-demo{background:#eaa0cd;color:#27172e;border-color:#f8b7dd;font-weight:800;white-space:nowrap}.viewer-range-actions .range-demo:hover{background:#ffc1e4}.viewer-range-actions .range-demo:focus-visible{outline:2px solid #ffe1a1;outline-offset:3px}

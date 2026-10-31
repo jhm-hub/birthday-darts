@@ -31,7 +31,14 @@ future target sequence.
 
 ## Try it before streaming
 
-In the editor’s preview, enter a saved name in **Demo viewer**. The match notice
+Select **Demo** beside any saved username to play a complete automatic round.
+Every dart and extra dart plays in order with a short pause to read each prize,
+followed by the total and celebration. **Stop demo** lets the current dart finish
+without starting another; **Reset demo** clears the sample. Select Demo again
+for a fresh round. From live controls, Demo opens a separate editor tab and keeps
+the live control connection running.
+
+You can also enter a saved name in the editor’s **Demo viewer** field. The match notice
 shows the range. Use **Throw demo dart** once per dart to play through, or use
 **Preview finale** for a disposable completed sample. Resetting or changing the
 name starts a fresh demo. Demos never start a live round. Clear the demo username

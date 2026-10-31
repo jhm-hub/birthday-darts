@@ -17,7 +17,7 @@ const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const money=c=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:c%100?2:0,maximumFractionDigits:2}).format(c/100);
 const colors=['#9980cf','#7eacca','#86c6b1','#e9b975','#f077a4','#b79add','#efc792','#f393af'];
 let session,characterRenderer=null;
-const rangeControls=control&&!demo?bindDartsViewerRanges($('#viewer-ranges'),{save:async range=>receive(await session.saveViewerRange(range)),remove:async username=>receive(await session.removeViewerRange(username))}):null;
+const rangeControls=control&&!demo?bindDartsViewerRanges($('#viewer-ranges'),{save:async range=>receive(await session.saveViewerRange(range)),remove:async username=>receive(await session.removeViewerRange(username)),demo:username=>{const url=new URL('./index.html',location.href);url.searchParams.set('id',widgetId);url.hash=new URLSearchParams({demo:username}).toString();window.open(url.href,'_blank','noopener');}}):null;
 function rangeHint(){if(!rangeControls||!state)return;const rule=state.round?state.control?.activeViewerRange:findDartsViewerRange(state.control?.viewerRanges,$('#viewer').value);$('#viewer-range-match').textContent=rule?(state.round?'This round: ':'Username match: ')+dartsViewerRangeText(rule)+' final total · prepared cash values.':state.round?'This round uses the usual amounts and odds.':'No matching range · usual amounts and odds.';}
 if(rangeControls)$('#viewer').addEventListener('input',rangeHint);
 let widgetId=new URLSearchParams(location.search).get('id'),state=null,connected=false,pending=false,offset=0,config=null,artReady=false,boardKey='',historyKey='',raf,poseIndex=-2,errorMessage='';

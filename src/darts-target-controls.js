@@ -1,6 +1,6 @@
 import {dartsViewerRangeText} from './darts-targets.js';
 
-export function bindDartsViewerRanges(root,{save,remove}){
+export function bindDartsViewerRanges(root,{save,remove,demo}){
  const form=root.querySelector('form'),list=root.querySelector('[data-range-list]'),status=root.querySelector('[data-range-status]');
  const username=form.elements.username,min=form.elements.min,max=form.elements.max;
  let ranges=[],available=false,busy=false,key='';
@@ -16,7 +16,9 @@ export function bindDartsViewerRanges(root,{save,remove}){
     edit.onclick=()=>{username.value=rule.username;min.value=rule.min;max.value=rule.max;username.focus();status.textContent='Editing @'+rule.username+'. Save to apply to future rounds.';};
     const erase=document.createElement('button');erase.type='button';erase.className='text-button';erase.textContent='Remove';erase.setAttribute('aria-label','Remove '+rule.username);
     erase.onclick=()=>run(()=>remove(rule.username),'Removed @'+rule.username+' for future rounds.');
-    row.append(name,amount,edit,erase);list.append(row);
+    const actions=document.createElement('div');actions.className='viewer-range-actions';
+    if(demo){const play=document.createElement('button');play.type='button';play.className='range-demo';play.textContent='▶ Demo';play.setAttribute('aria-label','Demo '+rule.username);play.title='Play a complete private demo for @'+rule.username;play.onclick=()=>{if(!available||busy)return;try{demo(rule.username);status.textContent='Demo for @'+rule.username+' · '+dartsViewerRangeText(rule)+'. Each dart and bonus plays automatically in the preview.';}catch(e){status.textContent=e.message;}};actions.append(play);}
+    actions.append(edit,erase);row.append(name,amount,actions);list.append(row);
    }
   }controls();
  }

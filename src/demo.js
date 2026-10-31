@@ -2,13 +2,20 @@ import {newWidgets,validateWidget,widgetSnapshot,applyWidgetAction,advanceWidget
 import {CELEBRATION_CHOICES} from './celebrations.js';
 import {eligibleDartPrizes} from './darts-bonuses.js';
 
+export const DEMO_DART_PAUSE_MS=650;
 // A disposable game: no storage, pairing keys or stream connection.
 export function createDemo(){
- let state=null,error='Finish setting up a game to try it.',previewCelebration='',previewBonus='',viewer='';
+ let state=null,error='Finish setting up a game to try it.',previewCelebration='',previewBonus='',viewer='',autoPlaying=false,nextThrowAt=null;
  function ensureReady(){if(error||!state)throw Error(error);}
- function reset(){previewBonus='';if(state){state.widgets[0].round=null;state.widgets[0].lastResult=null;state.revision++;}}
+ function stop(){autoPlaying=false;nextThrowAt=null;}
+ function reset(){stop();previewBonus='';if(state){state.widgets[0].round=null;state.widgets[0].lastResult=null;state.revision++;}}
+ function throwDart(now=Date.now()){
+  ensureReady();advanceWidgets(state,now);
+  applyWidgetAction(state,{action:'throw',id:'demo',viewer:viewer||'Demo viewer'},now);
+ }
  return {
   configure(input,validationError='',demoViewer=''){
+   stop();
    viewer=typeof demoViewer==='string'?demoViewer.trim().replace(/^@/,''):'';
    try{
     if(validationError)throw Error(validationError);
@@ -16,11 +23,9 @@ export function createDemo(){
     state=newWidgets([preset]);error='';previewBonus='';
    }catch(e){error=e.message;if(state){state.widgets[0].round=null;state.widgets[0].lastResult=null;}}
   },
-  throw(now=Date.now()){
-   ensureReady();
-   advanceWidgets(state,now);
-   applyWidgetAction(state,{action:'throw',id:'demo',viewer:viewer||'Demo viewer'},now);
-  },
+  throw(now=Date.now()){stop();throwDart(now);},
+  play(now=Date.now()){ensureReady();reset();try{throwDart(now);autoPlaying=true;}catch(e){stop();throw e;}},
+  stop,
   selectCelebration(id){
    if(id&&!CELEBRATION_CHOICES.some(c=>c.id===id))throw Error('Choose a celebration from the list.');
    previewCelebration=id||'';reset();
@@ -66,8 +71,20 @@ export function createDemo(){
    state.widgets[0].lastResult.completedAt=now;state.revision++;
   },
   reset,
-  advance(now=Date.now()){const changed=state?advanceWidgets(state,now):false;if(!state?.widgets[0].round)previewBonus='';return changed;},
-  snapshot(now=Date.now()){return state?{...widgetSnapshot(state,'demo',now),previewCelebration,previewBonus}:null;},
+  advance(now=Date.now()){
+   let changed=state?advanceWidgets(state,now):false;const round=state?.widgets[0].round;
+   if(!round)previewBonus='';
+   if(autoPlaying){
+    if(!round||round.hideAt){stop();changed=true;}
+    else if(!round.flight){
+     // Give each revealed prize a short reading beat before the next throw.
+     nextThrowAt??=now+DEMO_DART_PAUSE_MS;
+     if(now>=nextThrowAt){nextThrowAt=null;try{throwDart(now);}catch(e){error=e.message;stop();}changed=true;}
+    }
+   }
+   return changed;
+  },
+  snapshot(now=Date.now()){return state?{...widgetSnapshot(state,'demo',now),previewCelebration,previewBonus,autoPlaying}:null;},
   get error(){return error;}
  };
 }
