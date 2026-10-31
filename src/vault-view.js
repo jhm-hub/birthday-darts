@@ -1,3 +1,4 @@
+import {vaultWelcomeFlow,vaultWelcomeParticle} from './vault-welcome-flow.js';
 import {vaultTreasureCoda,vaultTreasureRestOrnament} from './vault-treasure-coda.js';
 import {vaultTreasureBridge,vaultTreasureBridgeParticle} from './vault-treasure-handoff.js';
 import {vaultSpecialArrival,vaultSpecialParticle,vaultSpecialJewel} from './vault-special-arrival.js';
@@ -35,6 +36,7 @@ export function createVaultView(root,{audio}={}){
  const openingPips=document.createElement('span');openingPips.className='vault-opening-pips';openingPips.setAttribute('aria-hidden','true');openingPips.innerHTML='<i></i><i></i><i></i>';els.bankWrap.append(openingPips);
  const catches=document.createElement('span');catches.className='vault-collection-catches';catches.setAttribute('aria-hidden','true');catches.innerHTML='<i></i><i></i>';els.bankWrap.append(catches);
  const gathers=[...root.querySelectorAll('.vault-final-gather i')];let gatherStyle=-1;
+ const welcomeLayer=document.createElement('div');welcomeLayer.className='vault-welcome-flow';welcomeLayer.setAttribute('aria-hidden','true');welcomeLayer.innerHTML=Array.from({length:6},()=>'<i>'+vaultChamberGuideGlyph()+'</i>').join('');stage.append(welcomeLayer);const welcomePieces=[...welcomeLayer.children];
  const treasure=document.createElement('div');treasure.className='vault-treasure';treasure.setAttribute('aria-hidden','true');treasure.innerHTML='<span class="vault-treasure-rim">'+vaultTreasureRing()+'</span><span class="vault-treasure-decor">'+vaultTreasureDecor()+'</span>'+Array.from({length:48},(_,i)=>'<i>'+vaultFinalePiece(i%3===0?2:i)+'</i>').join('');stage.append(treasure);
  const treasureRim=treasure.querySelector('span'),treasurePieces=[...treasure.querySelectorAll('i')],laurelLeaves=[...treasure.querySelectorAll('.treasure-laurel-leaf')],laurelStems=[...treasure.querySelectorAll('.treasure-laurel-stem')],coronetGems=[...treasure.querySelectorAll('.treasure-coronet-gem')],coronetArc=treasure.querySelector('.treasure-jewel-arc'),coronetStar=treasure.querySelector('.treasure-coronet-star');let treasureStyle=-1;
  const coins=[...root.querySelectorAll('.vault-collection i')],catchStars=[...catches.children];let dockKey='',dock={left:130,right:290,y:386};
@@ -48,7 +50,7 @@ export function createVaultView(root,{audio}={}){
   if(disposed)return;raf=requestAnimationFrame(render);
   const quiet=options.quiet??reduced.matches;
   const time=options.frozenAt??Date.now()+offset,r=presentedVaultRound(snapshot?.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=vaultBonusReadout(r,now,time),bonusPose=vaultBonusPose(r?.flight,time,quiet),cashPose=vaultCashPose(r?.flight,time,quiet),collection=vaultCollectionBank(r?.flight,time,quiet);
-  const visible=options.show!==false&&(options.preview||!!r),exit=vaultExit(r,time,quiet),entrance=vaultIntro(r,time,quiet),opening=vaultOpeningHandoff(r,time,quiet),between=vaultChamberHandoff(r,time,quiet);
+  const visible=options.show!==false&&(options.preview||!!r),exit=vaultExit(r,time,quiet),entrance=vaultIntro(r,time,quiet),welcome=vaultWelcomeFlow(r,time,quiet),opening=vaultOpeningHandoff(r,time,quiet),between=vaultChamberHandoff(r,time,quiet);
   stage.style.opacity=visible?exit.stage*(r?entrance.stage:vaultIdleOpacity(idleAt,time)):0;
   stage.setAttribute('aria-hidden',String(!visible||exit.done));
   if(!visible){if(!r)audio?.sync(null,time);return;}
@@ -186,7 +188,9 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   if(nextDockKey!==dockKey){dockKey=nextDockKey;dock={left:Math.max(14,els.bankWrap.offsetLeft+els.bank.offsetLeft-8),right:Math.min(406,els.bankWrap.offsetLeft+els.bank.offsetLeft+els.bank.offsetWidth+8),y:els.bankWrap.offsetTop+els.bank.offsetTop+12};}
   trails.forEach((el,i)=>{const openingGuide=vaultOpeningTrail(r,i,time,quiet),guide=openingGuide.visible?openingGuide:vaultChamberTrail(between,i,time,quiet,dock,between.linked&&vaultSpecialTheme(r,between.link.index)?VAULT_SPECIAL_POINT:null),t=guide;el.dataset.guide=String(guide.visible);el.dataset.relay=String(!openingGuide.visible&&guide.visible);el.style.opacity=t.visible&&!finished?t.opacity:0;el.style.transform=`translate(${t.x}px,${t.y}px)`;});
   coins.forEach((el,i)=>{const coin=vaultCollectionCoin(shot,i,time,dock,quiet,point);el.style.opacity=finished?0:coin.opacity;el.style.transform=`translate(${coin.x}px,${coin.y}px) scale(${coin.flip},${coin.squash})`;});
-  catchStars.forEach((el,i)=>{el.style.opacity=finished?0:collection.catch;el.style.left=(i?dock.right:dock.left)-els.bankWrap.offsetLeft+'px';el.style.top=(dock.y-els.bankWrap.offsetTop)+'px';el.style.transform=`scale(${.6+collection.catch*.4})`;});
+  welcomePieces.forEach((el,i)=>{const spark=vaultWelcomeParticle(welcome,i,dock);el.style.opacity=spark.opacity;el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});
+  const bankCatch=Math.max(collection.catch,welcome.catch);
+  catchStars.forEach((el,i)=>{el.style.opacity=finished?0:bankCatch;el.style.left=(i?dock.right:dock.left)-els.bankWrap.offsetLeft+'px';el.style.top=(dock.y-els.bankWrap.offsetTop)+'px';el.style.transform=`scale(${.6+bankCatch*.4})`;});
   const nextGatherStyle=bridge.linked?bridge.style:0;if(gatherStyle!==nextGatherStyle){gatherStyle=nextGatherStyle;gathers.forEach((el,i)=>el.innerHTML=gatherStyle?vaultTreasureSprite(i,gatherStyle):vaultFinalePiece(2));}
   gathers.forEach((el,i)=>{const g=bridge.linked?vaultTreasureBridgeParticle(bridge,i,time,dock):vaultFinaleGather(r,i,time,level,quiet,dock);el.style.opacity=g.opacity;el.style.transform=`translate(${g.x}px,${g.y}px)`;});
   const burstAge=finished?finalAge-build:shot?age-780:10000;

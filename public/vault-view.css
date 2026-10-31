@@ -116,3 +116,8 @@
 
 /* Transparent laurel and jewel ornaments frame the crest above the total. */
 .vault-treasure-decor{position:absolute;inset:0;pointer-events:none}.vault-treasure-decor svg{width:420px;height:460px}.treasure-laurel-leaf,.treasure-laurel-stem,.treasure-coronet-gem,.treasure-jewel-arc,.treasure-coronet-star{opacity:0}
+
+/* Paired welcome glints bridge the arrival jewel and opening balance. */
+.vault-welcome-flow{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:3}
+.vault-welcome-flow i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;opacity:0}
+.vault-welcome-flow svg{display:block;width:100%;height:100%;image-rendering:pixelated}

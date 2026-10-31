@@ -1,3 +1,4 @@
+import {VAULT_WELCOME_START_MS,VAULT_WELCOME_ECHO_MS} from '../src/vault-welcome-flow.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {vaultIntro,VAULT_OPENING_REVEAL_MS,VAULT_OPENING_LOCK_MS} from '../src/vault-intro-motion.js';
@@ -46,4 +47,15 @@ test('the arrival jewel hands off to the stationary frame before the balance app
  const r=fresh();assert.equal(vaultIntro(r,r.startedAt).frame,0);assert.equal(vaultIntro(r,r.startedAt).seal,0);
  assert.ok(vaultIntro(r,r.startedAt+120).seal>.9);assert.ok(vaultIntro(r,r.startedAt+120).frame<.1);
  const settled=vaultIntro(r,r.startedAt+480);assert.equal(settled.seal,0);assert.equal(settled.frame,1);assert.equal(settled.machineY,0);assert.equal(settled.amount,0);
+});
+
+test('the new welcome audition matches the live arrival, balance and ready cues',()=>{
+ const score=vaultSoundScore('intro');assert.ok(score.some(c=>c.voice==='glass'&&c.at*1000===VAULT_WELCOME_START_MS));
+ assert.deepEqual(score.filter(c=>c.voice==='coin').map(c=>Math.round(c.at*1000)),[620,620+VAULT_WELCOME_ECHO_MS,620+VAULT_WELCOME_ECHO_MS*2]);
+ for(const rate of [44100,48000]){
+  const audition=renderVaultSound('welcome',{},rate),live=renderVaultSequence([{at:0,sound:'intro-arrive'},{at:.62,sound:'intro-balance'},{at:.94,sound:'ready'}],rate);
+  assert.ok(Math.abs(audition.length-live.length)<=1);for(let i=0;i<Math.max(audition.length,live.length);i++)assert.ok(Math.abs((audition[i]??0)-(live[i]??0))<1e-7);
+  const joined=renderVaultSequence([{at:0,sound:'welcome'},{at:1.2,sound:'first-unlock'},{at:1.98,sound:'cash',options:{tier:2}},{at:2.24,sound:'multiply'}],rate);
+  assert.ok(joined.every(Number.isFinite));assert.ok(joined.reduce((m,v)=>Math.max(m,Math.abs(v)),0)<.2);
+ }
 });
