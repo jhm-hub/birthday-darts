@@ -42,18 +42,18 @@ test('confetti stays inside the compact stage and above the final reading area',
  for(let level=0;level<3;level++)for(let index=0;index<100;index++)for(let age=0;age<=2400;age+=20){
   const p=vaultParticle(index,age,{final:true,level,x:210,y:220});
   if(!p.visible||!p.opacity)continue;
-  assert.ok(p.x>=0&&p.x+9<=420);
-  assert.ok(p.y>=0&&p.y+9<279,'particles must not reach the final label or amount');
+  assert.ok(p.x>=0&&p.x+17<=420);
+  assert.ok(p.y>=0&&p.y+17<279,'particles must not reach the final label or amount');
   assert.ok(p.opacity>=0&&p.opacity<=1);assert.equal(p.rotation%45,0);
  }
  for(let room=0;room<5;room++)for(let index=0;index<20;index++)for(let age=0;age<=1000;age+=20){
   const p=vaultParticle(index,age,{level:1,...chamberPoint(room)});
-  if(p.visible){assert.ok(p.x>=0&&p.x+9<=420);assert.ok(p.y>=0&&p.y+9<=460);}
+  if(p.visible){assert.ok(p.x>=0&&p.x+17<=420);assert.ok(p.y>=0&&p.y+9<=460);}
  }
 });
 
 test('tier bursts are distinct, deterministic and disappear completely after their event',()=>{
- assert.deepEqual([0,1,2].map(level=>Array.from({length:100},(_,i)=>vaultParticle(i,400,{final:true,level})).filter(p=>p.visible).length),[24,48,84]);
+ assert.deepEqual([0,1,2].map(level=>Array.from({length:100},(_,i)=>vaultParticle(i,400,{final:true,level})).filter(p=>p.visible).length),[36,68,100]);
  for(let index=0;index<100;index++){
   const sample=()=>vaultParticle(index,750,{final:true,level:2,x:210,y:220});
   assert.deepEqual(sample(),sample());

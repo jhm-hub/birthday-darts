@@ -18,6 +18,19 @@ export function vaultLastShot(round){
  if(round?.flight)return round.remaining===1&&round.flight.bonus?.kind!=='extra'?round.flight:null;
  return round?.completedAt!=null?round.opened.at(-1)??null:null;
 }
+// Final coins leave a short trail of light from the plaque into the crest.
+// A +1 unlock never runs this bridge, and reconnects sample the same clock.
+export function vaultFinaleGather(round,index,time,level,quiet=false,dock={left:138,right:282,y:386}){
+ const shot=vaultLastShot(round),hidden={opacity:0,x:0,y:0};
+ if(!shot||quiet||index>=6)return hidden;
+ const age=time-shot.finishAt,build=finalePose(0,level).build;
+ const t=(age+260-(index%3)*34)/(build+120);
+ if(t<=0||t>=1)return hidden;
+ const right=index>=3,from=right?dock.right:dock.left,to=right?254:154;
+ const u=ease(t),bend=Math.sin(t*Math.PI)*(right?14:-14);
+ return {opacity:Math.min(1,t*6,(1-t)*5)*.85,
+  x:Math.round(from+(to-from)*u+bend),y:Math.round(Math.max(320,dock.y)+(208-Math.max(320,dock.y))*u)};
+}
 export function vaultHandoff(round,time,level=0,quiet=false){
  const shot=vaultLastShot(round);
  if(!shot)return {linked:false};

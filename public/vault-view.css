@@ -87,3 +87,16 @@
 .vault-loot-trail i svg{display:none}
 .vault-loot-trail i[data-relay="true"]{left:-6px;top:-6px;width:12px;height:12px;background:none;border:0;box-shadow:none;clip-path:none}
 .vault-loot-trail i[data-relay="true"] svg{display:block;width:12px;height:12px;image-rendering:pixelated}
+
+/* Finale v15: larger tier crests, shaded pixel treasures and a bank-to-crest
+   light trail. Everything stays behind the fitted amount and inside the stage. */
+.vault-final-rays{position:absolute;left:90px;top:112px;width:240px;height:160px;opacity:0;pointer-events:none;z-index:3;transform-origin:120px 80px}
+.vault-final-rays svg{display:block;width:100%;height:100%}
+.vault-final-halo{left:100px;top:125px;width:220px;height:142px}
+.vault-final-crest{transform-origin:50% 80%}
+.vault-particles{z-index:3}
+.vault-particles i,.vault-particles i:nth-child(3n),.vault-particles i:nth-child(4n){width:8px;height:8px;background:none;box-shadow:none;clip-path:none}
+.vault-particles i:nth-child(5n){width:10px;height:10px}
+.vault-particles svg,.vault-final-gather svg{width:100%;height:100%;display:block;image-rendering:pixelated}
+.vault-final-gather{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+.vault-final-gather i{position:absolute;left:0;top:0;width:8px;height:8px;opacity:0}

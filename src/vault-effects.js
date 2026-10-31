@@ -18,19 +18,26 @@ export function rimSparkle(index,time,quiet=false){
 }
 export function finalePose(age,level,quiet=false){
  const build=[180,220,600][level],land=ease((age-build)/440);
- if(quiet)return {build,land:1,amount:1,crest:1,scale:1,rise:0,dim:1,halo:level?.25:0};
+ if(quiet)return {build,land:1,amount:1,crest:1,crestScale:1,crestY:0,flare:0,flareScale:1,scale:1,rise:0,dim:1,halo:.35};
+ const wave=t=>t<=0||t>=1?0:Math.sin(Math.PI*t);
+ const charge=ease(age/build),hit=ease((age-build)/300),echo=level?wave((age-build-[0,310,340][level])/460):0;
  return {build,land,amount:ease((age-build)/170),crest:ease(age/260),
+  crestScale:.82+.18*charge+Math.sin(hit*Math.PI)*[.10,.14,.18][level],crestY:(1-charge)*12,
+  flare:wave((age-build)/680)*.8+echo*.22,flareScale:.8+.25*hit,
   scale:1+Math.sin(land*Math.PI)*[.035,.05,.065][level],rise:(1-land)*7,
-  dim:ease(age/450),halo:(level+1)*.1+Math.sin(land*Math.PI)*.32};
+  dim:ease(age/450),halo:.3+charge*.18+Math.sin(land*Math.PI)*.35};
 }
 export function vaultParticle(index,elapsed,{final=false,level=0,x=210,y=210,quiet=false}={}){
- const count=final?[24,48,84][level]:level?20:12;
- const t=(elapsed-(index%7)*27)/(final?1450+(index%5)*100:780);
+ const count=final?[36,68,100][level]:level?20:12;
+ const encore=final&&level>0&&index>=[36,40,60][level];
+ const delay=final?(encore?[0,310,340][level]+index%4*18:(index%7)*18):(index%7)*27;
+ const t=(elapsed-delay)/(final?1300+(index%5)*80:780);
  if(quiet||index>=count||t<=0||t>=1)return {visible:false,x:0,y:0,opacity:0,rotation:0};
  const angle=final?(18+(index*137.5)%144)*Math.PI/180:(index*137.5)%360*Math.PI/180;
- const speed=final?85+(index%9)*10:30+(index%7)*6;
- const px=x+Math.cos(angle)*speed*t;
- const py=final?y-Math.sin(angle)*speed*t*1.3+55*t*t:y+Math.sin(angle)*speed*t+38*t*t;
+ const speed=final?110+(index%9)*9:30+(index%7)*6;
+ const travel=final?Math.sqrt(t):t;
+ const px=x+Math.cos(angle)*speed*travel;
+ const py=final?y-14-Math.sin(angle)*speed*travel*1.2+68*t*t:y+Math.sin(angle)*speed*t+38*t*t;
  // Fade before pieces enter the final amount's reading area.
  const clear=final?1-ease((py-250)/20):1;
  return {visible:true,x:Math.round(px),y:Math.round(py),opacity:Math.min(1,t*8,(1-t)*4)*clear,

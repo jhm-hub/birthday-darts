@@ -2,7 +2,7 @@ import {VAULT_COLLECT_START_MS} from './vault-collection-motion.js';
 import {vaultCashLevel} from './vault-cash-motion.js';
 import {giftVolume} from './gift-volume.js';
 import {vaultBonusAt} from './vault-bonus-motion.js';
-import {vaultLevel} from './vault-game.js';
+import {vaultLevel,projectedVault} from './vault-game.js';
 import {renderVaultSound} from './vault-sound-design.js';
 import {presentedVaultRound,vaultLastShot,VAULT_SETTLE_LEAD_MS} from './vault-finish-motion.js';
 import {VAULT_FAREWELL_LEAD_MS} from './vault-exit-motion.js';
@@ -75,7 +75,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
     if(link.wing)cue(link.from.id+':wing',link.from.finishAt-VAULT_WING_LEAD_MS,time,'wing');
    }
    const last=vaultLastShot(r);
-   if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle');
+   if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle',{tier:vaultLevel(projectedVault(r,time))});
    if(r.completedAt!==null){cue(r.id+':final',r.completedAt,time,['standard','big','royal'][vaultLevel(r)]);cue(r.id+':clear',r.hideAt-VAULT_FAREWELL_LEAD_MS,time,'clear');}
   },reset,dispose(){if(disposed)return;reset();disposed=true;enabled=false;if(ctx)void ctx.close().catch(()=>{});}
  };

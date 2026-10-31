@@ -22,7 +22,7 @@ for(const bonus of ['multiply','extra']){
  const data=renderVaultSequence(sequence,rate);report['chamber-'+bonus]=metrics(data);await writeFile(join(output,'chamber-'+bonus+'.wav'),wav(data));
 }
 for(const sound of ['standard','big','royal']){
- const data=renderVaultSequence([{at:0,sound:'linked-unlock',options:{index:4}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.72,sound:'settle'},{at:2,sound}],rate);
+ const data=renderVaultSequence([{at:0,sound:'linked-unlock',options:{index:4}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.72,sound:'settle',options:{tier:['standard','big','royal'].indexOf(sound)}},{at:2,sound}],rate);
  report['last-chamber-'+sound]=metrics(data);await writeFile(join(output,'last-chamber-'+sound+'.wav'),wav(data));
 }
 await writeFile(join(output,'crown-vault-sound-reel.wav'),wav(renderVaultSequence(reel,rate)));
@@ -50,7 +50,7 @@ const comparison=renderVaultSequence(bonusComparison,rate);report['bonus-reveals
 await writeFile(join(output,'crown-vault-quick-listen.wav'),wav(renderVaultSequence([
  {at:0,sound:'intro'},{at:1.4,sound:'linked-unlock',options:{index:4}},
  {at:2.18,sound:'cash',options:{tier:2}},{at:2.44,sound:'multiply'},
- {at:2.64,sound:'collect',options:{tier:2}},{at:3.12,sound:'settle'},{at:3.4,sound:'royal'}
+ {at:2.64,sound:'collect',options:{tier:2}},{at:3.12,sound:'settle',options:{tier:2}},{at:3.4,sound:'royal'}
 ],rate)));
 await writeFile(join(output,'audio-metrics.json'),JSON.stringify({sampleRate:rate,previewVolume:70,cues:report,reel},null,2)+'\n');
 console.log(JSON.stringify({directory:resolve(output),cues:report},null,2));

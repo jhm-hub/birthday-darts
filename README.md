@@ -947,3 +947,31 @@ metrics report full-volume and default-volume peaks plus maximum100ms RMS.
 The combined new ending peaks around−15.77dBFS at100%,−22.71dBFS at45%; the busiest
 full-round peak remains−15.36dBFS.44.1/48kHz deterministic overlap/timing tests pass.
 Direct listening and Faith's physical OBS voice/music mix remain unverified.
+
+
+### Crown Vault — final coin landing and celebration (v15)
+
+The last coin catch leads into six small gold glints from the fitted bankroll
+plaque to the crest. The exact total remains visible and moves into its final
+position once. Small chamber labels fade so the final amount has a clear stage.
+Larger tier-specific medallion, bow and Crown Vault crown stay within the same
+420×460 transparent overlay. Shaded pixel coins, jewels, stars and tiny crowns
+fan upward (36 / 68 / 100 pieces). Big and Royal add a second timed burst; Royal
+keeps its longer 600ms anticipation. All effects stay behind the readable total.
+
+The final settling phrase now follows the projected win tier, including the
+last multiplier. Warm musical impacts and jewel accents match each crest reveal;
+second-burst coin accents align at Big+310ms and Royal+340ms after the impact.
+The existing volume controls apply. Last-chamber mixes remain below−14dBFS at
+full volume, with no change to the earlier chamber sounds. Direct listening and
+the physical OBS mix remain for Faith to judge.
+
+Prize rules, exact arithmetic, one click per unlock, two-second chambers,
+6.5-second final hold and reset timing are unchanged. An extra-unlock bonus never
+starts the finale. Reduced motion uses a settled crest with no moving particles.
+Reconnections sample the saved clock; they do not replay awards or old cues.
+
+Silent study: `vault-art-preview.html?scene=handoff-2` (also handoff-0 / handoff-1).
+For sound, use the main page's **Sound on**, **Watch a sample round**, or select
+**Celebration preview → Royal win → Preview finale**. External review evidence,
+backups and listening WAVs: `Stream-Games/Vault/Review/crown-finale-v15-2026-10-30/`.

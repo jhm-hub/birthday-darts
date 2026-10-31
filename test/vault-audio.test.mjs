@@ -87,6 +87,15 @@ test('last-prize bridge flows into one clock-timed finale even before the contro
  a.sync(r,12000);assert.equal(sources(ctx).length,count+2);assert.equal(r.completedAt,null);
  advanceVault(r,12120);a.sync(r,12120);assert.equal(sources(ctx).length,count+2,'stored commit must not replay the final cue');
 });
+test('the settling phrase uses the final projected tier before the last multiplier is committed',()=>{
+ for(let tier=0;tier<3;tier++){
+  const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),r=sampleVaultHandoff(tier,10000);
+  a.setEnabled(true);a.sync(r,11720);
+  assert.equal(sources(ctx).length,1);
+  assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('settle',{tier}));
+  a.sync(r,11721);assert.equal(sources(ctx).length,1);
+ }
+});
 test('farewell plays once on its lead-in, clears, and does not leak into the next viewer',()=>{
  const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),s=sampleVaultReset();a.setEnabled(true);
  const at=s.outgoing.hideAt-VAULT_FAREWELL_LEAD_MS;
