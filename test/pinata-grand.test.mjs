@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {finalePose,finaleParticlePose,FINALE_PARTICLES} from '../src/pinata-finale.js';
 import {handoffPose} from '../src/pinata-handoff.js';
 import {GRAND_GLINTS,GRAND_FIRST_PARTICLES,GRAND_PARTICLES,grandGlintPose,grandParticlePose} from '../src/pinata-grand.js';
-import {GRAND_REVEAL_MS,GRAND_ENCORE_MS} from '../src/pinata-finale-timing.js';
+import {GRAND_REVEAL_MS,GRAND_ENCORE_MS,finaleRevealAt} from '../src/pinata-finale-timing.js';
 import {tierParticleSpec,tierParticlePose,TIER_PARTICLES} from '../src/pinata-tier-motion.js';
 
 test('Grand anticipation keeps a readable total until the new amount is established',()=>{
@@ -17,7 +17,7 @@ test('Grand anticipation keeps a readable total until the new amount is establis
  }
  assert.equal(finalePose(GRAND_REVEAL_MS, false,2).titleOpacity,1);
  assert.equal(finalePose(GRAND_REVEAL_MS+420,false,2).amountScale,1);
- for(const tier of [0,1])assert.equal(finalePose(400,false,tier).amountOpacity,1);
+ for(const tier of [0,1])assert.equal(finalePose(finaleRevealAt(tier)+100,false,tier).amountOpacity,1);
 });
 test('jewel pickup completes before the payoff and reserves the text area',()=>{
  let visible=0;

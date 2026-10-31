@@ -1,5 +1,6 @@
 import {clamp} from './pinata-motion.js';
 
+import {royalAmountPose} from './pinata-royal.js';
 import {finaleRevealAt} from './pinata-finale-timing.js';
 export {FINALE_REVEAL_MS} from './pinata-finale-timing.js';
 export const FINALE_PARTICLES=48;
@@ -12,9 +13,9 @@ export function finalePose(age,quiet=false,tier=0){
  return {visible:age>=40,crestOpacity:enter,
   crestY:quiet?0:(1-enter)*-14,crestScale:quiet?1:1+.045*Math.sin(enter*Math.PI),
   crestAngle:quiet?0:(1-enter)*-5,
-  titleOpacity:smooth((age-(tier===2?570:130))/(tier===2?180:150)),amountOpacity:smooth((age-reveal)/100),
+  titleOpacity:smooth((age-(tier===2?570:tier===1?200:130))/(tier===2?180:150)),amountOpacity:smooth((age-reveal)/100),
   amountScale:quiet?1:1-.1*(1-p)**3+.035*Math.sin(p*Math.PI),
-  detailOpacity:smooth((age-reveal-280)/180),previousOpacity:1-smooth(Math.max(0,age)/160)};
+  detailOpacity:smooth((age-reveal-280)/180),previousOpacity:1-smooth(Math.max(0,age)/160),...(tier===1?royalAmountPose(age,quiet):{})};
 }
 
 export function finaleParticleSpec(i){

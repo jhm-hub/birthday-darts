@@ -5,7 +5,7 @@ import {createPinataAudio} from '../src/pinata-audio.js';
 import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,HIT_MS} from '../src/pinata-game.js';
 import {BREAK_DELAY,batPose} from '../src/pinata-motion.js';
 import {FINALE_REVEAL_MS} from '../src/pinata-finale.js';
-import {GRAND_REVEAL_MS,GRAND_ENCORE_MS} from '../src/pinata-finale-timing.js';
+import {GRAND_REVEAL_MS,GRAND_ENCORE_MS,ROYAL_REVEAL_MS} from '../src/pinata-finale-timing.js';
 import {bonusPose} from '../src/pinata-bonus.js';
 import {royalExitPose,beginPreviewClear} from '../src/pinata-exit.js';
 const peak=data=>data.reduce((m,n)=>Math.max(m,Math.abs(n)),0);
@@ -222,4 +222,20 @@ test('Grand build-up respects mute, zero volume, clearing and a late join',async
  const r=round(true);r.flight.prize.value=3000;const {a,ctx}=await player();
  a.update(r,2100);assert.equal(sources(ctx).length,0,'late build is skipped');
  a.update(r,1500+GRAND_REVEAL_MS);assert.equal(sources(ctx).length,2,'fresh amount still has its payoff');
+});
+
+test('Royal pickup and fanfare play once, obey mute and volume, and stop on reset',async()=>{
+ for(const action of ['mute','zero','reset','complete']){
+  const r=round(true);r.flight.prize.value=1000;
+  const {a,ctx}=await player();a.update(r,1540);const pickup=sources(ctx)[0];assert.ok(pickup);
+  advancePinata(r,1541);a.update(r,1541);assert.equal(sources(ctx).length,1);
+  if(action==='mute')a.setEnabled(false);if(action==='zero')a.setVolume(0);if(action==='reset')a.update(null,1600);
+  a.update(action==='reset'?null:r,1500+ROYAL_REVEAL_MS);
+  assert.equal(sources(ctx).length,action==='complete'?2:1);
+  if(action!=='complete')assert.equal(pickup.stops.at(-1),10.015);
+  else{a.update(structuredClone(r),1501+ROYAL_REVEAL_MS);assert.equal(sources(ctx).length,2);const payoff=sources(ctx).at(-1);a.update(null,2100);assert.equal(payoff.stops.at(-1),10.015);}
+ }
+ const {a,ctx}=await player(),r=round(true);r.flight.prize.value=1000;
+ a.update(r,1800);assert.equal(sources(ctx).length,0,'skip stale pickup');
+ a.update(r,1500+ROYAL_REVEAL_MS);assert.equal(sources(ctx).length,1,'join fresh payoff');
 });
