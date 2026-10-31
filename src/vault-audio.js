@@ -1,3 +1,4 @@
+import {vaultTreasureBridge} from './vault-treasure-handoff.js';
 import {VAULT_SPECIAL_PREPARE_MS} from './vault-special-arrival.js';
 import {vaultSpecialTheme} from './vault-special.js';
 import {VAULT_COLLECT_START_MS} from './vault-collection-motion.js';
@@ -34,7 +35,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
   }
  }
  function play(sound,options={},elapsed=0){
-  const key=sound+':'+(options.index??0)%5+':'+(options.tier??0)+':'+(options.richness??1);
+  const key=sound+':'+(options.index??0)%5+':'+(options.tier??0)+':'+(options.richness??1)+':'+(options.bridgeMs??888);
   let buffer=buffers.get(key);
   if(!buffer){const data=renderVaultSound(sound,options,ctx.sampleRate);buffer=ctx.createBuffer(1,data.length,ctx.sampleRate);buffer.getChannelData(0).set(data);buffers.set(key,buffer);}
   if(elapsed>=buffer.length/ctx.sampleRate)return;
@@ -88,13 +89,14 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
      if(link.wing)cue(link.from.id+':wing',link.from.finishAt-VAULT_WING_LEAD_MS,time,'wing');
     }
    }
-   const last=vaultLastShot(r);
-   if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle',{tier:vaultLevel(projectedVault(r,time))});
+   const last=vaultLastShot(r),bridge=vaultTreasureBridge(r,time);
+   if(bridge.linked)cue(last.id+':treasure-bridge',bridge.startAt,time,bridge.style===1?'finish-gold':'finish-jewel',{bridgeMs:bridge.bridgeMs});
+   else if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle',{tier:vaultLevel(projectedVault(r,time))});
    if(r.completedAt!==null){
     const level=vaultLevel(r);
     const richness=vaultTreasureLevel(vaultTotal(r),'final');
     if(richness)cue(r.id+':rich-final',r.completedAt+finalePose(0,level).build,time,'rich-final',{richness});
-    cue(r.id+':final',r.completedAt,time,['standard','big','royal'][level]);
+    cue(r.id+':final',r.completedAt,time,bridge.linked?'linked-final':['standard','big','royal'][level],{tier:level});
     cue(r.id+':rest',r.completedAt+VAULT_REST_AT_MS[level],time,'rest');
     cue(r.id+':clear',r.hideAt-VAULT_FAREWELL_LEAD_MS,time,'clear');
    }

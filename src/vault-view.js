@@ -1,3 +1,4 @@
+import {vaultTreasureBridge,vaultTreasureBridgeParticle} from './vault-treasure-handoff.js';
 import {vaultSpecialArrival,vaultSpecialParticle,vaultSpecialJewel} from './vault-special-arrival.js';
 import {vaultTreasurePose,vaultTreasureParticle,vaultTreasureRing,vaultTreasureOrnament} from './vault-treasure.js';
 import {vaultTreasureDecor,vaultTreasureSprite} from './vault-treasure-art.js';
@@ -32,7 +33,7 @@ export function createVaultView(root,{audio}={}){
  const heading=$('.vault-heading'),topline=$('.vault-topline');
  const openingPips=document.createElement('span');openingPips.className='vault-opening-pips';openingPips.setAttribute('aria-hidden','true');openingPips.innerHTML='<i></i><i></i><i></i>';els.bankWrap.append(openingPips);
  const catches=document.createElement('span');catches.className='vault-collection-catches';catches.setAttribute('aria-hidden','true');catches.innerHTML='<i></i><i></i>';els.bankWrap.append(catches);
- const gathers=[...root.querySelectorAll('.vault-final-gather i')];
+ const gathers=[...root.querySelectorAll('.vault-final-gather i')];let gatherStyle=-1;
  const treasure=document.createElement('div');treasure.className='vault-treasure';treasure.setAttribute('aria-hidden','true');treasure.innerHTML='<span class="vault-treasure-rim">'+vaultTreasureRing()+'</span><span class="vault-treasure-decor">'+vaultTreasureDecor()+'</span>'+Array.from({length:48},(_,i)=>'<i>'+vaultFinalePiece(i%3===0?2:i)+'</i>').join('');stage.append(treasure);
  const treasureRim=treasure.querySelector('span'),treasurePieces=[...treasure.querySelectorAll('i')],laurelLeaves=[...treasure.querySelectorAll('.treasure-laurel-leaf')],laurelStems=[...treasure.querySelectorAll('.treasure-laurel-stem')],coronetGems=[...treasure.querySelectorAll('.treasure-coronet-gem')],coronetArc=treasure.querySelector('.treasure-jewel-arc'),coronetStar=treasure.querySelector('.treasure-coronet-star');let treasureStyle=-1;
  const coins=[...root.querySelectorAll('.vault-collection i')],catchStars=[...catches.children];let dockKey='',dock={left:130,right:290,y:386};
@@ -61,10 +62,11 @@ export function createVaultView(root,{audio}={}){
   els.progress.style.setProperty('--steps',allocated);els.viewer.textContent=r?.viewer||'A LITTLE LUCK. A LOT OF GOLD.';els.count.textContent=finished?'VAULT CLEARED':r?readout.pendingExtra&&readout.remaining===0?'BONUS INCOMING':readout.remaining+' UNLOCK'+(readout.remaining===1?'':'S')+' LEFT':allocated+' CHAMBERS';
   els.count.style.transform=`scale(${bonusPose.countScale})`;
   const shot=r?.flight,age=shot?time-shot.startAt:0,finalAge=finished?time-r.completedAt:0,level=finished?vaultLevel(r):vaultLastShot(r)?vaultLevel(now):0;
+  const bridge=vaultTreasureBridge(r,time,quiet),ornament=bridge.linked?{visible:bridge.active,kind:'final',level:bridge.style,age:bridge.age}:vaultTreasurePose(r,time,quiet),ornamentLead=bridge.linked?bridge.lead:0;
   const richness=vaultTreasurePose(r,time,quiet);treasureRim.style.opacity=richness.ring;treasure.style.opacity=exit.stage;
   const treasureFinal=finished?richness.level:0;if(treasureStyle!==treasureFinal){treasureStyle=treasureFinal;treasurePieces.forEach((el,i)=>el.innerHTML=treasureFinal?vaultTreasureSprite(i,treasureFinal):vaultFinalePiece(i%3===0?2:i));particles.forEach((el,i)=>el.innerHTML=treasureFinal?vaultTreasureSprite(i,treasureFinal):vaultFinalePiece(i));}
-  laurelLeaves.forEach(el=>{const o=vaultTreasureOrnament(richness,Number(el.dataset.step),'leaf');el.style.opacity=o.opacity;el.setAttribute('transform',`translate(${el.dataset.x} ${Number(el.dataset.y)+o.y}) scale(${Number(el.dataset.side)*1.25*o.scale} ${1.25*o.scale})`);});laurelStems.forEach(el=>el.style.opacity=vaultTreasureOrnament(richness,0,'stem').opacity);
-  coronetGems.forEach(el=>{const o=vaultTreasureOrnament(richness,Number(el.dataset.step),'gem');el.style.opacity=o.opacity;el.setAttribute('transform',`translate(${el.dataset.x} ${Number(el.dataset.y)+o.y}) scale(${o.scale})`);});coronetArc.style.opacity=vaultTreasureOrnament(richness,0,'arc').opacity;coronetStar.style.opacity=vaultTreasureOrnament(richness,0,'star').opacity;
+  laurelLeaves.forEach(el=>{const o=vaultTreasureOrnament(ornament,Number(el.dataset.step),'leaf',ornamentLead);el.style.opacity=o.opacity;el.setAttribute('transform',`translate(${el.dataset.x} ${Number(el.dataset.y)+o.y}) scale(${Number(el.dataset.side)*1.25*o.scale} ${1.25*o.scale})`);});laurelStems.forEach(el=>el.style.opacity=vaultTreasureOrnament(ornament,0,'stem',ornamentLead).opacity);
+  coronetGems.forEach(el=>{const o=vaultTreasureOrnament(ornament,Number(el.dataset.step),'gem',ornamentLead);el.style.opacity=o.opacity;el.setAttribute('transform',`translate(${el.dataset.x} ${Number(el.dataset.y)+o.y}) scale(${o.scale})`);});coronetArc.style.opacity=vaultTreasureOrnament(ornament,0,'arc',ornamentLead).opacity;coronetStar.style.opacity=vaultTreasureOrnament(ornament,0,'star',ornamentLead).opacity;
   treasurePieces.forEach((el,i)=>{const gem=vaultTreasureParticle(richness,i);el.style.opacity=gem.opacity;el.style.transform=`translate(${gem.x}px,${gem.y}px) rotate(${gem.rotation}deg) scale(${gem.scale})`;});
   stage.dataset.tier=finished?String(level):'';
   const awardReadback=finished?(quiet?0:1-ease(finalAge/400)):1;
@@ -182,7 +184,8 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   trails.forEach((el,i)=>{const openingGuide=vaultOpeningTrail(r,i,time,quiet),guide=openingGuide.visible?openingGuide:vaultChamberTrail(between,i,time,quiet,dock,between.linked&&vaultSpecialTheme(r,between.link.index)?VAULT_SPECIAL_POINT:null),t=guide;el.dataset.guide=String(guide.visible);el.dataset.relay=String(!openingGuide.visible&&guide.visible);el.style.opacity=t.visible&&!finished?t.opacity:0;el.style.transform=`translate(${t.x}px,${t.y}px)`;});
   coins.forEach((el,i)=>{const coin=vaultCollectionCoin(shot,i,time,dock,quiet,point);el.style.opacity=finished?0:coin.opacity;el.style.transform=`translate(${coin.x}px,${coin.y}px) scale(${coin.flip},${coin.squash})`;});
   catchStars.forEach((el,i)=>{el.style.opacity=finished?0:collection.catch;el.style.left=(i?dock.right:dock.left)-els.bankWrap.offsetLeft+'px';el.style.top=(dock.y-els.bankWrap.offsetTop)+'px';el.style.transform=`scale(${.6+collection.catch*.4})`;});
-  gathers.forEach((el,i)=>{const g=vaultFinaleGather(r,i,time,level,quiet,dock);el.style.opacity=g.opacity;el.style.transform=`translate(${g.x}px,${g.y}px)`;});
+  const nextGatherStyle=bridge.linked?bridge.style:0;if(gatherStyle!==nextGatherStyle){gatherStyle=nextGatherStyle;gathers.forEach((el,i)=>el.innerHTML=gatherStyle?vaultTreasureSprite(i,gatherStyle):vaultFinalePiece(2));}
+  gathers.forEach((el,i)=>{const g=bridge.linked?vaultTreasureBridgeParticle(bridge,i,time,dock):vaultFinaleGather(r,i,time,level,quiet,dock);el.style.opacity=g.opacity;el.style.transform=`translate(${g.x}px,${g.y}px)`;});
   const burstAge=finished?finalAge-build:shot?age-780:10000;
   particles.forEach((el,i)=>{const particle=finished?vaultParticle(i,burstAge,{final:finished,level:finished?level:0,x:finished?210:point.x,y:finished?220:point.y,quiet}):{visible:false,opacity:0,x:0,y:0,rotation:0};el.style.opacity=particle.visible&&!(treasureFinal===1&&i>=52)?particle.opacity:0;el.style.transform=`translate(${particle.x}px,${particle.y}px) rotate(${particle.rotation}deg)`;});
   audio?.sync(r,time);

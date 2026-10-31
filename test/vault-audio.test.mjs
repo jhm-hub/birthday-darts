@@ -1,3 +1,4 @@
+import {vaultTreasureBridge,sampleVaultTreasureHandoff} from '../src/vault-treasure-handoff.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {VAULT_SOUND_LABELS,vaultSoundScore,renderVaultSound,renderVaultSequence} from '../src/vault-sound-design.js';
@@ -83,7 +84,7 @@ test('finale and farewell play once, and sampler cancellation wins over a pendin
 });
 test('last-prize bridge flows into one clock-timed finale even before the controller commit arrives',()=>{
  const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),r=sampleVaultHandoff(2,10000);a.setEnabled(true);
- a.sync(r,11719);const count=sources(ctx).length;a.sync(r,11720);assert.equal(sources(ctx).length,count+1);
+ const bridge=vaultTreasureBridge(r,11720);a.sync(r,bridge.startAt-1);const count=sources(ctx).length;a.sync(r,bridge.startAt);assert.equal(sources(ctx).length,count+1);
  a.sync(r,11999);assert.equal(sources(ctx).length,count+1);
  a.sync(r,12000);assert.equal(sources(ctx).length,count+2);assert.equal(r.completedAt,null);
  advanceVault(r,12120);a.sync(r,12120);assert.equal(sources(ctx).length,count+2,'stored commit must not replay the final cue');
@@ -93,7 +94,7 @@ test('the settling phrase uses the final projected tier before the last multipli
   const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),r=sampleVaultHandoff(tier,10000);
   a.setEnabled(true);a.sync(r,11720);
   assert.equal(sources(ctx).length,1);
-  assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('settle',{tier}));
+  const bridge=vaultTreasureBridge(r,11720);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),bridge.linked?renderVaultSound('finish-gold',{bridgeMs:bridge.bridgeMs}):renderVaultSound('settle',{tier}));
   a.sync(r,11721);assert.equal(sources(ctx).length,1);
  }
 });
@@ -211,5 +212,33 @@ test('gold and jewel finales use distinct scores with their impacts on the anima
   const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);const r=sampleVaultFinale(DEFAULT_VAULT,2,1000);r.cashCents=richness===1?250000:750000;r.multiplier=1;
   a.sync(r,1000);a.sync(r,1600);const n=sources(ctx).length;assert.deepEqual(sources(ctx).at(-1).buffer.getChannelData(0),renderVaultSound('rich-final',{richness}));a.sync(structuredClone(r),1601);assert.equal(sources(ctx).length,n);
   const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,1670);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.07]);
+ }
+});
+
+test('large finish bridges play once, preserve late offsets, consume muted events and do not replay on commit',()=>{
+ for(const style of [1,2])for(const cash of [5,25,100]){
+  const r=sampleVaultTreasureHandoff(style,10000,{cash}),b=vaultTreasureBridge(r,11800),name=style===1?'finish-gold':'finish-jewel';
+  const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
+  a.sync(r,b.startAt-1);assert.equal(sources(ctx).length,0);a.sync(r,b.startAt);assert.equal(sources(ctx).length,1);
+  assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound(name,{bridgeMs:b.bridgeMs}));
+  a.sync(structuredClone(r),b.startAt+100);assert.equal(sources(ctx).length,1);
+  a.sync(r,12000);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('linked-final',{tier:2}));
+  advanceVault(r,12050);a.sync(r,12050);assert.equal(sources(ctx).length,2);
+  a.sync(r,b.revealAt);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('rich-final',{richness:style}));
+  const late=context(),joined=createVaultAudio({createContext:()=>late});joined.setEnabled(true);joined.sync(r,b.startAt+70);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.07]);
+  const stale=context(),old=createVaultAudio({createContext:()=>stale});old.setEnabled(true);old.sync(r,b.startAt+201);assert.equal(sources(stale).length,0);
+  const mute=context(),muted=createVaultAudio({createContext:()=>mute});muted.sync(r,b.startAt);muted.setEnabled(true);muted.sync(r,b.startAt+1);assert.equal(sources(mute).length,0);
+ }
+});
+test('the continuous phrase replaces only the prelude and keeps all tier impact timings',()=>{
+ for(const [tier,name] of ['standard','big','royal'].entries()){
+  const hit=finalePose(0,tier).build/1000,score=vaultSoundScore('linked-final',{tier}),original=vaultSoundScore(name).filter(c=>c.at>=hit),trim=[1.05,1.2,1][tier];
+  assert.deepEqual(score,original.map(c=>({...c,gain:c.gain*trim})));
+  assert.ok(score.every(c=>c.at>=hit));
+ }
+ for(const richness of [1,2])for(const tier of [0,1,2])for(const [cashTier,last] of [[0,1.624],[1,1.668],[2,1.712]]){
+  const hit=finalePose(0,tier).build/1000,bridgeMs=(2+hit-last)*1000;
+  const events=[{at:0,sound:'linked-unlock'},{at:.285,sound:'rich-lock',options:{richness}},{at:.78,sound:'cash',options:{tier:cashTier}},{at:.92,sound:'rich-cash',options:{richness}},{at:1.04,sound:'multiply'},{at:1.24,sound:'collect',options:{tier:cashTier}},{at:last,sound:richness===1?'finish-gold':'finish-jewel',options:{bridgeMs}},{at:2,sound:'linked-final',options:{tier}},{at:2+hit,sound:'rich-final',options:{richness}},{at:2+VAULT_REST_AT_MS[tier]/1000,sound:'rest'}];
+  assert.ok(peak(renderVaultSequence(events))<.2,'complete finale mix retains headroom');
  }
 });

@@ -53,13 +53,13 @@ function finalParticle(pose,index,off){
  else {const spread=grand?15+slot*3:26+slot*2;x=210+side*((grand?132:140)+Math.sin(Math.PI*t)*spread);y=(grand?246-wave*22:wave?229:188)-Math.sin(Math.PI*t)*(grand?85+slot*5:72+slot*5)+18*t*t;scale=grand?.85+slot%3*.12:slot%3===0?1.45:1.1;}
  return {visible:true,x:Math.round(x),y:Math.round(y),opacity:Math.min(1,t*9,(1-t)*6)*(gather?.75:.95),scale,rotation:grand?Math.floor((slot+t*2)%4)*90:gather?0:Math.floor((slot+t*3)%4)*90};
 }
-export function vaultTreasureOrnament(pose,index,type){
+export function vaultTreasureOrnament(pose,index,type,lead=0){
  const off={opacity:0,y:0,scale:1};if(!pose.visible||pose.kind!=='final')return off;
- const a=pose.age,fade=1-smooth((a-1100)/380);
- if(type==='leaf'&&pose.level===1){const grow=smooth((a-index*42)/230);return {opacity:grow*fade,y:Math.round((1-grow)*4),scale:.8+.2*grow+.06*Math.sin(Math.PI*grow)};}
- if(type==='stem'&&pose.level===1)return {...off,opacity:smooth(a/240)*fade*.9};
- if(type==='arc'&&pose.level===2)return {...off,opacity:smooth((a-200)/160)*fade*.65};
- if(type==='gem'&&pose.level===2){const arrive=smooth((a-Math.abs(index-3)*38)/300),hit=Math.sin(Math.PI*clamp((a-VAULT_TREASURE_CORONATION_MS)/340));return {opacity:arrive*fade,y:Math.round((1-arrive)*14),scale:.7+.3*arrive+.18*hit};}
+ const a=pose.age,entrance=a+lead,fade=1-smooth((a-1100)/380);
+ if(type==='leaf'&&pose.level===1){const grow=smooth((entrance-index*42)/230);return {opacity:grow*fade,y:Math.round((1-grow)*4),scale:.8+.2*grow+.06*Math.sin(Math.PI*grow)};}
+ if(type==='stem'&&pose.level===1)return {...off,opacity:smooth(entrance/240)*fade*.9};
+ if(type==='arc'&&pose.level===2)return {...off,opacity:smooth((entrance-200)/160)*fade*.65};
+ if(type==='gem'&&pose.level===2){const arrive=smooth((entrance-Math.abs(index-3)*38)/300),hit=Math.sin(Math.PI*clamp((a-VAULT_TREASURE_CORONATION_MS)/340));return {opacity:arrive*fade,y:Math.round((1-arrive)*14),scale:.7+.3*arrive+.18*hit};}
  if(type==='star'&&pose.level===2){const rise=smooth((a-VAULT_TREASURE_CORONATION_MS)/140),settle=1-smooth((a-920)/330);return {...off,opacity:rise*settle};}
  return off;
 }
