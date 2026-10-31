@@ -1,0 +1,10 @@
+
+/* Username settings remain on the controls, outside the square stream scene. */
+.viewer-ranges{margin:22px 0;padding:22px;border:1px solid #665077;border-radius:18px;background:linear-gradient(135deg,#292033,#211c2c);color:#f9eefa}
+.viewer-ranges h2{font-size:23px;margin:4px 0 10px}.viewer-ranges p{line-height:1.6;color:#d5c2dd;font-size:13px;max-width:76ch}
+.viewer-range-form{display:grid;grid-template-columns:minmax(140px,2fr) repeat(2,minmax(85px,1fr));gap:12px;margin:18px 0 12px;align-items:end}
+.viewer-range-form label{display:grid;gap:8px;font-size:12px;font-weight:700}.viewer-range-form input{box-sizing:border-box;width:100%;min-width:0}.viewer-range-form button{grid-column:1/-1;justify-self:start}
+.viewer-range-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:13px 0;border-top:1px solid #55425f}.viewer-range-row strong{min-width:115px;overflow-wrap:anywhere}.viewer-range-row span{margin-right:auto;color:#ffe1a1;font-weight:700}.viewer-range-row button{padding:8px 12px;font-size:12px}
+.viewer-ranges .range-note{font-size:12px;margin-bottom:0}.range-match{color:#ffe1a1!important;font-size:13px!important;line-height:1.55;margin:8px 0 0;grid-column:1/-1}.range-match:empty{display:none}
+.demo-viewer-field{margin:16px 0}.demo-viewer-field input{width:100%;box-sizing:border-box}
+@media(max-width:520px){.viewer-range-form{grid-template-columns:1fr 1fr}.viewer-range-form label:first-child{grid-column:1/-1}.viewer-ranges{padding:16px}.viewer-range-row strong{min-width:0;flex-basis:100%}}

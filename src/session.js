@@ -8,7 +8,7 @@ export async function connectControl(id,onSnapshot,onStatus){
  let ready=false,disposed=false,link,timer,pulse,release,unsubscribe,retry;
  let peerStatus='connecting';
  function status(){const text=!ready?'This widget is open in another control tab.':peerStatus==='connected'?'Stream display connected':peerStatus==='offline'?'Preview ready · stream connection offline':peerStatus==='duplicate'?'Another browser is hosting this display.':'Preview ready · open the stream display to connect';onStatus(ready&&peerStatus!=='duplicate',text);}
- function publish(){if(disposed)return;const snapshot=store.snapshot(id);onSnapshot(snapshot);link?.send({type:'state',snapshot});clearTimeout(timer);const next=snapshot.round?.flight?.finishAt??(snapshot.round?.hideAt?snapshot.round.hideAt+400:null);if(ready&&next)timer=setTimeout(()=>void store.advance().then(publish).catch(e=>onStatus(false,e.message)),Math.max(10,next-Date.now()));}
+ function publish(){if(disposed)return;const snapshot=store.snapshot(id);onSnapshot(store.controlSnapshot(id));link?.send({type:'state',snapshot});clearTimeout(timer);const next=snapshot.round?.flight?.finishAt??(snapshot.round?.hideAt?snapshot.round.hideAt+400:null);if(ready&&next)timer=setTimeout(()=>void store.advance().then(publish).catch(e=>onStatus(false,e.message)),Math.max(10,next-Date.now()));}
  function claim(){
   void navigator.locks.request('birthday-darts-control:'+id,{ifAvailable:true},async lock=>{
    if(disposed)return;if(!lock){ready=false;status();retry=setTimeout(claim,2500);return;}
@@ -20,7 +20,7 @@ export async function connectControl(id,onSnapshot,onStatus){
  }
  function dispose(){disposed=true;ready=false;clearTimeout(timer);clearTimeout(retry);clearInterval(pulse);unsubscribe?.();link?.dispose();release?.();}
  window.addEventListener('pagehide',dispose,{once:true});
- return {get ready(){return ready&&peerStatus!=='duplicate';},id,displayURL:url.href,start:claim,async throw(viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab for this widget.');return (await store.action({action:'throw',id,viewer})).display;},dispose};
+ return {get ready(){return ready&&peerStatus!=='duplicate';},id,displayURL:url.href,start:claim,async throw(viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab for this widget.');await store.action({action:'throw',id,viewer});return store.controlSnapshot(id);},async saveViewerRange(range){if(!this.ready)throw Error('Use the active control tab.');await store.action({action:'save-viewer-range',id,range});return store.controlSnapshot(id);},async removeViewerRange(username){if(!this.ready)throw Error('Use the active control tab.');await store.action({action:'remove-viewer-range',id,username});return store.controlSnapshot(id);},dispose};
 }
 export async function connectDisplay(onSnapshot){
  const key=new URLSearchParams(location.hash.slice(1)).get('room');

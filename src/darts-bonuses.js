@@ -57,9 +57,9 @@ export function eligibleDartPrizes(round){
 export function drawDartPrize(round,draw){
  const p=round.preset,options=eligibleDartPrizes(round),prize=options[chooseOutcome(options,draw)],deck=remainingDartDeck(round),targets=deck.filter(b=>b.kind===prize.kind&&(b.kind!=='cash'||b.outcomeIndex===prize.outcomeIndex));
  // The physical slot is cosmetic; the weighted prize is chosen first.
- const target=targets[draw(targets.length)],score=dartsScore(p,round.throws);
- return {...target,balloonSlot:target.slot,amountCents:prize.kind==='cash'?goldAmount(prize.amountCents,score.goldStacks,p.bonuses.goldPercent):0,
-  ...(prize.kind==='cash'?{baseAmountCents:prize.amountCents,goldStacks:score.goldStacks}:{}),
+ const target=targets[draw(targets.length)],score=dartsScore(p,round.throws),base=target.amountCents??prize.amountCents;
+ return {...target,balloonSlot:target.slot,amountCents:prize.kind==='cash'?goldAmount(base,score.goldStacks,p.bonuses.goldPercent):0,
+  ...(prize.kind==='cash'?{baseAmountCents:base,goldStacks:score.goldStacks}:{}),
   ...(prize.kind!=='cash'?{granted:grantedDarts(round,prize.kind)}:{}),
   ...(prize.kind==='multiply'?{multiplier:p.bonuses.multiplier}:{}),
   ...(prize.kind==='gold'?{goldStacks:score.goldStacks+1,goldPercent:p.bonuses.goldPercent}:{})};

@@ -6,6 +6,8 @@ A browser game for Faith's streams: enter a viewer's name, press once per dart, 
 
 **Simple stream setup:** https://jhm-hub.github.io/birthday-darts/setup.html
 
+**Recurring Darts username ranges:** [setup, demo and behavior](DARTS-USERNAME-RANGES.md).
+
 ## Playing
 
 1. Select or create a game. Set its dollar amounts, relative odds and number of darts. The editor preview updates immediately, including unsaved changes. Use **Throw demo dart** and **Reset demo** to test it, then save.

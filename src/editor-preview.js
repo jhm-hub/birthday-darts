@@ -1,3 +1,4 @@
+import {findDartsViewerRange,dartsViewerRangeText} from './darts-targets.js';
 import {dartsScore} from './darts-bonuses.js';
 import {CELEBRATION_CHOICES,chooseCelebration} from './celebrations.js';
 const money=c=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:c%100?2:0,maximumFractionDigits:2}).format(c/100);
@@ -5,11 +6,13 @@ const money=c=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',mi
 export function createEditorPreview(readDraft){
  const frame=document.querySelector('#demo-frame'),button=document.querySelector('#demo-throw'),reset=document.querySelector('#demo-reset'),sound=document.querySelector('#demo-sound'),status=document.querySelector('#demo-status'),celebration=document.querySelector('#demo-celebration'),finale=document.querySelector('#demo-finale');
  const bonusPanel=document.querySelector('#demo-bonuses'),bonusButtons=[...bonusPanel.querySelectorAll('[data-demo-bonus]')];
+ const viewer=document.querySelector('#demo-viewer'),match=document.querySelector('#demo-viewer-match');
  let ready=false,artReady=false,artError=false,latest=null,lastState=null,validationError='',soundEnabled=false;
  function send(data){if(ready)frame.contentWindow.postMessage({kind:'darts-demo',...data},location.origin);}
- function configure(){send({type:'configure',widget:latest,error:validationError,celebration:celebration.value});}
+ function configure(){send({type:'configure',widget:latest,error:validationError,celebration:celebration.value,viewer:viewer.value});}
  function refresh(){
   latest=readDraft();
+  const rule=findDartsViewerRange(latest.viewerRanges,viewer.value);match.textContent=rule?'Testing @'+rule.username+' · '+dartsViewerRangeText(rule)+' final total. Cash values are prepared for this demo.':viewer.value.trim()?'No matching range · usual amounts and odds.':'Leave blank for the usual random game.';
   bonusPanel.hidden=latest.theme!=='balloons';
   const b=latest.bonuses,labels={multiply:'×'+b.multiplier+(b.bonusDarts?' · +1 dart':' total'),extra:'+'+b.extraDarts+' dart'+(b.extraDarts===1?'':'s'),gold:'Gold +'+b.goldPercent+'%'+(b.bonusDarts?' · +1 dart':''),'stacked-gold':'Stacked +'+(b.goldPercent*2)+'%'};
   for(const control of bonusButtons){control.textContent=labels[control.dataset.demoBonus];control.disabled=true;}
@@ -23,7 +26,7 @@ export function createEditorPreview(readDraft){
   const r=data.snapshot?.round,finished=!!r?.hideAt,flight=!!r?.flight;
   button.disabled=!artReady||!!data.error||!data.snapshot||flight||finished;
   finale.disabled=!artReady||!!data.error||!data.snapshot||flight;
-  for(const control of bonusButtons)control.disabled=finale.disabled||latest?.theme!=='balloons';
+  for(const control of bonusButtons)control.disabled=finale.disabled||latest?.theme!=='balloons'||!!viewer.value.trim();
   celebration.disabled=!artReady||flight;reset.disabled=!data.snapshot;sound.disabled=false;
   button.textContent=flight?'Throwing…':finished?'Total revealed':r?'Throw next demo dart':'Throw demo dart';
   soundEnabled=!!data.sound;sound.textContent=soundEnabled?'Sound on':'Sound off';sound.setAttribute('aria-pressed',String(soundEnabled));
@@ -40,6 +43,7 @@ export function createEditorPreview(readDraft){
   if(data.type==='art-error'){artError=true;artReady=false;show(lastState);return;}
   if(data.type!=='state')return;lastState=data;show(data);
  });
+ viewer.addEventListener('input',refresh);
  button.addEventListener('click',()=>{button.disabled=true;send({type:'throw'});});
  reset.addEventListener('click',()=>send({type:'reset'}));
  sound.addEventListener('click',()=>send({type:'sound',enabled:!soundEnabled}));

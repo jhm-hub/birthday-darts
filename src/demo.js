@@ -4,11 +4,12 @@ import {eligibleDartPrizes} from './darts-bonuses.js';
 
 // A disposable game: no storage, pairing keys or stream connection.
 export function createDemo(){
- let state=null,error='Finish setting up a game to try it.',previewCelebration='',previewBonus='';
+ let state=null,error='Finish setting up a game to try it.',previewCelebration='',previewBonus='',viewer='';
  function ensureReady(){if(error||!state)throw Error(error);}
  function reset(){previewBonus='';if(state){state.widgets[0].round=null;state.widgets[0].lastResult=null;state.revision++;}}
  return {
-  configure(input,validationError=''){
+  configure(input,validationError='',demoViewer=''){
+   viewer=typeof demoViewer==='string'?demoViewer.trim().replace(/^@/,''):'';
    try{
     if(validationError)throw Error(validationError);
     const preset=validateWidget({...input,id:'demo',name:input?.name?.trim()||'Darts preview'});
@@ -18,7 +19,7 @@ export function createDemo(){
   throw(now=Date.now()){
    ensureReady();
    advanceWidgets(state,now);
-   applyWidgetAction(state,{action:'throw',id:'demo',viewer:'Demo viewer'},now);
+   applyWidgetAction(state,{action:'throw',id:'demo',viewer:viewer||'Demo viewer'},now);
   },
   selectCelebration(id){
    if(id&&!CELEBRATION_CHOICES.some(c=>c.id===id))throw Error('Choose a celebration from the list.');
@@ -26,15 +27,16 @@ export function createDemo(){
   },
   previewBonus(kind,now=Date.now()){
    ensureReady();
+   if(viewer)throw Error('Clear the demo username before using a forced bonus sample.');
    if(!['multiply','extra','gold','stacked-gold'].includes(kind))throw Error('Choose a bonus preview from the buttons.');
    const draft=state.widgets[0];
    if(draft.theme!=='balloons')throw Error('Choose Birthday balloons to preview bonuses.');
    // A separate four-dart sample has room for every bonus, including two
    // gold hits and a future cash hit. Never change the draft or live odds.
-   const sample=newWidgets([{...draft,darts:4,outcomes:draft.outcomes.map(o=>({...o,weight:1})),bonuses:{...draft.bonuses,enabled:true,multiplyWeight:1,extraWeight:1,goldWeight:1,maxDarts:Math.max(draft.bonuses.maxDarts,4+draft.bonuses.extraDarts)}}]);
+   const sample=newWidgets([{...draft,viewerRanges:[],darts:4,outcomes:draft.outcomes.map(o=>({...o,weight:1})),bonuses:{...draft.bonuses,enabled:true,multiplyWeight:1,extraWeight:1,goldWeight:1,maxDarts:Math.max(draft.bonuses.maxDarts,4+draft.bonuses.extraDarts)}}]);
    function throwKind(target,time){
     let prizeDraw=true;
-    applyWidgetAction(sample,{action:'throw',id:'demo',viewer:'Demo viewer'},time,{draw:()=>{
+    applyWidgetAction(sample,{action:'throw',id:'demo',viewer:viewer||'Demo viewer'},time,{draw:()=>{
      if(!prizeDraw)return 0;prizeDraw=false;
      const choices=eligibleDartPrizes(sample.widgets[0].round);
      const index=choices.findIndex(o=>o.kind===target&&o.weight>0&&(target!=='cash'||o.amountCents>0));
@@ -56,7 +58,7 @@ export function createDemo(){
    // draws and balloon pool. Only its finale starts now; no live state exists.
    let cursor=now-60000;
    for(let i=0;i<16;i++){
-    applyWidgetAction(state,{action:'throw',id:'demo',viewer:'Demo viewer'},cursor);
+    applyWidgetAction(state,{action:'throw',id:'demo',viewer:viewer||'Demo viewer'},cursor);
     cursor=state.widgets[0].round.flight.finishAt;advanceWidgets(state,cursor);
     if(state.widgets[0].round.hideAt)break;
    }

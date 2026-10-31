@@ -11,7 +11,7 @@ export function connectDemo(onSnapshot,audio){
   if(event.source!==parent||event.origin!==location.origin||event.data?.kind!=='darts-demo')return;
   const data=event.data;
   try{
-   if(data.type==='configure'){game.configure(data.widget,data.error);game.selectCelebration(data.celebration);}
+   if(data.type==='configure'){game.configure(data.widget,data.error,data.viewer);game.selectCelebration(data.celebration);}
    else if(data.type==='throw'){void audio.unlock();game.throw();}
    else if(data.type==='finale'){audio.cancel();game.previewFinale();}
    else if(data.type==='bonus'){audio.cancel();void audio.unlock();game.previewBonus(data.bonus);}
