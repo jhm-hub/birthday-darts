@@ -1,3 +1,4 @@
+import {vaultSpecialSVG} from './vault-special.js';
 import {CHAMBER_SLOTS,VAULT_ART} from './vault-layout.js';
 const closed='./assets/vault/crown-v3-closed.png',opened='./assets/vault/crown-v3-open.png';
 let serial=0;
@@ -30,10 +31,10 @@ function compartment(index,prefix){
 export function vaultSVG(){
  const prefix=`crown-vault-${serial++}`;
  return `<svg viewBox="0 0 ${VAULT_ART.source} ${VAULT_ART.source}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
- ${picture(opened,'class="vault-fixed-frame"')}
+ <g class="vault-original">${picture(opened,'class="vault-fixed-frame"')}
  ${Array.from({length:4},(_,bank)=>`<g class="vault-bank" data-bank="${bank}">${Array.from({length:5},(_,i)=>compartment(bank*5+i,prefix)).join('')}</g>`).join('')}
  <g class="vault-rim-sparkles" aria-hidden="true">${[[250,303],[991,303],[93,666],[1155,666],[625,221],[623,1140]].map(([x,y])=>`<g class="rim-glint" transform="translate(${x} ${y})"><path d="M-4 -23H4V-8H15V-4H23V4H8V15H4V23H-4V8H-15V4H-23V-4H-8V-15H-4Z" fill="#fff7d9"/><path d="M-3 -10H3V10H-3ZM-10 -3H10V3H-10Z" fill="#fff"/></g>`).join('')}</g>
- </svg>`;
+ </g>${vaultSpecialSVG(prefix)}</svg>`;
 }
 export function crownVaultCrest(){
  const id=`crown-crest-${serial++}`;

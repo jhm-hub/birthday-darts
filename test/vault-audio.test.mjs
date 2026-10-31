@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {VAULT_SOUND_LABELS,vaultSoundScore,renderVaultSound,renderVaultSequence} from '../src/vault-sound-design.js';
+import {vaultSpecialTheme} from '../src/vault-special.js';
 import {createVaultAudio} from '../src/vault-audio.js';
 import {finalePose,VAULT_REST_AT_MS} from '../src/vault-effects.js';
 import {sampleVaultFinale,DEFAULT_VAULT} from '../src/vault-game.js';
@@ -144,10 +145,10 @@ test('next-lock cues survive award commits once and do not restart on a paused o
  const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(s.before,at+80);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.08]);
  const muted=context(),c=createVaultAudio({createContext:()=>muted});c.sync(s.before,at);c.setEnabled(true);c.sync(s.before,at+1);assert.equal(sources(muted).length,0);
 });
-test('the bonus-wing sound follows its prepared wing, not a second playback on the next click',()=>{
+test('the special-vault sound follows its prepared chamber, not a second playback on the next click',()=>{
  const s=sampleVaultChamberHandoff(4),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
  a.sync(s.before,s.readyAt-81);assert.equal(sources(ctx).length,1,'next-lock invitation is still fresh');
- a.sync(s.before,s.readyAt-40);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('wing'));
+ a.sync(s.before,s.readyAt-40);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('special',{index:vaultSpecialTheme(s.before,5).theme}));
  a.sync(s.waiting,s.readyAt+100);assert.equal(sources(ctx).length,2);
  a.sync(s.flight,s.clickAt);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('linked-unlock',{index:5}));
  a.sync(s.settled,s.finishAt);assert.equal(sources(ctx).length,4,'only the finale, never a seventh-lock invitation');
