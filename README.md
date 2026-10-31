@@ -774,3 +774,30 @@ weights, double-click protection, frozen round settings, independent saved games
 and automatic clear/reset are covered by tests. Browser checks include the $150
 sample, manual Encore, saved games, live display synchronization/transparency,
 final clear and duplicate-control exclusion.
+
+
+### Piñata art and swing polish (v2)
+
+The crown uses layered rose fringe, warm gold bevels, a faceted lilac jewel and
+small trailing ribbons. Its silhouette and 420×460 transparent footprint stay
+consistent. The bat now winds up, accelerates into contact, holds for40ms, follows
+through and recovers without crossing the prize label. Crown recoil, a brief
+paper compression, glint and delayed ribbon motion sell each hit.
+
+The final fracture opens into112 shaded candy/paper/star particles, including36
+larger candy sprites. Varied launch angles and staggered release create a wider
+spray. Effects avoid the header/bank and clear the amount's central space as the
+finale appears. Ordinary hits release6 candies and14 small paper fragments.
+Reduced motion preserves prize timing with static poses and a simple fade.
+
+The animation close-up (`pinata-art-preview.html?scene=break`, or `scene=hit`)
+provides normal/half/quarter playback, a scrubber, key moments, light/dark/alpha
+backdrops and a reduced-motion toggle. It is silent and never touches saved games.
+The editor links to it beside the sample-round button.
+
+Existing award math, hit at480ms, burst cue140ms later,1.5s swing duration, audio,
+saved rules and controller/display transport are unchanged. The previous prototype
+is preserved at commit3bff406. Motion checks cover contact hold, continuous pose
+boundaries, recovery, fracture timing, particle bounds/readout clearance and quiet
+mode. Browser review covers the key frames, light/dark/alpha backdrops and a sample
+round; it is not a physical OBS/audio-mix audition.
