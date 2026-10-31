@@ -737,3 +737,40 @@ bonus spacing, exact award math, quiet/reconnect behavior and mixed sound
 headroom. Browser checks cover all three tiers, lower-chamber clearance,
 transparency, and a sound-enabled unsaved $204 + $100 ×2 demo yielding $608.
 Previous version and sounds remain preserved at commit 289de27.
+
+
+## Birthday Piñata Party prototype
+
+Open `pinata.html` to play a practice round and edit saved games. The three-hit
+sample demonstrates $25 → ×2 → $50 = $150 without changing a live round.
+Practice can force the next reward; live controls always use the saved weights.
+
+Default rounds start with three swings and guarantee cash on the first hit.
+Cash accumulates; every multiplier stacks on all cash in the final total.
+Encore grants extra swings, limited by the saved round cap. The crown only
+breaks when no swings remain. Starting swings, cap, cash values, multipliers,
+extra swings and relative odds are editable. Settings changes affect the next
+viewer; an active round retains its starting settings. Saved games are local
+to this browser/device and each gets a separate private display link.
+
+For stream: save a game, open Faith's controls (`pinata-play.html`), then copy
+the private link into an OBS Browser Source at **420 × 460**. Keep the controls
+open. Enter a viewer name and click Swing once per hit (Space also works when
+not typing). The transparent display shows the final total for 6.5 seconds,
+fades out, and clears for the next viewer. The controls retain the last total.
+Use the stream volume slider and leave preview sound off to avoid double audio.
+In a normal browser, click the display once if audio needs permission. OBS audio
+routing still needs checking in Faith's actual stream setup.
+
+The display uses the existing authenticated peer connection and requires network
+access to connect. Keep its full private URL out of public messages/screenshots.
+The editor preview has light, dark and transparency backdrops; these are practice
+backgrounds only. The actual stream output is transparent. Reduced-motion mode
+removes the swinging bat, shake and confetti while preserving rewards/timing.
+No payments are collected or processed by the prototype.
+
+Validation: exact-cent award math, stacked multipliers, Encore caps, first-cash
+weights, double-click protection, frozen round settings, independent saved games
+and automatic clear/reset are covered by tests. Browser checks include the $150
+sample, manual Encore, saved games, live display synchronization/transparency,
+final clear and duplicate-control exclusion.
