@@ -38,7 +38,7 @@ for(const [label,click] of [['immediate',1.2],['normal',1.55],['paused',3.2]]){
  report['opening-first-'+label]=metrics(data);await writeFile(join(output,label==='normal'?'opening-and-first-chamber.wav':'opening-first-'+label+'.wav'),wav(data));
 }
 for(const [label,click,wing] of [['immediate',2,false],['normal',2.4,false],['paused',3.2,false],['bonus-wing',2.4,true]]){
- const data=renderVaultSequence([{at:0,sound:wing?'linked-unlock':'first-unlock',options:{index:wing?4:0}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:wing?'extra':'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.74,sound:'next',options:{index:wing?5:1}},...(wing?[{at:1.96,sound:'special',options:{index:0}}]:[]),{at:click,sound:'linked-unlock',options:{index:wing?5:1}},{at:click+.78,sound:'cash',options:{tier:1}},{at:click+1.24,sound:'collect',options:{tier:1}}],rate);
+ const data=renderVaultSequence([{at:0,sound:wing?'linked-unlock':'first-unlock',options:{index:wing?4:0}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:wing?'extra':'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.74,sound:wing?'special-prepare':'next',options:{index:wing?0:1}},...(wing?[{at:1.96,sound:'special-arrive',options:{index:0}}]:[]),{at:click,sound:'linked-unlock',options:{index:wing?5:1}},{at:click+.78,sound:'cash',options:{tier:1}},{at:click+1.24,sound:'collect',options:{tier:1}}],rate);
  report['between-'+label]=metrics(data);await writeFile(join(output,'between-'+label+'.wav'),wav(data));
 }
 const cashComparison=[];
@@ -59,6 +59,6 @@ await writeFile(join(output,'crown-vault-quick-listen.wav'),wav(renderVaultSeque
  {at:2.64,sound:'collect',options:{tier:2}},{at:3.12,sound:'settle',options:{tier:2}},{at:3.4,sound:'royal'}
 ],rate)));
 
-for(let index=0;index<3;index++){const data=renderVaultSequence([{at:0,sound:'special',options:{index}},{at:.04,sound:'linked-unlock',options:{index:5+index}},{at:.82,sound:'cash',options:{tier:2}},{at:1.08,sound:'extra'},{at:1.28,sound:'collect',options:{tier:2}}],rate);report['special-'+index]=metrics(data);await writeFile(join(output,'special-'+index+'.wav'),wav(data));}
+for(let index=0;index<3;index++){const data=renderVaultSequence([{at:0,sound:'special',options:{index}},{at:.26,sound:'linked-unlock',options:{index:5+index}},{at:1.04,sound:'cash',options:{tier:2}},{at:1.30,sound:'extra'},{at:1.50,sound:'collect',options:{tier:2}}],rate);report['special-'+index]=metrics(data);await writeFile(join(output,'special-'+index+'.wav'),wav(data));}
 await writeFile(join(output,'audio-metrics.json'),JSON.stringify({sampleRate:rate,previewVolume:70,cues:report,reel},null,2)+'\n');
 console.log(JSON.stringify({directory:resolve(output),cues:report},null,2));

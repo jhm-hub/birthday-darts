@@ -148,7 +148,7 @@ test('next-lock cues survive award commits once and do not restart on a paused o
 test('the special-vault sound follows its prepared chamber, not a second playback on the next click',()=>{
  const s=sampleVaultChamberHandoff(4),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
  a.sync(s.before,s.readyAt-81);assert.equal(sources(ctx).length,1,'next-lock invitation is still fresh');
- a.sync(s.before,s.readyAt-40);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('special',{index:vaultSpecialTheme(s.before,5).theme}));
+ a.sync(s.before,s.readyAt-40);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('special-arrive',{index:vaultSpecialTheme(s.before,5).theme}));
  a.sync(s.waiting,s.readyAt+100);assert.equal(sources(ctx).length,2);
  a.sync(s.flight,s.clickAt);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('linked-unlock',{index:5}));
  a.sync(s.settled,s.finishAt);assert.equal(sources(ctx).length,4,'only the finale, never a seventh-lock invitation');
@@ -170,4 +170,19 @@ test('collection uses the cash tier, joins its current offset once and stays con
   const muted=context(),b=createVaultAudio({createContext:()=>muted});b.sync(r,3240);b.setEnabled(true);b.sync(r,3241);assert.equal(sources(muted).length,0);
   const late=context(),c=createVaultAudio({createContext:()=>late});c.setEnabled(true);c.sync(r,3500);assert.equal(sources(late).length,0);
  }
+});
+
+test('special anticipation and arrival survive snapshots, consume muted cues and skip old invitations',()=>{
+ const s=sampleVaultChamberHandoff(4),index=vaultSpecialTheme(s.before,5).theme,prepare=s.readyAt-260,arrive=s.readyAt-40;
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
+ a.sync(s.before,prepare);assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('special-prepare',{index}));
+ a.sync(structuredClone(s.before),prepare+100);assert.equal(sources(ctx).length,1);
+ a.sync(s.before,arrive);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('special-arrive',{index}));
+ a.sync(s.waiting,s.readyAt+100);assert.equal(sources(ctx).length,2);
+ for(const phase of [prepare,arrive]){
+  const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(s.before,phase+70);
+  assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.07]);
+  const muted=context(),c=createVaultAudio({createContext:()=>muted});c.sync(s.before,phase);c.setEnabled(true);c.sync(s.before,phase+1);assert.equal(sources(muted).length,0);
+ }
+ const stale=context(),d=createVaultAudio({createContext:()=>stale});d.setEnabled(true);d.sync(s.waiting,s.readyAt+640);assert.equal(sources(stale).length,0);
 });

@@ -1,3 +1,4 @@
+import {VAULT_SPECIAL_PREPARE_MS} from './vault-special-arrival.js';
 import {vaultSpecialTheme} from './vault-special.js';
 import {VAULT_COLLECT_START_MS} from './vault-collection-motion.js';
 import {VAULT_REST_AT_MS} from './vault-effects.js';
@@ -73,10 +74,14 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
     cue(shot.id+':collect',shot.startAt+VAULT_COLLECT_START_MS,time,'collect',{tier:vaultCashLevel(shot.cashCents)});
    }
    for(const link of vaultChamberLinks(r,time)){
-    cue(link.from.id+':next',link.from.finishAt-VAULT_CHAMBER_GUIDE_LEAD_MS,time,'next',{index:link.index});
     const special=vaultSpecialTheme(r,link.index);
-    if(special)cue(link.from.id+':special',link.from.finishAt-VAULT_WING_LEAD_MS,time,'special',{index:special.theme});
-    else if(link.wing)cue(link.from.id+':wing',link.from.finishAt-VAULT_WING_LEAD_MS,time,'wing');
+    if(special){
+     cue(link.from.id+':special-prepare',link.from.finishAt-VAULT_SPECIAL_PREPARE_MS,time,'special-prepare',{index:special.theme});
+     cue(link.from.id+':special',link.from.finishAt-VAULT_WING_LEAD_MS,time,'special-arrive',{index:special.theme});
+    }else{
+     cue(link.from.id+':next',link.from.finishAt-VAULT_CHAMBER_GUIDE_LEAD_MS,time,'next',{index:link.index});
+     if(link.wing)cue(link.from.id+':wing',link.from.finishAt-VAULT_WING_LEAD_MS,time,'wing');
+    }
    }
    const last=vaultLastShot(r);
    if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle',{tier:vaultLevel(projectedVault(r,time))});
