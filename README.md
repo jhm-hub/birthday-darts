@@ -801,3 +801,28 @@ is preserved at commit3bff406. Motion checks cover contact hold, continuous pose
 boundaries, recovery, fracture timing, particle bounds/readout clearance and quiet
 mode. Browser review covers the key frames, light/dark/alpha backdrops and a sample
 round; it is not a physical OBS/audio-mix audition.
+
+
+### Piñata swing and celebration sounds (v3)
+
+The whoosh now follows the accelerating bat from310ms to the480ms contact.
+A low resonant body, woody crack, paper slap and tiny wrapper ticks make the
+thwack; three subtle variations keep repeat swings from sounding identical.
+Their levels are matched. The620ms fracture starts a larger paper crack,
+scattered candy rattles and rising bell notes. A short warm major-chord flourish
+lands with the final total. Cash, multiplier and Encore retain their note motifs.
+
+All sounds use cached deterministic PCM through the existing volume slider;
+default45%. Buffers prepare before a swing starts. Late displays join the current
+sound position, and stale/muted cues do not replay. Mute/reset/new viewers stop
+active tails with a short fade. No background music or automatic volume changes.
+The approved v2 pixel art, timing, transparent420×460 display and game rules are
+unchanged. Previous sounds are preserved at32a425d and in the external review.
+
+Use Sound on + Watch a3-hit sample in the editor. The animation close-up remains
+silent. `node scripts/render-pinata-audio.mjs <output-directory>` exports the same
+PCM layers at45%, including individual cues, a hit/break comparison and complete
+rounds. Full-volume isolated peaks: hit−15.41dBFS, break−16.09, finale−15.82;
+fast/Encore round peak−15.36 (−22.30 at45%). Checked44.1/48kHz, with no clipping.
+These are synthesis/timing/headroom measurements and browser playback checks,
+not direct listening approval or a physical OBS/voice/music mix audition.

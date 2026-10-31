@@ -1,20 +1,57 @@
-export function createPinataAudio(){
- let ctx,master,enabled=false,volume=.45,roundId=null;const seen=new Set();
- function ensure(){if(!ctx){ctx=new AudioContext();master=ctx.createGain();master.gain.value=enabled?volume:0;master.connect(ctx.destination);}return ctx;}
- function tone(hz,at,length,gain,type='sine'){const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(hz,at);g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(gain,at+.006);g.gain.exponentialRampToValueAtTime(.0001,at+length);o.connect(g).connect(master);o.start(at);o.stop(at+length+.02);o.onended=()=>{o.disconnect();g.disconnect();};}
- function noise(at,length,gain,cutoff){const buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*length),ctx.sampleRate),data=buffer.getChannelData(0);let seed=19;for(let i=0;i<data.length;i++){seed=(seed*16807)%2147483647;data[i]=(seed/1073741824-1)*(1-i/data.length);}const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),g=ctx.createGain();source.buffer=buffer;filter.type='lowpass';filter.frequency.value=cutoff;g.gain.value=gain;source.connect(filter).connect(g).connect(master);source.start(at);source.onended=()=>{source.disconnect();filter.disconnect();g.disconnect();};}
- function play(kind){if(!enabled||!ctx||ctx.state!=='running')return;const t=ctx.currentTime+.008;
-  if(kind==='swing')noise(t,.20,.024,3800);
-  if(kind==='hit'){tone(135,t,.13,.12,'triangle');noise(t,.105,.06,1300);}
-  if(kind==='cash'){[1046,1319,1568].forEach((f,i)=>tone(f,t+i*.065,.23,.035,'sine'));}
-  if(kind==='multiply'){[660,830,988,1320].forEach((f,i)=>tone(f,t+i*.075,.35,.035,'triangle'));tone(1980,t+.27,.32,.02);}
-  if(kind==='extra'){[587,740,880,1175].forEach((f,i)=>tone(f,t+i*.055,.22,.03,'sine'));}
-  if(kind==='burst'){noise(t,.3,.05,2100);[523,659,784,1046].forEach((f,i)=>tone(f,t+i*.045,.25,.03,'triangle'));}
-  if(kind==='final'){[523,659,784,1046,1319,1568].forEach((f,i)=>tone(f,t+i*.07,.46,.027,'sine'));[523,659,784].forEach(f=>tone(f,t+.45,.65,.018,'triangle'));}
+import {PINATA_SOUND_LABELS,renderPinataSound,pinataAudioCues} from './pinata-sound-design.js';
+
+export function createPinataAudio({createContext=()=>new AudioContext()}={}){
+ let ctx,master,enabled=false,volume=.45,roundId=null,disposed=false;
+ const seen=new Set(),playing=new Set(),buffers=new Map();
+ function buffer(kind,index=0){
+  const key=kind+':'+(['hit','swing'].includes(kind)?index%3:0);
+  if(!buffers.has(key)){
+   const data=renderPinataSound(kind,{index},ctx.sampleRate),b=ctx.createBuffer(1,data.length,ctx.sampleRate);
+   b.getChannelData(0).set(data);buffers.set(key,b);
+  }
+  return buffers.get(key);
  }
- return {get enabled(){return enabled;},async unlock(){try{ensure();await ctx.resume();return ctx.state==='running';}catch{return false;}},setEnabled(v){enabled=!!v;if(master)master.gain.setTargetAtTime(enabled?volume:0,ctx.currentTime,.025);},setVolume(v){volume=Math.max(0,Math.min(1,Number(v)||0));if(master)master.gain.setTargetAtTime(enabled?volume:0,ctx.currentTime,.025);},
-  update(r,time){if(roundId!==r?.id){roundId=r?.id;seen.clear();}if(!r)return;const shot=r.flight??r.hits.at(-1);if(!shot)return;const extra=shot.prize.kind==='extra',last=r.flight?r.remaining===1&&!extra:r.remaining===0;
-   const cues=[['swing',shot.startAt],['hit',shot.hitAt],[shot.prize.kind,shot.hitAt+160],...(last?[['burst',shot.hitAt+140],['final',shot.finishAt+160]]:[])];
-   for(const [kind,at] of cues){const key=shot.id+':'+kind;if(time<at||seen.has(key))continue;seen.add(key);if(time-at<180)play(kind);}
-  },dispose(){if(ctx)void ctx.close();}};
+ function ensure(){
+  if(!ctx){
+   ctx=createContext();master=ctx.createGain();master.gain.value=enabled?volume:0;master.connect(ctx.destination);
+   // Prepare once before a swing starts, avoiding synthesis work on impact.
+   for(const kind of Object.keys(PINATA_SOUND_LABELS))for(let i=0;i<(['hit','swing'].includes(kind)?3:1);i++)buffer(kind,i);
+  }
+ }
+ function stop(){
+  if(!ctx)return;
+  for(const item of playing){
+   if(item.stopping)continue;item.stopping=true;
+   const gain=item.envelope.gain;
+   if(gain.cancelAndHoldAtTime)gain.cancelAndHoldAtTime(ctx.currentTime);
+   else{gain.cancelScheduledValues(ctx.currentTime);gain.setValueAtTime(gain.value,ctx.currentTime);}
+   gain.linearRampToValueAtTime(0,ctx.currentTime+.012);
+   try{item.source.stop(ctx.currentTime+.015);}catch{}
+  }
+ }
+ function play(kind,index,elapsed){
+  const b=buffer(kind,index);if(elapsed>=b.length/ctx.sampleRate-.025)return;
+  const source=ctx.createBufferSource(),envelope=ctx.createGain(),at=ctx.currentTime;
+  source.buffer=b;envelope.gain.setValueAtTime(0,at);envelope.gain.linearRampToValueAtTime(1,at+.004);
+  source.connect(envelope).connect(master);const item={source,envelope};playing.add(item);
+  source.onended=()=>{source.disconnect();envelope.disconnect();playing.delete(item);};source.start(at,elapsed);
+ }
+ return {
+  get enabled(){return enabled;},get volume(){return volume;},
+  async unlock(){if(disposed)return false;try{ensure();if(ctx.state!=='running')await ctx.resume();return !disposed&&ctx.state==='running';}catch{return false;}},
+  setEnabled(value){if(disposed)return;enabled=!!value;if(!enabled)stop();if(master){master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setTargetAtTime(enabled?volume:0,ctx.currentTime,.025);}},
+  setVolume(value){if(disposed)return;volume=Math.max(0,Math.min(1,Number(value)||0));if(master){master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setTargetAtTime(enabled?volume:0,ctx.currentTime,.025);}},
+  update(round,time){
+   if(disposed)return;
+   if(roundId!==(round?.id??null)){stop();roundId=round?.id??null;seen.clear();}
+   if(!round)return;
+   for(const cue of pinataAudioCues(round)){
+    if(time<cue.at||seen.has(cue.id))continue;
+    if(!enabled||time-cue.at>=180){seen.add(cue.id);continue;}
+    if(!ctx||ctx.state!=='running')continue;
+    seen.add(cue.id);play(cue.kind,cue.index,(time-cue.at)/1000);
+   }
+  },
+  dispose(){if(disposed)return;stop();disposed=true;enabled=false;if(ctx)void ctx.close().catch(()=>{});}
+ };
 }
