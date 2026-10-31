@@ -3,9 +3,11 @@ import {vaultSpecialTheme} from './vault-special.js';
 import {VAULT_COLLECT_START_MS} from './vault-collection-motion.js';
 import {VAULT_REST_AT_MS} from './vault-effects.js';
 import {vaultCashLevel} from './vault-cash-motion.js';
+import {vaultTreasureLevel,vaultBankedBefore} from './vault-treasure.js';
+import {finalePose} from './vault-effects.js';
 import {giftVolume} from './gift-volume.js';
 import {vaultBonusAt} from './vault-bonus-motion.js';
-import {vaultLevel,projectedVault} from './vault-game.js';
+import {vaultLevel,projectedVault,vaultTotal} from './vault-game.js';
 import {renderVaultSound} from './vault-sound-design.js';
 import {presentedVaultRound,vaultLastShot,VAULT_SETTLE_LEAD_MS} from './vault-finish-motion.js';
 import {VAULT_FAREWELL_LEAD_MS} from './vault-exit-motion.js';
@@ -32,7 +34,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
   }
  }
  function play(sound,options={},elapsed=0){
-  const key=sound+':'+(options.index??0)%5+':'+(options.tier??0);
+  const key=sound+':'+(options.index??0)%5+':'+(options.tier??0)+':'+(options.richness??1);
   let buffer=buffers.get(key);
   if(!buffer){const data=renderVaultSound(sound,options,ctx.sampleRate);buffer=ctx.createBuffer(1,data.length,ctx.sampleRate);buffer.getChannelData(0).set(data);buffers.set(key,buffer);}
   if(elapsed>=buffer.length/ctx.sampleRate)return;
@@ -68,6 +70,9 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    cue(r.id+':ready',r.startedAt+VAULT_OPENING_GUIDE_MS,time,'ready');
    const shot=r.flight??r.opened.at(-1);
    if(shot){
+    const lockRich=vaultTreasureLevel(vaultBankedBefore(r,shot),'lock'),cashRich=vaultTreasureLevel(shot.cashCents);
+    if(lockRich)cue(shot.id+':rich-lock',shot.startAt+285,time,'rich-lock',{richness:lockRich});
+    if(cashRich)cue(shot.id+':rich-cash',shot.revealAt+140,time,'rich-cash',{richness:cashRich});
     cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'linked-unlock',{index:shot.index});
     cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:vaultCashLevel(shot.cashCents)});
     if(shot.bonus)cue(shot.id+':bonus',vaultBonusAt(shot),time,shot.bonus.kind==='multiply'?'multiply':'extra');
@@ -87,6 +92,8 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle',{tier:vaultLevel(projectedVault(r,time))});
    if(r.completedAt!==null){
     const level=vaultLevel(r);
+    const richness=vaultTreasureLevel(vaultTotal(r),'final');
+    if(richness)cue(r.id+':rich-final',r.completedAt+finalePose(0,level).build,time,'rich-final',{richness});
     cue(r.id+':final',r.completedAt,time,['standard','big','royal'][level]);
     cue(r.id+':rest',r.completedAt+VAULT_REST_AT_MS[level],time,'rest');
     cue(r.id+':clear',r.hideAt-VAULT_FAREWELL_LEAD_MS,time,'clear');

@@ -186,3 +186,16 @@ test('special anticipation and arrival survive snapshots, consume muted cues and
  }
  const stale=context(),d=createVaultAudio({createContext:()=>stale});d.setEnabled(true);d.sync(s.waiting,s.readyAt+640);assert.equal(sources(stale).length,0);
 });
+
+test('treasure accents track revealed amounts once and keep rich overlapping mixes below -14 dBFS',()=>{
+ for(const richness of [1,2]){
+  const events=[{at:0,sound:'linked-unlock'},{at:.285,sound:'rich-lock',options:{richness}},{at:.78,sound:'cash',options:{tier:2}},{at:.92,sound:'rich-cash',options:{richness}},{at:1.04,sound:'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.74,sound:'special-prepare',options:{index:2}},{at:1.96,sound:'special-arrive',options:{index:2}},{at:2,sound:'linked-unlock'}];
+  assert.ok(peak(renderVaultSequence(events))<.2,'chamber overlap');
+  for(const [tier,name]of ['standard','big','royal'].entries())assert.ok(peak(renderVaultSequence([{at:0,sound:name},{at:finalePose(0,tier).build/1000,sound:'rich-final',options:{richness}},{at:VAULT_REST_AT_MS[tier]/1000,sound:'rest'}]))<.2,'finale overlap');
+ }
+ const ctx=context(),audio=createVaultAudio({createContext:()=>ctx});audio.setEnabled(true);
+ const r=startVaultRound({...DEFAULT_VAULT,openingMin:3000,openingMax:3000,outcomes:[{value:500,weight:1}],guarantee:false},'',0,()=>0);const shot=unlockVault(r,r.readyAt,{forcedCash:0,forcedBonus:null});
+ audio.sync(r,shot.startAt);const n=sources(ctx).length;audio.sync(r,shot.startAt+285);assert.equal(sources(ctx).length,n+1);audio.sync(r,shot.startAt+286);assert.equal(sources(ctx).length,n+1);
+ audio.sync(r,shot.revealAt);const m=sources(ctx).length;audio.sync(r,shot.revealAt+140);assert.equal(sources(ctx).length,m+1);audio.sync(r,shot.revealAt+141);assert.equal(sources(ctx).length,m+1);
+ const muted=createVaultAudio({createContext:()=>ctx});muted.sync(r,shot.revealAt+140);muted.setEnabled(true);const count=sources(ctx).length;muted.sync(r,shot.revealAt+141);assert.equal(sources(ctx).length,count);
+});

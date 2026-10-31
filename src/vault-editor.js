@@ -1,6 +1,7 @@
 import {vaultStore,exportVaultSettings,importVaultSettings} from './vault-store.js';
 import {DEFAULT_VAULT,validateVault,unlockVault,advanceVault,vaultTotal,vaultBonuses,vaultBonusDue,vaultCashPrizes,money,sampleVaultFinale,VAULT_CLEAR_MS} from './vault-game.js';
 import {VAULT_EXPERIENCES,vaultExperienceRange,vaultExperiencePreset,startVaultExperience} from './vault-experiences.js';
+import {findVaultViewerRange,startVaultViewerRange,vaultViewerRangeText} from './vault-targets.js';
 import {createVaultView} from './vault-view.js';
 import {createVaultAudio} from './vault-audio.js';
 import {VAULT_SOUND_LABELS} from './vault-sound-design.js';
@@ -41,10 +42,12 @@ function renderDemoCash(){
  prizes.forEach((o,i)=>{if(o.weight>0)select.add(new Option(money(Math.round(o.value*100)),String(i)));});
  $('#demo-cash-label').textContent=special?'Next demo cash · special vault':'Next demo cash · starting chamber';
 }
+function demoRule(){return demo?(demo.privateViewerRange??null):findVaultViewerRange(vaultStore.list().find(w=>w.id===selected)?.viewerRanges,$('#demo-viewer').value);}
 function render(){
  renderDemoCash();
- const experience=$('#demo-experience').value,presetMode=experience!=='custom';
- $('#demo-experience-note').textContent=presetMode?vaultExperienceRange(experience)+' final total, including bonuses. Five starting chambers; this demo uses the preset’s own prize draws. Your custom settings stay saved separately.':'Uses the cash amounts and odds in this editor.';
+ const experience=$('#demo-experience').value,rule=demoRule(),presetMode=!!rule||experience!=='custom';
+ $('#demo-viewer-rule').textContent=rule?'@'+rule.username+' · '+vaultViewerRangeText(rule)+' final total. This username range takes priority.':'Try a saved username to preview their range. Manage names in Faith’s controls.';
+ $('#demo-experience-note').textContent=rule?'This sample uses the saved username range, including all bonuses.':presetMode?vaultExperienceRange(experience)+' final total, including bonuses. Five starting chambers; this demo uses the preset’s own prize draws. Your custom settings stay saved separately.':'Uses the cash amounts and odds in this editor.';
  $('#demo-cash').disabled=$('#demo-bonus').disabled=$('#demo-finale').disabled=presetMode;
  if(draft)view.update({widget:vaultExperiencePreset(draft,experience),round:demo},{preview:true});
  const opening=demo&&Date.now()<demo.readyAt,busy=!!demo?.flight,finished=!!demo&&demo.completedAt!==null;
@@ -54,8 +57,9 @@ function render(){
  $('#demo-status').classList.toggle('error',!!draftError);
  const bonuses=draft?vaultBonuses(demo??{preset:draft,allocated:draft.chambers}):[];for(const option of $('#demo-bonus').options)if(option.value)option.disabled=!draft||draft.bonusChance===0||!bonuses.some(b=>b.kind===option.value&&b.weight>0);if($('#demo-bonus').selectedOptions[0]?.disabled)$('#demo-bonus').value='';
 }
-function pick(){if(!draft||draftError||demo?.flight||demo&&demo.completedAt!==null||demo&&Date.now()<demo.readyAt)return;try{if(audio.enabled)audio.unlock();if(!demo)demo=startVaultExperience(draft,$('#demo-experience').value,'Demo viewer');else unlockVault(demo,Date.now(),demo.prizePlan?{}:{forcedCash:$('#demo-cash').value===''?null:Number($('#demo-cash').value),forcedBonus:$('#demo-bonus').value||undefined});nextAuto=Date.now()+2400;render();}catch(e){auto=false;$('#demo-status').textContent=e.message;}}
+function pick(){if(!draft||draftError||demo?.flight||demo&&demo.completedAt!==null||demo&&Date.now()<demo.readyAt)return;try{if(audio.enabled)audio.unlock();if(!demo){const rule=demoRule(),viewer=$('#demo-viewer').value||'Demo viewer';demo=rule?startVaultViewerRange(draft,rule,viewer):startVaultExperience(draft,$('#demo-experience').value,viewer);}else unlockVault(demo,Date.now(),demo.prizePlan?{}:{forcedCash:$('#demo-cash').value===''?null:Number($('#demo-cash').value),forcedBonus:$('#demo-bonus').value||undefined});nextAuto=Date.now()+2400;render();}catch(e){auto=false;$('#demo-status').textContent=e.message;}}
 $('#demo-experience').onchange=()=>resetDemo();
+$('#demo-viewer').oninput=()=>resetDemo();
 $('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-reset').onclick=()=>resetDemo();
 $('#demo-auto').onclick=()=>{if(auto){auto=false;render();return;}resetDemo(false);auto=true;pick();nextAuto=Date.now()+1550;render();showPreview();};
 $('#preview-finale').onclick=()=>{if(draftError||!draft)return;resetDemo(false);demo=sampleVaultFinale(draft,Number($('#demo-finale').value));render();showPreview();};
@@ -65,7 +69,7 @@ $('#sound-cue').value='royal';
 $('#listen-cue').onclick=async()=>{
  resetDemo();const sound=$('#sound-cue').value;
  $('#demo-sound').textContent='Sound on';$('#demo-sound').setAttribute('aria-pressed','true');
- try{const played=await audio.preview(sound,{tier:2,index:4});$('#sound-status').textContent=played?(audio.volume===0?'Preview volume is muted. Raise the slider to listen.':'Preview: '+VAULT_SOUND_LABELS[sound]+'. Use Listen to replay.'):'Sound stopped. Click Listen to try again.';}
+ try{const played=await audio.preview(sound,{tier:2,index:4,richness:2});$('#sound-status').textContent=played?(audio.volume===0?'Preview volume is muted. Raise the slider to listen.':'Preview: '+VAULT_SOUND_LABELS[sound]+'. Use Listen to replay.'):'Sound stopped. Click Listen to try again.';}
  catch{$('#sound-status').textContent='Audio could not start. Try Sound off, then Sound on.';}
 };
 $('#stop-cue').onclick=()=>{audio.reset();$('#sound-status').textContent='Sound stopped.';};
@@ -74,10 +78,10 @@ for(const id of ['game-name',...Object.keys(fields),'guarantee','celebration-big
 for(const pool of ['cash','special-cash'])$('#add-'+pool).onclick=()=>{cashRow({value:pool==='cash'?25:100,weight:10},pool);changed();};
 $('#vault-settings').onsubmit=async e=>{e.preventDefault();try{const w=await vaultStore.save(readDraft());widgets=vaultStore.list();edit(w);message('Saved. Ready for the next viewer.');}catch(e){message(e.message,true);}};
 $('#new-game').onclick=()=>{if(dirty&&!confirm('Discard the unsaved vault changes?'))return;edit({...structuredClone(DEFAULT_VAULT),id:undefined,name:'Another little fortune'});};
-$('#duplicate').onclick=async()=>{try{const w=await vaultStore.save({...readDraft(),experience:vaultStore.list().find(w=>w.id===selected)?.experience??'custom',id:undefined,name:$('#game-name').value.slice(0,34)+' copy'});widgets=vaultStore.list();edit(w);message('Created a separate vault.');}catch(e){message(e.message,true);}};
+$('#duplicate').onclick=async()=>{try{const w=await vaultStore.save({...readDraft(),experience:vaultStore.list().find(w=>w.id===selected)?.experience??'custom',viewerRanges:vaultStore.list().find(w=>w.id===selected)?.viewerRanges??[],id:undefined,name:$('#game-name').value.slice(0,34)+' copy'});widgets=vaultStore.list();edit(w);message('Created a separate vault.');}catch(e){message(e.message,true);}};
 $('#copy-display').onclick=async()=>{try{await navigator.clipboard.writeText($('#vault-display-url').value);message('Display link copied.');}catch{$('#vault-display-url').select();message('Select and copy the display link.');}};
 $('#export-vaults').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(exportVaultSettings(vaultStore.list()),null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='faith-vault-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-$('#import-vaults').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>200000)throw Error('This settings file is too large.');await vaultStore.import(importVaultSettings(JSON.parse(await file.text())));widgets=vaultStore.list();list();message('Imported vaults. Existing games were kept.');}catch(e){message(e.message,true);}finally{e.target.value='';}};
+$('#import-vaults').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>1000000)throw Error('This settings file is too large.');await vaultStore.import(importVaultSettings(JSON.parse(await file.text())));widgets=vaultStore.list();list();message('Imported vaults. Existing games were kept.');}catch(e){message(e.message,true);}finally{e.target.value='';}};
 let wasIntro=false;const pulse=setInterval(()=>{if(!demo)return;const opening=Date.now()<demo.readyAt;if(advanceVault(demo)||wasIntro!==opening)render();wasIntro=opening;if(demo.hideAt&&Date.now()>=demo.hideAt+VAULT_CLEAR_MS){resetDemo();return;}if(auto&&!demo.flight&&demo.completedAt===null&&Date.now()>=nextAuto)pick();},50);
 window.addEventListener('pagehide',()=>{clearInterval(pulse);clearTimeout(timer);view.dispose();audio.dispose();},{once:true});window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 vaultStore.init().then(()=>{widgets=vaultStore.list();edit(widgets.find(w=>w.id===new URLSearchParams(location.search).get('id'))??widgets[0]);}).catch(e=>message(e.message,true));

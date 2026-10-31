@@ -13,6 +13,8 @@ export async function connectVaultControl(id,onSnapshot,onStatus){
  window.addEventListener('pagehide',dispose,{once:true});
  return {id,displayURL:url.href,get ready(){return ready&&peerStatus!=='duplicate';},start:claim,dispose,
   async setExperience(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setExperience(id,value);},
+  async setViewerRange(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setViewerRange(id,value);},
+  async removeViewerRange(username){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.removeViewerRange(id,username);},
   async setVolume(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setVolume(id,value);},
   async action(viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');await vaultStore.action(id,viewer);return vaultStore.controlSnapshot(id);}};
 }

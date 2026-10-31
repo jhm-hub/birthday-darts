@@ -1,4 +1,5 @@
 import {vaultSpecialArrival,vaultSpecialParticle,vaultSpecialJewel} from './vault-special-arrival.js';
+import {vaultTreasurePose,vaultTreasureParticle,vaultTreasureRing} from './vault-treasure.js';
 import {vaultSpecialScene,vaultSpecialTheme,vaultSpecialDoors,vaultRewardPoint,VAULT_SPECIAL_POINT} from './vault-special.js';
 import {doorFinish,rimSparkle,finalePose,vaultParticle} from './vault-effects.js';
 import {presentedVaultRound,vaultHandoff,vaultLastShot,vaultFinaleGather} from './vault-finish-motion.js';
@@ -31,6 +32,8 @@ export function createVaultView(root,{audio}={}){
  const openingPips=document.createElement('span');openingPips.className='vault-opening-pips';openingPips.setAttribute('aria-hidden','true');openingPips.innerHTML='<i></i><i></i><i></i>';els.bankWrap.append(openingPips);
  const catches=document.createElement('span');catches.className='vault-collection-catches';catches.setAttribute('aria-hidden','true');catches.innerHTML='<i></i><i></i>';els.bankWrap.append(catches);
  const gathers=[...root.querySelectorAll('.vault-final-gather i')];
+ const treasure=document.createElement('div');treasure.className='vault-treasure';treasure.setAttribute('aria-hidden','true');treasure.innerHTML='<span class="vault-treasure-rim">'+vaultTreasureRing()+'</span>'+Array.from({length:48},(_,i)=>'<i>'+vaultFinalePiece(i%3===0?2:i)+'</i>').join('');stage.append(treasure);
+ const treasureRim=treasure.querySelector('span'),treasurePieces=[...treasure.querySelectorAll('i')];
  const coins=[...root.querySelectorAll('.vault-collection i')],catchStars=[...catches.children];let dockKey='',dock={left:130,right:290,y:386};
  const pips=[...openingPips.children],bonusSparks=[...root.querySelectorAll('.vault-bonus-spark')],cashSparks=[...root.querySelectorAll('.vault-cash-spark')];
  let bonusKind='',cashLevel=-1;
@@ -57,6 +60,8 @@ export function createVaultView(root,{audio}={}){
   els.progress.style.setProperty('--steps',allocated);els.viewer.textContent=r?.viewer||'A LITTLE LUCK. A LOT OF GOLD.';els.count.textContent=finished?'VAULT CLEARED':r?readout.pendingExtra&&readout.remaining===0?'BONUS INCOMING':readout.remaining+' UNLOCK'+(readout.remaining===1?'':'S')+' LEFT':allocated+' CHAMBERS';
   els.count.style.transform=`scale(${bonusPose.countScale})`;
   const shot=r?.flight,age=shot?time-shot.startAt:0,finalAge=finished?time-r.completedAt:0,level=finished?vaultLevel(r):vaultLastShot(r)?vaultLevel(now):0;
+  const richness=vaultTreasurePose(r,time,quiet);treasureRim.style.opacity=richness.ring;treasure.style.opacity=exit.stage;
+  treasurePieces.forEach((el,i)=>{const gem=vaultTreasureParticle(richness,i);el.style.opacity=gem.opacity;el.style.transform=`translate(${gem.x}px,${gem.y}px) rotate(${gem.rotation}deg) scale(${gem.scale})`;});
   stage.dataset.tier=finished?String(level):'';
   const awardReadback=finished?(quiet?0:1-ease(finalAge/400)):1;
   rim.forEach(({el,origin},i)=>{const sparkle=rimSparkle(i,time,quiet);el.style.opacity=sparkle.opacity*(shot?.45:1)*exit.heading;el.setAttribute('transform',origin+` scale(${sparkle.scale})`);});

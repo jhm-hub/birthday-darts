@@ -54,7 +54,7 @@ export function startVaultRound(widget,viewer='',now=Date.now(),draw=randomInt){
 export function unlockVault(r,now=Date.now(),{draw=randomInt,forcedCash=null,forcedBonus=undefined}={}){
  if(!r||r.completedAt!==null||r.remaining<1)throw Error('Start a new vault round.');
  if(r.flight||now<r.readyAt)throw Error('Wait for the vault to finish opening.');
- if(r.privateExperience||r.prizePlan){
+ if(r.privateExperience||r.privateViewerRange||r.prizePlan){
   const planned=r.prizePlan?.[r.opened.length];
   if(!planned)throw Error('This preset round is missing its next prize. Reload the controls.');
   if(forcedCash!==null||forcedBonus!==undefined)throw Error('Preset rounds use their planned prizes to keep the final total in range.');
@@ -85,7 +85,7 @@ export function advanceVault(r,now=Date.now()){
 }
 export function cleanVaultRound(r){
  if(!r)return null;const copy=structuredClone(r),{outcomes,specialOutcomes,bonusChance,multiplyWeight,extraWeight,openingMin,openingMax,...preset}=copy.preset;
- delete copy.privateExperience;delete copy.prizePlan;
+ delete copy.privateExperience;delete copy.privateViewerRange;delete copy.prizePlan;
  copy.preset=preset;return copy;
 }
 export function sampleVaultFinale(widget,level=2,now=Date.now()){
