@@ -34,7 +34,18 @@ export const pinataRewards=r=>r.preset.outcomes.map(o=>({...o,weight:(!r.hits.le
 export function swingPinata(r,now=Date.now(),{draw=randomInt,forcedIndex=null}={}){
  if(!r||r.completedAt!==null||r.remaining<1)throw Error('Start a new viewer’s round.');
  if(r.flight)throw Error('Let this swing finish first.');
- const rewards=pinataRewards(r),index=forcedIndex===null?chooseOutcome(rewards,draw):forcedIndex,o=rewards[index];
+ const rewards=pinataRewards(r);
+ if(r.privateViewerRange||r.prizePlan){
+  if(forcedIndex!==null)throw Error('This game uses the saved username range. Start an ordinary practice game to force a reward.');
+  const prize=structuredClone(r.prizePlan?.[r.hits.length]);
+  if(!r.privateViewerRange||!prize||!Number.isFinite(prize.value))throw Error('The saved username game could not be read.');
+  if(prize.kind==='cash'){
+   if(prize.value<.01||prize.value>1000000||Math.abs(prize.value*100-Math.round(prize.value*100))>1e-5)throw Error('Invalid planned cash reward.');
+  }else if(!rewards.some(o=>o.kind===prize.kind&&o.value===prize.value&&o.weight>0)||
+    (prize.kind==='extra'&&prize.granted!==Math.min(prize.value,r.preset.maxSwings-r.allocated)))throw Error('Invalid planned bonus reward.');
+  r.flight={id:randomUUID(),index:r.hits.length,prize,startAt:now,hitAt:now+HIT_MS,finishAt:now+SWING_MS};return r.flight;
+ }
+ const index=forcedIndex===null?chooseOutcome(rewards,draw):forcedIndex,o=rewards[index];
  if(!Number.isInteger(index)||!o||o.weight<=0)throw Error(!r.hits.length?'The first swing is always cash.':'That reward is unavailable in this round.');
  const prize={kind:o.kind,value:o.value};
  if(o.kind==='extra')prize.granted=Math.min(o.value,r.preset.maxSwings-r.allocated);
@@ -53,5 +64,5 @@ export function advancePinata(r,now=Date.now()){
  const shot=r.flight;award(r,shot);r.flight=null;
  if(r.remaining===0){r.completedAt=shot.finishAt;r.hideAt=shot.finishAt+HOLD_MS;}return true;
 }
-export function cleanPinata(r){if(!r)return null;const p=structuredClone(r);p.preset.outcomes=p.preset.outcomes.map(({kind,value})=>({kind,value}));return p;}
+export function cleanPinata(r){if(!r)return null;const p=structuredClone(r);delete p.privateViewerRange;delete p.prizePlan;p.preset.outcomes=p.preset.outcomes.map(({kind,value})=>({kind,value}));return p;}
 export const rewardCopy=p=>p.kind==='cash'?{main:'$'+p.value,detail:'BIRTHDAY TAX COLLECTED'}:p.kind==='multiply'?{main:'×'+p.value,detail:'ON THE FINAL TOTAL'}:{main:'+'+(p.granted??p.value),detail:(p.granted??p.value)===1?'ENCORE SWING':'ENCORE SWINGS'};

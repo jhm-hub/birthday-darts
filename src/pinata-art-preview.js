@@ -18,7 +18,7 @@ function scene(){
   swingPinata(base,-4000,{forcedIndex:0});advancePinata(base,-2500);
   swingPinata(base,-2000,{forcedIndex:mode==='last-multiply'?1:3});advancePinata(base,-500);
  }
- if(['second','multiply','extra','worn'].includes(mode)){
+ if(['second','multiply','extra','worn','between-back'].includes(mode)){
   swingPinata(base,-14000,{forcedIndex:0});advancePinata(base,-12500);
  }
  if(mode==='worn')for(let i=0;i<6;i++){
@@ -30,12 +30,13 @@ function render(){
  const mode=$('#scene').value;let round=structuredClone(base),readyAt=null;advancePinata(round,time);
  if(!exitScenes.includes(mode))round.hideAt=null;
  if(mode==='intro')readyAt=0;
+ if(mode==='between'||mode==='between-back'){const nextAt=1850;if(mode==='between-back'){round=structuredClone(base);advancePinata(round,time);}if(time>=nextAt){advancePinata(round,nextAt);swingPinata(round,nextAt,{forcedIndex:0});advancePinata(round,time);}}
  if(mode==='reset'){if(time<resetAt)round.hideAt=null;else if(time<resetAt+CLEAR_MS)round=beginPreviewClear(round,resetAt);else{round=null;readyAt=resetAt+CLEAR_MS;}}
  view.update({serverNow:time,widget:base.preset,round},{readyAt});
  $('#time').value=Math.round(time);$('#time-label').textContent=(time/1000).toFixed(2)+'s';$('#pause').textContent=playing?'Pause':'Play';
 }
 const requested=new URLSearchParams(location.search).get('scene');
-if(['intro','hit','second','multiply','extra','worn','break','last-multiply','large',...exitScenes].includes(requested))$('#scene').value=requested;
+if(['intro','between','between-back','hit','second','multiply','extra','worn','break','last-multiply','large',...exitScenes].includes(requested))$('#scene').value=requested;
 $('#scene').onchange=scene;
 $('#backdrop').onchange=e=>{$('.preview-wrap').dataset.bg=e.target.value;};
 $('#replay').onclick=()=>{time=0;playing=true;last=performance.now();render();};
