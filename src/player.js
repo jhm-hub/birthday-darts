@@ -16,12 +16,14 @@ const $=s=>document.querySelector(s),control=!document.documentElement.classList
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const money=c=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:c%100?2:0,maximumFractionDigits:2}).format(c/100);
 const colors=['#9980cf','#7eacca','#86c6b1','#e9b975','#f077a4','#b79add','#efc792','#f393af'];
-let session,characterRenderer=null;
+let session,characterRenderer=null,artFailed=false;
 const rangeControls=control&&!demo?bindDartsViewerRanges($('#viewer-ranges'),{save:async range=>receive(await session.saveViewerRange(range)),remove:async username=>receive(await session.removeViewerRange(username)),demo:username=>{const url=new URL('./index.html',location.href);url.searchParams.set('id',widgetId);url.hash=new URLSearchParams({demo:username}).toString();window.open(url.href,'_blank','noopener');}}):null;
 function rangeHint(){if(!rangeControls||!state)return;const rule=state.round?state.control?.activeViewerRange:findDartsViewerRange(state.control?.viewerRanges,$('#viewer').value);$('#viewer-range-match').textContent=rule?(state.round?'This round: ':'Username match: ')+dartsViewerRangeText(rule)+' final total · prepared cash values.':state.round?'This round uses the usual amounts and odds.':'No matching range · usual amounts and odds.';}
 if(rangeControls)$('#viewer').addEventListener('input',rangeHint);
 let widgetId=new URLSearchParams(location.search).get('id'),state=null,connected=false,pending=false,offset=0,config=null,artReady=false,boardKey='',historyKey='',raf,poseIndex=-2,errorMessage='';
 const clock=()=>Date.now()+offset;
+function reportDemoArt(){if(demo&&(artReady||artFailed))parent.postMessage({kind:'darts-demo',type:artReady?'art-ready':'art-error'},location.origin);}
+if(demo)window.addEventListener('darts-demo-handshake',reportDemoArt);
 let previewSound=true;try{previewSound=localStorage.getItem('faith-birthday-preview-sound')!=='off';}catch{}
 const partyAudio=createPartyAudio({enabled:demo?false:control?previewSound:true,onState:({enabled,state:audioState})=>{document.documentElement.dataset.audioState=audioState;if(control){$('#sound-toggle').textContent=enabled?'Sound on':'Sound off';$('#sound-toggle').setAttribute('aria-pressed',String(enabled));}}});
 void partyAudio.unlock().then(()=>partyAudio.sync(state?.round?.preset.theme==='balloons'?state.round.flight:null,clock()));
@@ -36,8 +38,8 @@ $('#faith').style.left=DARTS_STAGE.character.x+'px';$('#faith').style.top=DARTS_
 new ResizeObserver(size).observe($('#screen'));
 fetch('./character.json?v=return-v21').then(r=>r.json()).then(c=>{
  config=c;$('#faith img').src=c.idle;
- loadCharacterArt(c).then(images=>{characterRenderer=createCharacterRenderer($('#sprite'),c,images);artReady=true;poseIndex=-2;render();if(demo)parent.postMessage({kind:'darts-demo',type:'art-ready'},location.origin);}).catch(()=>{if(demo)parent.postMessage({kind:'darts-demo',type:'art-error'},location.origin);});
-}).catch(()=>{if(demo)parent.postMessage({kind:'darts-demo',type:'art-error'},location.origin);});
+ loadCharacterArt(c).then(images=>{characterRenderer=createCharacterRenderer($('#sprite'),c,images);artReady=true;poseIndex=-2;render();reportDemoArt();}).catch(()=>{artFailed=true;reportDemoArt();});
+}).catch(()=>{artFailed=true;reportDemoArt();});
 function pose(performance){
  const {cel:index,heldDart=false,expression=null,expressionStrength=1,blink=0,celebration='',celebrationCel=0}=performance;
  const key=[index,heldDart,expression,expressionStrength,blink,celebration,celebrationCel].join(':');if(key===poseIndex&&artReady)return;poseIndex=key;
@@ -86,7 +88,7 @@ async function connect(){
   $('#copy-display').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(url);$('#copy-display').textContent='Copied';}catch{$('#display-url').focus();$('#display-url').select();}});
  }else session=await connectDisplay(receive);
  session.start();
- if(demo&&artReady)parent.postMessage({kind:'darts-demo',type:'art-ready'},location.origin);
+ reportDemoArt();
  if(demo)window.addEventListener('pagehide',()=>session.dispose(),{once:true});
 }
 connect().catch(e=>{errorMessage=e.message;status(e.message);if(control)$('#throw').disabled=true;});

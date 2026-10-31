@@ -8,7 +8,7 @@ export function createEditorPreview(readDraft){
  const bonusPanel=document.querySelector('#demo-bonuses'),bonusButtons=[...bonusPanel.querySelectorAll('[data-demo-bonus]')];
  const viewer=document.querySelector('#demo-viewer'),match=document.querySelector('#demo-viewer-match');
  const stop=document.querySelector('#demo-stop');
- let ready=false,artReady=false,artError=false,latest=null,lastState=null,validationError='',soundEnabled=false,pendingAuto=false;
+ let ready=false,artReady=false,artError=false,latest=null,lastState=null,validationError='',soundEnabled=false,pendingAuto=false,instance=null;
  function send(data){if(ready)frame.contentWindow.postMessage({kind:'darts-demo',...data},location.origin);}
  const configuration=()=>({widget:latest,error:validationError,celebration:celebration.value,viewer:viewer.value});
  function configure(){send({type:'configure',...configuration()});}
@@ -43,11 +43,15 @@ export function createEditorPreview(readDraft){
  window.addEventListener('message',event=>{
   if(event.source!==frame.contentWindow||event.origin!==location.origin||event.data?.kind!=='darts-demo')return;
   const data=event.data;
-  if(data.type==='ready'){ready=true;artReady=false;artError=false;if(latest)configure();return;}
+  if(data.type==='ready'){if(ready&&instance===data.instance)return;instance=data.instance;ready=true;artReady=false;artError=false;if(latest)configure();return;}
   if(data.type==='art-ready'){artReady=true;artError=false;startPending();show(lastState);return;}
   if(data.type==='art-error'){artError=true;artReady=false;pendingAuto=false;show(lastState);return;}
   if(data.type!=='state')return;lastState=data;show(data);
  });
+ // Recover a ready/art-ready message sent before the editor bundle loaded.
+ // Repeated handshakes from the same frame must not restart a running demo.
+ const hello=()=>frame.contentWindow.postMessage({kind:'darts-demo',type:'hello'},location.origin);
+ frame.addEventListener('load',hello);hello();
  viewer.addEventListener('input',refresh);
  button.addEventListener('click',()=>{button.disabled=true;send({type:'throw'});});
  reset.addEventListener('click',()=>{pendingAuto=false;send({type:'reset'});});

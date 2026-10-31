@@ -47,11 +47,14 @@ test('switching demo usernames or settings discards the old sample, and invalid 
 test('private demo messages start and stop a disposable username round without a stream session',async()=>{
  const sent=[],listeners=new Map(),parent={postMessage:data=>sent.push(data)},audio={enabled:false,cancel(){},unlock:async()=>{},setEnabled(value){this.enabled=value;}};
  const source=(await readFile(new URL('../src/demo-session.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replaceAll('export ','');
- const connect=new Function('createDemo','parent','location','window','document','setInterval','clearInterval',source+'\nreturn connectDemo;')(createDemo,parent,{origin:'https://example.test'},{addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:()=>{}},{body:{dataset:{}}},()=>1,()=>{});
+ const connect=new Function('createDemo','parent','location','window','document','setInterval','clearInterval',source+'\nreturn connectDemo;')(createDemo,parent,{origin:'https://example.test'},{addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:()=>{},dispatchEvent(){}},{body:{dataset:{}}},()=>1,()=>{});
  const session=connect(()=>{},audio);session.start();const message=listeners.get('message');
  const data={kind:'darts-demo',type:'play',widget:preset,viewer:'tester',celebration:'money-tease'};
  message({source:{},origin:'https://example.test',data});assert.equal(sent.length,1);
  message({source:parent,origin:'https://example.test',data});assert.equal(sent.at(-1).snapshot.autoPlaying,true);assert.equal(sent.at(-1).snapshot.round.viewer,'tester');assert.equal(sent.at(-1).snapshot.previewCelebration,'money-tease');
+ const shot=sent.at(-1).snapshot.round.flight.id,instance=sent[0].instance;
+ message({source:parent,origin:'https://example.test',data:{kind:'darts-demo',type:'hello'}});assert.equal(sent.at(-1).type,'ready');assert.equal(sent.at(-1).instance,instance);
+ message({source:parent,origin:'https://example.test',data:{kind:'darts-demo',type:'sound',enabled:false}});assert.equal(sent.at(-1).snapshot.autoPlaying,true);assert.equal(sent.at(-1).snapshot.round.flight.id,shot);
  message({source:parent,origin:'https://example.test',data:{kind:'darts-demo',type:'stop'}});assert.equal(sent.at(-1).snapshot.autoPlaying,false);assert.ok(sent.at(-1).snapshot.round.flight);
  message({source:parent,origin:'https://example.test',data:{kind:'darts-demo',type:'reset'}});assert.equal(sent.at(-1).snapshot.round,null);session.dispose();
 });
