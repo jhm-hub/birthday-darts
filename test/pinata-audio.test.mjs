@@ -89,3 +89,11 @@ test('suspended audio can join a fresh cue; pending unlock cannot revive dispose
  resume();await pending;a.update(r,530);assert.equal(sources(ctx).length,1);
  const other=context('suspended');let done;other.resume=()=>new Promise(resolve=>{done=resolve;});const b=createPinataAudio({createContext:()=>other});const wait=b.unlock();b.dispose();done();assert.equal(await wait,false);
 });
+
+
+test('zero volume consumes cues and stops tails without resurrecting them when raised',async()=>{
+ const {a,ctx}=await player(),r=round();a.setVolume(0);a.update(r,480);a.setVolume(.45);a.update(r,481);
+ assert.equal(sources(ctx).length,0);a.update(r,640);const sound=sources(ctx)[0];assert.ok(sound);
+ a.setVolume(0);assert.equal(sound.stops.at(-1),10.015);a.setVolume(.45);a.update(r,641);
+ assert.equal(sources(ctx).length,1);
+});

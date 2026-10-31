@@ -40,14 +40,14 @@ export function createPinataAudio({createContext=()=>new AudioContext()}={}){
   get enabled(){return enabled;},get volume(){return volume;},
   async unlock(){if(disposed)return false;try{ensure();if(ctx.state!=='running')await ctx.resume();return !disposed&&ctx.state==='running';}catch{return false;}},
   setEnabled(value){if(disposed)return;enabled=!!value;if(!enabled)stop();if(master){master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setTargetAtTime(enabled?volume:0,ctx.currentTime,.025);}},
-  setVolume(value){if(disposed)return;volume=Math.max(0,Math.min(1,Number(value)||0));if(master){master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setTargetAtTime(enabled?volume:0,ctx.currentTime,.025);}},
+  setVolume(value){if(disposed)return;volume=Math.max(0,Math.min(1,Number(value)||0));if(volume===0)stop();if(master){master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setTargetAtTime(enabled?volume:0,ctx.currentTime,.025);}},
   update(round,time){
    if(disposed)return;
    if(roundId!==(round?.id??null)){stop();roundId=round?.id??null;seen.clear();}
    if(!round)return;
    for(const cue of pinataAudioCues(round)){
     if(time<cue.at||seen.has(cue.id))continue;
-    if(!enabled||time-cue.at>=180){seen.add(cue.id);continue;}
+    if(!enabled||volume===0||time-cue.at>=180){seen.add(cue.id);continue;}
     if(!ctx||ctx.state!=='running')continue;
     seen.add(cue.id);play(cue.kind,cue.index,(time-cue.at)/1000);
    }
