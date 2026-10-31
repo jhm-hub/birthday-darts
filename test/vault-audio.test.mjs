@@ -199,3 +199,17 @@ test('treasure accents track revealed amounts once and keep rich overlapping mix
  audio.sync(r,shot.revealAt);const m=sources(ctx).length;audio.sync(r,shot.revealAt+140);assert.equal(sources(ctx).length,m+1);audio.sync(r,shot.revealAt+141);assert.equal(sources(ctx).length,m+1);
  const muted=createVaultAudio({createContext:()=>ctx});muted.sync(r,shot.revealAt+140);muted.setEnabled(true);const count=sources(ctx).length;muted.sync(r,shot.revealAt+141);assert.equal(sources(ctx).length,count);
 });
+
+test('gold and jewel finales use distinct scores with their impacts on the animation clock',async()=>{
+ const {VAULT_TREASURE_CORONATION_MS,VAULT_TREASURE_ENCORE_MS}=await import('../src/vault-treasure.js');
+ const gold=vaultSoundScore('final-ovation'),jewel=vaultSoundScore('final-coronation');
+ assert.notDeepEqual(gold,jewel);assert.deepEqual(gold,vaultSoundScore('rich-final',{richness:1}));assert.deepEqual(jewel,vaultSoundScore('rich-final',{richness:2}));
+ assert.ok(gold.some(c=>c.at===.33&&c.voice==='coin'));
+ assert.ok(jewel.some(c=>c.at===VAULT_TREASURE_CORONATION_MS/1000&&c.voice==='seat'));
+ assert.ok(jewel.some(c=>c.at===VAULT_TREASURE_ENCORE_MS/1000&&c.voice==='coin'));
+ for(const richness of [1,2]){
+  const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);const r=sampleVaultFinale(DEFAULT_VAULT,2,1000);r.cashCents=richness===1?250000:750000;r.multiplier=1;
+  a.sync(r,1000);a.sync(r,1600);const n=sources(ctx).length;assert.deepEqual(sources(ctx).at(-1).buffer.getChannelData(0),renderVaultSound('rich-final',{richness}));a.sync(structuredClone(r),1601);assert.equal(sources(ctx).length,n);
+  const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,1670);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.07]);
+ }
+});

@@ -113,3 +113,6 @@
 
 /* Additional treasure stays at the rim, behind readable prize plaques. */
 .vault-treasure{position:absolute;inset:0;overflow:hidden;z-index:2;pointer-events:none}.vault-treasure>i{position:absolute;left:-5px;top:-5px;width:10px;height:10px;opacity:0}.vault-treasure svg{width:100%;height:100%;display:block;image-rendering:pixelated}.vault-treasure-rim{position:absolute;left:40px;top:40px;width:340px;height:340px;opacity:0;pointer-events:none}
+
+/* Transparent laurel and jewel ornaments frame the crest above the total. */
+.vault-treasure-decor{position:absolute;inset:0;pointer-events:none}.vault-treasure-decor svg{width:420px;height:460px}.treasure-laurel-leaf,.treasure-laurel-stem,.treasure-coronet-gem,.treasure-jewel-arc,.treasure-coronet-star{opacity:0}
