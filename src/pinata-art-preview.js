@@ -29,12 +29,13 @@ function scene(){
 function render(){
  const mode=$('#scene').value;let round=structuredClone(base),readyAt=null;advancePinata(round,time);
  if(!exitScenes.includes(mode))round.hideAt=null;
+ if(mode==='intro')readyAt=0;
  if(mode==='reset'){if(time<resetAt)round.hideAt=null;else if(time<resetAt+CLEAR_MS)round=beginPreviewClear(round,resetAt);else{round=null;readyAt=resetAt+CLEAR_MS;}}
  view.update({serverNow:time,widget:base.preset,round},{readyAt});
  $('#time').value=Math.round(time);$('#time-label').textContent=(time/1000).toFixed(2)+'s';$('#pause').textContent=playing?'Pause':'Play';
 }
 const requested=new URLSearchParams(location.search).get('scene');
-if(['hit','second','multiply','extra','worn','break','last-multiply','large',...exitScenes].includes(requested))$('#scene').value=requested;
+if(['intro','hit','second','multiply','extra','worn','break','last-multiply','large',...exitScenes].includes(requested))$('#scene').value=requested;
 $('#scene').onchange=scene;
 $('#backdrop').onchange=e=>{$('.preview-wrap').dataset.bg=e.target.value;};
 $('#replay').onclick=()=>{time=0;playing=true;last=performance.now();render();};

@@ -28,7 +28,7 @@ test('whoosh ends at contact; thwack, fracture and total follow the animation cl
  assert.equal(cues.find(c=>c.kind==='burst').at,HIT_MS+BREAK_DELAY);
  assert.equal(cues.find(c=>c.kind==='rise').at,r.flight.finishAt+ROYAL_BUILDUP_MS);
  assert.equal(cues.find(c=>c.kind==='final').at,r.flight.finishAt+FINALE_REVEAL_MS);
- assert.equal(pinataAudioCues(round()).length,3);
+ assert.equal(pinataAudioCues(round()).length,4);
  assert.equal(pinataAudioCues(round(true,4)).some(c=>['burst','rise','final'].includes(c.kind)),false,'last-hit Encore keeps the crown intact');
 });
 test('buffers are finite, deterministic, have silent edges and reserve headroom at both device rates',()=>{
@@ -171,4 +171,28 @@ test('an early next-viewer farewell cancels the royal build-up and never starts 
  for(let time=1560;time<=2010;time+=10){const exit=royalExitPose(clearing,time);a.update(exit.silent?null:clearing,time);}
  assert.equal(rise.stops.at(-1),10.015);assert.equal(sources(ctx).length,1);
  const next=round();a.update(next,480);assert.equal(sources(ctx).length,2);
+});
+
+
+test('round welcome plays once, joins its clock and does not replay on later swings',async()=>{
+ const {a,ctx}=await player(),r=round();a.update(r,23);assert.equal(sources(ctx).length,0);
+ a.update(r,30);assert.deepEqual(sources(ctx)[0].started,[10,.006]);
+ a.update(null,60);a.update(structuredClone(r),80);assert.equal(sources(ctx).length,1,'a brief disconnect must not repeat the welcome');
+ advancePinata(r,1500);a.update(r,1500);assert.equal(sources(ctx).length,1);
+ swingPinata(r,2000,{forcedIndex:4});a.update(r,2030);assert.equal(sources(ctx).length,1);
+ const next=round();next.flight.startAt=4000;next.flight.hitAt=4480;next.flight.finishAt=5500;
+ a.update(next,4030);assert.equal(sources(ctx).length,2);
+ const {a:late,ctx:lateCtx}=await player();late.update(round(),210);assert.equal(sources(lateCtx).length,0);
+});
+
+test('welcome obeys mute and volume, and reset cancels its tail without a ghost restart',async()=>{
+ for(const action of ['mute','zero','reset']){
+  const {a,ctx}=await player(),r=round();a.update(r,30);const cue=sources(ctx)[0];assert.ok(cue);
+  if(action==='mute')a.setEnabled(false);if(action==='zero')a.setVolume(0);if(action==='reset')a.update(null,60);
+  assert.equal(cue.stops.at(-1),10.015);
+  if(action==='mute'){a.setEnabled(true);a.update(r,70);}if(action==='zero'){a.setVolume(.45);a.update(r,70);}
+  assert.equal(sources(ctx).length,1);
+ }
+ const {a,ctx}=await player(),r=round();a.setEnabled(false);a.update(r,30);a.setEnabled(true);a.update(r,90);
+ assert.equal(sources(ctx).length,0);
 });

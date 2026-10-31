@@ -15,10 +15,10 @@ for(const [kind,label] of Object.entries(PINATA_SOUND_LABELS)){
  const data=renderPinataSound(kind,{},rate);report[kind]={label,...metrics(data)};await writeFile(join(directory,kind+'.wav'),wav(data));
 }
 function sequence(indices,gap){
- const round=startPinata(DEFAULT_PINATA,'Audio preview',0),events=[];
+ const round=startPinata(DEFAULT_PINATA,'Audio preview',0),events=[],seen=new Set();
  for(let i=0;i<indices.length;i++){
   const start=i*gap;swingPinata(round,start,{forcedIndex:indices[i]});
-  for(const cue of pinataAudioCues(round))events.push({at:cue.at/1000,kind:cue.kind,options:{index:cue.index}});
+  for(const cue of pinataAudioCues(round))if(!seen.has(cue.id)){seen.add(cue.id);events.push({at:cue.at/1000,kind:cue.kind,options:{index:cue.index}});}
   advancePinata(round,start+1500);
  }
  return renderPinataSequence(events,rate);
@@ -44,5 +44,6 @@ const comparison=renderPinataSequence([
 report['hit-and-break']=metrics(comparison);await writeFile(join(directory,'hit-and-break.wav'),wav(comparison));
 const royal=renderPinataSequence([{at:.1,kind:'rise'},{at:.1+(FINALE_REVEAL_MS-ROYAL_BUILDUP_MS)/1000,kind:'final'}],rate);
 report['royal-finale']=metrics(royal);await writeFile(join(directory,'royal-finale.wav'),wav(royal));
+const welcome=sequence([0],1850);report['welcome-and-first-hit']=metrics(welcome);await writeFile(join(directory,'welcome-and-first-hit.wav'),wav(welcome));
 await writeFile(join(directory,'metrics.json'),JSON.stringify({rate,previewVolume:volume,report},null,2));
 console.log(JSON.stringify(report,null,2));

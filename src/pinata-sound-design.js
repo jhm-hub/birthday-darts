@@ -2,18 +2,23 @@
 // same samples, so overlap/headroom checks cover the sound the browser plays.
 import {BREAK_DELAY} from './pinata-motion.js';
 import {FINALE_REVEAL_MS} from './pinata-finale.js';
-export const PINATA_SOUND_LABELS={swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Cash sparkle',multiply:'Royal jewel multiplier',extra:'Encore mallet flourish',burst:'Crown crack and candy shower',rise:'Royal crown build-up',final:'Royal birthday payoff'};
+import {ARRIVAL_SOUND_AT} from './pinata-intro.js';
+export const PINATA_SOUND_LABELS={arrival:'Birthday crown welcome',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Cash sparkle',multiply:'Royal jewel multiplier',extra:'Encore mallet flourish',burst:'Crown crack and candy shower',rise:'Royal crown build-up',final:'Royal birthday payoff'};
 export const SWING_SOUND_LEAD_MS=310, ROYAL_BUILDUP_MS=40;
 // Offsets within the existing hit+160ms bonus cue: jewel/total pulse, then the
 // Encore token reaching the counter. One cue keeps late joins and mute atomic.
 export const MULTIPLIER_RESOLVE_SECONDS=.49, ENCORE_CATCH_SECONDS=.66;
 const note=(at,frequency,length,gain,voice='bell')=>({at,frequency,length,gain,voice});
 const noise=(at,voice,length,gain,seed=41)=>({at,voice,length,gain,seed});
-const trims={swing:1.6,multiply:1.25,extra:1.3,burst:1.6,rise:2.1,final:1.6};
+const trims={arrival:1.2,swing:1.6,multiply:1.25,extra:1.3,burst:1.6,rise:2.1,final:1.6};
 
 export function pinataSoundScore(kind,{index=0}={}){
  const variation=((index%3)+3)%3,pitch=[1,.975,1.025][variation];
  switch(kind){
+  // A short celesta pickup welcomes the crown, then clears before the whoosh.
+  case 'arrival':return [note(0,523.25,.16,.014,'warm'),note(0,1046.5,.13,.039,'mallet'),
+   note(.055,1318.51,.12,.033,'bell'),note(.12,1568,.115,.031,'bell'),
+   note(.185,2093,.075,.012,'bell'),noise(.012,'silk',.105,.008,1063)];
   case 'swing':return [noise(0,'swish',.17,.085,811+variation*17)];
   case 'hit':return [noise(0,'body',.17,.105,821),note(.002,525*pitch,.115,.054,'wood'),noise(.001,'slap',.082,.12,839+variation*7),noise(.043,'rattle',.075,.025,853),noise(.086,'rattle',.065,.015,857)];
   // The small cash sparkle leaves room for the richer, distinct bonus rewards.
@@ -97,12 +102,13 @@ export function renderPinataSound(kind,options={},rate=48000){
 export function pinataAudioCues(round){
  const shot=round?.flight??round?.hits.at(-1);if(!shot)return [];
  const final=round.flight?round.remaining===1&&shot.prize.kind!=='extra':round.remaining===0;
- return [
+ const welcome=shot.index===0?[{kind:'arrival',at:shot.startAt+ARRIVAL_SOUND_AT,id:round.id+':arrival',index:0}]:[];
+ return welcome.concat([
   {kind:'swing',at:shot.startAt+SWING_SOUND_LEAD_MS},
   {kind:'hit',at:shot.hitAt},
   {kind:shot.prize.kind,at:shot.hitAt+160},
   ...(final?[{kind:'burst',at:shot.hitAt+BREAK_DELAY},{kind:'rise',at:shot.finishAt+ROYAL_BUILDUP_MS},{kind:'final',at:shot.finishAt+FINALE_REVEAL_MS}]:[])
- ].map(c=>({...c,id:shot.id+':'+c.kind,index:shot.index}));
+ ].map(c=>({...c,id:shot.id+':'+c.kind,index:shot.index})));
 }
 
 export function renderPinataSequence(events,rate=48000){

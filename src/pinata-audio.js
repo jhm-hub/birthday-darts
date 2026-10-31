@@ -1,7 +1,7 @@
 import {PINATA_SOUND_LABELS,renderPinataSound,pinataAudioCues} from './pinata-sound-design.js';
 
 export function createPinataAudio({createContext=()=>new AudioContext()}={}){
- let ctx,master,enabled=false,volume=.45,roundId=null,disposed=false;
+ let ctx,master,enabled=false,volume=.45,roundId=null,seenRoundId=null,disposed=false;
  const seen=new Set(),playing=new Set(),buffers=new Map();
  function buffer(kind,index=0){
   const key=kind+':'+(['hit','swing'].includes(kind)?index%3:0);
@@ -43,7 +43,8 @@ export function createPinataAudio({createContext=()=>new AudioContext()}={}){
   setVolume(value){if(disposed)return;volume=Math.max(0,Math.min(1,Number(value)||0));if(volume===0)stop();if(master){master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setTargetAtTime(enabled?volume:0,ctx.currentTime,.025);}},
   update(round,time){
    if(disposed)return;
-   if(roundId!==(round?.id??null)){stop();roundId=round?.id??null;seen.clear();}
+   // Keep consumed cues across a brief disconnect; only a new round resets them.
+   if(roundId!==(round?.id??null)){stop();roundId=round?.id??null;if(round&&seenRoundId!==round.id){seen.clear();seenRoundId=round.id;}}
    if(!round)return;
    for(const cue of pinataAudioCues(round)){
     if(time<cue.at||seen.has(cue.id))continue;
