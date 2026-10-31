@@ -22,16 +22,20 @@ export function crownPinata(id){
  </g></svg>`;
 }
 
-export const pinataBat=()=>`<svg viewBox="0 0 158 48" shape-rendering="crispEdges" aria-hidden="true"><path d="M6 20H60V15H80V10H144V14H152V32H144V36H80V31H60V26H6Z" fill="#47283f"/><path d="M10 22H64V18H82V14H142V18H148V28H142V32H82V28H64V24H10Z" fill="#eea0c5"/><path d="M80 18h66v4H80z" fill="#f6b8d5"/><path d="M84 23h62v4H84z" fill="#d97aab"/><path d="M12 22H62V24H12ZM84 14H140V18H84Z" fill="#ffe7ef"/><path d="M82 28H142V32H82ZM94 18H100V28H94ZM122 18H128V28H122Z" fill="#b85f96"/><path d="M22 20H28V28H22ZM34 20H40V28H34ZM46 20H52V28H46Z" fill="#d9ba7b"/><path d="M108 16v4h-4v4h4v4h4v-4h4v-4h-4v-4z" fill="#5b3853"/><path d="M108 18h3v3h3v2h-3v3h-3v-3h-2v-2h2z" fill="#ffe7a4"/><path d="M64 30v8h6v5h8v-6h-5v-8" fill="none" stroke="#9de1cc" stroke-width="3"/></svg>`;
-export const littleCrown=()=>`<svg viewBox="0 0 30 24" shape-rendering="crispEdges" aria-hidden="true"><path d="M2 4h4v4h4V2h4v4h4V2h4v6h4V4h3v17H2z" fill="#40243d"/><path d="M4 8h4v4h4V6h2v4h5V6h2v6h5V8h1v11H4z" fill="#f0bf70"/><path d="M4 16h23v3H4zM12 6h2v4h-2z" fill="#fff2c1"/><path d="M14 12h4v4h-4z" fill="#c6a1ed"/></svg>`;
+// Companion art shares the approved crown's paper texture, gold trim and gems.
+export const pinataBat=()=>`<svg viewBox="0 0 2172 724" aria-hidden="true"><image href="./assets/pinata/royalty-bat-v5.png" width="2172" height="724"/></svg>`;
+export const littleCrown=()=>`<svg viewBox="60 152 1140 1090" aria-hidden="true"><image href="./assets/pinata/birthday-royalty-v4.png" width="1254" height="1254"/></svg>`;
 
-const candyColors=[['#fff0ad','#eaba63','#9b614d'],['#ffe2ee','#ed8aba','#a34c7c'],['#e4fff0','#86d7c0','#4b927e'],['#f0e3ff','#b794e4','#77539d'],['#e3f7ff','#91cee8','#4a86a7']];
-export function candySprite(index){
- const [light,mid,dark]=candyColors[index%5],type=index%4;
- const shapes=type===0?`<path d="M0 3h3v2h2V3h8v2h2V3h3v8h-3V9h-2v2H5V9H3v2H0z" fill="#513344"/><path d="M1 5h2v4H1zM15 5h2v4h-2zM5 4h8v6H5z" fill="${mid}"/><path d="M5 4h7v2H5zM1 5h1v2H1zM15 5h1v2h-1z" fill="${light}"/><path d="M11 6h2v4h-2zM6 9h5v1H6z" fill="${dark}"/>`:
- type===1?`<path d="M4 1h8v2h2v8h-2v2H4v-2H2V3h2z" fill="#513344"/><path d="M4 3h8v8H4z" fill="${mid}"/><path d="M4 3h7v2H6v2H4z" fill="${light}"/><path d="M10 7h2v4H6V9h4z" fill="${dark}"/><path d="M7 6h3v2H7z" fill="${light}"/>`:
- type===2?`<path d="M6 0h4v4h5v4h-3v5H4V8H1V4h5z" fill="#513344"/><path d="M7 2h2v4h4v1h-3v4H6V7H3V6h4z" fill="${mid}"/><path d="M7 2h2v4H7zM3 6h4v1H3z" fill="${light}"/><path d="M8 8h2v3H6V9h2z" fill="${dark}"/>`:
- `<path d="M3 1h4v2h2V1h4v2h2v6h-2v2h-2v2H7v-2H5V9H3V7H1V3h2z" fill="#513344"/><path d="M3 3h4v2h2V3h4v5h-2v2H9v1H7V9H5V7H3z" fill="${mid}"/><path d="M3 3h3v2H4v2H3z" fill="${light}"/><path d="M11 5h2v3h-2v2H9v1H7V9h2V7h2z" fill="${dark}"/>`;
- return `<svg viewBox="0 0 18 14" shape-rendering="crispEdges" aria-hidden="true">${shapes}</svg>`;
+// Separate transparent windows keep each sprite's silhouette intact; the candy
+// wrapper is deliberately wider than the heart, star and mint sweet.
+const candyWindows=['35 105 645 490','685 110 520 485','70 625 540 535','680 640 530 530'];
+export const candySprite=index=>`<svg viewBox="${candyWindows[index%4]}" aria-hidden="true"><image href="./assets/pinata/royalty-candy-v5.png" width="1254" height="1254"/></svg>`;
+export const sparkleSprite=()=>`<svg viewBox="0 0 24 24" shape-rendering="crispEdges" aria-hidden="true"><path d="M10 0h4v6h4v4h6v4h-6v4h-4v6h-4v-6H6v-4H0v-4h6V6h4z" fill="#713e57"/><path d="M11 2h2v6h3v3h6v2h-6v3h-3v6h-2v-6H8v-3H2v-2h6V8h3z" fill="#e4ab54"/><path d="M11 2h2v8h-3v3H2v-2h6V8h3z" fill="#fff3c4"/><path d="M11 9h3v5h-5v-3h2z" fill="#fffbe4"/><path d="M14 14h3v2h-3v5h-2v-7z" fill="#b47849"/></svg>`;
+export const impactSprite=()=>`<svg viewBox="0 0 64 64" shape-rendering="crispEdges" aria-hidden="true"><path d="M29 1h5v17h8v-8h6v13h15v7H46v8h9v6H40v18h-7V45h-9v11h-6V40H2v-7h17v-9H9v-6h16V5h4z" fill="#ad6190"/><path d="M30 6h3v16h10v-7h2v11h13v3H42v11h9v2H37v15h-3V41H22v9h-2V37H7v-3h16V22H15v-2h14V9h1z" fill="#efbf6e"/><path d="M30 7h3v19h10v4H33v11h-4V30H13v-3h16V14h1z" fill="#fff2bb"/><path d="M27 25h9v10h-10v-8h1z" fill="#fff9e9"/><path d="M17 3h3v4h-3zM53 16h3v3h-3zM51 49h3v3h-3zM8 47h3v3H8z" fill="#d8b7fa"/></svg>`;
+export function swingTrail(){
+ const ribbon=(width,offset=0)=>{
+  const edge=side=>Array.from({length:49},(_,i)=>{const t=i/48,x=58+12*t+130*t*t,y=8+173*t-65*t*t,dx=12+260*t,dy=173-130*t,n=Math.hypot(dx,dy),w=(offset+side*width*(.4+.6*t));return [Math.round((x-dy/n*w)/2)*2,Math.round((y+dx/n*w)/2)*2].join(',');});
+  return edge(1).concat(edge(-1).reverse()).join(' ');
+ };
+ return `<svg viewBox="0 0 220 170" shape-rendering="crispEdges" aria-hidden="true"><polygon points="${ribbon(5)}" fill="#d879a2" opacity=".55"/><polygon points="${ribbon(2.5,-1)}" fill="#edc77c"/><polygon points="${ribbon(.8,-2)}" fill="#fff3ce"/><path d="M47 26h2v2h-2zM76 87h3v3h-3zM132 118h2v2h-2z" fill="#b4e8d9"/></svg>`;
 }
-export const swingTrail=()=>`<svg viewBox="0 0 220 170" shape-rendering="crispEdges" aria-hidden="true"><path d="M48 8h12v18h8v18h13v17h15v16h19v12h23v9h23v8h25v7h20v7h-36v-6h-29v-8h-27V96H93V82H76V64H63V45H54V26h-6z" fill="#f1aad0" opacity=".8"/><path d="M61 6h5v19h8v18h12v16h15v15h19v13h21v7h24v6h22v4h-24v-3h-25v-7h-21V83H97V69H81V51H70V32h-9z" fill="#fff7e6"/></svg>`;

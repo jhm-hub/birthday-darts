@@ -62,6 +62,7 @@ export function particlePose(i,after,{breaking=false,quiet=false}={}){
  // Keep the title, bank and final amount unobstructed inside the 420×460 stage.
  const size=particleSpec(i);if(x<14||x+size.width>406||y<104||y+size.height>381)opacity=0;
  if(breaking&&x>76&&x<344&&y>207&&y<355)opacity*=1-smooth((after-950)/170);
+ if(breaking&&after>=1120&&y+size.height>=200&&y<=376)opacity=0;
  return {x:Math.round(x),y:Math.round(y),angle:Math.round(i*37+t*(i%2?190:-240)),
   flip:hero?Math.max(.38,Math.abs(Math.cos(t*5+i))):1,opacity};
 }

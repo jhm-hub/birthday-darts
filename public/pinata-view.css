@@ -26,10 +26,26 @@
 .pina-footer small{display:block;font-size:11px;letter-spacing:.2px;font-weight:600;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;white-space:nowrap}
 .pina-footer strong{display:block;font-weight:700;line-height:1.15;white-space:nowrap;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 2px var(--ink)}
 .pina-cash{color:#ffd39d}.pina-mult{color:#dab8ff}.pina-bank{color:#aaf4df}
-.pina-finale{position:absolute;left:20px;right:20px;top:163px;text-align:center;z-index:7;opacity:0;pointer-events:none}
-.pina-finale svg{width:60px;height:48px;margin:0 auto 10px}.pina-final-title{display:block;font-size:17px;letter-spacing:2px;font-weight:600;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
-.pina-finale>strong{display:block;font-size:74px;font-weight:700;line-height:1.16;white-space:nowrap;color:#fff0a4;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;text-shadow:0 3px var(--ink)}
-.pina-finale p{font-size:17px;font-weight:600;margin:9px 0 0;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
+/* The finale is a crown, a fitted amount label and open space, not a panel. */
+.pina-finale{position:absolute;left:16px;right:16px;top:100px;text-align:center;z-index:7;opacity:0;pointer-events:none}
+.pina-final-crest{width:108px;height:100px;margin:0 auto 4px;transform-origin:50% 82%;filter:drop-shadow(0 2px 0 #48223d66)}
+.pina-final-crest svg{width:100%;height:100%;overflow:hidden}
+.pina-final-title{display:block;font-size:17px;line-height:20px;letter-spacing:1.4px;font-weight:600;color:#ffe1f0;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 1px var(--ink)}
+.pina-total-wrap{margin:8px auto 0;transform-origin:50% 50%}
+.pina-total-tag{position:relative;display:inline-flex;align-items:center;flex-direction:column;max-width:100%;padding:8px 22px 11px;isolation:isolate;filter:drop-shadow(0 3px 0 #3f203c44)}
+.pina-total-tag:before,.pina-total-tag:after{content:"";position:absolute;z-index:-1;inset:0;clip-path:polygon(14px 0,calc(100% - 14px) 0,calc(100% - 14px) 4px,calc(100% - 6px) 4px,calc(100% - 6px) 10px,100% 10px,100% calc(100% - 10px),calc(100% - 6px) calc(100% - 10px),calc(100% - 6px) calc(100% - 4px),calc(100% - 14px) calc(100% - 4px),calc(100% - 14px) 100%,14px 100%,14px calc(100% - 4px),6px calc(100% - 4px),6px calc(100% - 10px),0 calc(100% - 10px),0 10px,6px 10px,6px 4px,14px 4px);background:linear-gradient(135deg,#fff3c5,#dfb16d 48%,#f9dbe8 70%,#b96e78)}
+.pina-total-tag:after{inset:2px;background:linear-gradient(145deg,#61314dea,#38203ee8)}
+.pina-total-tag>small{font-size:10px;line-height:12px;letter-spacing:2px;font-weight:600;color:#f5d8e7}
+.pina-final-amount{display:block;font-size:84px;font-weight:700;line-height:.98;white-space:nowrap;color:#fff0ac;-webkit-text-stroke:1.5px #643d4c;paint-order:stroke fill;text-shadow:0 2px #b57d51,0 3px #321c37;font-variant-numeric:tabular-nums}
+.pina-finale p{font-size:16px;line-height:20px;font-weight:600;margin:8px 0 0;color:#ffe5f2;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill}
+.pina-finale-particles{position:absolute;inset:0;z-index:6;overflow:hidden;pointer-events:none}.pina-finale-particles i{position:absolute;left:0;top:0;display:block;opacity:0;transform-origin:center;will-change:transform,opacity}
+.pina-finale-particles .paper,.pina-particles .paper{background:linear-gradient(120deg,#fff4d2 0 12%,var(--c) 13% 68%,#aa6982 70%);box-shadow:inset 1px 0 #fff6,inset -1px -1px #5b345577}
+.pina-finale-particles .paper{clip-path:polygon(0 0,100% 0,100% 70%,70% 70%,70% 100%,0 100%)}
+.pina-particles .star{background:none;clip-path:none;box-shadow:none}
+.pina-particles svg,.pina-finale-particles svg{overflow:hidden}
+.pina-finale-particles .candy,.pina-finale-particles .star{filter:drop-shadow(0 1px 0 #49233d55)}
+.pina-heading>strong{color:#ffd2e6;text-shadow:0 1px #9b536e,0 3px var(--ink)}
+.pina-cash{color:#ffe1a3}.pina-mult{color:#e0c3ff}.pina-bank{color:#b9f2de}
 html.pinata-overlay,html.pinata-overlay body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent!important}
 .pinata-overlay .pinata-screen{width:100vw;height:100vh;aspect-ratio:auto}.pinata-overlay #display-help{position:absolute;z-index:10;background:#38213e;color:#fff;padding:12px;font:16px Arial}
-@media(prefers-reduced-motion:reduce){.pina-impact,.pina-particles,.pina-bat,.pina-swish{display:none}}
+@media(prefers-reduced-motion:reduce){.pina-impact,.pina-particles,.pina-finale-particles,.pina-bat,.pina-swish{display:none}}

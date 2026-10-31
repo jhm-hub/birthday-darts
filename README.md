@@ -903,3 +903,26 @@ contact/break/total controls. The main practice sample still finishes at $150.
 
 Concept A/B/C originals, prompts and selection notes live in the external
 `Stream-Games/Pinata/Concepts/2026-10-30-three-directions/` folder.
+
+
+### Royal birthday finale and matching art (v5)
+
+The final crown enters first, then the exact total lands 300 ms after the last
+swing finishes, aligned to the existing finale chord. The amount has a fitted
+stepped gold/plum label; the rest of the 420×460 overlay remains open and
+transparent. The crown, label and detail settle for the existing reading hold.
+Forty-eight additional gold/pink confetti and candy sprites celebrate above and
+below the total. Both particle systems reserve the entire amount area, including
+long totals. Reduced motion retains the reveal order without moving decorations.
+
+The matching rose-paper bat and four shaded candy sprites use original generated
+transparent PNGs in `public/assets/pinata/`. The final crest uses the approved
+crown art itself. Gold sparkles, impact, swing trail and paper confetti share the
+palette. Existing v3 audio, default volume, game rules and saved settings remain.
+No payment handling is added.
+
+`pinata-art-preview.html?scene=break` includes Crown entrance, Total, Celebration
+and Settled buttons. `scene=large` checks a $9,999,999.90 sample without changing
+saved games. The preview is silent; use the main three-hit sample for audio.
+Artwork prompts, earlier files and visual/test evidence are retained in external
+`Stream-Games/Pinata/Review/royal-finale-v5-2026-10-30/`.
