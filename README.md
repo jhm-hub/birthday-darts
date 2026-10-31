@@ -975,3 +975,27 @@ Silent study: `vault-art-preview.html?scene=handoff-2` (also handoff-0 / handoff
 For sound, use the main page's **Sound on**, **Watch a sample round**, or select
 **Celebration preview → Royal win → Preview finale**. External review evidence,
 backups and listening WAVs: `Stream-Games/Vault/Review/crown-finale-v15-2026-10-30/`.
+
+### Piñata — distinct bonuses and alternating impacts (v7)
+
+Multipliers reveal a large lilac jewel, orbiting gold sparkles and a pulse on the
+multiplier/total. Encore reveals a mint candy-and-bat medal, its own upward burst,
+and an extra-swing token that travels just below the counter. Both retain the
+actual configured reward, existing sound cue and compact transparent stage.
+Reduced motion keeps the reward and emblem without travel or particles.
+
+The bat, trail, impact flash, recoil and normal-hit debris alternate sides on
+every swing, including Encore swings. Each viewer starts from the left again.
+Twelve progressive tears support the maximum round: dark split, exposed pale
+paper edges, branching fractures and curled fringe. Damage follows the saved
+hit clock and stays attached to the crown through sway and the final break.
+Reset removes all damage. Prizes, odds, award timing and approved sound/art
+source files are unchanged.
+
+The silent **Animation close-up** now offers First hit / Second hit, Royal
+multiplier, Encore and an eighth-hit worn crown. Use **Bonus moment**, **Bonus
+settles** or **Replay**. Direct links: `pinata-art-preview.html?scene=multiply`
+and `pinata-art-preview.html?scene=extra`. The main three-hit sample includes a
+multiplier; **Next practice reward → +1 Encore swing** lets you try Encore after
+the guaranteed opening cash hit. These previews do not change saved games.
+Review evidence: `Stream-Games/Pinata/Review/bonuses-impact-v7-2026-10-30/`.

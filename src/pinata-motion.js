@@ -44,7 +44,7 @@ export function particleSpec(i){
  return {candy,star,width:candy?22+(i%3)*3:star?9:4+i%3,height:candy?17+(i%3)*2:star?9:8+i%4};
 }
 
-export function particlePose(i,after,{breaking=false,quiet=false}={}){
+export function particlePose(i,after,{breaking=false,quiet=false,side=1}={}){
  const off={x:210,y:210,angle:0,flip:1,opacity:0};
  if(quiet||after<0||(breaking?i>=PARTICLE_COUNT:!(i<6||(i>=36&&i<50))))return off;
  const delay=breaking?BREAK_DELAY+(i%6)*24+(i>=72?90:0):(i%5)*12;
@@ -58,11 +58,12 @@ export function particlePose(i,after,{breaking=false,quiet=false}={}){
  }else{
   const a=i*2.399;x=184+Math.cos(a)*(35+i%5*11)*t;y=214+Math.sin(a)*45*t-65*t+125*t*t;
  }
+ if(!breaking&&side===-1)x=420-x-particleSpec(i).width;
  let opacity=1-smooth((t-(breaking?1.05:.36))/(breaking?.85:.46));
  // Keep the title, bank and final amount unobstructed inside the 420×460 stage.
  const size=particleSpec(i);if(x<14||x+size.width>406||y<104||y+size.height>381)opacity=0;
  if(breaking&&x>76&&x<344&&y>207&&y<355)opacity*=1-smooth((after-950)/170);
  if(breaking&&after>=1120&&y+size.height>=200&&y<=376)opacity=0;
- return {x:Math.round(x),y:Math.round(y),angle:Math.round(i*37+t*(i%2?190:-240)),
+ return {x:Math.round(x),y:Math.round(y),angle:Math.round((i*37+t*(i%2?190:-240))*(breaking?1:side)),
   flip:hero?Math.max(.38,Math.abs(Math.cos(t*5+i))):1,opacity};
 }

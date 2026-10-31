@@ -8,12 +8,19 @@ const view=createPinataView($('#art-preview'),{preview:true,clock:()=>time,quiet
 function scene(){
  const mode=$('#scene').value,preset=structuredClone(DEFAULT_PINATA),finish=mode==='break'||mode==='large';
  if(mode==='large'){preset.outcomes[0].value=999999.99;preset.outcomes[1].value=999999.99;preset.outcomes[3].value=5;}
+ if(mode==='worn'){preset.outcomes[4].value=3;preset.maxSwings=12;}
  base=startPinata(preset,'Birthday VIP',0);
  if(finish){
   swingPinata(base,-4000,{forcedIndex:0});advancePinata(base,-2500);
   swingPinata(base,-2000,{forcedIndex:3});advancePinata(base,-500);
  }
- swingPinata(base,0,{forcedIndex:finish?1:0});time=0;playing=false;render();
+ if(['second','multiply','extra','worn'].includes(mode)){
+  swingPinata(base,-14000,{forcedIndex:0});advancePinata(base,-12500);
+ }
+ if(mode==='worn')for(let i=0;i<6;i++){
+  swingPinata(base,-12000+i*1800,{forcedIndex:i%2===0?4:0});advancePinata(base,-10500+i*1800);
+ }
+ swingPinata(base,0,{forcedIndex:mode==='multiply'?3:mode==='extra'?4:finish?1:0});time=0;playing=false;render();
 }
 function render(){
  const round=structuredClone(base);advancePinata(round,time);round.hideAt=null;
@@ -21,7 +28,7 @@ function render(){
  $('#time').value=Math.round(time);$('#time-label').textContent=(time/1000).toFixed(2)+'s';$('#pause').textContent=playing?'Pause':'Play';
 }
 const requested=new URLSearchParams(location.search).get('scene');
-if(['hit','break','large'].includes(requested))$('#scene').value=requested;
+if(['hit','second','multiply','extra','worn','break','large'].includes(requested))$('#scene').value=requested;
 $('#scene').onchange=scene;
 $('#backdrop').onchange=e=>{$('.preview-wrap').dataset.bg=e.target.value;};
 $('#replay').onclick=()=>{time=0;playing=true;last=performance.now();render();};
