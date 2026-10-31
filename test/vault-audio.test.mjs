@@ -1,3 +1,4 @@
+import {vaultTreasureCoda} from '../src/vault-treasure-coda.js';
 import {vaultTreasureBridge,sampleVaultTreasureHandoff} from '../src/vault-treasure-handoff.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,7 +9,7 @@ import {finalePose,VAULT_REST_AT_MS} from '../src/vault-effects.js';
 import {sampleVaultFinale,DEFAULT_VAULT} from '../src/vault-game.js';
 import {sampleVaultHandoff} from '../src/vault-finish-motion.js';
 import {advanceVault} from '../src/vault-game.js';
-import {sampleVaultReset} from '../src/vault-reset-preview.js';
+import {sampleVaultReset,sampleVaultTreasureReset} from '../src/vault-reset-preview.js';
 import {VAULT_FAREWELL_LEAD_MS} from '../src/vault-exit-motion.js';
 import {startVaultRound,unlockVault} from '../src/vault-game.js';
 import {sampleVaultChamberHandoff,VAULT_CHAMBER_GUIDE_LEAD_MS} from '../src/vault-chamber-handoff.js';
@@ -77,7 +78,7 @@ test('fallback mute holds the active gain, and repeated stops never create a fre
 });
 test('finale and farewell play once, and sampler cancellation wins over a pending audio resume',async()=>{
  const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);const r=sampleVaultFinale(DEFAULT_VAULT,2,1000);
- a.sync(r,1000);assert.equal(sources(ctx).length,1);a.sync(r,1001);assert.equal(sources(ctx).length,1);a.sync(r,r.hideAt-VAULT_FAREWELL_LEAD_MS);assert.equal(sources(ctx).length,2);a.sync(r,r.hideAt);assert.equal(sources(ctx).length,2);
+ a.sync(r,1000);assert.equal(sources(ctx).length,1);a.sync(r,1001);assert.equal(sources(ctx).length,1);a.sync(r,vaultTreasureCoda(r,r.completedAt).farewellAt);assert.equal(sources(ctx).length,2);a.sync(r,r.hideAt);assert.equal(sources(ctx).length,2);
  let resume;const blocked=context('suspended');blocked.resume=()=>new Promise(resolve=>{resume=()=>{blocked.state='running';resolve();};});const b=createVaultAudio({createContext:()=>blocked});
  const promise=b.preview('royal');b.setEnabled(false);resume();assert.equal(await promise,false);assert.equal(sources(blocked).length,0);
  assert.equal(await b.preview('cash'),true);assert.equal(sources(blocked).length,1);b.sync(null,1000);assert.equal(sources(blocked)[0].stops.length,0,'empty demo must not cancel an audition');
@@ -100,7 +101,7 @@ test('the settling phrase uses the final projected tier before the last multipli
 });
 test('farewell plays once on its lead-in, clears, and does not leak into the next viewer',()=>{
  const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),s=sampleVaultReset();a.setEnabled(true);
- const at=s.outgoing.hideAt-VAULT_FAREWELL_LEAD_MS;
+ const at=vaultTreasureCoda(s.outgoing,s.outgoing.completedAt).farewellAt;
  a.sync(s.outgoing,at-1);assert.equal(sources(ctx).length,0);
  a.sync(s.outgoing,at);assert.equal(sources(ctx).length,1);
  a.sync(structuredClone(s.outgoing),at+100);assert.equal(sources(ctx).length,1);
@@ -110,10 +111,10 @@ test('farewell plays once on its lead-in, clears, and does not leak into the nex
 });
 test('the quiet resting phrase follows each tier and reconnects never replay it',()=>{
  for(let tier=0;tier<3;tier++){
-  const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),r=sampleVaultFinale(DEFAULT_VAULT,tier,1000),at=r.completedAt+VAULT_REST_AT_MS[tier];
+  const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),r=sampleVaultFinale(DEFAULT_VAULT,tier,1000),coda=vaultTreasureCoda(r,1000),at=coda.enabled?coda.settleAt:r.completedAt+VAULT_REST_AT_MS[tier];
   a.setEnabled(true);a.sync(r,at-1);assert.equal(sources(ctx).length,0);
   a.sync(r,at);assert.equal(sources(ctx).length,1);
-  assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('rest'));
+  assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound(coda.enabled?'rest-gold':'rest'));
   a.sync(structuredClone(r),at+100);assert.equal(sources(ctx).length,1);
   const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,at+201);assert.equal(sources(late).length,0);
   const joining=context(),c=createVaultAudio({createContext:()=>joining});c.setEnabled(true);c.sync(r,at+70);assert.deepEqual(sources(joining)[0].started,[10,.07]);
@@ -240,5 +241,35 @@ test('the continuous phrase replaces only the prelude and keeps all tier impact 
   const hit=finalePose(0,tier).build/1000,bridgeMs=(2+hit-last)*1000;
   const events=[{at:0,sound:'linked-unlock'},{at:.285,sound:'rich-lock',options:{richness}},{at:.78,sound:'cash',options:{tier:cashTier}},{at:.92,sound:'rich-cash',options:{richness}},{at:1.04,sound:'multiply'},{at:1.24,sound:'collect',options:{tier:cashTier}},{at:last,sound:richness===1?'finish-gold':'finish-jewel',options:{bridgeMs}},{at:2,sound:'linked-final',options:{tier}},{at:2+hit,sound:'rich-final',options:{richness}},{at:2+VAULT_REST_AT_MS[tier]/1000,sound:'rest'}];
   assert.ok(peak(renderVaultSequence(events))<.2,'complete finale mix retains headroom');
+ }
+});
+
+test('gold and jewel resting/farewell sounds use one clock through late joins, mute and reset',()=>{
+ for(const style of [1,2]){
+  const sample=sampleVaultTreasureReset(style),r=sample.outgoing,c=vaultTreasureCoda(r,r.completedAt),suffix=style===1?'gold':'jewel';
+  for(const [at,name]of [[c.settleAt,'rest-'+suffix],[c.farewellAt,'clear-'+suffix]]){
+   const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(r,at-1);assert.equal(sources(ctx).length,0);a.sync(r,at);assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound(name));
+   a.sync(structuredClone(r),at+100);assert.equal(sources(ctx).length,1);
+   const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,at+70);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.07]);
+   const stale=context(),d=createVaultAudio({createContext:()=>stale});d.setEnabled(true);d.sync(r,at+201);assert.equal(sources(stale).length,0);
+   const muted=context(),e=createVaultAudio({createContext:()=>muted});e.sync(r,at);e.setEnabled(true);e.sync(r,at+1);assert.equal(sources(muted).length,0);
+   a.sync(null,sample.clearAt);assert.equal(sources(ctx)[0].stops.at(-1),10.015);a.sync(sample.next,sample.nextAt);assert.equal(sources(ctx).length,2);
+  }
+ }
+});
+test('new farewells match the existing closing mechanism, finish before clear and leave silence for the next viewer',()=>{
+ for(const style of [1,2])for(const rate of [44100,48000]){
+  const {outgoing:r,clearAt,nextAt}=sampleVaultTreasureReset(style),c=vaultTreasureCoda(r,r.completedAt),name=style===1?'clear-gold':'clear-jewel';
+  const score=vaultSoundScore(name),seat=score.find(n=>n.voice==='seat');assert.equal(Math.round(c.farewellAt+seat.at*1000),r.hideAt+260);
+  const data=renderVaultSound(name,{},rate);assert.ok(c.farewellAt+data.length/rate*1000<clearAt);assert.ok(peak(data)<.04);
+  const start=c.farewellAt/1000,mix=renderVaultSequence([{at:0,sound:name},{at:nextAt/1000-start,sound:'intro'}],rate);
+  assert.ok(mix.slice(Math.round((clearAt/1000-start)*rate),Math.round((nextAt/1000-start)*rate)).every(x=>x===0));
+ }
+});
+test('the late celebration mix remains balanced for all configured tiers',()=>{
+ for(const richness of [1,2])for(const [tier,name]of ['standard','big','royal'].entries()){
+  const suffix=richness===1?'gold':'jewel',build=finalePose(0,tier).build/1000,settle=build+(richness===1?1.1:1.18),farewell=6.5-(richness===1?.82:.98);
+  const mix=renderVaultSequence([{at:0,sound:name},{at:build,sound:'rich-final',options:{richness}},{at:settle,sound:'rest-'+suffix},{at:farewell,sound:'clear-'+suffix}]);
+  assert.ok(peak(mix)<.2);assert.ok(mix.length/48000<6.95);
  }
 });

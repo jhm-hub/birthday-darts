@@ -53,9 +53,9 @@ function finalParticle(pose,index,off){
  else {const spread=grand?15+slot*3:26+slot*2;x=210+side*((grand?132:140)+Math.sin(Math.PI*t)*spread);y=(grand?246-wave*22:wave?229:188)-Math.sin(Math.PI*t)*(grand?85+slot*5:72+slot*5)+18*t*t;scale=grand?.85+slot%3*.12:slot%3===0?1.45:1.1;}
  return {visible:true,x:Math.round(x),y:Math.round(y),opacity:Math.min(1,t*9,(1-t)*6)*(gather?.75:.95),scale,rotation:grand?Math.floor((slot+t*2)%4)*90:gather?0:Math.floor((slot+t*3)%4)*90};
 }
-export function vaultTreasureOrnament(pose,index,type,lead=0){
+export function vaultTreasureOrnament(pose,index,type,lead=0,fadeOverride){
  const off={opacity:0,y:0,scale:1};if(!pose.visible||pose.kind!=='final')return off;
- const a=pose.age,entrance=a+lead,fade=1-smooth((a-1100)/380);
+ const a=pose.age,entrance=a+lead,fade=fadeOverride??1-smooth((a-1100)/380);
  if(type==='leaf'&&pose.level===1){const grow=smooth((entrance-index*42)/230);return {opacity:grow*fade,y:Math.round((1-grow)*4),scale:.8+.2*grow+.06*Math.sin(Math.PI*grow)};}
  if(type==='stem'&&pose.level===1)return {...off,opacity:smooth(entrance/240)*fade*.9};
  if(type==='arc'&&pose.level===2)return {...off,opacity:smooth((entrance-200)/160)*fade*.65};

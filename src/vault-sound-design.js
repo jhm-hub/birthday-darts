@@ -1,3 +1,4 @@
+import {VAULT_TREASURE_FAREWELL_MS} from './vault-treasure-coda.js';
 // Original Crown Vault sound design: D-major jewels, damped gold mechanisms
 // and warm bass. No downloads or background music; previews use the same PCM.
 import {VAULT_SPECIAL_PREPARE_MS,VAULT_SPECIAL_HIT_MS} from './vault-special-arrival.js';
@@ -13,8 +14,8 @@ import {VAULT_OPENING_REVEAL_MS,VAULT_OPENING_LOCK_MS} from './vault-intro-motio
 const midi=p=>440*2**((p-69)/12);
 const note=(at,pitch,length,gain=.04,voice='jewel')=>({at,frequency:midi(pitch),length,gain,voice});
 const foley=(at,voice,length,gain,seed=41)=>({at,voice,length,gain,seed});
-export const VAULT_SOUND_LABELS={intro:'Opening balance',ready:'First chamber invitation',next:'Bankroll → next lock','linked-unlock':'Prepared chamber unlock','first-unlock':'First chamber unlock',unlock:'Lock & heavy door',cash:'Cash treasure',multiply:'Total multiplier',extra:'Extra unlock',collect:'Coins collected',wing:'Next crown wing',special:'Special vault entrance',settle:'Last treasure settles','finish-gold':'Gold finale build-up','finish-jewel':'Jewel finale build-up',standard:'Standard win',big:'Big win',royal:'Royal win','rich-lock':'Treasure lock accent','rich-cash':'Grand cash flourish','final-ovation':'Gilded ovation finale','final-coronation':'Crown coronation finale',rest:'Celebration settles',clear:'Soft vault farewell'};
-const trims={'finish-gold':1,'finish-jewel':1,'linked-final':1,'final-ovation':1,'final-coronation':1,'rich-lock':1,'rich-cash':1,'rich-final':1,intro:1.2,'intro-arrive':1.2,'intro-balance':1.2,ready:2.4,next:2,'linked-unlock':1.35,'first-unlock':1.35,unlock:1.35,cash:1.6,multiply:1,extra:1.85,collect:1.6,wing:1.1,special:1.2,'special-prepare':1.2,'special-arrive':1.2,settle:1,standard:1.05,big:1.2,royal:1,rest:1.4,clear:1.45};
+export const VAULT_SOUND_LABELS={intro:'Opening balance',ready:'First chamber invitation',next:'Bankroll → next lock','linked-unlock':'Prepared chamber unlock','first-unlock':'First chamber unlock',unlock:'Lock & heavy door',cash:'Cash treasure',multiply:'Total multiplier',extra:'Extra unlock',collect:'Coins collected',wing:'Next crown wing',special:'Special vault entrance',settle:'Last treasure settles','finish-gold':'Gold finale build-up','finish-jewel':'Jewel finale build-up',standard:'Standard win',big:'Big win',royal:'Royal win','rich-lock':'Treasure lock accent','rich-cash':'Grand cash flourish','final-ovation':'Gilded ovation finale','final-coronation':'Crown coronation finale','rest-gold':'Gold celebration settles','rest-jewel':'Jewel celebration settles','clear-gold':'Gold vault farewell','clear-jewel':'Jewel vault farewell',rest:'Celebration settles',clear:'Soft vault farewell'};
+const trims={'rest-gold':1,'rest-jewel':1,'clear-gold':1,'clear-jewel':1,'finish-gold':1,'finish-jewel':1,'linked-final':1,'final-ovation':1,'final-coronation':1,'rich-lock':1,'rich-cash':1,'rich-final':1,intro:1.2,'intro-arrive':1.2,'intro-balance':1.2,ready:2.4,next:2,'linked-unlock':1.35,'first-unlock':1.35,unlock:1.35,cash:1.6,multiply:1,extra:1.85,collect:1.6,wing:1.1,special:1.2,'special-prepare':1.2,'special-arrive':1.2,settle:1,standard:1.05,big:1.2,royal:1,rest:1.4,clear:1.45};
 export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888}={}){
  const bonusLand=VAULT_BONUS_LAND_MS/1000,room=((index%5)+5)%5,accent=[74,78,81,76,86][room];
  switch(name){
@@ -60,6 +61,14 @@ export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888}={}
   if(richness<2)return [foley(0,'coin',.1,.020,1151),note(0,50,.44,.021,'warm'),note(0,74,.38,.025,'brass'),note(0,78,.33,.017,'brass'),...[86,90,93].map((p,i)=>note(.045+i*.075,p,.19,.018,'celesta')),foley(.33,'coin',.09,.018,1153),note(.33,81,.3,.018,'brass'),note(.33,93,.27,.019,'glass'),note(.48,98,.22,.016,'celesta'),note(.68,86,.36,.022,'glass'),note(.68,74,.4,.014,'warm')];
   const crown=VAULT_TREASURE_CORONATION_MS/1000,encore=VAULT_TREASURE_ENCORE_MS/1000;
   return [foley(0,'air',.32,.017,1163),...[81,86,90,93].map((p,i)=>note(i*.09,p,.14,.018,'glass')),foley(crown,'seat',.3,.028,1171),note(crown,38,.62,.025,'warm'),note(crown,62,.6,.022,'brass'),note(crown,74,.52,.024,'brass'),note(crown,78,.47,.017,'brass'),note(crown,98,.33,.025,'glass'),note(crown+.12,102,.28,.018,'celesta'),note(crown+.24,105,.22,.016,'glass'),foley(encore,'coin',.11,.021,1181),foley(encore,'air',.24,.012,1187),note(encore,86,.4,.020,'brass'),note(encore,90,.36,.013,'brass'),note(encore,105,.28,.021,'glass'),note(encore+.12,102,.26,.018,'celesta'),note(encore+.26,98,.32,.016,'glass')];
+ }
+ case 'rest-gold':return [note(0,86,.36,.012,'glass'),note(.16,81,.38,.012,'celesta'),note(.34,78,.40,.010,'celesta'),note(.54,74,.44,.011,'warm'),note(.54,86,.32,.007,'glass')];
+ case 'rest-jewel':return [...[105,98,93,90].map((p,i)=>note(i*.17,p,.30,.009-i*.0008,'glass')),note(.66,86,.43,.011,'celesta'),note(.66,74,.48,.010,'warm'),note(.82,81,.36,.007,'glass')];
+ case 'clear-gold':case 'clear-jewel':{
+  const jewel=name==='clear-jewel',lead=VAULT_TREASURE_FAREWELL_MS[jewel?2:1]/1000,seat=lead+VAULT_DOORS_SEATED_MS/1000;
+  const mechanism=vaultSoundScore('clear').filter(c=>['hinge','click','seat'].includes(c.voice)).map(c=>({...c,at:c.at+lead-VAULT_FAREWELL_LEAD_MS/1000,gain:c.gain*trims.clear}));
+  const notes=jewel?[98,93,90,86]:[86,81,78,74];
+  return [foley(.04,'air',.46,.008,jewel?1249:1237),...notes.map((p,i)=>note(i*(jewel?.15:.12),p,.30,.010-i*.001,jewel?'glass':'celesta')),note(lead-.18,74,.30,.008,'warm'),...mechanism,note(seat,62,.14,.009,'warm')];
  }
  case 'rest':return [note(0,86,.34,.011,'glass'),note(.14,81,.36,.010,'celesta'),note(.14,74,.42,.009,'warm')];
  case 'clear':{const close=(VAULT_FAREWELL_LEAD_MS+VAULT_DOOR_CLOSE_START_MS)/1000,seat=(VAULT_FAREWELL_LEAD_MS+VAULT_DOORS_SEATED_MS)/1000;return [note(0,93,.30,.009,'glass'),foley(.12,'air',.54,.009,601),note(.14,90,.32,.011,'glass'),note(.30,86,.34,.013,'glass'),note(.48,74,.38,.011,'warm'),foley(close,'hinge',.34,.022,603),foley(seat,'click',.045,.016,607),foley(seat,'seat',.12,.018,613)];}

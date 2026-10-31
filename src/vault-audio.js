@@ -1,3 +1,4 @@
+import {vaultTreasureCoda} from './vault-treasure-coda.js';
 import {vaultTreasureBridge} from './vault-treasure-handoff.js';
 import {VAULT_SPECIAL_PREPARE_MS} from './vault-special-arrival.js';
 import {vaultSpecialTheme} from './vault-special.js';
@@ -97,8 +98,9 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
     const richness=vaultTreasureLevel(vaultTotal(r),'final');
     if(richness)cue(r.id+':rich-final',r.completedAt+finalePose(0,level).build,time,'rich-final',{richness});
     cue(r.id+':final',r.completedAt,time,bridge.linked?'linked-final':['standard','big','royal'][level],{tier:level});
-    cue(r.id+':rest',r.completedAt+VAULT_REST_AT_MS[level],time,'rest');
-    cue(r.id+':clear',r.hideAt-VAULT_FAREWELL_LEAD_MS,time,'clear');
+    const coda=vaultTreasureCoda(r,time);
+    cue(r.id+':rest',coda.enabled?coda.settleAt:r.completedAt+VAULT_REST_AT_MS[level],time,coda.enabled?(coda.style===1?'rest-gold':'rest-jewel'):'rest');
+    cue(r.id+':clear',coda.enabled?coda.farewellAt:r.hideAt-VAULT_FAREWELL_LEAD_MS,time,coda.enabled?(coda.style===1?'clear-gold':'clear-jewel'):'clear');
    }
   },reset,dispose(){if(disposed)return;reset();disposed=true;enabled=false;if(ctx)void ctx.close().catch(()=>{});}
  };
