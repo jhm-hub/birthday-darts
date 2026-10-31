@@ -196,3 +196,15 @@ test('welcome obeys mute and volume, and reset cancels its tail without a ghost 
  const {a,ctx}=await player(),r=round();a.setEnabled(false);a.update(r,30);a.setEnabled(true);a.update(r,90);
  assert.equal(sources(ctx).length,0);
 });
+
+test('Grand Royal cues play once across commit, skip stale fireworks and cancel on reset',async()=>{
+ const r=round(true);r.flight.prize.value=3000;
+ // The final cash is multiplied by the already collected x2, passing $5,000.
+ const {a,ctx}=await player();a.update(r,1800);
+ assert.equal(sources(ctx).length,2,'main payoff and gold flourish join the amount');
+ advancePinata(r,1801);a.update(r,1801);assert.equal(sources(ctx).length,2);
+ a.update(r,2360);assert.equal(sources(ctx).length,3,'jewel encore joins the second burst');
+ a.update(structuredClone(r),2361);assert.equal(sources(ctx).length,3);
+ const encore=sources(ctx).at(-1);a.update(null,2400);assert.equal(encore.stops.at(-1),10.015);
+ const {a:late,ctx:other}=await player();late.update(r,2600);assert.equal(sources(other).length,0);
+});

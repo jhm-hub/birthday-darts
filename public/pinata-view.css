@@ -82,3 +82,16 @@ html.pinata-overlay,html.pinata-overlay body{margin:0;width:100%;height:100%;ove
 .pina-opening-sparks i:last-child path:nth-child(3){fill:#f4dfff}
 .pina-opening-sparks i:last-child path:last-child{fill:#9470b8}
 @media(prefers-reduced-motion:reduce){.pina-opening-sparks{display:none}}
+
+/* Tier ornaments share the crown's small pixel silhouette; the amount region
+   remains completely clear. No full-stage panel, glow wash or size change. */
+.pina-tier-ornaments,.pina-tier-particles{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.pina-tier-ornaments i,.pina-tier-particles i{position:absolute;left:0;top:0;display:block;opacity:0;transform-origin:center;filter:drop-shadow(0 1px 0 #49233d66)}
+.pina-tier-ornaments span,.pina-tier-particles span{position:absolute;inset:0;display:block}
+.pina-tier-ornaments .tier-jewel,.pina-tier-particles .tier-jewel{display:none}
+.pinata-stage[data-tier="2"] .tier-coin{display:none}.pinata-stage[data-tier="2"] .tier-jewel{display:block}
+.pina-tier-particles .paper{background:linear-gradient(120deg,#fff5d7 0 16%,var(--c) 17% 74%,#9c5f87 75%);clip-path:polygon(0 0,100% 0,100% 70%,70% 70%,70% 100%,0 100%)}
+.pinata-stage[data-tier="1"] .pina-final-title{color:#ffe4a3}
+.pinata-stage[data-tier="2"] .pina-final-title{color:#e9c9ff}
+.pinata-stage[data-tier="2"] .pina-total-tag:before{background:linear-gradient(125deg,#fff0c1,#ddb3ef 35%,#fff0b4 55%,#a5dfc9 78%,#ce8cb2)}
+@media(prefers-reduced-motion:reduce){.pina-tier-ornaments,.pina-tier-particles{display:none}}

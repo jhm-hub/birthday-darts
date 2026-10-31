@@ -8,10 +8,11 @@ const exitScenes=['exit','large-exit','reset'],resetAt=3200;
 $('#quiet').checked=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const view=createPinataView($('#art-preview'),{preview:true,clock:()=>time,quiet:()=>$('#quiet').checked});
 function scene(){
- const mode=$('#scene').value,preset=structuredClone(DEFAULT_PINATA),finish=['break','last-multiply','large',...exitScenes].includes(mode);
+ const mode=$('#scene').value,preset=structuredClone(DEFAULT_PINATA),finish=['tier-0','tier-1','tier-2','break','last-multiply','large',...exitScenes].includes(mode);
  maxTime=mode==='exit'||mode==='large-exit'?9200:4800;$('#time').max=maxTime;
  for(const b of document.querySelectorAll('[data-exit]'))b.disabled=!exitScenes.includes(mode)||(b.dataset.exit==='700'&&mode!=='reset');
  if(mode==='large'||mode==='large-exit'){preset.outcomes[0].value=999999.99;preset.outcomes[1].value=999999.99;preset.outcomes[3].value=5;}
+ if(mode.startsWith('tier-')){const amount=[75,750,2500][Number(mode.at(-1))];preset.outcomes[0].value=amount;preset.outcomes[1].value=amount;}
  if(mode==='worn'){preset.outcomes[4].value=3;preset.maxSwings=12;}
  base=startPinata(preset,'Birthday VIP',0);
  if(finish){
@@ -36,7 +37,7 @@ function render(){
  $('#time').value=Math.round(time);$('#time-label').textContent=(time/1000).toFixed(2)+'s';$('#pause').textContent=playing?'Pause':'Play';
 }
 const requested=new URLSearchParams(location.search).get('scene');
-if(['intro','between','between-back','hit','second','multiply','extra','worn','break','last-multiply','large',...exitScenes].includes(requested))$('#scene').value=requested;
+if(['tier-0','tier-1','tier-2','intro','between','between-back','hit','second','multiply','extra','worn','break','last-multiply','large',...exitScenes].includes(requested))$('#scene').value=requested;
 $('#scene').onchange=scene;
 $('#backdrop').onchange=e=>{$('.preview-wrap').dataset.bg=e.target.value;};
 $('#replay').onclick=()=>{time=0;playing=true;last=performance.now();render();};

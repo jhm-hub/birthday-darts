@@ -1,5 +1,6 @@
 import {randomInt,randomUUID} from './random.js';
 import {chooseOutcome} from './game.js';
+import {validatePinataCelebration} from './pinata-celebration.js';
 export {money} from './gift-game.js';
 export const HIT_MS=480,SWING_MS=1500,HOLD_MS=6500,CLEAR_MS=450;
 export const DEFAULT_PINATA={id:'pinata-party',name:'Birthday Piñata Party',swings:3,maxSwings:8,outcomes:[
@@ -22,7 +23,7 @@ export function validatePinata(input){
  });
  if(!outcomes.some(o=>o.kind==='cash'&&o.weight>0))throw Error('Keep at least one cash reward with a weight above zero.');
  const id=input.id??randomUUID();if(!/^[\w-]{1,80}$/.test(id))throw Error('Invalid game ID.');
- return {id,name:input.name.trim(),swings:input.swings,maxSwings:input.maxSwings,outcomes};
+ return {id,name:input.name.trim(),swings:input.swings,maxSwings:input.maxSwings,outcomes,celebration:validatePinataCelebration(input.celebration)};
 }
 export function startPinata(preset,viewer='',now=Date.now()){
  if(typeof viewer!=='string'||viewer.trim().length>32)throw Error('Keep viewer names to 32 characters.');
