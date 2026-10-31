@@ -1049,3 +1049,24 @@ reset-0 /reset-1). Click **Play ending & reset**. In the main game use **Sound o
 and **Preview finale**, then let it finish to hear the closing sequence.
 `render-vault-audio.mjs` also exports `ending-reset-standard/big/royal.wav`.
 External review/backups: `Stream-Games/Vault/Review/crown-farewell-v16-2026-10-30/`.
+
+
+### Piñata — final hit into the royal total (v9)
+
+Eight small gold sparks gather from the last candy burst toward the royal crest.
+The last prize lifts/fades softly, the rope eases away, and candy feathers out
+of the text area. The running total stays bright until the large final amount
+is nearly fully visible, avoiding a blank or half-bright pair of totals.
+Collected/multiplier details clear earlier so attention moves to the final sum.
+
+A shared final-shot clock spans the saved-round commit and late displays. A final
+Encore still extends the round and never starts this handoff. The existing1.5s
+swing, final amount at finish+300ms, royal sound cues, hold/reset, prizes and odds
+are unchanged. The420×460 overlay remains transparent, with the existing fitted
+total backing. Reduced motion keeps the legibility overlap without moving sparks.
+
+The silent animation close-up adds **Prize settles**, **Crown handoff** and
+**Amount handoff**, plus **Final hit · multiplier** (`scene=last-multiply`).
+For the complete sequence choose **Final break → Replay**, or use the main
+**Sound on → Watch a3-hit sample**. Earlier versions and review evidence:
+`Stream-Games/Pinata/Review/royal-handoff-v9-2026-10-30/`.

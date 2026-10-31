@@ -42,6 +42,7 @@
 .pina-footer small{display:block;font-size:11px;letter-spacing:.2px;font-weight:600;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;white-space:nowrap}
 .pina-footer strong{display:block;font-weight:700;line-height:1.15;white-space:nowrap;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 2px var(--ink)}
 .pina-cash{color:#ffd39d}.pina-mult{color:#dab8ff}.pina-bank{color:#aaf4df}
+.pina-handoff-sparks{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}.pina-handoff-sparks i{position:absolute;left:-6px;top:-6px;width:12px;height:12px;opacity:0;transform-origin:center;filter:drop-shadow(0 1px 0 #49233d66)}
 /* The finale is a crown, a fitted amount label and open space, not a panel. */
 .pina-finale{position:absolute;left:16px;right:16px;top:100px;text-align:center;z-index:7;opacity:0;pointer-events:none}
 .pina-final-crest{width:108px;height:100px;margin:0 auto 4px;transform-origin:50% 82%;filter:drop-shadow(0 2px 0 #48223d66)}
@@ -64,4 +65,4 @@
 .pina-cash{color:#ffe1a3}.pina-mult{color:#e0c3ff}.pina-bank{color:#b9f2de}
 html.pinata-overlay,html.pinata-overlay body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent!important}
 .pinata-overlay .pinata-screen{width:100vw;height:100vh;aspect-ratio:auto}.pinata-overlay #display-help{position:absolute;z-index:10;background:#38213e;color:#fff;padding:12px;font:16px Arial}
-@media(prefers-reduced-motion:reduce){.pina-impact,.pina-particles,.pina-finale-particles,.pina-bonus-particles,.pina-bonus-token,.pina-bat,.pina-swish{display:none}}
+@media(prefers-reduced-motion:reduce){.pina-impact,.pina-particles,.pina-finale-particles,.pina-handoff-sparks,.pina-bonus-particles,.pina-bonus-token,.pina-bat,.pina-swish{display:none}}
