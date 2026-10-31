@@ -54,6 +54,12 @@ export function startVaultRound(widget,viewer='',now=Date.now(),draw=randomInt){
 export function unlockVault(r,now=Date.now(),{draw=randomInt,forcedCash=null,forcedBonus=undefined}={}){
  if(!r||r.completedAt!==null||r.remaining<1)throw Error('Start a new vault round.');
  if(r.flight||now<r.readyAt)throw Error('Wait for the vault to finish opening.');
+ if(r.privateExperience||r.prizePlan){
+  const planned=r.prizePlan?.[r.opened.length];
+  if(!planned)throw Error('This preset round is missing its next prize. Reload the controls.');
+  if(forcedCash!==null||forcedBonus!==undefined)throw Error('Preset rounds use their planned prizes to keep the final total in range.');
+  forcedCash=planned.cashIndex;forcedBonus=planned.bonus;
+ }
  const p=r.preset,prizes=vaultCashPrizes(r),index=forcedCash===null?chooseOutcome(prizes,draw):forcedCash;
  if(!Number.isInteger(index)||!prizes[index]||prizes[index].weight<=0)throw Error('That cash prize is unavailable.');
  const bonuses=vaultBonuses(r),available=bonuses.some(b=>b.weight>0),due=vaultBonusDue(r)&&available;
@@ -79,6 +85,7 @@ export function advanceVault(r,now=Date.now()){
 }
 export function cleanVaultRound(r){
  if(!r)return null;const copy=structuredClone(r),{outcomes,specialOutcomes,bonusChance,multiplyWeight,extraWeight,openingMin,openingMax,...preset}=copy.preset;
+ delete copy.privateExperience;delete copy.prizePlan;
  copy.preset=preset;return copy;
 }
 export function sampleVaultFinale(widget,level=2,now=Date.now()){
