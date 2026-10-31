@@ -115,7 +115,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.bankWrap.style.transform=`translateY(${-exit.lift}px)`;
   els.halo.style.opacity=finished?finale.halo*exit.halo:0;
   els.halo.style.transform=`translateY(${finale.rise}px)`;
-  els.crest.style.opacity=finished?finale.crest*exit.crest:0;els.crest.style.transform=`translateY(${finale.crestY}px) scale(${finale.crestScale})`;
+  els.crest.style.opacity=finished?finale.crest*exit.crest:0;els.crest.style.transform=`translateY(${finale.crestY+exit.crestY}px) scale(${finale.crestScale})`;
   els.rays.style.opacity=finished?finale.flare*exit.halo:0;els.rays.style.transform=`scale(${finale.flareScale})`;
   els.bankLabel.textContent=finished&&(!handoff.linked||handoff.showTitle)?['VAULT TOTAL','BIG WIN','ROYAL WIN'][level]:entrance.active&&!entrance.bankTitle?'OPENING BALANCE':'BANKROLL';
   els.bankLabel.style.opacity=handoff.linked?handoff.titleOpacity:entrance.title;

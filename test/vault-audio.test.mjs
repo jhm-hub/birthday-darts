@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {VAULT_SOUND_LABELS,vaultSoundScore,renderVaultSound,renderVaultSequence} from '../src/vault-sound-design.js';
 import {createVaultAudio} from '../src/vault-audio.js';
-import {finalePose} from '../src/vault-effects.js';
+import {finalePose,VAULT_REST_AT_MS} from '../src/vault-effects.js';
 import {sampleVaultFinale,DEFAULT_VAULT} from '../src/vault-game.js';
 import {sampleVaultHandoff} from '../src/vault-finish-motion.js';
 import {advanceVault} from '../src/vault-game.js';
@@ -75,7 +75,7 @@ test('fallback mute holds the active gain, and repeated stops never create a fre
 });
 test('finale and farewell play once, and sampler cancellation wins over a pending audio resume',async()=>{
  const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);const r=sampleVaultFinale(DEFAULT_VAULT,2,1000);
- a.sync(r,1000);assert.equal(sources(ctx).length,1);a.sync(r,1001);assert.equal(sources(ctx).length,1);a.sync(r,r.hideAt);assert.equal(sources(ctx).length,2);
+ a.sync(r,1000);assert.equal(sources(ctx).length,1);a.sync(r,1001);assert.equal(sources(ctx).length,1);a.sync(r,r.hideAt-VAULT_FAREWELL_LEAD_MS);assert.equal(sources(ctx).length,2);a.sync(r,r.hideAt);assert.equal(sources(ctx).length,2);
  let resume;const blocked=context('suspended');blocked.resume=()=>new Promise(resolve=>{resume=()=>{blocked.state='running';resolve();};});const b=createVaultAudio({createContext:()=>blocked});
  const promise=b.preview('royal');b.setEnabled(false);resume();assert.equal(await promise,false);assert.equal(sources(blocked).length,0);
  assert.equal(await b.preview('cash'),true);assert.equal(sources(blocked).length,1);b.sync(null,1000);assert.equal(sources(blocked)[0].stops.length,0,'empty demo must not cancel an audition');
@@ -105,6 +105,18 @@ test('farewell plays once on its lead-in, clears, and does not leak into the nex
  a.sync(null,s.clearAt);assert.equal(sources(ctx)[0].stops.at(-1),10.015);
  a.sync(s.next,s.nextAt);assert.equal(sources(ctx).length,2);
  a.sync(structuredClone(s.next),s.nextAt+1);assert.equal(sources(ctx).length,2);
+});
+test('the quiet resting phrase follows each tier and reconnects never replay it',()=>{
+ for(let tier=0;tier<3;tier++){
+  const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),r=sampleVaultFinale(DEFAULT_VAULT,tier,1000),at=r.completedAt+VAULT_REST_AT_MS[tier];
+  a.setEnabled(true);a.sync(r,at-1);assert.equal(sources(ctx).length,0);
+  a.sync(r,at);assert.equal(sources(ctx).length,1);
+  assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('rest'));
+  a.sync(structuredClone(r),at+100);assert.equal(sources(ctx).length,1);
+  const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,at+201);assert.equal(sources(late).length,0);
+  const joining=context(),c=createVaultAudio({createContext:()=>joining});c.setEnabled(true);c.sync(r,at+70);assert.deepEqual(sources(joining)[0].started,[10,.07]);
+  const muted=context(),d=createVaultAudio({createContext:()=>muted});d.sync(r,at);d.setEnabled(true);d.sync(r,at+1);assert.equal(sources(muted).length,0);
+ }
 });
 test('opening reveal plays once on time even when the display joins after the arrival',()=>{
  const r=startVaultRound(DEFAULT_VAULT,'Next viewer',10000,()=>0);

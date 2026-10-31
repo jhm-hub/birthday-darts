@@ -1,4 +1,5 @@
 import {VAULT_COLLECT_START_MS} from './vault-collection-motion.js';
+import {VAULT_REST_AT_MS} from './vault-effects.js';
 import {vaultCashLevel} from './vault-cash-motion.js';
 import {giftVolume} from './gift-volume.js';
 import {vaultBonusAt} from './vault-bonus-motion.js';
@@ -76,7 +77,12 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    }
    const last=vaultLastShot(r);
    if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle',{tier:vaultLevel(projectedVault(r,time))});
-   if(r.completedAt!==null){cue(r.id+':final',r.completedAt,time,['standard','big','royal'][vaultLevel(r)]);cue(r.id+':clear',r.hideAt-VAULT_FAREWELL_LEAD_MS,time,'clear');}
+   if(r.completedAt!==null){
+    const level=vaultLevel(r);
+    cue(r.id+':final',r.completedAt,time,['standard','big','royal'][level]);
+    cue(r.id+':rest',r.completedAt+VAULT_REST_AT_MS[level],time,'rest');
+    cue(r.id+':clear',r.hideAt-VAULT_FAREWELL_LEAD_MS,time,'clear');
+   }
   },reset,dispose(){if(disposed)return;reset();disposed=true;enabled=false;if(ctx)void ctx.close().catch(()=>{});}
  };
 }

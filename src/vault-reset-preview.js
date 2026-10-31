@@ -7,6 +7,7 @@ export function sampleVaultReset(level=2,time=10000){
  const outgoing=sampleVaultHandoff(level,time);advanceVault(outgoing,outgoing.flight.finishAt);
  const clearAt=outgoing.hideAt+VAULT_CLEAR_MS,nextAt=clearAt+450;
  const next=startVaultRound(DEFAULT_VAULT,'Next viewer',nextAt,()=>100);
- return {outgoing,next,startAt:outgoing.hideAt-1000,clearAt,nextAt};
+ const startAt=outgoing.completedAt+1400;
+ return {outgoing,next,startAt,clearAt,nextAt,duration:next.readyAt+400-startAt};
 }
 export function vaultResetSampleRound(sample,time){return time<sample.clearAt?sample.outgoing:time<sample.nextAt?null:sample.next;}

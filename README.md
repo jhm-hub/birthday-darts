@@ -1022,3 +1022,30 @@ then Encore), individual `multiply-hit.wav`/`extra-hit.wav` and a final-multipli
 round. Review: `Stream-Games/Pinata/Review/bonus-sound-v8-2026-10-30/`.
 Timing/headroom verified at44.1/48kHz; direct listening and Faith's physical
 voice/music mix remain unverified.
+
+
+### Crown Vault — a gentler settle and farewell (v16)
+
+After each win burst, the crest settles three pixels and its halo softens over
+800ms. A quiet resolving chime follows that moment at1.7s /2s /2.6s for Standard,
+Big and Royal. The amount holds its exact value, size and position throughout.
+
+The halo leaves first, then the crest and small details. The five doors close
+with a short stagger while the vault recedes. The total stays fully visible
+through the original6.5s hold and140ms into the existing450ms clear window,
+then fades last. The previous upward movement of the amount is removed.
+Reduced motion uses a stationary fade. No new backdrop or overlay dimensions.
+
+The farewell now starts600ms before the hold ends: descending jewel notes,
+soft hinge movement, then a quiet lock/seat at the final door's close260ms after
+the hold. Audio ends45ms before the clear deadline, leaving the empty stream
+silent before the next viewer. Earlier chamber/win cues are unchanged; the new
+closing cue stays close to the previous peak loudness. Existing volume controls,
+exact game rules, saved settings and reset deadlines are retained.
+
+`vault-art-preview.html?scene=reset-2` now shows the complete settle, readable
+hold, farewell, empty stream and next viewer in a7.6-second silent study (also
+reset-0 /reset-1). Click **Play ending & reset**. In the main game use **Sound on**
+and **Preview finale**, then let it finish to hear the closing sequence.
+`render-vault-audio.mjs` also exports `ending-reset-standard/big/royal.wav`.
+External review/backups: `Stream-Games/Vault/Review/crown-farewell-v16-2026-10-30/`.

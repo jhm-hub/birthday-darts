@@ -38,7 +38,7 @@ test('Big and Royal have a second visual burst aligned with their second audio a
 });
 test('the larger crest settles without enlarging the held amount or disturbing the farewell',()=>{
  for(let level=0;level<3;level++){
-  const settled=finalePose(3000,level);assert.equal(settled.crestScale,1);assert.equal(settled.crestY,0);assert.equal(settled.flare,0);
+  const settled=finalePose(4000,level);assert.equal(settled.crestScale,1);assert.equal(settled.crestY,3);assert.equal(settled.flare,0);
   for(let age=0;age<3000;age+=10){const p=finalePose(age,level);assert.ok(p.crestScale>=.82&&p.crestScale<=1.18);assert.ok(p.scale<=1.065);}
   const quiet=finalePose(0,level,true);assert.equal(quiet.flare,0);assert.equal(quiet.crestScale,1);
  }

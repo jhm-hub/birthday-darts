@@ -1,5 +1,7 @@
 import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
+import {VAULT_REST_AT_MS} from '../src/vault-effects.js';
+import {VAULT_FAREWELL_LEAD_MS} from '../src/vault-exit-motion.js';
 import {VAULT_SOUND_LABELS,renderVaultSound,renderVaultSequence} from '../src/vault-sound-design.js';
 const output=process.argv[2];
 if(!output)throw Error('Pass an output directory for the listening previews.');
@@ -26,7 +28,11 @@ for(const sound of ['standard','big','royal']){
  report['last-chamber-'+sound]=metrics(data);await writeFile(join(output,'last-chamber-'+sound+'.wav'),wav(data));
 }
 await writeFile(join(output,'crown-vault-sound-reel.wav'),wav(renderVaultSequence(reel,rate)));
-await writeFile(join(output,'farewell-and-next-viewer.wav'),wav(renderVaultSequence([{at:.88,sound:'clear'},{at:1.9,sound:'intro'}],rate)));
+await writeFile(join(output,'farewell-and-next-viewer.wav'),wav(renderVaultSequence([{at:1-VAULT_FAREWELL_LEAD_MS/1000,sound:'clear'},{at:1.9,sound:'intro'}],rate)));
+for(const [tier,sound] of ['standard','big','royal'].entries()){
+ const data=renderVaultSequence([{at:0,sound},{at:VAULT_REST_AT_MS[tier]/1000,sound:'rest'},{at:6.5-VAULT_FAREWELL_LEAD_MS/1000,sound:'clear'},{at:7.4,sound:'intro'}],rate);
+ report['ending-reset-'+sound]=metrics(data);await writeFile(join(output,'ending-reset-'+sound+'.wav'),wav(data));
+}
 for(const [label,click] of [['immediate',1.2],['normal',1.55],['paused',3.2]]){
  const data=renderVaultSequence([{at:0,sound:'intro'},{at:.94,sound:'ready'},{at:click,sound:'first-unlock'},{at:click+.78,sound:'cash'},{at:click+1.24,sound:'collect',options:{tier:1}}],rate);
  report['opening-first-'+label]=metrics(data);await writeFile(join(output,label==='normal'?'opening-and-first-chamber.wav':'opening-first-'+label+'.wav'),wav(data));

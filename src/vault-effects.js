@@ -16,16 +16,17 @@ export function rimSparkle(index,time,quiet=false){
  const glow=t<900?Math.sin(Math.PI*t/900)**2:0;
  return {opacity:glow*.65,scale:.7+glow*.3};
 }
+export const VAULT_REST_AT_MS=[1700,2000,2600],VAULT_REST_MS=800;
 export function finalePose(age,level,quiet=false){
  const build=[180,220,600][level],land=ease((age-build)/440);
- if(quiet)return {build,land:1,amount:1,crest:1,crestScale:1,crestY:0,flare:0,flareScale:1,scale:1,rise:0,dim:1,halo:.35};
+ if(quiet)return {build,land:1,amount:1,crest:1,crestScale:1,crestY:0,rest:1,flare:0,flareScale:1,scale:1,rise:0,dim:1,halo:.22};
  const wave=t=>t<=0||t>=1?0:Math.sin(Math.PI*t);
- const charge=ease(age/build),hit=ease((age-build)/300),echo=level?wave((age-build-[0,310,340][level])/460):0;
- return {build,land,amount:ease((age-build)/170),crest:ease(age/260),
-  crestScale:.82+.18*charge+Math.sin(hit*Math.PI)*[.10,.14,.18][level],crestY:(1-charge)*12,
+ const charge=ease(age/build),hit=ease((age-build)/300),echo=level?wave((age-build-[0,310,340][level])/460):0,rest=ease((age-VAULT_REST_AT_MS[level])/VAULT_REST_MS);
+ return {build,land,rest,amount:ease((age-build)/170),crest:ease(age/260),
+  crestScale:.82+.18*charge+Math.sin(hit*Math.PI)*[.10,.14,.18][level],crestY:(1-charge)*12+rest*3,
   flare:wave((age-build)/680)*.8+echo*.22,flareScale:.8+.25*hit,
   scale:1+Math.sin(land*Math.PI)*[.035,.05,.065][level],rise:(1-land)*7,
-  dim:ease(age/450),halo:.3+charge*.18+Math.sin(land*Math.PI)*.35};
+  dim:ease(age/450),halo:.3+charge*.18+Math.sin(land*Math.PI)*.35-rest*.26};
 }
 export function vaultParticle(index,elapsed,{final=false,level=0,x=210,y=210,quiet=false}={}){
  const count=final?[36,68,100][level]:level?20:12;
