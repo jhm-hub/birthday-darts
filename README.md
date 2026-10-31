@@ -886,3 +886,20 @@ quiet mode, final-chamber suppression and44.1/48kHz audio headroom. Browser
 verified the guide origin, ready/click continuity, wing/quiet transparency and
 sound-enabled sample returning to idle. Timing/headroom/browser execution are
 not a human listening or physical OBS mix review. Previous version:ee8d180.
+
+
+### Birthday Royalty crown (v4)
+
+Concept A is the selected piñata direction. The approved transparent concept PNG
+is used unchanged at `public/assets/pinata/birthday-royalty-v4.png`: rose paper
+fringe, champagne-gold edging, lavender F heart and mint/lilac tassels. SVG windows
+attach the art to the existing rope, gentle tassel follow-through, recoil and
+jagged break halves. The original sprite remains available in Git history.
+
+The 420×460 transparent stage, hit/break clocks, sounds, game rules, prizes and
+final-total reveal are retained. Final-total polish remains paused. The silent
+`pinata-art-preview.html?scene=hit` close-up has light/dark/checker backdrops and
+contact/break/total controls. The main practice sample still finishes at $150.
+
+Concept A/B/C originals, prompts and selection notes live in the external
+`Stream-Games/Pinata/Concepts/2026-10-30-three-directions/` folder.

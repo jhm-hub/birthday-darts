@@ -14,7 +14,7 @@ export function createPinataView(root,{audio=null,preview=false,clock=Date.now,q
    const damage=Math.min(shown?.hits.length??0,2),motion=crownPose(after,still),sway=still?0:Math.sin(time/940)*1.25;
    hang.style.transform=`translate(${Math.round(motion.x)}px,${Math.round(motion.y)}px) rotate(${sway+motion.angle*(burst?1-clamp((after-BREAK_DELAY)/400):1)}deg)`;
    $('.pina-paper').style.transform=`scale(${1+motion.squash},${1-motion.squash})`;
-   $('.pina-tassels').style.transform=`rotate(${motion.tassel}deg)`;
+   $('.pina-tassels').style.transform=`rotate(${motion.tassel*.35}deg)`;
    const fracture=burst?breakPose(after,still):{x:0,y:0,angle:0,opacity:1,seam:0};
    halves.forEach((el,i)=>{const d=i?1:-1;el.style.transform=`translate(${d*fracture.x}px,${fracture.y}px) rotate(${d*fracture.angle}deg)`;el.style.opacity=fracture.opacity;});
    $('.pina-seam').style.opacity=fracture.seam;
