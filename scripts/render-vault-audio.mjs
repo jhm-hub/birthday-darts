@@ -18,11 +18,11 @@ for(const [name,label] of Object.entries(VAULT_SOUND_LABELS)){
  await writeFile(join(output,name+'.wav'),wav(data));reel.push({at,sound:name,options:{index:4,tier:2}});at+=data.length/rate+.65;
 }
 for(const bonus of ['multiply','extra']){
- const sequence=[{at:0,sound:'unlock'},{at:0,sound:'wing'},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:bonus},{at:1.24,sound:'collect',options:{tier:2}}];
+ const sequence=[{at:0,sound:'first-unlock'},{at:0,sound:'wing'},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:bonus},{at:1.24,sound:'collect',options:{tier:2}}];
  const data=renderVaultSequence(sequence,rate);report['chamber-'+bonus]=metrics(data);await writeFile(join(output,'chamber-'+bonus+'.wav'),wav(data));
 }
 for(const sound of ['standard','big','royal']){
- const data=renderVaultSequence([{at:0,sound:'unlock',options:{index:4}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.72,sound:'settle'},{at:2,sound}],rate);
+ const data=renderVaultSequence([{at:0,sound:'linked-unlock',options:{index:4}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.72,sound:'settle'},{at:2,sound}],rate);
  report['last-chamber-'+sound]=metrics(data);await writeFile(join(output,'last-chamber-'+sound+'.wav'),wav(data));
 }
 await writeFile(join(output,'crown-vault-sound-reel.wav'),wav(renderVaultSequence(reel,rate)));
@@ -32,23 +32,23 @@ for(const [label,click] of [['immediate',1.2],['normal',1.55],['paused',3.2]]){
  report['opening-first-'+label]=metrics(data);await writeFile(join(output,label==='normal'?'opening-and-first-chamber.wav':'opening-first-'+label+'.wav'),wav(data));
 }
 for(const [label,click,wing] of [['immediate',2,false],['normal',2.4,false],['paused',3.2,false],['bonus-wing',2.4,true]]){
- const data=renderVaultSequence([{at:0,sound:'unlock',options:{index:wing?4:0}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:wing?'extra':'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.78,sound:'next',options:{index:wing?5:1}},...(wing?[{at:1.96,sound:'wing'}]:[]),{at:click,sound:'unlock',options:{index:wing?5:1}},{at:click+.78,sound:'cash',options:{tier:1}},{at:click+1.24,sound:'collect',options:{tier:1}}],rate);
+ const data=renderVaultSequence([{at:0,sound:wing?'linked-unlock':'first-unlock',options:{index:wing?4:0}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:wing?'extra':'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.74,sound:'next',options:{index:wing?5:1}},...(wing?[{at:1.96,sound:'wing'}]:[]),{at:click,sound:'linked-unlock',options:{index:wing?5:1}},{at:click+.78,sound:'cash',options:{tier:1}},{at:click+1.24,sound:'collect',options:{tier:1}}],rate);
  report['between-'+label]=metrics(data);await writeFile(join(output,'between-'+label+'.wav'),wav(data));
 }
 const cashComparison=[];
 for(let tier=0;tier<3;tier++){const data=renderVaultSound('collect',{tier},rate);report['collect-tier-'+tier]=metrics(data);await writeFile(join(output,'collect-tier-'+tier+'.wav'),wav(data));}
 for(let tier=0;tier<3;tier++){
  const data=renderVaultSound('cash',{tier},rate);report['cash-tier-'+tier]=metrics(data);await writeFile(join(output,'cash-tier-'+tier+'.wav'),wav(data));
- const start=tier*3.1;cashComparison.push({at:start,sound:'unlock',options:{index:tier}},{at:start+.78,sound:'cash',options:{tier}},{at:start+1.24,sound:'collect',options:{tier}},{at:start+1.78,sound:'next',options:{index:tier+1}});
+ const start=tier*3.1;cashComparison.push({at:start,sound:tier?'linked-unlock':'first-unlock',options:{index:tier}},{at:start+.78,sound:'cash',options:{tier}},{at:start+1.24,sound:'collect',options:{tier}},{at:start+1.74,sound:'next',options:{index:tier+1}});
 }
 const cashMix=renderVaultSequence(cashComparison,rate);report['cash-tiers']=metrics(cashMix);await writeFile(join(output,'cash-tiers.wav'),wav(cashMix));
 const bonusComparison=[];
 for(const [i,bonus] of ['multiply','extra'].entries()){
- const at=i*3.6;bonusComparison.push({at,sound:'unlock',options:{index:i}},{at:at+.78,sound:'cash',options:{tier:1}},{at:at+1.04,sound:bonus},{at:at+1.24,sound:'collect',options:{tier:1}},{at:at+1.78,sound:'next',options:{index:i+1}});
+ const at=i*3.6;bonusComparison.push({at,sound:i?'linked-unlock':'first-unlock',options:{index:i}},{at:at+.78,sound:'cash',options:{tier:1}},{at:at+1.04,sound:bonus},{at:at+1.24,sound:'collect',options:{tier:1}},{at:at+1.74,sound:'next',options:{index:i+1}});
 }
 const comparison=renderVaultSequence(bonusComparison,rate);report['bonus-reveals']=metrics(comparison);await writeFile(join(output,'bonus-reveals.wav'),wav(comparison));
 await writeFile(join(output,'crown-vault-quick-listen.wav'),wav(renderVaultSequence([
- {at:0,sound:'intro'},{at:1.4,sound:'unlock',options:{index:4}},
+ {at:0,sound:'intro'},{at:1.4,sound:'linked-unlock',options:{index:4}},
  {at:2.18,sound:'cash',options:{tier:2}},{at:2.44,sound:'multiply'},
  {at:2.64,sound:'collect',options:{tier:2}},{at:3.12,sound:'settle'},{at:3.4,sound:'royal'}
 ],rate)));

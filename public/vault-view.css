@@ -82,3 +82,8 @@
 .vault-collection svg{display:block;width:12px;height:12px;image-rendering:pixelated}
 .vault-collection-catches{position:absolute;inset:0;pointer-events:none}
 .vault-collection-catches i{position:absolute;width:12px;height:12px;margin:-6px;opacity:0;background:#fff0b5;box-shadow:inset 2px 2px #fff9d9,inset -2px -2px #c48965;clip-path:polygon(4px 0,8px 0,8px 4px,12px 4px,12px 8px,8px 8px,8px 12px,4px 12px,4px 8px,0 8px,0 4px,4px 4px)}
+
+/* The bank-to-lock glint has its own plum outline against gold or stream video. */
+.vault-loot-trail i svg{display:none}
+.vault-loot-trail i[data-relay="true"]{left:-6px;top:-6px;width:12px;height:12px;background:none;border:0;box-shadow:none;clip-path:none}
+.vault-loot-trail i[data-relay="true"] svg{display:block;width:12px;height:12px;image-rendering:pixelated}

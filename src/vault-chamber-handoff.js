@@ -3,9 +3,10 @@ import {ease,chamberPoint,vaultBankPose} from './vault-motion.js';
 import {doorFinish} from './vault-effects.js';
 import {VAULT_ART} from './vault-layout.js';
 
-export const VAULT_CHAMBER_GUIDE_LEAD_MS=220;
+export const VAULT_CHAMBER_GUIDE_LEAD_MS=260;
+export const VAULT_CHAMBER_GUIDE_TRAVEL_MS=260,VAULT_CHAMBER_GUIDE_STAGGER_MS=18;
 export const VAULT_WING_LEAD_MS=40;
-const prepare=(shot,time)=>ease((time-shot.finishAt+320)/320);
+const prepare=(shot,time)=>ease((time-shot.finishAt+VAULT_CHAMBER_GUIDE_LEAD_MS)/VAULT_CHAMBER_GUIDE_LEAD_MS);
 // Derive links from saved awards, including an uncommitted +1 unlock. Nothing
 // here advances play, draws a prize, or changes the controller's readiness.
 export function vaultChamberLinks(round,time){
@@ -34,16 +35,20 @@ export function vaultChamberHandoff(round,time,quiet=false){
  const lock=quiet?0:.32*ease((time-link.from.finishAt+30)/50)*(1-ease((time-link.from.finishAt-70)/170));
  return {linked:true,link,focuses,attention,bank,lock};
 }
-export function vaultChamberTrail(handoff,index,time,quiet=false){
+export function vaultChamberTrail(handoff,index,time,quiet=false,dock={left:138,right:282,y:386}){
  const off={visible:false,x:0,y:0,opacity:0};
  if(quiet||!handoff.linked||index>=3)return off;
  const {from,index:next}=handoff.link;
- const t=(time-from.finishAt+VAULT_CHAMBER_GUIDE_LEAD_MS-index*24)/320;
+ const t=(time-from.finishAt+VAULT_CHAMBER_GUIDE_LEAD_MS-index*VAULT_CHAMBER_GUIDE_STAGGER_MS)/VAULT_CHAMBER_GUIDE_TRAVEL_MS;
  if(t<=0||t>=1)return off;
- const start=chamberPoint(from.index),slot=next%5;
+ const slot=next%5;
  const end={x:VAULT_ART.x+[310,941,310,941,624][slot]*VAULT_ART.size/VAULT_ART.source,y:VAULT_ART.y+[475,475,851,851,599][slot]*VAULT_ART.size/VAULT_ART.source};
- const control={x:(start.x+end.x)/2,y:Math.max(100,Math.min(start.y,end.y)-32)};
- return {visible:true,x:Math.round((1-t)**2*start.x+2*(1-t)*t*control.x+t*t*end.x),y:Math.round((1-t)**2*start.y+2*(1-t)*t*control.y+t*t*end.y),opacity:Math.min(1,t*9,(1-t)*7)*.8};
+ const side=end.x<210?-1:1,start={x:side<0?dock.left:dock.right,y:dock.y};
+ // Pick up the bank's fading catch, then travel around the text into the lock.
+ // The receiving plaque supplies the origin; large totals stay unobstructed.
+ const rail=Math.max(14,Math.min(406,(side<0?Math.min(start.x,end.x)-36:Math.max(start.x,end.x)+36)));
+ const u=ease(t),v=1-u,c1={x:rail,y:start.y-55},c2={x:rail,y:end.y+36};
+ return {visible:true,x:Math.round(v**3*start.x+3*v*v*u*c1.x+3*v*u*u*c2.x+u**3*end.x),y:Math.round(v**3*start.y+3*v*v*u*c1.y+3*v*u*u*c2.y+u**3*end.y),opacity:Math.min(1,t*10,(1-t)*6)*.85};
 }
 export const vaultOtherAwardOpacity=(shot,time,quiet=false)=>!shot||time>=shot.finishAt?1:quiet?.7:1-.45*ease((time-shot.startAt)/160)*(1-ease((time-shot.startAt-1520)/480));
 
@@ -59,3 +64,6 @@ export function sampleVaultChamberHandoff(index=0,waitMs=400,time=10000,bonus=nu
  return {before,waiting,flight,settled,startAt:time,readyAt:first.finishAt,clickAt:second.startAt,finishAt:second.finishAt};
 }
 export function vaultChamberSampleRound(sample,time){return time<sample.readyAt?sample.before:time<sample.clickAt?sample.waiting:time<sample.finishAt?sample.flight:sample.settled;}
+
+// A bordered gold glint remains visible against both the vault and the stream.
+export const vaultChamberGuideGlyph=()=>'<svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path d="M5 0H7V3H9V5H12V7H9V9H7V12H5V9H3V7H0V5H3V3H5Z" fill="#57314c"/><path d="M5 2H7V4H8V5H10V7H8V8H7V10H5V8H4V7H2V5H4V4H5Z" fill="#eab77c"/><path d="M5 2H7V5H10V6H7V7H5V8H4V7H2V5H5Z" fill="#fff2c3"/><path d="M5 4H7V6H5Z" fill="#fffbea"/></svg>';

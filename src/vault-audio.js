@@ -65,7 +65,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    cue(r.id+':ready',r.startedAt+VAULT_OPENING_GUIDE_MS,time,'ready');
    const shot=r.flight??r.opened.at(-1);
    if(shot){
-    cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'unlock',{index:shot.index});
+    cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'linked-unlock',{index:shot.index});
     cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:vaultCashLevel(shot.cashCents)});
     if(shot.bonus)cue(shot.id+':bonus',vaultBonusAt(shot),time,shot.bonus.kind==='multiply'?'multiply':'extra');
     cue(shot.id+':collect',shot.startAt+VAULT_COLLECT_START_MS,time,'collect',{tier:vaultCashLevel(shot.cashCents)});

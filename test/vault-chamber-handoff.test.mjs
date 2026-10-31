@@ -1,10 +1,11 @@
 import test from 'node:test';
+import {vaultCollectionBank,vaultCollectionCoin} from '../src/vault-collection-motion.js';
 import assert from 'node:assert/strict';
-import {vaultChamberHandoff,vaultChamberLinks,vaultChamberTrail,vaultOtherAwardOpacity,sampleVaultChamberHandoff,vaultChamberSampleRound} from '../src/vault-chamber-handoff.js';
+import {vaultChamberHandoff,vaultChamberLinks,vaultChamberTrail,vaultOtherAwardOpacity,sampleVaultChamberHandoff,vaultChamberSampleRound,VAULT_CHAMBER_GUIDE_LEAD_MS,VAULT_CHAMBER_GUIDE_TRAVEL_MS,VAULT_CHAMBER_GUIDE_STAGGER_MS} from '../src/vault-chamber-handoff.js';
 import {advanceVault,unlockVault,vaultTotal,DEFAULT_VAULT,sampleVaultFinale,cleanVaultRound,startVaultRound} from '../src/vault-game.js';
 import {chamberDoorTransforms} from '../src/vault-layout.js';
 import {chamberPose} from '../src/vault-motion.js';
-import {renderVaultSequence} from '../src/vault-sound-design.js';
+import {renderVaultSequence,vaultSoundScore} from '../src/vault-sound-design.js';
 
 test('each prepared lock carries continuously through immediate, normal and long-paused clicks',()=>{
  for(const index of [0,1,2,3,4])for(const wait of [0,400,60000]){
@@ -44,7 +45,7 @@ test('the compact guide finishes once, never hides a collecting coin, and stays 
   const s=sampleVaultChamberHandoff(index,0);let visible=0;
   for(let time=s.readyAt-320;time<s.readyAt+600;time+=10){const p=vaultChamberHandoff(vaultChamberSampleRound(s,time),time);
    for(let i=0;i<10;i++){
-    const t=vaultChamberTrail(p,i,time);if(t.visible){visible++;assert.ok(i<3);assert.ok(time>s.startAt+1740+i*22);assert.ok(Number.isInteger(t.x)&&Number.isInteger(t.y));assert.ok(t.x>=58&&t.x<362&&t.y>=100&&t.y<356);}
+    const t=vaultChamberTrail(p,i,time);if(t.visible){visible++;assert.ok(i<3);assert.ok(time>s.readyAt-VAULT_CHAMBER_GUIDE_LEAD_MS+i*VAULT_CHAMBER_GUIDE_STAGGER_MS);assert.ok(Number.isInteger(t.x)&&Number.isInteger(t.y));assert.ok(t.x>=14&&t.x<=406&&t.y>=100&&t.y<=386);}
     assert.equal(vaultChamberTrail(p,i,time,true).visible,false);
    }
   }
@@ -69,7 +70,7 @@ test('previous prize labels ease into and out of the next spotlight without a cl
 });
 test('normal, immediate and bonus-wing audio overlaps stay balanced, with silence if Faith pauses',()=>{
  for(const rate of [44100,48000])for(const click of [2,2.4,3.2])for(const wing of [false,true]){
-  const events=[{at:0,sound:'unlock',options:{index:wing?4:0}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:wing?'extra':'multiply'},{at:1.24,sound:'collect'},{at:1.78,sound:'next',options:{index:wing?5:1}},...(wing?[{at:1.96,sound:'wing'}]:[]),{at:click,sound:'unlock',options:{index:wing?5:1}}];
+  const events=[{at:0,sound:'unlock',options:{index:wing?4:0}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:wing?'extra':'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.74,sound:'next',options:{index:wing?5:1}},...(wing?[{at:1.96,sound:'wing'}]:[]),{at:click,sound:'linked-unlock',options:{index:wing?5:1}}];
   const data=renderVaultSequence(events,rate);assert.ok(data.every(Number.isFinite));assert.ok(data.reduce((m,v)=>Math.max(m,Math.abs(v)),0)<.2);assert.equal(data[0],0);assert.equal(data.at(-1),0);
   if(click===3.2)assert.ok(data.slice(Math.ceil(2.4*rate),Math.floor(click*rate)).every(v=>v===0));
  }
@@ -86,4 +87,34 @@ test('all four wings preserve the same boundary poses through a maximum-length r
   if(i<19){const committed=vaultChamberHandoff(r,time);assert.deepEqual(pending.focuses,committed.focuses);assert.deepEqual(pending.bank,committed.bank);}
  }
  assert.equal(r.opened.length,20);assert.equal(r.allocated,20);assert.equal(r.remaining,0);assert.equal(vaultChamberHandoff(r,time).linked,false);assert.equal(vaultTotal(r),'30000');
+});
+
+test('the next guide begins at the fitted bankroll catch and stays outside its digits for every room',()=>{
+ for(let index=1;index<20;index++)for(const dock of [{left:14,right:406,y:386},{left:138,right:282,y:386},{left:181,right:239,y:386}]){
+  const from={startAt:0,finishAt:2000,index:index-1,cashCents:10000},handoff={linked:true,link:{from,index}};
+  const at=2000-VAULT_CHAMBER_GUIDE_LEAD_MS;
+  assert.ok(vaultCollectionBank(from,at).catch>0,'the bank catch is still visible as the guide begins');
+  for(let i=0;i<7;i++)assert.equal(vaultCollectionCoin(from,i,at,dock).visible,false,'all coins have landed');
+  const first=vaultChamberTrail(handoff,0,at+1,false,dock);assert.equal(first.y,dock.y);assert.ok(first.x===dock.left||first.x===dock.right);
+  for(let i=0;i<3;i++){let previous=null;
+   for(let t=at;t<=2100;t+=2){const p=vaultChamberTrail(handoff,i,t,false,dock);if(!p.visible)continue;
+    assert.ok(p.x>=14&&p.x<=406&&p.y>=100&&p.y<=386);assert.ok(Number.isInteger(p.x)&&Number.isInteger(p.y));
+    if(p.y>=dock.y-20)assert.ok(p.x<=dock.left||p.x>=dock.right);
+    if(previous)assert.ok(Math.abs(p.x-previous.x)<7&&Math.abs(p.y-previous.y)<7);previous=p;
+   }
+  }
+ }
+});
+test('the guide resolves at readiness and the prepared click keeps the original door mechanism',()=>{
+ const sample=sampleVaultChamberHandoff(),at=sample.readyAt-VAULT_CHAMBER_GUIDE_LEAD_MS;
+ assert.equal(at+VAULT_CHAMBER_GUIDE_TRAVEL_MS,sample.readyAt);
+ assert.equal(vaultChamberHandoff(sample.before,at).focuses[1],0);
+ assert.equal(vaultChamberHandoff(sample.waiting,sample.readyAt).focuses[1],.3);
+ for(let i=0;i<3;i++)assert.equal(vaultChamberTrail(vaultChamberHandoff(sample.waiting,sample.readyAt+40),i,sample.readyAt+40).visible,false);
+ for(let index=1;index<20;index++){
+  const original=vaultSoundScore('unlock',{index}),linked=vaultSoundScore('linked-unlock',{index});
+  for(const voice of ['hinge','bolt','seat'])assert.deepEqual(linked.filter(c=>c.voice===voice),original.filter(c=>c.voice===voice));
+  assert.deepEqual(linked.filter(c=>c.voice==='click').map(c=>c.at),[.045,.19]);
+  const next=vaultSoundScore('next',{index});assert.ok(next.some(c=>c.at===VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000));
+ }
 });

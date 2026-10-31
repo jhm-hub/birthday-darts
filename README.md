@@ -856,3 +856,33 @@ at 44.1/48kHz. Browser checks cover both sides, a lower chamber with multiplier,
 and the last-prize handoff. Timing/headroom and browser execution do not replace
 a human listening or physical OBS voice/music mix review. Previous v12 is
 preserved at a909479; this pass starts from 6f287ed, retaining the Piñata updates.
+
+
+### Bankroll → next chamber (v14)
+
+The next-chamber guide now starts at the bankroll's fading gold catch, rather
+than the previous chamber. Three bordered pixel glints curve around the fitted
+amount toward the next lock. They launch at1.74s, travel260ms and stagger18ms;
+the leading glint reaches the lock at the existing2s readiness. The prepared
+outline builds along the route and carries smoothly into the160ms click blend.
+If Faith pauses, the lock waits steadily; there is no loop or automatic unlock.
+Quiet mode retains the static ready outline. The420×460 stage stays transparent.
+
+A quiet D-major phrase picks up the coin landing and resolves at the same lock
+arrival. Later clicks use a small warm/plucked pickup with10% softer lock clicks;
+bolt, hinge and heavy-door seating retain their original sound and timing.
+The first chamber, cash collection, bonus/final/farewell sounds and volume
+control are unchanged. Fourteen prior cue WAVs are byte-identical; the revised
+next cue and new Prepared chamber unlock are available in the sound palette.
+
+The silent Chamber → Next chamber and Crown chamber → Bonus wing tours include
+a short pause and sample click. Scrub1.54–2.6s or use Half speed; enable Sound on
+and Watch a sample round in the main editor for audio. The WAV exporter includes
+immediate, paused and bonus-wing sequences using the new click sound.
+
+Validation:346 tests/build, including all20 chambers, fitted narrow/wide totals,
+exact-once awards, immediate/60s-paused clicks, reconnect/mute, bonus-wing changes,
+quiet mode, final-chamber suppression and44.1/48kHz audio headroom. Browser
+verified the guide origin, ready/click continuity, wing/quiet transparency and
+sound-enabled sample returning to idle. Timing/headroom/browser execution are
+not a human listening or physical OBS mix review. Previous version:ee8d180.
