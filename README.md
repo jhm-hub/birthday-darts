@@ -1070,3 +1070,26 @@ The silent animation close-up adds **Prize settles**, **Crown handoff** and
 For the complete sequence choose **Final break → Replay**, or use the main
 **Sound on → Watch a3-hit sample**. Earlier versions and review evidence:
 `Stream-Games/Pinata/Review/royal-handoff-v9-2026-10-30/`.
+
+
+### Piñata — royal farewell and next viewer (v10)
+
+The royal crest leaves first, followed by the title and small details. The exact
+amount stays fully readable through the 6.5-second hold and 70ms into the existing
+450ms clear window, then fades last with a tiny downward settle. The overlay is
+fully empty by the original clear deadline. There is no added background or
+change to its 420×460 dimensions. Reduced motion uses stationary fades.
+
+The private practice page now uses that same farewell when you click **New
+viewer** or replay **Watch a 3-hit sample**. It retains the old amount until the
+exit finishes, cancels leftover sounds, and gently introduces the fresh crown.
+Controls briefly show **Getting ready…** while the old round clears. Settings
+changes cancel any pending replay. On stream, the display stays empty until the
+next viewer’s first swing, then enters softly. Prizes, odds, exact totals, saved
+games, volume and all existing sound cues are unchanged.
+
+The silent animation close-up adds **Royal fade-out**, **Large total fade-out**,
+and **Next viewer reset**, with **Exit starts**, **Total fades**, **Cleared** and
+**Next ready** checkpoints. Choose a scene and **Replay**, or use
+`pinata-art-preview.html?scene=reset` for the short ending/reset study.
+Review/backups: `Stream-Games/Pinata/Review/royal-exit-v10-2026-10-30/`.

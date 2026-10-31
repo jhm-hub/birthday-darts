@@ -6,6 +6,7 @@ import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,HIT_MS} from '../sr
 import {BREAK_DELAY,batPose} from '../src/pinata-motion.js';
 import {FINALE_REVEAL_MS} from '../src/pinata-finale.js';
 import {bonusPose} from '../src/pinata-bonus.js';
+import {royalExitPose,beginPreviewClear} from '../src/pinata-exit.js';
 const peak=data=>data.reduce((m,n)=>Math.max(m,Math.abs(n)),0);
 function round(final=false,kind=0){
  const r=startPinata(DEFAULT_PINATA,'Audio test',0);
@@ -160,4 +161,14 @@ test('long bonus buffers still play once and mute/zero/reset cancels their tail'
   if(action==='mute')a.setEnabled(false);if(action==='zero')a.setVolume(0);if(action==='reset')a.update(null,900);
   assert.equal(sound.stops.at(-1),10.015);
  }
+});
+
+
+test('an early next-viewer farewell cancels the royal build-up and never starts its payoff',async()=>{
+ const {a,ctx}=await player(),r=round(true);advancePinata(r,1500);
+ a.update(r,1540);const rise=sources(ctx)[0];assert.ok(rise);
+ const clearing=beginPreviewClear(r,1560);
+ for(let time=1560;time<=2010;time+=10){const exit=royalExitPose(clearing,time);a.update(exit.silent?null:clearing,time);}
+ assert.equal(rise.stops.at(-1),10.015);assert.equal(sources(ctx).length,1);
+ const next=round();a.update(next,480);assert.equal(sources(ctx).length,2);
 });
