@@ -1,5 +1,6 @@
 // Original Crown Vault sound design: D-major jewels, damped gold mechanisms
 // and warm bass. No downloads or background music; previews use the same PCM.
+import {VAULT_COLLECT_TRAVEL_MS,VAULT_COLLECT_STAGGER_MS,vaultCollectionCount} from './vault-collection-motion.js';
 import {VAULT_CASH_LAND_MS} from './vault-cash-motion.js';
 import {VAULT_BONUS_LAND_MS} from './vault-bonus-motion.js';
 import {VAULT_OPENING_REVEAL_MS,VAULT_OPENING_LOCK_MS} from './vault-intro-motion.js';
@@ -21,7 +22,7 @@ export function vaultSoundScore(name,{index=0,tier=0}={}){
  case 'cash':{const land=VAULT_CASH_LAND_MS/1000;return [foley(0,'coin',.14,.035,431),note(.025,86,.18,.03),note(land,90,.22,.038,'glass'),note(land,86,.18,.02,'celesta'),note(.235,93,.13,.024),...(tier>0?[foley(.07,'coin',.09,.022,443),note(land,62,.2,.015,'warm'),note(land,93,.2,.024,'glass')]:[]),...(tier>1?[foley(.11,'coin',.09,.018,449),note(land,50,.24,.018,'warm'),note(land,98,.22,.02,'glass'),note(.275,102,.12,.015)]:[])];}
  case 'multiply':return [...[62,69,74,78].map((p,i)=>note(i*.04,p,.16,.023,'pluck')),note(bonusLand,50,.28,.018,'warm'),foley(bonusLand,'coin',.08,.022,919),note(bonusLand,86,.42,.055,'glass'),note(bonusLand,90,.33,.028,'glass'),note(bonusLand,93,.28,.024),note(.33,98,.22,.022),note(.46,102,.17,.015,'glass')];
  case 'extra':return [foley(0,'click',.06,.035,301),...[74,78,81].map((p,i)=>note(i*.07,p,.14,.026,'celesta')),foley(bonusLand,'click',.075,.055,313),note(bonusLand,74,.22,.014,'warm'),note(bonusLand,86,.32,.043,'celesta'),note(.31,90,.24,.028,'celesta'),note(.43,93,.23,.022,'glass')];
- case 'collect':return [foley(0,'coin',.105,.032,401),foley(.11,'coin',.09,.027,409),foley(.23,'coin',.09,.022,419)];
+ case 'collect':{const land=VAULT_COLLECT_TRAVEL_MS/1000;return [foley(0,'air',.22,.012,397),note(.015,81,.18,.009,'pluck'),...Array.from({length:vaultCollectionCount(tier)},(_,i)=>foley(land+i*VAULT_COLLECT_STAGGER_MS/1000,'coin',.055,.029-i*.0018,401+i*13)),note(land,74,.14,.02,'warm'),note(land,93,.14,.02,'glass'),...(tier>0?[note(land,86,.13,.012,'celesta')]:[])];}
  case 'wing':return [foley(0,'air',.3,.025),note(.015,74,.24,.019,'glass'),note(.1,81,.23,.021,'glass')];
  case 'settle':return [foley(0,'coin',.12,.032,701),note(.055,74,.25,.025,'warm'),note(.16,81,.23,.021,'glass')];
  case 'standard':return [note(0,81,.18,.035,'celesta'),note(.18,62,.46,.042,'warm'),note(.18,86,.42,.053),note(.33,90,.3,.032),note(.49,93,.3,.028),note(.72,86,.38,.035,'glass')];

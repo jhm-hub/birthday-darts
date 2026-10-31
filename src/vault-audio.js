@@ -1,3 +1,4 @@
+import {VAULT_COLLECT_START_MS} from './vault-collection-motion.js';
 import {vaultCashLevel} from './vault-cash-motion.js';
 import {giftVolume} from './gift-volume.js';
 import {vaultBonusAt} from './vault-bonus-motion.js';
@@ -67,7 +68,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
     cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'unlock',{index:shot.index});
     cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:vaultCashLevel(shot.cashCents)});
     if(shot.bonus)cue(shot.id+':bonus',vaultBonusAt(shot),time,shot.bonus.kind==='multiply'?'multiply':'extra');
-    cue(shot.id+':collect',shot.startAt+1240,time,'collect');
+    cue(shot.id+':collect',shot.startAt+VAULT_COLLECT_START_MS,time,'collect',{tier:vaultCashLevel(shot.cashCents)});
    }
    for(const link of vaultChamberLinks(r,time)){
     cue(link.from.id+':next',link.from.finishAt-VAULT_CHAMBER_GUIDE_LEAD_MS,time,'next',{index:link.index});

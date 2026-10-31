@@ -138,3 +138,14 @@ test('cash audio selects the same boundary tier as its visual and joins without 
   a.sync(structuredClone(r),2850);assert.equal(sources(ctx).length,1);
  }
 });
+
+test('collection uses the cash tier, joins its current offset once and stays consumed when muted',()=>{
+ for(const [cashCents,tier] of [[1000,0],[2500,1],[10000,2]]){
+  const r=round();r.flight.cashCents=cashCents;
+  const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(r,3280);
+  assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('collect',{tier}));assert.deepEqual(sources(ctx)[0].started,[10,.04]);
+  a.sync(structuredClone(r),3340);assert.equal(sources(ctx).length,1);a.sync(null,3400);assert.equal(sources(ctx)[0].stops.at(-1),10.015);
+  const muted=context(),b=createVaultAudio({createContext:()=>muted});b.sync(r,3240);b.setEnabled(true);b.sync(r,3241);assert.equal(sources(muted).length,0);
+  const late=context(),c=createVaultAudio({createContext:()=>late});c.setEnabled(true);c.sync(r,3500);assert.equal(sources(late).length,0);
+ }
+});

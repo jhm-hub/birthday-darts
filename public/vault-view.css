@@ -75,3 +75,10 @@
 .vault-cash-sheen{position:absolute;top:0;bottom:0;width:12px;background:#fff6d1;opacity:0;pointer-events:none;clip-path:polygon(7px 0,12px 0,12px 14px,8px 14px,8px 30px,4px 30px,4px 100%,0 100%,0 30px,3px 30px,3px 14px,7px 14px)}
 .vault-cash-spark{position:absolute;top:20px;width:8px;height:7px;opacity:0;pointer-events:none;background:#efc47b;border:1px solid #6c414b;box-shadow:inset 1px 1px #fff6c9,inset -1px -1px #b5784f;clip-path:polygon(25% 0,75% 0,75% 14%,100% 14%,100% 86%,75% 86%,75% 100%,25% 100%,25% 86%,0 86%,0 14%,25% 14%)}
 .vault-cash-spark[data-side="left"]{left:0}.vault-cash-spark[data-side="right"]{left:100%}
+
+/* A short coin stream docks outside the fitted bankroll plaque. */
+.vault-collection{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+.vault-collection>i{position:absolute;left:-6px;top:-6px;width:12px;height:12px;opacity:0;transform-origin:center}
+.vault-collection svg{display:block;width:12px;height:12px;image-rendering:pixelated}
+.vault-collection-catches{position:absolute;inset:0;pointer-events:none}
+.vault-collection-catches i{position:absolute;width:12px;height:12px;margin:-6px;opacity:0;background:#fff0b5;box-shadow:inset 2px 2px #fff9d9,inset -2px -2px #c48965;clip-path:polygon(4px 0,8px 0,8px 4px,12px 4px,12px 8px,8px 8px,8px 12px,4px 12px,4px 8px,0 8px,0 4px,4px 4px)}

@@ -826,3 +826,33 @@ rounds. Full-volume isolated peaks: hit−15.41dBFS, break−16.09, finale−15.
 fast/Encore round peak−15.36 (−22.30 at45%). Checked44.1/48kHz, with no clipping.
 These are synthesis/timing/headroom measurements and browser playback checks,
 not direct listening approval or a physical OBS/voice/music mix audition.
+
+
+### Cash → running total (v13)
+
+Shaded pixel coins now peel away from the prize and sweep into the outside edge
+of the fitted bankroll plaque. Left/right chambers use their own side of the
+vault; the Crown chamber uses the left. The trail sends 3/5/7 coins for the
+existing cash levels, with stepped flips, a small landing compression and a
+single gentle gold catch on the total. The path adapts to the displayed total's
+width and leaves the digits clear. The amount remains exact throughout.
+
+Transfer begins at 1.24s. Each coin takes 300ms, spaced 22ms apart, and its
+arrival has a matching gold tick. A soft plucked sweep leads into a warm landing
+chord. The last tail clears by 1.752s, before the next-lock phrase. A shared
+clock keeps replay/reconnect visuals and sounds aligned. Quiet mode hides the
+travelling coins and catch. All 14 other sound families remain identical, and
+the common volume slider still applies.
+
+The two-second chamber, cash/bonus math and readout timing, final celebration,
+approved Crown art and 420×460 transparent footprint are preserved. The cash
+studies in the silent Chamber Tour now describe the transfer and landing;
+scrub 1.24–1.76s or use Half speed. In the game, choose Next demo cash and turn
+Sound on to hear the full flow. Audio exports include collect-tier-0/1/2.wav.
+
+Validation: 344 tests/build, including all 20 chamber positions, narrow/wide
+bankrolls, exact awards, reduced motion, reconnect/mute and mixed sound headroom
+at 44.1/48kHz. Browser checks cover both sides, a lower chamber with multiplier,
+and the last-prize handoff. Timing/headroom and browser execution do not replace
+a human listening or physical OBS voice/music mix review. Previous v12 is
+preserved at a909479; this pass starts from 6f287ed, retaining the Piñata updates.
