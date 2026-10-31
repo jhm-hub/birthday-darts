@@ -1,6 +1,8 @@
 import {clamp} from './pinata-motion.js';
-import {FINALE_REVEAL_MS} from './pinata-finale.js';
-export const ROYAL_ORNAMENTS=10,TIER_PARTICLES=72,GRAND_ENCORE_MS=860;
+import {FINALE_REVEAL_MS} from './pinata-finale-timing.js';
+import {GRAND_PARTICLES,grandParticlePose} from './pinata-grand.js';
+export {GRAND_ENCORE_MS} from './pinata-finale-timing.js';
+export const ROYAL_ORNAMENTS=10,TIER_PARTICLES=GRAND_PARTICLES;
 const smooth=x=>{const t=clamp(x);return t*t*(3-2*t);};
 const out=x=>1-(1-clamp(x))**3;
 
@@ -22,8 +24,9 @@ export function tierParticleSpec(i,tier){return {size:i%4===0?(tier===2?15:12):5
 export function tierParticlePose(i,age,tier,quiet=false){
  const off={x:0,y:0,angle:0,opacity:0};
  if(!tier||quiet||i<0||i>=(tier===2?TIER_PARTICLES:28))return off;
- const encore=tier===2&&i>=36,j=encore?i-36:i,lower=j%4===3;
- const start=(encore?GRAND_ENCORE_MS:FINALE_REVEAL_MS)+(j%6)*22,t=(age-start)/1000;
+ if(tier===2)return grandParticlePose(i,age,tierParticleSpec(i,tier).size,quiet);
+ const j=i,lower=j%4===3;
+ const start=FINALE_REVEAL_MS+(j%6)*22,t=(age-start)/1000;
  if(t<=0||t>=1.65)return off;
  const side=j%2?1:-1,size=tierParticleSpec(i,tier).size;
  const x=210+side*((lower?60:32)+(72+j%7*16)*t);

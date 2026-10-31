@@ -95,3 +95,7 @@ html.pinata-overlay,html.pinata-overlay body{margin:0;width:100%;height:100%;ove
 .pinata-stage[data-tier="2"] .pina-final-title{color:#e9c9ff}
 .pinata-stage[data-tier="2"] .pina-total-tag:before{background:linear-gradient(125deg,#fff0c1,#ddb3ef 35%,#fff0b4 55%,#a5dfc9 78%,#ce8cb2)}
 @media(prefers-reduced-motion:reduce){.pina-tier-ornaments,.pina-tier-particles{display:none}}
+
+/* A small jewel pickup stays above the title; the stream remains visible. */
+.pina-grand-glints{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}.pina-grand-glints i{position:absolute;left:0;top:0;display:block;opacity:0;filter:drop-shadow(0 1px 0 #49233d66)}
+@media(prefers-reduced-motion:reduce){.pina-grand-glints{display:none}}

@@ -5,6 +5,8 @@ import {DEFAULT_PINATA,validatePinata,startPinata,swingPinata,advancePinata,pina
 import {createPinataStore,PINATA_KEY} from '../src/pinata-store.js';
 import {ROYAL_ORNAMENTS,TIER_PARTICLES,GRAND_ENCORE_MS,royalOrnamentPose,tierParticleSpec,tierParticlePose} from '../src/pinata-tier-motion.js';
 import {pinataAudioCues,renderPinataSequence} from '../src/pinata-sound-design.js';
+import {finaleRevealAt} from '../src/pinata-finale-timing.js';
+import {GRAND_FIRST_PARTICLES} from '../src/pinata-grand.js';
 import {finalePose} from '../src/pinata-finale.js';
 const peak=data=>data.reduce((m,n)=>Math.max(m,Math.abs(n)),0);
 function fixture(){const data=new Map();let tail=Promise.resolve();return {data,store:createPinataStore({getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)},{request:(_,fn)=>{const p=tail.then(fn);tail=p.catch(()=>{});return p;}})};}
@@ -43,19 +45,19 @@ test('gold and jewel ornaments reserve title, amount and viewer space and settle
   }
   for(let i=0;i<TIER_PARTICLES;i++){
    const p=tierParticlePose(i,age,tier),size=tierParticleSpec(i,tier).size;
-   if(tier===0||age>=2800)assert.equal(p.opacity,0);
+   if(tier===0||age>=(tier===2?3400:2800))assert.equal(p.opacity,0);
    if(p.opacity>0){assert.ok(p.x>=16&&p.x+size<=405);assert.ok(p.y>=102&&p.y+size<=406);assert.ok(p.y+size<=201||p.y>=376);}
    assert.equal(tierParticlePose(i,age,tier,true).opacity,0);
   }
  }
  const active=(tier,age)=>Array.from({length:TIER_PARTICLES},(_,i)=>tierParticlePose(i,age,tier).opacity>0).filter(Boolean).length;
- assert.ok(active(2,1200)>active(1,1200));assert.ok(Array.from({length:36},(_,i)=>tierParticlePose(i+36,GRAND_ENCORE_MS+150,2)).some(p=>p.opacity>0));
+ assert.ok(active(2,1200)>active(1,1200));assert.ok(Array.from({length:36},(_,i)=>tierParticlePose(i+GRAND_FIRST_PARTICLES,GRAND_ENCORE_MS+150,2)).some(p=>p.opacity>0));
  assert.equal(finalePose(1200).amountOpacity,1);assert.equal(finalePose(1200).amountScale,1);
 });
 test('audio and visual tier use the full final cash or multiplier and stay stable across commit',()=>{
  for(const [value,tier] of [[100,0],[1000,1],[3000,2]])for(const kind of ['cash','multiply']){
   const r=lastShot(value,kind),before=pinataAudioCues(r),royal=before.find(c=>c.kind==='royal'),grand=before.find(c=>c.kind==='grand');
-  assert.equal(!!royal,tier>0);assert.equal(!!grand,tier===2);if(royal)assert.equal(royal.at,r.flight.finishAt+300);if(grand)assert.equal(grand.at,r.flight.finishAt+GRAND_ENCORE_MS);
+  assert.equal(!!royal,tier>0);assert.equal(!!grand,tier===2);if(royal)assert.equal(royal.at,r.flight.finishAt+finaleRevealAt(tier));if(grand)assert.equal(grand.at,r.flight.finishAt+GRAND_ENCORE_MS);
   advancePinata(r,1500);assert.deepEqual(pinataAudioCues(r),before);assert.equal(pinataCelebrationTier(pinataTotal(r),r.preset.celebration),tier);
  }
 });

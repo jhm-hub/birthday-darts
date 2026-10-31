@@ -1,18 +1,20 @@
 import {clamp} from './pinata-motion.js';
 
-export const FINALE_REVEAL_MS=300, FINALE_PARTICLES=48;
+import {finaleRevealAt} from './pinata-finale-timing.js';
+export {FINALE_REVEAL_MS} from './pinata-finale-timing.js';
+export const FINALE_PARTICLES=48;
 const smooth=x=>{const t=clamp(x);return t*t*(3-2*t);};
 
 // Join the authoritative round clock, including late displays and scrubbed
-// previews. The existing finale chord blooms 300 ms after the final swing.
-export function finalePose(age,quiet=false){
- const enter=smooth((age-40)/230),p=clamp((age-FINALE_REVEAL_MS)/420);
+// previews. Grand Royal adds a brief gathering beat before the same payoff.
+export function finalePose(age,quiet=false,tier=0){
+ const reveal=finaleRevealAt(tier),enter=smooth((age-40)/230),p=clamp((age-reveal)/420);
  return {visible:age>=40,crestOpacity:enter,
   crestY:quiet?0:(1-enter)*-14,crestScale:quiet?1:1+.045*Math.sin(enter*Math.PI),
   crestAngle:quiet?0:(1-enter)*-5,
-  titleOpacity:smooth((age-130)/150),amountOpacity:smooth((age-FINALE_REVEAL_MS)/100),
+  titleOpacity:smooth((age-(tier===2?570:130))/(tier===2?180:150)),amountOpacity:smooth((age-reveal)/100),
   amountScale:quiet?1:1-.1*(1-p)**3+.035*Math.sin(p*Math.PI),
-  detailOpacity:smooth((age-580)/180),previousOpacity:1-smooth(Math.max(0,age)/160)};
+  detailOpacity:smooth((age-reveal-280)/180),previousOpacity:1-smooth(Math.max(0,age)/160)};
 }
 
 export function finaleParticleSpec(i){
@@ -20,10 +22,10 @@ export function finaleParticleSpec(i){
  return {candy,star,size:candy?15+i%3*3:star?10+i%3*2:5+i%3};
 }
 
-export function finaleParticlePose(i,age,quiet=false){
+export function finaleParticlePose(i,age,quiet=false,tier=0){
  const off={x:0,y:0,angle:0,flip:1,opacity:0};
  if(quiet||i<0||i>=FINALE_PARTICLES)return off;
- const lower=i>=32,delay=FINALE_REVEAL_MS+(i%8)*24+(lower?80:0),t=(age-delay)/1000;
+ const lower=i>=32,delay=finaleRevealAt(tier)+(i%8)*24+(lower?80:0),t=(age-delay)/1000;
  if(t<0||t>2)return off;
  const side=i%2?1:-1,size=finaleParticleSpec(i).size;
  let x,y;

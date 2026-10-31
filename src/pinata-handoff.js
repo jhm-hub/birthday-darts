@@ -1,5 +1,5 @@
 import {clamp} from './pinata-motion.js';
-import {FINALE_REVEAL_MS} from './pinata-finale.js';
+import {finaleRevealAt} from './pinata-finale-timing.js';
 
 export const HANDOFF_SPARKS=8;
 const smooth=x=>{const t=clamp(x);return t*t*(3-2*t);};
@@ -13,14 +13,14 @@ export function finalHitAge(round,time){
  return final?time-(round.completedAt??shot.finishAt):null;
 }
 
-export function handoffPose(age,quiet=false){
+export function handoffPose(age,quiet=false,tier=0){
  if(age===null)return {rewardOpacity:1,rewardY:0,detailOpacity:1,captionOpacity:1,bankOpacity:1,bankY:0,ropeOpacity:1};
- const exit=smooth((age+80)/240);
+ const exit=smooth((age+80)/240),reveal=finaleRevealAt(tier);
  return {rewardOpacity:1-exit,rewardY:quiet?0:-6*exit,
   detailOpacity:1-smooth((age-20)/200),captionOpacity:1-smooth((age-170)/190),
   // Let the big amount establish itself before dimming the running total;
   // a strict crossfade would leave both numbers half-bright at the midpoint.
-  bankOpacity:1-smooth((age-FINALE_REVEAL_MS-80)/80),bankY:quiet?0:-4*smooth((age-260)/140),
+  bankOpacity:1-smooth((age-reveal-80)/80),bankY:quiet?0:-4*smooth((age-reveal+40)/140),
   ropeOpacity:1-smooth((age+90)/230)};
 }
 

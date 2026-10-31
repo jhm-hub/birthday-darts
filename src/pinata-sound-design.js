@@ -4,9 +4,9 @@ import {pinataCelebrationTier} from './pinata-celebration.js';
 import {pinataTotal,projectedPinata} from './pinata-game.js';
 import {GRAND_ENCORE_MS} from './pinata-tier-motion.js';
 import {BREAK_DELAY} from './pinata-motion.js';
-import {FINALE_REVEAL_MS} from './pinata-finale.js';
+import {finaleRevealAt} from './pinata-finale-timing.js';
 import {ARRIVAL_SOUND_AT} from './pinata-intro.js';
-export const PINATA_SOUND_LABELS={arrival:'Birthday crown welcome',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Cash sparkle',multiply:'Royal jewel multiplier',extra:'Encore mallet flourish',burst:'Crown crack and candy shower',rise:'Royal crown build-up',final:'Royal birthday payoff',royal:'Golden royal flourish',grand:'Grand royal jewel encore'};
+export const PINATA_SOUND_LABELS={arrival:'Birthday crown welcome',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Cash sparkle',multiply:'Royal jewel multiplier',extra:'Encore mallet flourish',burst:'Crown crack and candy shower',rise:'Royal crown build-up','grand-rise':'Grand royal jewel gathering',final:'Royal birthday payoff',royal:'Golden royal flourish',grand:'Grand royal jewel encore'};
 export const SWING_SOUND_LEAD_MS=310, ROYAL_BUILDUP_MS=40;
 // Offsets within the existing hit+160ms bonus cue: jewel/total pulse, then the
 // Encore token reaching the counter. One cue keeps late joins and mute atomic.
@@ -58,6 +58,9 @@ export function pinataSoundScore(kind,{index=0}={}){
    note(.91,1046.5,.65,.019,'bell')];
   case 'royal':return [note(0,523.25,.35,.016,'mallet'),note(.055,659.25,.3,.013,'mallet'),
    note(.12,783.99,.33,.015,'bell'),note(.21,1046.5,.4,.014,'bell'),note(.35,1568,.4,.01,'bell'),noise(.01,'silk',.18,.009,1201)];
+  case 'grand-rise':return [note(0,392,.5,.013,'warm'),
+   ...[783.99,987.77,1174.66,1568,1975.53,2349.32].map((hz,i)=>note(.04+i*.118,hz,.16,.027+i*.001,'bell')),
+   noise(.15,'royalAir',.59,.029,1237)];
   case 'grand':return [note(0,261.63,.48,.017,'warm'),note(0,783.99,.4,.019,'bell'),
    note(.055,1046.5,.4,.018,'bell'),note(.13,1318.5,.45,.016,'bell'),
    note(.23,1568,.4,.014,'bell'),note(.35,2093,.35,.01,'bell'),
@@ -117,7 +120,7 @@ export function pinataAudioCues(round){
   {kind:'swing',at:shot.startAt+SWING_SOUND_LEAD_MS},
   {kind:'hit',at:shot.hitAt},
   {kind:shot.prize.kind,at:shot.hitAt+160},
-  ...(final?[{kind:'burst',at:shot.hitAt+BREAK_DELAY},{kind:'rise',at:shot.finishAt+ROYAL_BUILDUP_MS},{kind:'final',at:shot.finishAt+FINALE_REVEAL_MS},...(tier>0?[{kind:'royal',at:shot.finishAt+FINALE_REVEAL_MS}]:[]),...(tier===2?[{kind:'grand',at:shot.finishAt+GRAND_ENCORE_MS}]:[])]:[])
+  ...(final?[{kind:'burst',at:shot.hitAt+BREAK_DELAY},{kind:tier===2?'grand-rise':'rise',at:shot.finishAt+ROYAL_BUILDUP_MS},{kind:'final',at:shot.finishAt+finaleRevealAt(tier)},...(tier>0?[{kind:'royal',at:shot.finishAt+finaleRevealAt(tier)}]:[]),...(tier===2?[{kind:'grand',at:shot.finishAt+GRAND_ENCORE_MS}]:[])]:[])
  ].map(c=>({...c,id:shot.id+':'+c.kind,index:shot.index})));
 }
 
