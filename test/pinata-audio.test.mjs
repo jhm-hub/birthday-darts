@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {PINATA_SOUND_LABELS,pinataSoundScore,pinataAudioCues,renderPinataSound,renderPinataSequence,SWING_SOUND_LEAD_MS} from '../src/pinata-sound-design.js';
+import {PINATA_SOUND_LABELS,pinataSoundScore,pinataAudioCues,renderPinataSound,renderPinataSequence,SWING_SOUND_LEAD_MS,ROYAL_BUILDUP_MS} from '../src/pinata-sound-design.js';
 import {createPinataAudio} from '../src/pinata-audio.js';
 import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,HIT_MS} from '../src/pinata-game.js';
 import {BREAK_DELAY,batPose} from '../src/pinata-motion.js';
+import {FINALE_REVEAL_MS} from '../src/pinata-finale.js';
 const peak=data=>data.reduce((m,n)=>Math.max(m,Math.abs(n)),0);
 function round(final=false,kind=0){
  const r=startPinata(DEFAULT_PINATA,'Audio test',0);
@@ -23,15 +24,16 @@ test('whoosh ends at contact; thwack, fracture and total follow the animation cl
  assert.equal(SWING_SOUND_LEAD_MS+pinataSoundScore('swing')[0].length*1000,HIT_MS);
  assert.equal(cues.find(c=>c.kind==='hit').at,HIT_MS);assert.equal(batPose(HIT_MS).angle,batPose(HIT_MS+39).angle);
  assert.equal(cues.find(c=>c.kind==='burst').at,HIT_MS+BREAK_DELAY);
- assert.equal(cues.find(c=>c.kind==='final').at,r.flight.finishAt+160);
+ assert.equal(cues.find(c=>c.kind==='rise').at,r.flight.finishAt+ROYAL_BUILDUP_MS);
+ assert.equal(cues.find(c=>c.kind==='final').at,r.flight.finishAt+FINALE_REVEAL_MS);
  assert.equal(pinataAudioCues(round()).length,3);
- assert.equal(pinataAudioCues(round(true,4)).some(c=>c.kind==='burst'||c.kind==='final'),false,'last-hit Encore keeps the crown intact');
+ assert.equal(pinataAudioCues(round(true,4)).some(c=>['burst','rise','final'].includes(c.kind)),false,'last-hit Encore keeps the crown intact');
 });
 test('buffers are finite, deterministic, have silent edges and reserve headroom at both device rates',()=>{
  for(const rate of [44100,48000])for(const kind of Object.keys(PINATA_SOUND_LABELS))for(const index of [0,1,2]){
   const data=renderPinataSound(kind,{index},rate);
   assert.ok(data.every(Number.isFinite));assert.ok(peak(data)>0&&peak(data)<.21,kind+' peak');
-  assert.equal(data[0],0);assert.equal(data.at(-1),0);assert.ok(data.length/rate<1.25);
+  assert.equal(data[0],0);assert.equal(data.at(-1),0);assert.ok(data.length/rate<(kind==='final'?1.7:kind==='rise'?.36:1.25));
   assert.deepEqual(data,renderPinataSound(kind,{index},rate));
  }
 });
@@ -55,8 +57,8 @@ test('busiest final hit and fastest round overlaps remain below -13 dBFS at full
 });
 test('each cue plays once; a late round commit cannot replay the break or total',async()=>{
  const {a,ctx}=await player(),r=round(true);
- for(const [time,count] of [[309,0],[310,1],[479,1],[480,2],[619,2],[620,3],[639,3],[640,4],[1659,4],[1660,5]]){a.update(r,time);assert.equal(sources(ctx).length,count);}
- advancePinata(r,1670);a.update(r,1670);a.update(structuredClone(r),1700);assert.equal(sources(ctx).length,5);
+ for(const [time,count] of [[309,0],[310,1],[479,1],[480,2],[619,2],[620,3],[639,3],[640,4],[1539,4],[1540,5],[1799,5],[1800,6]]){a.update(r,time);assert.equal(sources(ctx).length,count);}
+ advancePinata(r,1810);a.update(r,1810);a.update(structuredClone(r),1850);assert.equal(sources(ctx).length,6);
  assert.ok(ctx.nodes.filter(n=>n.kind==='gain').slice(1).every(n=>n.connectedTo===ctx.nodes[0]));
 });
 test('late snapshots join the current offset without replaying an old impact',async()=>{
@@ -96,4 +98,33 @@ test('zero volume consumes cues and stops tails without resurrecting them when r
  assert.equal(sources(ctx).length,0);a.update(r,640);const sound=sources(ctx)[0];assert.ok(sound);
  a.setVolume(0);assert.equal(sound.stops.at(-1),10.015);a.setVolume(.45);a.update(r,641);
  assert.equal(sources(ctx).length,1);
+});
+
+
+test('royal build-up stays underneath the full but bounded payoff at both device rates',()=>{
+ const windowRms=(data,rate)=>{const size=Math.round(rate*.1);let sum=0,best=0;for(let i=0;i<data.length;i++){sum+=data[i]**2;if(i>=size)sum-=data[i-size]**2;if(i>=size-1)best=Math.max(best,sum/size);}return Math.sqrt(best);};
+ for(const rate of [44100,48000]){
+  const rise=renderPinataSound('rise',{},rate),final=renderPinataSound('final',{},rate),hit=renderPinataSound('hit',{},rate);
+  assert.ok(peak(rise)<peak(final)*.5,'build-up is quieter than the payoff');
+  assert.ok(20*Math.log10(windowRms(final,rate)/windowRms(hit,rate))<6,'full chord stays within a bounded short-term level');
+  assert.ok(final.length/rate<1.7,'the payoff leaves space for the reaction');
+  const combined=renderPinataSequence([{kind:'rise',at:0},{kind:'final',at:(FINALE_REVEAL_MS-ROYAL_BUILDUP_MS)/1000}],rate);
+  assert.ok(peak(combined)<10**(-13/20));
+ }
+});
+
+test('late viewers skip an old build-up but still receive a fresh total payoff once',async()=>{
+ const {a,ctx}=await player(),r=round(true);
+ a.update(r,1805);assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].started,[10,.005]);
+ advancePinata(r,1810);a.update(r,1810);assert.equal(sources(ctx).length,1);
+ const {a:stale,ctx:other}=await player();stale.update(r,2400);assert.equal(sources(other).length,0);
+});
+
+test('muting during the royal entrance prevents its payoff and resetting cancels the ending',async()=>{
+ const {a,ctx}=await player(),r=round(true);
+ a.update(r,1540);const rise=sources(ctx)[0];assert.ok(rise);
+ a.setEnabled(false);assert.equal(rise.stops.at(-1),10.015);a.update(r,1800);
+ a.setEnabled(true);a.update(r,1801);assert.equal(sources(ctx).length,1);
+ const {a:end,ctx:ending}=await player();end.update(r,1800);const payoff=sources(ending)[0];assert.ok(payoff);
+ end.update(null,1850);assert.equal(payoff.stops.at(-1),10.015);
 });

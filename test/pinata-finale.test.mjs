@@ -4,7 +4,7 @@ import {finalePose,finaleParticlePose,finaleParticleSpec,FINALE_PARTICLES,FINALE
 import {pinataAudioCues,pinataSoundScore} from '../src/pinata-sound-design.js';
 import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,pinataTotal,HOLD_MS} from '../src/pinata-game.js';
 
-test('the amount arrives with the existing warm finale chord after the last prize clears',()=>{
+test('the amount arrives with the royal payoff chord after the last prize clears',()=>{
  const round=startPinata({...DEFAULT_PINATA,swings:1});swingPinata(round,0,{forcedIndex:0});
  const cue=pinataAudioCues(round).find(c=>c.kind==='final'),chord=pinataSoundScore('final').find(c=>c.voice==='warm');
  assert.equal(cue.at+chord.at*1000-round.flight.finishAt,FINALE_REVEAL_MS);

@@ -926,3 +926,24 @@ and Settled buttons. `scene=large` checks a $9,999,999.90 sample without changin
 saved games. The preview is silent; use the main three-hit sample for audio.
 Artwork prompts, earlier files and visual/test evidence are retained in external
 `Stream-Games/Pinata/Review/royal-finale-v5-2026-10-30/`.
+
+
+### Royal finale sound (v6)
+
+A short four-step rising chime starts with the crown entrance at final finish+40ms.
+A separate payoff lands with the amount at finish+300ms: soft low foundation,
+warm major chord, gold-like bell accents and a gently falling sparkle tail.
+The 1.585-second payoff stays close to the previous finale's peak level; the
+existing volume slider/default45% applies to both new cues.
+
+No visual or game timing changes. The swing, thwack, cash, multiplier, Encore and
+candy-break WAVs are byte-identical to v5. Separate cue identities preserve fresh
+late joins and prevent the build-up or payoff repeating after a round commit.
+Mute, zero volume, reset and disposal use the existing fade/cancellation path.
+
+`node scripts/render-pinata-audio.mjs <external-review-directory>` now also
+exports `royal-finale.wav` for a short listening preview. All WAVs use45%; the
+metrics report full-volume and default-volume peaks plus maximum100ms RMS.
+The combined new ending peaks around−15.77dBFS at100%,−22.71dBFS at45%; the busiest
+full-round peak remains−15.36dBFS.44.1/48kHz deterministic overlap/timing tests pass.
+Direct listening and Faith's physical OBS voice/music mix remain unverified.
