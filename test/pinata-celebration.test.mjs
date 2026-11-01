@@ -56,8 +56,9 @@ test('gold and jewel ornaments reserve title, amount and viewer space and settle
 });
 test('audio and visual tier use the full final cash or multiplier and stay stable across commit',()=>{
  for(const [value,tier] of [[100,0],[1000,1],[3000,2]])for(const kind of ['cash','multiply']){
-  const r=lastShot(value,kind),before=pinataAudioCues(r),royal=before.find(c=>c.kind==='royal'),grand=before.find(c=>c.kind==='grand');
-  assert.equal(!!royal,tier===2);assert.equal(before.some(c=>c.kind==='royal-final'),tier===1);assert.equal(!!grand,tier===2);if(royal)assert.equal(royal.at,r.flight.finishAt+finaleRevealAt(tier));if(grand)assert.equal(grand.at,r.flight.finishAt+GRAND_ENCORE_MS);
+  const r=lastShot(value,kind),before=pinataAudioCues(r),payoff=['final','royal-final','grand-final'][tier];
+  const ending=before.filter(c=>['final','royal-final','grand-final'].includes(c.kind));assert.equal(ending.length,1);assert.equal(ending[0].kind,payoff);assert.equal(ending[0].at,r.flight.finishAt+finaleRevealAt(tier));
+  assert.equal(before.some(c=>['royal','grand'].includes(c.kind)),false,'no stacked flourish or encore jingle');
   advancePinata(r,1500);assert.deepEqual(pinataAudioCues(r),before);assert.equal(pinataCelebrationTier(pinataTotal(r),r.preset.celebration),tier);
  }
 });

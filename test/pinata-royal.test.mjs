@@ -65,7 +65,7 @@ test('Royal gets a distinct fanfare on cash or a final multiplier, stable throug
   assert.equal(cues.some(c=>['rise','final','royal','grand','grand-rise'].includes(c.kind)),false);
   advancePinata(r,1500);assert.deepEqual(pinataAudioCues(r),cues);
  }
- const gold=renderPinataSound('royal-final'),grand=renderPinataSound('final');
- assert.ok(gold.length<grand.length,'Grand keeps the longer payoff and encore');
+ const gold=renderPinataSound('royal-final'),grand=renderPinataSound('grand-final');
+ assert.ok(gold.length<grand.length,'Grand keeps the fuller sustained finish');
  assert.notDeepEqual(renderPinataSound('royal-rise'),renderPinataSound('rise'));
 });

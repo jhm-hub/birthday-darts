@@ -143,13 +143,13 @@ test('distinct bonus textures resolve on the visible bank pulse and token catch'
  assert.ok(renderPinataSound('multiply').length/48000<(1500+ROYAL_BUILDUP_MS-HIT_MS-160)/1000,'bonus tail clears the finale build-up');
 });
 
-test('both bonus mixes have similar peaks and leave the finale biggest at either device rate',()=>{
+test('bonus mixes retain their balance beside the simpler final notes at either device rate',()=>{
  const windowRms=(data,rate)=>{const size=Math.round(rate*.1);let sum=0,best=0;for(let i=0;i<data.length;i++){sum+=data[i]**2;if(i>=size)sum-=data[i-size]**2;if(i>=size-1)best=Math.max(best,sum/size);}return Math.sqrt(best);};
  for(const rate of [44100,48000]){
   const mult=renderPinataSound('multiply',{},rate),extra=renderPinataSound('extra',{},rate),final=renderPinataSound('final',{},rate),hit=renderPinataSound('hit',{},rate);
   assert.ok(Math.abs(20*Math.log10(peak(mult)/peak(extra)))<1.5);
   assert.ok(Math.abs(20*Math.log10(windowRms(mult,rate)/windowRms(extra,rate)))<3.5);
-  for(const data of [mult,extra]){assert.ok(peak(data)<10**(-20/20));assert.ok(peak(data)<peak(final)*.5);assert.ok(windowRms(data,rate)<windowRms(hit,rate));}
+  for(const data of [mult,extra]){assert.ok(peak(data)<10**(-20/20));assert.ok(peak(data)<peak(final));assert.ok(windowRms(data,rate)<windowRms(hit,rate));}
  }
 });
 
@@ -198,14 +198,14 @@ test('welcome obeys mute and volume, and reset cancels its tail without a ghost 
  assert.equal(sources(ctx).length,0);
 });
 
-test('Grand Royal build, amount and encore play once across commit and reset',async()=>{
+test('Grand Royal has one clean payoff and a silent visual encore',async()=>{
  const r=round(true);r.flight.prize.value=3000;
  const finish=r.flight.finishAt,{a,ctx}=await player();a.update(r,finish+40);
  assert.equal(sources(ctx).length,1,'dedicated gathering cue starts before the number');
  advancePinata(r,finish+41);a.update(r,finish+41);assert.equal(sources(ctx).length,1);
- a.update(r,finish+GRAND_REVEAL_MS);assert.equal(sources(ctx).length,3,'payoff and flourish meet the amount');
- a.update(r,finish+GRAND_ENCORE_MS);assert.equal(sources(ctx).length,4,'encore meets the second burst');
- a.update(structuredClone(r),finish+GRAND_ENCORE_MS+1);assert.equal(sources(ctx).length,4);
+ a.update(r,finish+GRAND_REVEAL_MS);assert.equal(sources(ctx).length,2,'one clean payoff meets the amount');
+ a.update(r,finish+GRAND_ENCORE_MS);assert.equal(sources(ctx).length,2,'the second burst adds no busy jingle');
+ a.update(structuredClone(r),finish+GRAND_ENCORE_MS+1);assert.equal(sources(ctx).length,2);
  const encore=sources(ctx).at(-1);a.update(null,finish+GRAND_ENCORE_MS+40);assert.equal(encore.stops.at(-1),10.015);
  const {a:late,ctx:other}=await player();late.update(r,finish+GRAND_ENCORE_MS+200);assert.equal(sources(other).length,0);
 });
@@ -221,7 +221,7 @@ test('Grand build-up respects mute, zero volume, clearing and a late join',async
  }
  const r=round(true);r.flight.prize.value=3000;const {a,ctx}=await player();
  a.update(r,2100);assert.equal(sources(ctx).length,0,'late build is skipped');
- a.update(r,1500+GRAND_REVEAL_MS);assert.equal(sources(ctx).length,2,'fresh amount still has its payoff');
+ a.update(r,1500+GRAND_REVEAL_MS);assert.equal(sources(ctx).length,1,'fresh amount still has its payoff');
 });
 
 test('Royal pickup and fanfare play once, obey mute and volume, and stop on reset',async()=>{

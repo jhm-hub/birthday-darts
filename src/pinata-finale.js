@@ -1,5 +1,6 @@
 import {clamp} from './pinata-motion.js';
 
+import {birthdayAmountPose,birthdayParticleSize,birthdayParticlePose} from './pinata-birthday.js';
 import {royalAmountPose} from './pinata-royal.js';
 import {finaleRevealAt} from './pinata-finale-timing.js';
 export {FINALE_REVEAL_MS} from './pinata-finale-timing.js';
@@ -15,20 +16,21 @@ export function finalePose(age,quiet=false,tier=0){
   crestAngle:quiet?0:(1-enter)*-5,
   titleOpacity:smooth((age-(tier===2?570:tier===1?200:130))/(tier===2?180:150)),amountOpacity:smooth((age-reveal)/100),
   amountScale:quiet?1:1-.1*(1-p)**3+.035*Math.sin(p*Math.PI),
-  detailOpacity:smooth((age-reveal-280)/180),previousOpacity:1-smooth(Math.max(0,age)/160),...(tier===1?royalAmountPose(age,quiet):{})};
+  detailOpacity:smooth((age-reveal-280)/180),previousOpacity:1-smooth(Math.max(0,age)/160),...(tier===0?birthdayAmountPose(age,quiet):tier===1?royalAmountPose(age,quiet):{})};
 }
 
-export function finaleParticleSpec(i){
+export function finaleParticleSpec(i,tier=0){
  const candy=i>=32,star=i%3===0;
- return {candy,star,size:candy?15+i%3*3:star?10+i%3*2:5+i%3};
+ return {candy,star,size:tier===0?birthdayParticleSize(i):candy?15+i%3*3:star?10+i%3*2:5+i%3};
 }
 
 export function finaleParticlePose(i,age,quiet=false,tier=0){
  const off={x:0,y:0,angle:0,flip:1,opacity:0};
  if(quiet||i<0||i>=FINALE_PARTICLES)return off;
+ if(tier===0)return birthdayParticlePose(i,age,birthdayParticleSize(i),quiet);
  const lower=i>=32,delay=finaleRevealAt(tier)+(i%8)*24+(lower?80:0),t=(age-delay)/1000;
  if(t<0||t>2)return off;
- const side=i%2?1:-1,size=finaleParticleSpec(i).size;
+ const side=i%2?1:-1,size=finaleParticleSpec(i,tier).size;
  let x,y;
  if(lower){x=210+side*(48+(95+i%8*31)*t);y=382-(8+i%4*2)*t+25*t*t;}
  else{x=210+side*(26+(75+i%7*13)*t);y=192-(85+i%6*12)*t+91*t*t;}

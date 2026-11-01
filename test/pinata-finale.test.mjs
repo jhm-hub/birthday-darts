@@ -4,9 +4,9 @@ import {finalePose,finaleParticlePose,finaleParticleSpec,FINALE_PARTICLES,FINALE
 import {pinataAudioCues,pinataSoundScore} from '../src/pinata-sound-design.js';
 import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,pinataTotal,HOLD_MS} from '../src/pinata-game.js';
 
-test('the amount arrives with the royal payoff chord after the last prize clears',()=>{
+test('the amount arrives with the first birthday note after the last prize clears',()=>{
  const round=startPinata({...DEFAULT_PINATA,swings:1});swingPinata(round,0,{forcedIndex:0});
- const cue=pinataAudioCues(round).find(c=>c.kind==='final'),chord=pinataSoundScore('final').find(c=>c.voice==='warm');
+ const cue=pinataAudioCues(round).find(c=>c.kind==='final'),chord=pinataSoundScore('final')[0];
  assert.equal(cue.at+chord.at*1000-round.flight.finishAt,FINALE_REVEAL_MS);
  assert.equal(finalePose(FINALE_REVEAL_MS-1).amountOpacity,0);
  assert.equal(finalePose(FINALE_REVEAL_MS).previousOpacity,0);
