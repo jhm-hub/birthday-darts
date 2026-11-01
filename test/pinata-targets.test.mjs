@@ -70,7 +70,7 @@ test('legacy saved games migrate without losing a round, and old controllers can
  const f=fixture();await f.store.init();const id=DEFAULT_PINATA.id;
  await f.store.swing(id,'legacy',Date.now());const saved=JSON.parse(f.data.get(PINATA_KEY));saved.schema=1;f.data.set(PINATA_KEY,JSON.stringify(saved));
  const r=structuredClone(saved.widgets[0].round),key=saved.widgets[0].room;await f.store.init();const migrated=JSON.parse(f.data.get(PINATA_KEY));
- assert.equal(migrated.schema,2);assert.deepEqual(migrated.widgets[0].round,r);assert.equal(migrated.widgets[0].room,key);
+ assert.equal(migrated.schema,3);assert.deepEqual(migrated.widgets[0].round,r);assert.equal(migrated.widgets[0].room,key);
  // The old release rejects any schema other than 1 before writing or swinging.
  assert.notEqual(migrated.schema,1);
 });

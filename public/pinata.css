@@ -6,3 +6,11 @@
 .pinata-viewer-ranges .viewer-range-row{font-size:13px}.pinata-viewer-ranges [data-range-status]{font-size:13px;color:#704685}
 
 .celebration-settings{margin-top:20px;padding:14px;border:1px solid #ddbdd6;border-radius:12px;background:#fcf0f8}.celebration-settings h3{margin:0}.tier-preview-actions{gap:6px}.tier-preview-actions button{flex:1;padding:8px 7px;font-size:12px}.tier-preview-actions button:last-child{background:#f0e0f9;border-color:#c5a2d4;color:#553161}
+
+.pinata-game-ranges{margin:16px 0;padding:16px;border:1px solid #d4aecb;border-radius:14px;background:#fff4fa}.pinata-game-ranges summary{font-weight:600}
+.pinata-range-field{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;padding:12px;border:1px solid #e3cddd;border-radius:10px;min-width:0}.pinata-range-field legend{font-weight:600;color:#734d7d;font-size:13px;padding:0 6px}.pinata-range-field .range-name{grid-column:1/-1}.pinata-range-field input{display:block;width:100%}
+.pinata-range-launches{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 8px}.pinata-range-launch{min-width:0;text-align:left;background:#f5e0f3;border:1px solid #bd91ba;box-shadow:0 3px #d6b9d1;padding:13px 12px}.pinata-range-launch:nth-child(2){background:#e6f5eb}.pinata-range-launch:nth-child(3){background:#fff0d9}.pinata-range-launch:nth-child(4){background:#ecdff8}.pinata-range-launch strong{display:block;font-size:16px;overflow-wrap:anywhere}.pinata-range-launch span{display:block;font-size:12px;line-height:1.4;margin-top:5px;color:#64456b}.pinata-range-launch:disabled{box-shadow:none}.pinata-game-ranges [role=status]{font-size:13px;color:#704685}
+@media(max-width:400px){.pinata-range-launches{grid-template-columns:1fr}.pinata-range-launch strong{font-size:15px}}
+
+.pinata-range-shell{max-width:1160px}.pinata-range-layout{display:grid;grid-template-columns:minmax(360px,1fr) minmax(340px,.9fr);gap:22px;align-items:start}.pinata-range-layout>.panel{min-width:0}.pinata-range-layout .pinata-game-ranges{padding:12px}.pinata-range-layout #live-swing{min-width:140px}
+@media(max-width:850px){.pinata-range-layout{grid-template-columns:1fr}.pinata-range-shell{max-width:640px}}

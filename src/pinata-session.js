@@ -13,6 +13,8 @@ export async function connectPinataControl(id,onSnapshot,onStatus){
  window.addEventListener('pagehide',dispose,{once:true});
  return {id,displayURL:url.href,start:claim,dispose,
   async swing(viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');await pinataStore.swing(id,viewer);return pinataStore.controlSnapshot(id);},
+  async setGameRanges(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return pinataStore.setGameRanges(id,value);},
+  async startGameRange(rangeId,viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return pinataStore.startGameRange(id,rangeId,viewer);},
   async setViewerRange(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return pinataStore.setViewerRange(id,value);},
   async removeViewerRange(username){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return pinataStore.removeViewerRange(id,username);},
   async setVolume(v){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return pinataStore.setVolume(id,v);}};
