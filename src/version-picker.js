@@ -6,9 +6,9 @@ export function bindVersionPicker(root,session,{canSwitch=()=>true,onSwitch=()=>
  note.className='version-note';note.setAttribute('role','status');
  edit.textContent='Edit this version ↗';edit.className='version-edit';
  root.append(label,edit,note);
- let key='',snapshot=null,available=false,busy=false;
+ let key='',snapshot=null,available=false,busy=false,versions=session.versions();
  function render(){
-  const versions=session.versions(),next=JSON.stringify(versions);
+  const next=JSON.stringify(versions);
   if(key!==next){key=next;select.replaceChildren(...versions.map(w=>new Option(w.name,w.id)));}
   select.value=snapshot?.widget.id??session.id;
   select.disabled=!available||busy||!!snapshot?.round;
@@ -25,5 +25,7 @@ export function bindVersionPicker(root,session,{canSwitch=()=>true,onSwitch=()=>
    onSwitch();render();
   }catch(e){render();note.textContent=e.message;}finally{busy=false;select.disabled=!available||!!snapshot?.round;}
  };
- return {update(next,enabled){snapshot=next;available=enabled;render();}};
+ // Darts renders every animation frame. Read saved versions only when a new
+ // snapshot arrives, not on every frame of the character animation.
+ return {update(next,enabled){if(next!==snapshot)versions=session.versions();snapshot=next;available=enabled;render();}};
 }
