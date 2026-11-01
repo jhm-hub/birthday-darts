@@ -68,7 +68,7 @@ test('bonus visuals finish cleanly into both continuing chambers and final total
 test('each bonus has a distinct landing sound at the visual resolution with balanced overlapping tails',()=>{
  const land=VAULT_BONUS_LAND_MS/1000;
  const mult=vaultSoundScore('multiply'),extra=vaultSoundScore('extra');
- assert.ok(mult.some(c=>c.at===land&&c.voice==='glass'));assert.ok(extra.some(c=>c.at===land&&c.voice==='click'));
+ assert.ok(mult.some(c=>c.at===land&&c.voice==='bell'));assert.ok(extra.some(c=>c.at===land&&c.voice==='click'));
  assert.ok(!mult.some(c=>c.voice==='click'));assert.notDeepEqual(mult,extra);
  for(const rate of [44100,48000])for(const bonus of ['multiply','extra']){
   const data=renderVaultSequence([{at:0,sound:'unlock',options:{index:4}},{at:.78,sound:'cash',options:{tier:2}},{at:1.04,sound:bonus},{at:1.24,sound:'collect'},{at:1.78,sound:'next',options:{index:1}},{at:2,sound:'unlock',options:{index:1}}],rate);

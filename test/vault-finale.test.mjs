@@ -33,7 +33,7 @@ test('Big and Royal have a second visual burst aligned with their second audio a
   assert.equal(vaultParticle(index,delay,{final:true,level}).visible,false);
   assert.equal(vaultParticle(index,delay+10,{final:true,level}).visible,true);
   const at=(finalePose(0,level).build+delay)/1000;
-  assert.ok(vaultSoundScore(name).some(c=>Math.abs(c.at-at)<1e-8&&c.voice==='coin'));
+  assert.ok(vaultSoundScore(name).some(c=>Math.abs(c.at-at)<1e-8&&c.voice==='arcade'));
  }
 });
 test('the larger crest settles without enlarging the held amount or disturbing the farewell',()=>{

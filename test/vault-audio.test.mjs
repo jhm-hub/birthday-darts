@@ -149,11 +149,11 @@ test('next-lock cues survive award commits once and do not restart on a paused o
 });
 test('the special-vault sound follows its prepared chamber, not a second playback on the next click',()=>{
  const s=sampleVaultChamberHandoff(4),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
- a.sync(s.before,s.readyAt-81);assert.equal(sources(ctx).length,1,'next-lock invitation is still fresh');
- a.sync(s.before,s.readyAt-40);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('special-arrive',{index:vaultSpecialTheme(s.before,5).theme}));
- a.sync(s.waiting,s.readyAt+100);assert.equal(sources(ctx).length,2);
- a.sync(s.flight,s.clickAt);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('linked-unlock',{index:5}));
- a.sync(s.settled,s.finishAt);assert.equal(sources(ctx).length,4,'only the finale, never a seventh-lock invitation');
+ a.sync(s.before,s.readyAt-81);assert.equal(sources(ctx).length,0,'completed short invitation is not replayed on a late join');
+ a.sync(s.before,s.readyAt-40);assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('special-arrive',{index:vaultSpecialTheme(s.before,5).theme}));
+ a.sync(s.waiting,s.readyAt+100);assert.equal(sources(ctx).length,1);
+ a.sync(s.flight,s.clickAt);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('linked-unlock',{index:5}));
+ a.sync(s.settled,s.finishAt);assert.equal(sources(ctx).length,3,'only the finale, never a seventh-lock invitation');
 });
 test('cash audio selects the same boundary tier as its visual and joins without replaying',()=>{
  for(const [cashCents,tier] of [[2499,0],[2500,1],[9999,1],[10000,2]]){
@@ -277,5 +277,5 @@ test('the late celebration mix remains balanced for all configured tiers',()=>{
 test('prepared doors add no pickup melodies and rich locks add only a low body',()=>{
  assert.deepEqual(vaultSoundScore('first-unlock'),vaultSoundScore('unlock',{index:0}));
  for(let index=0;index<5;index++)assert.deepEqual(vaultSoundScore('linked-unlock',{index}),vaultSoundScore('unlock',{index}));
- for(const richness of [1,2]){const score=vaultSoundScore('rich-lock',{richness});assert.equal(score.length,1);assert.equal(score[0].voice,'warm');assert.equal(score[0].at,0);}
+ for(const richness of [1,2]){const score=vaultSoundScore('rich-lock',{richness});assert.equal(score.length,1);assert.equal(score[0].voice,'punch');assert.equal(score[0].at,0);}
 });

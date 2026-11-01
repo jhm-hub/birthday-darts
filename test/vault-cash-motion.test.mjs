@@ -60,7 +60,7 @@ test('quiet mode stays static, reconnects sample the same pose, and cash is awar
 test('each cash score resolves at the visual landing and richness increases without a large volume jump',()=>{
  const energy=[],peaks=[];
  for(let tier=0;tier<3;tier++){
-  const score=vaultSoundScore('cash',{tier});assert.ok(score.some(c=>c.at===VAULT_CASH_LAND_MS/1000&&c.voice==='glass'));
+  const score=vaultSoundScore('cash',{tier});assert.ok(score.some(c=>c.at===VAULT_CASH_LAND_MS/1000&&c.voice==='bell'));
   const data=renderVaultSound('cash',{tier});energy.push(data.reduce((n,v)=>n+v*v,0));peaks.push(data.reduce((n,v)=>Math.max(n,Math.abs(v)),0));
   assert.equal(data[0],0);assert.equal(data.at(-1),0);assert.ok(data.length/48000<.44);assert.ok(peaks[tier]<.2);
  }

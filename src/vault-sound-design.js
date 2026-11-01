@@ -1,8 +1,8 @@
 import {VAULT_OPENING_GUIDE_MS} from './vault-opening-handoff.js';
 import {VAULT_WELCOME_START_MS} from './vault-welcome-flow.js';
 import {VAULT_TREASURE_FAREWELL_MS} from './vault-treasure-coda.js';
-// Original Crown Vault sound design: D-major jewels, damped gold mechanisms
-// and warm bass. No downloads or background music; previews use the same PCM.
+// Original Crown Vault arcade sound design: reel stops, bright register bells
+// and short electronic payouts. No background loop; previews use the live PCM.
 import {VAULT_SPECIAL_PREPARE_MS,VAULT_SPECIAL_HIT_MS} from './vault-special-arrival.js';
 import {VAULT_WING_LEAD_MS} from './vault-chamber-handoff.js';
 import {VAULT_FAREWELL_LEAD_MS,VAULT_DOORS_SEATED_MS,VAULT_DOOR_CLOSE_START_MS} from './vault-exit-motion.js';
@@ -14,7 +14,7 @@ import {VAULT_CASH_LAND_MS} from './vault-cash-motion.js';
 import {VAULT_BONUS_LAND_MS} from './vault-bonus-motion.js';
 import {VAULT_OPENING_REVEAL_MS} from './vault-intro-motion.js';
 const midi=p=>440*2**((p-69)/12);
-const note=(at,pitch,length,gain=.04,voice='jewel')=>({at,frequency:midi(pitch),length,gain,voice});
+const note=(at,pitch,length,gain=.04,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
 const foley=(at,voice,length,gain,seed=41)=>({at,voice,length,gain,seed});
 export const VAULT_SOUND_LABELS={welcome:'Next viewer entrance',intro:'Opening balance',ready:'First chamber invitation',next:'Bankroll → next lock','linked-unlock':'Prepared chamber unlock','first-unlock':'First chamber unlock',unlock:'Lock & heavy door',cash:'Cash treasure',multiply:'Total multiplier',extra:'Extra unlock',collect:'Coins collected',wing:'Next crown wing',special:'Special vault entrance',settle:'Last treasure settles','finish-gold':'Gold finale build-up','finish-jewel':'Jewel finale build-up',standard:'Standard win',big:'Big win',royal:'Royal win','rich-lock':'Treasure lock accent','rich-cash':'Grand cash flourish','final-ovation':'Gilded ovation finale','final-coronation':'Crown coronation finale','rest-gold':'Gold celebration settles','rest-jewel':'Jewel celebration settles','clear-gold':'Gold vault farewell','clear-jewel':'Jewel vault farewell',rest:'Celebration settles',clear:'Soft vault farewell'};
 const trims={welcome:1,'rest-gold':1,'rest-jewel':1,'clear-gold':1,'clear-jewel':1,'finish-gold':1,'finish-jewel':1,'linked-final':1,'final-ovation':1,'final-coronation':1,'rich-lock':1,'rich-cash':1,'rich-final':1,intro:1.2,'intro-arrive':1.2,'intro-balance':1.2,ready:2.4,next:2,'linked-unlock':1.35,'first-unlock':1.35,unlock:1.35,cash:1.6,multiply:1,extra:1.85,collect:1.6,wing:1.1,special:1.2,'special-prepare':1.2,'special-arrive':1.2,settle:1,standard:1.05,big:1.2,royal:1,rest:1.4,clear:1.45};
@@ -22,67 +22,57 @@ export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888}={}
  const bonusLand=VAULT_BONUS_LAND_MS/1000,room=((index%5)+5)%5,accent=[74,78,81,76,86][room];
  switch(name){
  case 'welcome':return [...vaultSoundScore('intro').map(c=>({...c,gain:c.gain*trims.intro})),...vaultSoundScore('ready').map(c=>({...c,at:c.at+VAULT_OPENING_GUIDE_MS/1000,gain:c.gain*trims.ready}))];
- // Sparse entrance: one soft arrival, one balance chord. The decorative
- // lock lights and coin glints no longer each trigger another effect.
- case 'intro':{const reveal=VAULT_OPENING_REVEAL_MS/1000;return [note(.04,62,.30,.016,'warm'),note(VAULT_WELCOME_START_MS/1000,74,.22,.014,'glass'),note(reveal,62,.32,.021,'warm'),note(reveal,86,.32,.033,'glass')];}
+ // Four layers: a quick reel pickup, an electronic tick, then one register
+ // hit on the balance. Decorative lights still have no separate sound.
+ case 'intro':{const reveal=VAULT_OPENING_REVEAL_MS/1000;return [foley(.04,'reel',.12,.035,801),note(VAULT_WELCOME_START_MS/1000,74,.10,.021,'arcade'),note(reveal,62,.12,.022,'punch'),note(reveal,86,.18,.043,'bell')];}
  case 'intro-arrive':return vaultSoundScore('intro').filter(c=>c.at<VAULT_OPENING_REVEAL_MS/1000);
  case 'intro-balance':return vaultSoundScore('intro').filter(c=>c.at>=VAULT_OPENING_REVEAL_MS/1000).map(c=>({...c,at:c.at-VAULT_OPENING_REVEAL_MS/1000}));
- case 'ready':return [note(0,81,.20,.008,'celesta')];
- // One soft note follows the glints; no extra landing chime over the click.
- case 'next':return [note(0,accent+12,VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000,.008,'celesta')];
- // Keep one latch, one bolt release and one continuous weighted hinge.
- // No extra pickup melody or seating hit competes with the cash reveal.
+ case 'ready':return [note(0,81,.13,.016,'arcade')];
+ case 'next':return [note(0,accent,VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000,.016,'arcade')];
+ // The sparse physical mechanism and its hinge clock remain unchanged.
  case 'linked-unlock':return vaultSoundScore('unlock',{index});
  case 'first-unlock':return vaultSoundScore('unlock',{index:0});
  case 'unlock':return [foley(.06,'click',.07,.085,41+room),foley(.285,'bolt',.16,.09,101+room),foley(.33,'hinge',.61,.14,151+room)];
- case 'cash':{const land=VAULT_CASH_LAND_MS/1000;return [foley(0,'coin',.14,.035,431),note(.025,86,.18,.03),note(land,90,.22,.038,'glass'),note(land,86,.18,.02,'celesta'),note(.235,93,.13,.024),...(tier>0?[foley(.07,'coin',.09,.022,443),note(land,62,.2,.015,'warm'),note(land,93,.2,.024,'glass')]:[]),...(tier>1?[foley(.11,'coin',.09,.018,449),note(land,50,.24,.018,'warm'),note(land,98,.22,.02,'glass'),note(.275,102,.12,.015)]:[])];}
- case 'multiply':return [...[62,69,74,78].map((p,i)=>note(i*.04,p,.16,.023,'pluck')),note(bonusLand,50,.28,.018,'warm'),foley(bonusLand,'coin',.08,.022,919),note(bonusLand,86,.42,.055,'glass'),note(bonusLand,90,.33,.028,'glass'),note(bonusLand,93,.28,.024),note(.33,98,.22,.022),note(.46,102,.17,.015,'glass')];
- case 'extra':return [foley(0,'click',.06,.035,301),...[74,78,81].map((p,i)=>note(i*.07,p,.14,.026,'celesta')),foley(bonusLand,'click',.075,.055,313),note(bonusLand,74,.22,.014,'warm'),note(bonusLand,86,.32,.043,'celesta'),note(.31,90,.24,.028,'celesta'),note(.43,93,.23,.022,'glass')];
- case 'collect':{const land=VAULT_COLLECT_TRAVEL_MS/1000;return [foley(0,'air',.22,.012,397),note(.015,81,.18,.009,'pluck'),...Array.from({length:vaultCollectionCount(tier)},(_,i)=>foley(land+i*VAULT_COLLECT_STAGGER_MS/1000,'coin',.055,.029-i*.0018,401+i*13)),note(land,74,.14,.02,'warm'),note(land,93,.14,.02,'glass'),...(tier>0?[note(land,86,.13,.012,'celesta')]:[])];}
- case 'wing':return [note(0,62,.24,.013,'warm')];
+ case 'cash':{const land=VAULT_CASH_LAND_MS/1000;return [foley(0,'coin',.07,.024,431),note(.025,74,.07,.023,'arcade'),note(land,[86,90,93][tier],.13+tier*.025,.039+tier*.003,'bell'),note(land,62,.10,.016+tier*.004,'punch'),...(tier>0?[note(.235,86,.065,.018,'arcade')]:[]),...(tier>1?[note(.30,98,.08,.019,'bell')]:[])];}
+ case 'multiply':return [...[74,81,86].map((p,i)=>note(i*.055,p,.065,.019,'arcade')),foley(bonusLand,'coin',.055,.021,919),note(bonusLand,50,.12,.025,'punch'),note(bonusLand,93,.19,.044,'bell'),note(bonusLand+.095,98,.08,.023,'arcade')];
+ case 'extra':return [foley(0,'reel',.10,.030,301),note(.03,74,.07,.018,'arcade'),note(.10,81,.07,.018,'arcade'),foley(bonusLand,'click',.06,.035,313),note(bonusLand,62,.11,.016,'punch'),note(bonusLand,86,.16,.032,'bell'),note(bonusLand+.09,90,.075,.021,'arcade')];
+ case 'collect':{const land=VAULT_COLLECT_TRAVEL_MS/1000,count=vaultCollectionCount(tier);return [...Array.from({length:count},(_,i)=>foley(land+i*VAULT_COLLECT_STAGGER_MS/1000,'coin',.055,.027-i*.0015,401+i*13)),note(land,62,.09,.014,'punch'),note(land+(count-1)*VAULT_COLLECT_STAGGER_MS/1000,86,.065,.013,'arcade')];}
+ case 'wing':return [foley(0,'reel',.18,.023,857)];
  case 'special':{
   const melody=[[78,90],[81,93],[74,86]][((index%3)+3)%3],arrive=(VAULT_SPECIAL_PREPARE_MS-VAULT_WING_LEAD_MS)/1000,hit=(VAULT_SPECIAL_PREPARE_MS+VAULT_SPECIAL_HIT_MS)/1000;
-  // A short invitation and one warm arrival keep the bonus identity without
-  // another arpeggio, repeated coins or a second flourish over the next door.
-  return [note(0,melody[0],.20,.014,'glass'),foley(arrive,'air',.22,.009,859),foley(hit,'seat',.12,.020,863),note(hit,62,.30,.014,'warm'),note(hit,melody[1],.28,.025,'glass')];
+  return [note(0,melody[0],.10,.022,'arcade'),foley(arrive,'reel',.11,.020,859),foley(hit,'seat',.12,.020,863),note(hit,62,.12,.018,'punch'),note(hit,melody[1],.18,.033,'bell')];
  }
  case 'special-prepare':return vaultSoundScore('special',{index}).filter(c=>c.at<(VAULT_SPECIAL_PREPARE_MS-VAULT_WING_LEAD_MS)/1000);
  case 'special-arrive':return vaultSoundScore('special',{index}).filter(c=>c.at>=(VAULT_SPECIAL_PREPARE_MS-VAULT_WING_LEAD_MS)/1000).map(c=>({...c,at:c.at-(VAULT_SPECIAL_PREPARE_MS-VAULT_WING_LEAD_MS)/1000}));
- case 'settle':return [foley(0,'coin',.10,.026,701),note(.025,74,.26,.024,'warm'),note(.09,81,.20,.019,'celesta'),note(.19,86,.20,.020,'glass'),...(tier>0?[note(.12,90,.17,.013,'glass')]:[]),...(tier>1?[foley(.04,'air',.25,.012,709),note(.23,93,.22,.015,'celesta')]:[])];
- case 'finish-gold':{
-  const span=Math.max(.3,bridgeMs/1000),step=(span-.16)/4;
-  return [note(0,62,.28,.018,'warm'),foley(.02,'air',span*.65,.009,1201),...[74,78,81,86].map((p,i)=>note(.04+i*step,p,.24,.020,'celesta')),note(span-.18,81,.32,.013,'brass')];
+ case 'settle':return [foley(0,'coin',.065,.019,701),note(.025,74,.09,.018,'arcade'),note(.14,81+tier*4,.10,.020,'arcade')];
+ case 'finish-gold':case 'finish-jewel':{
+  const span=Math.max(.3,bridgeMs/1000),jewel=name==='finish-jewel';
+  return [note(0,jewel?38:50,.12,.016,'punch'),foley(.02,'reel',span-.04,jewel?.026:.022,jewel?1213:1201),note(span-.14,jewel?86:81,.09,.022,'arcade')];
  }
- case 'finish-jewel':{
-  const span=Math.max(.3,bridgeMs/1000),step=(span-.18)/5;
-  return [note(0,50,.42,.015,'warm'),foley(.04,'air',span*.85,.014,1213),...[62,69,74,78,81].map((p,i)=>note(.03+i*step,p,.23,.021,'glass')),note(span-.14,86,.24,.013,'celesta')];
- }
- // The bridge owns anticipation; retain the original tier's impact and tail
- // on the original reveal beat, without layering a second prelude over it.
+ // One rhythmic payoff on the same reveal beat; the bridge already supplies
+ // anticipation. Long music-box tails and overlapping flourishes are gone.
  case 'linked-final':{const name=['standard','big','royal'][tier],hit=finalePose(0,tier).build/1000;return vaultSoundScore(name).filter(c=>c.at>=hit).map(c=>({...c,gain:c.gain*trims[name]}));}
- case 'standard':{const hit=finalePose(0,0).build/1000;return [note(0,81,.18,.026,'celesta'),foley(hit,'coin',.11,.023,727),note(hit,50,.46,.022,'warm'),note(hit,62,.46,.032,'warm'),note(hit,86,.42,.041,'glass'),note(hit,90,.32,.019,'glass'),note(.34,93,.28,.026),note(.49,98,.23,.022),note(.70,90,.36,.024,'glass'),note(.70,86,.4,.025,'warm'),note(.85,93,.35,.018,'glass')];}
- case 'big':{const hit=finalePose(0,1).build/1000;return [note(0,78,.21,.027,'celesta'),note(.11,81,.2,.030,'celesta'),foley(hit,'seat',.26,.047),foley(hit,'coin',.12,.022,733),note(hit,50,.65,.039,'warm'),note(hit,74,.65,.034,'brass'),note(hit,78,.57,.025,'brass'),note(hit,81,.5,.022,'brass'),note(hit,86,.5,.037,'glass'),...[90,93,98].map((p,i)=>note(.36+i*.085,p,.25,.023)),foley(hit+.31,'air',.26,.026,739),foley(hit+.31,'coin',.10,.018,743),note(hit+.31,98,.38,.026,'glass'),note(.79,93,.32,.024,'celesta'),note(.94,90,.44,.027,'glass'),note(.94,74,.48,.020,'warm'),note(1.08,86,.48,.030,'glass')];}
- case 'royal':{const hit=finalePose(0,2).build/1000;return [note(0,50,.68,.023,'warm'),foley(.09,'air',.5,.046,501),...[74,78,81].map((p,i)=>note(.06+i*.18,p,.23,.029,'celesta')),note(.5,86,.12,.028),foley(hit,'seat',.42,.068),foley(hit,'coin',.12,.023,751),note(hit,38,.8,.035,'warm'),note(hit,62,.95,.043,'brass'),note(hit,66,.83,.029,'brass'),note(hit,69,.78,.024,'brass'),note(hit,86,.85,.040,'glass'),note(hit,90,.7,.026,'glass'),note(hit,93,.64,.020),...[98,102,105].map((p,i)=>note(.73+i*.07,p,.26,.021)),foley(hit+.34,'air',.4,.035,757),foley(hit+.34,'coin',.1,.021,761),note(hit+.34,50,.35,.021,'warm'),note(hit+.34,98,.48,.029,'glass'),note(hit+.34,102,.42,.019,'glass'),...[105,102,98,93].map((p,i)=>note(1.10+i*.115,p,.29,.021)),note(1.57,86,.62,.032,'glass'),note(1.57,74,.64,.026,'warm'),note(1.57,90,.55,.020,'glass'),note(1.74,93,.47,.023)];}
- // A single low layer adds weight on richer locks, without extra transients.
- case 'rich-lock':return [note(0,richness>1?38:50,.30,richness>1?.016:.012,'warm')];
- case 'rich-cash':return [foley(0,'coin',.10,.018,1123),note(0,74,.29,.019,'brass'),note(0,78,.25,.013,'brass'),note(0,50,.32,.017,'warm'),...[93,98,102].map((p,i)=>note(.05+i*.065,p,.18,.014,'celesta')),...(richness>1?[note(.04,62,.30,.014,'brass'),note(.18,105,.24,.014,'glass'),foley(.2,'air',.18,.014,1129),note(.29,98,.19,.011,'glass')]:[])];
+ case 'standard':{const hit=finalePose(0,0).build/1000;return [note(0,74,.07,.022,'arcade'),foley(hit,'seat',.11,.030,727),note(hit,50,.13,.025,'punch'),note(hit,86,.18,.042,'bell'),note(hit+.11,90,.09,.027,'arcade'),note(hit+.22,93,.20,.034,'bell')];}
+ case 'big':{const hit=finalePose(0,1).build/1000;return [note(0,74,.07,.022,'arcade'),note(.11,81,.07,.020,'arcade'),foley(hit,'seat',.14,.038,733),note(hit,50,.16,.034,'punch'),note(hit,86,.22,.048,'bell'),note(hit,74,.12,.014,'arcade'),note(hit+.11,86,.08,.026,'arcade'),note(hit+.22,90,.20,.036,'bell'),note(hit+.31,93,.08,.027,'arcade'),note(hit+.44,98,.24,.041,'bell')];}
+ case 'royal':{const hit=finalePose(0,2).build/1000;return [foley(0,'reel',.53,.025,501),note(.05,74,.07,.020,'arcade'),note(.22,81,.07,.018,'arcade'),note(.40,86,.08,.022,'arcade'),foley(hit,'seat',.18,.054,751),note(hit,38,.16,.041,'punch'),note(hit,86,.22,.052,'bell'),note(hit,90,.18,.022,'bell'),note(hit+.11,93,.09,.025,'arcade'),note(hit+.22,98,.22,.037,'bell'),note(hit+.34,93,.09,.025,'arcade'),note(hit+.44,102,.26,.040,'bell'),note(hit+.70,98,.24,.030,'bell'),note(hit+.70,62,.12,.018,'punch')];}
+ case 'rich-lock':return [note(0,richness>1?38:50,.12,richness>1?.017:.013,'punch')];
+ case 'rich-cash':return [note(0,50,.10,.014,'punch'),note(.05,86,.07,.015,'arcade'),note(.13,98,.14,.020,'bell'),...(richness>1?[foley(.13,'coin',.055,.010,1129),note(.22,102,.07,.015,'arcade')]:[])];
  case 'final-ovation':return vaultSoundScore('rich-final',{richness:1});
  case 'final-coronation':return vaultSoundScore('rich-final',{richness:2});
  case 'rich-final':{
-  if(richness<2)return [foley(0,'coin',.1,.020,1151),note(0,50,.44,.021,'warm'),note(0,74,.38,.025,'brass'),note(0,78,.33,.017,'brass'),...[86,90,93].map((p,i)=>note(.045+i*.075,p,.19,.018,'celesta')),foley(.33,'coin',.09,.018,1153),note(.33,81,.3,.018,'brass'),note(.33,93,.27,.019,'glass'),note(.48,98,.22,.016,'celesta'),note(.68,86,.36,.022,'glass'),note(.68,74,.4,.014,'warm')];
+  if(richness<2)return [foley(0,'coin',.055,.016,1151),note(0,50,.11,.012,'punch'),foley(.33,'coin',.055,.014,1153),note(.33,86,.07,.013,'arcade')];
   const crown=VAULT_TREASURE_CORONATION_MS/1000,encore=VAULT_TREASURE_ENCORE_MS/1000;
-  return [foley(0,'air',.32,.017,1163),...[81,86,90,93].map((p,i)=>note(i*.09,p,.14,.018,'glass')),foley(crown,'seat',.3,.028,1171),note(crown,38,.62,.025,'warm'),note(crown,62,.6,.022,'brass'),note(crown,74,.52,.024,'brass'),note(crown,78,.47,.017,'brass'),note(crown,98,.33,.025,'glass'),note(crown+.12,102,.28,.018,'celesta'),note(crown+.24,105,.22,.016,'glass'),foley(encore,'coin',.11,.021,1181),foley(encore,'air',.24,.012,1187),note(encore,86,.4,.020,'brass'),note(encore,90,.36,.013,'brass'),note(encore,105,.28,.021,'glass'),note(encore+.12,102,.26,.018,'celesta'),note(encore+.26,98,.32,.016,'glass')];
+  return [foley(0,'reel',.25,.014,1163),foley(crown,'seat',.14,.026,1171),note(crown,38,.12,.018,'punch'),note(crown,98,.16,.027,'bell'),foley(encore,'coin',.055,.014,1181),note(encore,102,.18,.025,'bell')];
  }
- case 'rest-gold':return [note(0,86,.36,.012,'glass'),note(.16,81,.38,.012,'celesta'),note(.34,78,.40,.010,'celesta'),note(.54,74,.44,.011,'warm'),note(.54,86,.32,.007,'glass')];
- case 'rest-jewel':return [...[105,98,93,90].map((p,i)=>note(i*.17,p,.30,.009-i*.0008,'glass')),note(.66,86,.43,.011,'celesta'),note(.66,74,.48,.010,'warm'),note(.82,81,.36,.007,'glass')];
+ case 'rest-gold':return [note(0,86,.08,.008,'arcade'),foley(.14,'coin',.05,.010,1237)];
+ case 'rest-jewel':return [foley(0,'reel',.16,.009,1249),note(.12,81,.08,.008,'arcade')];
  case 'clear-gold':case 'clear-jewel':{
   const jewel=name==='clear-jewel',lead=VAULT_TREASURE_FAREWELL_MS[jewel?2:1]/1000,seat=lead+VAULT_DOORS_SEATED_MS/1000;
   const mechanism=vaultSoundScore('clear').filter(c=>['hinge','click','seat'].includes(c.voice)).map(c=>({...c,at:c.at+lead-VAULT_FAREWELL_LEAD_MS/1000,gain:c.gain*trims.clear}));
-  const notes=jewel?[98,93,90,86]:[86,81,78,74];
-  return [foley(.04,'air',.46,.008,jewel?1249:1237),...notes.map((p,i)=>note(i*(jewel?.15:.12),p,.30,.010-i*.001,jewel?'glass':'celesta')),note(lead-.18,74,.30,.008,'warm'),...mechanism,note(seat,62,.14,.009,'warm')];
+  return [note(0,jewel?81:74,.08,.006,'arcade'),...mechanism,note(seat,62,.10,.008,'punch')];
  }
- case 'rest':return [note(0,86,.34,.011,'glass'),note(.14,81,.36,.010,'celesta'),note(.14,74,.42,.009,'warm')];
- case 'clear':{const close=(VAULT_FAREWELL_LEAD_MS+VAULT_DOOR_CLOSE_START_MS)/1000,seat=(VAULT_FAREWELL_LEAD_MS+VAULT_DOORS_SEATED_MS)/1000;return [note(0,93,.30,.009,'glass'),foley(.12,'air',.54,.009,601),note(.14,90,.32,.011,'glass'),note(.30,86,.34,.013,'glass'),note(.48,74,.38,.011,'warm'),foley(close,'hinge',.34,.022,603),foley(seat,'click',.045,.016,607),foley(seat,'seat',.12,.018,613)];}
+ case 'rest':return [foley(0,'reel',.13,.009,601),note(.10,74,.08,.007,'arcade')];
+ case 'clear':{const close=(VAULT_FAREWELL_LEAD_MS+VAULT_DOOR_CLOSE_START_MS)/1000,seat=(VAULT_FAREWELL_LEAD_MS+VAULT_DOORS_SEATED_MS)/1000;return [note(0,74,.07,.005,'arcade'),foley(.12,'reel',.12,.009,601),note(.30,69,.08,.006,'arcade'),foley(close,'hinge',.34,.022,603),foley(seat,'click',.045,.016,607),foley(seat,'seat',.12,.018,613)];}
  default:throw Error('Unknown vault sound: '+name);
  }
 }
@@ -92,6 +82,7 @@ export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888}={}
 function renderVoice(cue,sampleRate){
  const length=Math.ceil(cue.length*sampleRate),data=new Float32Array(length);
  let seed=cue.seed??41,low=0,bass=0;
+ const partials=[[1,.74],[3,.20],[5,.10],[7,.05]].filter(([h])=>h*cue.frequency*1.18<sampleRate/2);
  const hiCut=1-Math.exp(-2*Math.PI*4800/sampleRate),loCut=1-Math.exp(-2*Math.PI*700/sampleRate);
  for(let i=0;i<length;i++){
   const t=i/sampleRate,u=i/(length-1),end=(length-1-i)/sampleRate;
@@ -101,12 +92,19 @@ function renderVoice(cue,sampleRate){
   const band=low-bass,edge=Math.sin(Math.PI/2*Math.min(1,t/.003))**2*Math.sin(Math.PI/2*Math.min(1,end/.025))**2;
   let value=0;
   if(cue.frequency){
-   const phase=2*Math.PI*cue.frequency*t,sine=Math.sin(phase);
-   if(cue.voice==='warm')value=(sine+.12*Math.sin(phase*2))*Math.exp(-u*3.2);
-   else if(cue.voice==='brass')value=(sine+.24*Math.sin(phase*2)+.1*Math.sin(phase*3))*Math.min(1,t/.035)*Math.exp(-u*2.7);
-   else if(cue.voice==='pluck')value=(sine+.14*Math.sin(phase*2)+.05*Math.sin(phase*3))*Math.exp(-u*6);
-   else if(cue.voice==='celesta')value=(sine+.22*Math.sin(phase*3.98)*Math.exp(-u*12))*Math.exp(-u*4.8);
-   else value=(sine+.19*Math.sin(phase*2.01)*Math.exp(-u*6)+.045*Math.sin(phase*3.96)*Math.exp(-u*12))*Math.exp(-u*(cue.voice==='glass'?3.8:5.2));
+   const phase=2*Math.PI*cue.frequency*t;
+   if(cue.voice==='arcade'){
+    // Finite odd harmonics give a bright, band-limited cabinet pulse. A tiny
+    // downward attack bend makes a crisp electronic stop rather than a pad.
+    const p=2*Math.PI*cue.frequency*(t+.18*(1-Math.exp(-40*t))/40);
+    value=partials.reduce((sum,[h,gain])=>sum+gain*Math.sin(p*h),0)*Math.exp(-u*2.3);
+   }else if(cue.voice==='punch'){
+    const p=2*Math.PI*cue.frequency*(t+.12*(1-Math.exp(-35*t))/35);
+    value=(.85*Math.sin(p)+.16*Math.sin(p*2))*Math.exp(-t*24);
+   }else if(cue.voice==='bell'){
+    // Short register bell: fast FM attack, bright partials, no reverb tail.
+    value=(.72*Math.sin(phase+.9*Math.sin(phase*1.41421356)*Math.exp(-t*40))+.18*Math.sin(phase*2.01)*Math.exp(-t*38)+.10*Math.sin(phase*3.91)*Math.exp(-t*55))*Math.exp(-u*3.2);
+   }
   }else if(cue.voice==='click')value=(.66*band+.3*Math.sin(2*Math.PI*(1250+cue.seed)*t)+.11*Math.sin(2*Math.PI*2690*t))*Math.exp(-t*68);
   else if(cue.voice==='bolt'){
    const phase=2*Math.PI*(95*t+100*(1-Math.exp(-32*t))/32);
@@ -118,8 +116,12 @@ function renderVoice(cue,sampleRate){
    const phase=2*Math.PI*(57*t+73*(1-Math.exp(-20*t))/20);
    value=(.82*Math.sin(phase)+.15*Math.sin(phase*2)+.18*bass)*Math.exp(-t*15);
   }else if(cue.voice==='coin'){
-   const f=2050+(cue.seed%7)*115;
-   value=(.55*Math.sin(2*Math.PI*f*t)+.18*Math.sin(2*Math.PI*f*1.43*t)+.2*band)*Math.exp(-t*38);
+   const f=[1174.66,1479.98,1760,1975.53][cue.seed%4],phase=2*Math.PI*f*t;
+   value=(.62*Math.sin(phase+.6*Math.sin(phase*2.8)*Math.exp(-t*70))+.18*Math.sin(phase*2.01)+.16*band)*Math.exp(-t*48);
+  }else if(cue.voice==='reel'){
+   const long=cue.length>.4,cycles=(long?12:28)*t+(long?10:0)*t*t/cue.length;
+   const tooth=Math.exp(-(cycles%1)*13);
+   value=(.55*band+.22*Math.sin(2*Math.PI*1850*t))*tooth*(.8+.2*u);
   }else if(cue.voice==='air')value=band*Math.sin(Math.PI*u)**1.4;
   data[i]=value*edge*cue.gain;
  }
