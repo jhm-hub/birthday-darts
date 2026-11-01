@@ -23,7 +23,8 @@ export function royalExitPose(round,time,quiet=false){
 
 export function readyPose(age,quiet=false){
  const p=age===null?1:smooth(age/READY_MS);
- return {opacity:p,crownY:quiet?0:5*(1-p)};
+ const settle=age===null||age>=READY_MS?0:Math.sin(Math.PI*clamp((age-100)/140))**2;
+ return {opacity:p,crownY:quiet?0:5*(1-(age===null?1:smooth(age/150)))-1.5*settle};
 }
 
 // A late control snapshot joins the already-cleared idle pose; it must not

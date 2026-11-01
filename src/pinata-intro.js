@@ -20,15 +20,24 @@ export function crownArrivalPose(age,quiet=false){
   glint:.42*smooth((age-35)/50)*(1-smooth((age-145)/125))};
 }
 
-// Little glints follow the crown's silhouette. They finish before the bat's
-// release, leaving the viewer name, cash and impact clear of decorative motion.
-const points=[[106,166],[314,158],[129,250],[291,246],[153,132],[267,130],[184,114],[236,116]];
+// A recently returned crown keeps its sparkle clock when the first swing is
+// clicked immediately. A late next viewer gets the normal first-swing welcome.
+export function entranceSparkAge(round,time,readyAt=null){
+ const first=round?.hits[0]??(round?.flight?.index===0?round.flight:null);
+ if(Number.isFinite(readyAt)&&(!first||(first.startAt>=readyAt&&first.startAt-readyAt<ARRIVAL_MS)))return time-readyAt;
+ return crownArrivalAge(round,time);
+}
+
+// Four paired pixel twinkles climb the silhouette and finish before release.
+// Their warm/mint/gold accents are contained inside the original crown area.
+const pairs=[[126,250,16],[104,174,14],[154,134,12],[185,114,10]];
 export function arrivalSparkPose(i,age,quiet=false){
  const off={x:0,y:0,opacity:0,size:12};
  if(quiet||age===null||i<0||i>=ARRIVAL_SPARKS)return off;
- const t=age-(34+(i%4)*22),life=205;
- if(t<0||t>=life)return off;
- const p=smooth(t/life),[x,y]=points[i],side=x<210?-1:1;
- return {x:Math.round(x+side*p*5),y:Math.round(y+3-8*p),
-  opacity:smooth(t/45)*(1-smooth((t-95)/110)),size:i>=6?10:i%3===0?16:12};
+ const pair=Math.floor(i/2),t=age-(24+pair*40),life=150;
+ if(t<=0||t>=life)return off;
+ const p=smooth(t/life),[left,y,size]=pairs[pair],side=i%2?1:-1;
+ const x=i%2?420-left:left;
+ return {x:Math.round(x+side*6*(1-p)),y:Math.round(y+2-6*p),
+  opacity:.95*smooth(t/42)*(1-smooth((t-62)/88)),size};
 }

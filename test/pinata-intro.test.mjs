@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,HIT_MS,pinataTotal} from '../src/pinata-game.js';
-import {ARRIVAL_MS,ARRIVAL_SPARKS,ARRIVAL_SOUND_AT,crownArrivalAge,crownArrivalPose,arrivalSparkPose} from '../src/pinata-intro.js';
+import {ARRIVAL_MS,ARRIVAL_SPARKS,ARRIVAL_SOUND_AT,crownArrivalAge,crownArrivalPose,arrivalSparkPose,entranceSparkAge} from '../src/pinata-intro.js';
 import {pinataAudioCues,renderPinataSound,SWING_SOUND_LEAD_MS} from '../src/pinata-sound-design.js';
 
 test('welcome follows the first swing across commit and never restarts for later hits or Encore',()=>{
@@ -48,5 +48,24 @@ test('welcome sound finishes before the whoosh and stays quieter than a reward o
   assert.ok(peak(a)<10**(-23/20));assert.ok(peak(a)<peak(renderPinataSound('multiply',{},rate)));
   assert.ok(peak(a)<peak(renderPinataSound('hit',{},rate))*.4);
   assert.equal(a[0],0);assert.equal(a.at(-1),0);assert.ok(a.every(Number.isFinite));
+ }
+});
+
+
+test('the next crown sparkles once, with mirrored pairs and no jump on an immediate swing',()=>{
+ const readyAt=4000;
+ assert.equal(entranceSparkAge(null,4120,readyAt),120);
+ assert.equal(entranceSparkAge(null,4120),null,'initial editor load stays still');
+ const r=startPinata(DEFAULT_PINATA,'Next viewer',4100);swingPinata(r,4100,{forcedIndex:0});
+ assert.equal(entranceSparkAge(r,4120,readyAt),120,'keep the current welcome rather than restarting it');
+ advancePinata(r,5600);assert.equal(entranceSparkAge(structuredClone(r),5600,readyAt),1600);
+ swingPinata(r,6000,{forcedIndex:4});assert.equal(entranceSparkAge(r,6050,readyAt),2050);
+ const later=startPinata(DEFAULT_PINATA,'Later viewer',7000);swingPinata(later,7000,{forcedIndex:0});
+ assert.equal(entranceSparkAge(later,7100,readyAt),100,'a later viewer gets a fresh first-swing welcome');
+ for(let age=0;age<400;age++)for(let i=0;i<ARRIVAL_SPARKS;i+=2){
+  const a=arrivalSparkPose(i,age),b=arrivalSparkPose(i+1,age);
+  assert.equal(a.opacity,b.opacity);assert.equal(a.y,b.y);assert.equal(a.size,b.size);
+  if(a.opacity>0)assert.equal(a.x+b.x,420);
+  if(age>=ARRIVAL_MS){assert.equal(a.opacity,0);assert.equal(b.opacity,0);}
  }
 });

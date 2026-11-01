@@ -70,9 +70,12 @@ html.pinata-overlay,html.pinata-overlay body{margin:0;width:100%;height:100%;ove
 /* A small welcome around the existing crown; no added backdrop or size change. */
 .pina-arrival-sparks{position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none}
 .pina-arrival-sparks i{position:absolute;left:0;top:0;width:12px;height:12px;opacity:0;filter:drop-shadow(0 1px 0 #49233d66)}
-.pina-arrival-sparks i:nth-child(3n) path:nth-child(2){fill:#c2a0df}
-.pina-arrival-sparks i:nth-child(3n) path:nth-child(3){fill:#f4dfff}
-.pina-arrival-sparks i:nth-child(3n) path:last-child{fill:#9470b8}
+.pina-arrival-sparks i:nth-child(-n+2) path:nth-child(2){fill:#eca1c9}
+.pina-arrival-sparks i:nth-child(-n+2) path:nth-child(3){fill:#ffe7f2}
+.pina-arrival-sparks i:nth-child(-n+2) path:last-child{fill:#ad5e8c}
+.pina-arrival-sparks i:nth-child(3) path:nth-child(2),.pina-arrival-sparks i:nth-child(4) path:nth-child(2){fill:#aee6d5}
+.pina-arrival-sparks i:nth-child(3) path:nth-child(3),.pina-arrival-sparks i:nth-child(4) path:nth-child(3){fill:#efffe7}
+.pina-arrival-sparks i:nth-child(3) path:last-child,.pina-arrival-sparks i:nth-child(4) path:last-child{fill:#5baf9d}
 @media(prefers-reduced-motion:reduce){.pina-arrival-sparks{display:none}}
 
 /* Small glints pass the welcome to the first wind-up inside the same stage. */

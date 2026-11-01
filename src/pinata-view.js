@@ -6,7 +6,7 @@ import {BONUS_PARTICLES,swingSide,bonusPose,bonusParticlePose} from './pinata-bo
 import {damagePose} from './pinata-damage.js';
 import {HANDOFF_SPARKS,finalHitAge,handoffPose,handoffSparkPose} from './pinata-handoff.js';
 import {royalExitPose,readyPose,nextReadyAt,departingPose} from './pinata-exit.js';
-import {ARRIVAL_SPARKS,crownArrivalAge,crownArrivalPose,arrivalSparkPose} from './pinata-intro.js';
+import {ARRIVAL_SPARKS,crownArrivalAge,crownArrivalPose,arrivalSparkPose,entranceSparkAge} from './pinata-intro.js';
 import {OPENING_SPARKS,openingSparkPose} from './pinata-opening.js';
 import {pinataCelebrationTier} from './pinata-celebration.js';
 import {royalCoin,royalJewel,royalLeaf} from './pinata-tier-art.js';
@@ -28,7 +28,7 @@ export function createPinataView(root,{audio=null,preview=false,clock=Date.now,q
    $('.pina-heading').style.opacity=exit.headingOpacity;$('.pina-meta').style.opacity=exit.headingOpacity;
    const shot=r?.flight??r?.hits.at(-1),shown=projectedPinata(r,time),elapsed=shot?time-shot.startAt:-1,after=shot?time-shot.hitAt:-1,finalAge=finalHitAge(r,time),final=finalAge!==null,burst=final&&after>=BREAK_DELAY,tier=pinataCelebrationTier(pinataTotal(shown),r?.preset.celebration),finish=finalePose(finalAge??-1,still,tier),handoff=handoffPose(finalAge,still,tier),celebrate=final&&finish.visible,liveAfter=shot?now-shot.hitAt:-1,liveFinalAge=finalHitAge(r,now);
    stage.dataset.tier=String(tier);
-   const arrivalAge=crownArrivalAge(r,time),arrival=crownArrivalPose(arrivalAge,still);
+   const arrivalAge=crownArrivalAge(r,time),arrival=crownArrivalPose(arrivalAge,still),sparkAge=entranceSparkAge(r,time,preview?idleSince:null);
    const side=swingSide(shot?.index),kind=shot?.prize.kind,motion=crownPose(after,still),bonus=bonusPose(kind,after,still),sway=still?0:Math.sin(time/940)*1.25;
    hang.style.transform=`translate(${Math.round(motion.x*side)}px,${Math.round(motion.y+entry.crownY+arrival.y)}px) rotate(${sway+arrival.angle+motion.angle*side*(burst?1-clamp((after-BREAK_DELAY)/400):1)}deg)`;
    hang.style.opacity=exit.artOpacity;
@@ -38,8 +38,8 @@ export function createPinataView(root,{audio=null,preview=false,clock=Date.now,q
    halves.forEach((el,i)=>{const d=i?1:-1;el.style.transform=`translate(${d*fracture.x}px,${fracture.y}px) rotate(${d*fracture.angle}deg)`;el.style.opacity=fracture.opacity;});
    $('.pina-seam').style.opacity=fracture.seam;
    tears.forEach((tear,i)=>{const v=damagePose(r,time,i,still),state=JSON.stringify(v);if(tear.state===state)return;tear.state=state;tear.el.style.opacity=v.opacity;for(const [paths,p] of [[tear.main,v.main],[tear.branches,v.branches]])for(const path of paths){path.style.strokeDasharray='1';path.style.strokeDashoffset=1-p;}tear.curl.style.opacity=v.curl;tear.curl.style.transform=`rotate(${v.angle}deg)`;});
-   $('.pina-gleam').style.opacity=burst?0:Math.max(motion.glint,arrival.glint);
-   arrivalSparks.forEach((el,i)=>{const v=arrivalSparkPose(i,arrivalAge,still);el.style.opacity=v.opacity*exit.artOpacity;if(v.opacity>0){el.style.width=v.size+'px';el.style.height=v.size+'px';el.style.transform=`translate(${v.x-v.size/2}px,${v.y-v.size/2}px)`;}});
+   $('.pina-gleam').style.opacity=burst?0:Math.max(motion.glint,crownArrivalPose(sparkAge,still).glint);
+   arrivalSparks.forEach((el,i)=>{const v=arrivalSparkPose(i,sparkAge,still);el.style.opacity=v.opacity*exit.artOpacity;if(v.opacity>0){el.style.width=v.size+'px';el.style.height=v.size+'px';el.style.transform=`translate(${v.x-v.size/2}px,${v.y-v.size/2}px)`;}});
    $('.pina-rope').style.opacity=handoff.ropeOpacity;
    $('.pina-swing-side').style.transform=`scaleX(${side})`;$('.pina-swing-side').style.opacity=exit.artOpacity;
    const pose=betweenBatPose(elapsed,shot?.index,{final,quiet:still}),bat=$('.pina-bat');

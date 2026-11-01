@@ -70,7 +70,9 @@ test('next-viewer entrance survives heartbeats and late snapshots without replay
  for(let t=0;t<=READY_MS;t++){
   assert.equal(readyPose(t,true).crownY,0);
   assert.equal(readyPose(t,true).opacity,readyPose(t).opacity);
-  assert.ok(readyPose(t).crownY>=0&&readyPose(t).crownY<=5);
+  assert.ok(readyPose(t).crownY>=-1.5&&readyPose(t).crownY<=5);
+  assert.ok(Math.abs(readyPose(t+1).crownY-readyPose(t).crownY)<.08);
+  assert.equal(Object.keys(readyPose(t)).some(k=>/scale|width|height/.test(k)),false);
  }
 });
 

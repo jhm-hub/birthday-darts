@@ -5,7 +5,7 @@ import {pinataTotal,projectedPinata} from './pinata-game.js';
 import {BREAK_DELAY} from './pinata-motion.js';
 import {finaleRevealAt} from './pinata-finale-timing.js';
 import {ARRIVAL_SOUND_AT} from './pinata-intro.js';
-export const PINATA_SOUND_LABELS={arrival:'Arcade ready clicks',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Coin payout',multiply:'Multiplier register',extra:'Encore credit awarded',burst:'Crown crack and coin candy',rise:'Birthday reel stop','royal-rise':'Royal reel stops','royal-final':'Royal coin win','grand-rise':'Grand reel anticipation',final:'Birthday coin win','grand-final':'Grand jackpot accent'};
+export const PINATA_SOUND_LABELS={arrival:'Arcade ready clicks',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Coin payout',multiply:'Multiplier register',extra:'Encore credit awarded',burst:'Crown crack and coin candy',rise:'Birthday reel stop','royal-rise':'Royal reel stops','royal-final':'Royal arcade fanfare','grand-rise':'Grand reel anticipation',final:'Birthday victory chord','grand-final':'Grand Royal jackpot fanfare'};
 export const SWING_SOUND_LEAD_MS=310, ROYAL_BUILDUP_MS=40;
 // Offsets within the existing hit+160ms bonus cue: jewel/total pulse, then the
 // Encore token reaching the counter. One cue keeps late joins and mute atomic.
@@ -41,12 +41,21 @@ export function pinataSoundScore(kind,{index=0}={}){
   case 'rise':return [noise(0,'reel',.045,.027,977),noise(.105,'reel',.05,.032,983)];
   case 'royal-rise':return [0,.13,.26].map((at,i)=>noise(at,'reel',.045,.026+i*.004,991+i*17));
   case 'grand-rise':return [0,.14,.265,.375,.47,.55].map((at,i)=>noise(at,'reel',.04,.022+i*.002,1237+i*13)).concat(note(.62,784,.09,.025,'chip'));
-  case 'final':return [note(0,1568,.15,.06,'coin'),note(0,523.25,.1,.024,'chip'),
-   note(.12,2093,.23,.073,'coin'),note(.12,659.25,.14,.026,'chip')];
-  case 'royal-final':return [note(0,1568,.16,.059,'coin'),note(0,659.25,.12,.025,'chip'),
-   note(.14,2349.32,.29,.069,'coin'),note(.14,783.99,.18,.027,'chip'),note(.14,1174.66,.17,.012,'coin')];
-  case 'grand-final':return [note(0,2093,.17,.059,'coin'),note(0,783.99,.13,.025,'chip'),
-   note(.16,2637.02,.36,.069,'coin'),note(.16,1046.5,.22,.028,'chip'),note(.16,1568,.25,.014,'coin')];
+  // Two broad, brass-like arcade stabs give the win weight. A low accent and
+  // octave coin edge support the chord rather than adding a busy melody.
+  case 'final':return [note(0,392,.18,.035,'fanfare'),note(0,587.33,.18,.022,'fanfare'),
+   note(0,1568,.15,.034,'coin'),noise(0,'body',.13,.025,1301),
+   note(.16,523.25,.46,.047,'fanfare'),note(.16,659.25,.42,.03,'fanfare'),
+   note(.16,261.63,.38,.025,'fanfare'),note(.16,2093,.23,.037,'coin')];
+  case 'royal-final':return [note(0,392,.2,.039,'fanfare'),note(0,587.33,.2,.026,'fanfare'),
+   note(0,1568,.17,.038,'coin'),noise(0,'body',.15,.033,1307),
+   note(.18,523.25,.66,.047,'fanfare'),note(.18,659.25,.6,.029,'fanfare'),
+   note(.18,783.99,.57,.026,'fanfare'),note(.18,261.63,.51,.028,'fanfare'),note(.18,2093,.29,.04,'coin')];
+  case 'grand-final':return [note(0,392,.22,.042,'fanfare'),note(0,587.33,.22,.029,'fanfare'),
+   note(0,783.99,.18,.018,'fanfare'),note(0,2093,.18,.039,'coin'),noise(0,'body',.18,.042,1319),
+   note(.18,523.25,.94,.047,'fanfare'),note(.18,659.25,.83,.032,'fanfare'),
+   note(.18,783.99,.78,.029,'fanfare'),note(.18,261.63,.72,.032,'fanfare'),
+   note(.18,130.81,.58,.02,'fanfare'),note(.18,1046.5,.65,.018,'fanfare'),note(.18,2637.02,.36,.035,'coin')];
   default:throw Error('Unknown piñata sound: '+kind);
  }
 }
@@ -67,6 +76,9 @@ function renderVoice(cue,rate){
     const wave=cue.voice==='sine'?sine:8/(Math.PI*Math.PI)*(sine-Math.sin(phase*3)/9+Math.sin(phase*5)/25-Math.sin(phase*7)/49);
     const env=t<.006?t/.006:Math.exp(Math.log(.0001/cue.gain)*(t-.006)/(cue.length-.006));
     value=wave*env;
+   }else if(cue.voice==='fanfare'){
+    const bloom=Math.min(1,t/.008),hold=.075,release=Math.max(0,t-hold)/(cue.length-hold);
+    value=(sine+.32*Math.sin(phase*2)+.22*Math.sin(phase*3)+.1*Math.sin(phase*4)+.05*Math.sin(phase*5))/1.45*bloom*Math.exp(-release*4.2);
    }else if(cue.voice==='coin')value=(sine+.3*Math.sin(phase*2.61)*Math.exp(-u*8)+.1*Math.sin(phase*4.13)*Math.exp(-u*13))*Math.exp(-u*5.6);
    else if(cue.voice==='chip')value=(sine+.27*Math.sin(phase*3)+.1*Math.sin(phase*5))*Math.exp(-u*5.2);
    else if(cue.voice==='wood')value=(sine+.43*Math.sin(phase*1.57)+.17*Math.sin(phase*2.23))*Math.exp(-t*48);

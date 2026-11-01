@@ -240,3 +240,20 @@ test('Royal pickup and fanfare play once, obey mute and volume, and stop on rese
  a.update(r,1800);assert.equal(sources(ctx).length,0,'skip stale pickup');
  a.update(r,1500+ROYAL_REVEAL_MS);assert.equal(sources(ctx).length,1,'join fresh payoff');
 });
+
+
+test('victory chords become fuller by tier while staying shorter than the result hold and balanced for stream',()=>{
+ const rms=(data,rate)=>{let sum=0,best=0;const n=Math.round(rate*.1);for(let i=0;i<data.length;i++){sum+=data[i]**2;if(i>=n)sum-=data[i-n]**2;if(i>=n-1)best=Math.max(best,sum/n);}return Math.sqrt(best);};
+ for(const rate of [44100,48000]){
+  let previousLength=0,previousRms=0;
+  const hit=rms(renderPinataSound('hit',{},rate),rate);
+  for(const kind of ['final','royal-final','grand-final']){
+   const data=renderPinataSound(kind,{},rate),level=rms(data,rate),score=pinataSoundScore(kind);
+   assert.ok(data.length>previousLength);assert.ok(level>previousRms);
+   assert.ok(data.length/rate<1.2);assert.ok(20*Math.log10(level/hit)<5);
+   assert.equal(new Set(score.map(c=>c.at)).size,2,'two decisive hits, no later encore jingle');
+   assert.ok(score.some(c=>c.frequency<300),'a supporting lower chord gives the win weight');
+   assert.ok(peak(data)<.2);previousLength=data.length;previousRms=level;
+  }
+ }
+});
