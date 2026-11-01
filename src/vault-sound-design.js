@@ -35,8 +35,11 @@ export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888}={}
  case 'first-unlock':return vaultSoundScore('unlock',{index:0});
  case 'unlock':return [foley(.06,'key',.20,.105,41+room),foley(.285,'bolt',.15,.10,101+room),foley(.86,'latch',.075,.075,151+room)];
  case 'cash':{const land=VAULT_CASH_LAND_MS/1000;return [foley(.015,'coin',.045,.026,431),note(land,[86,90,93][tier],.18,.046+tier*.005,'bell'),...(tier>1?[note(land+.10,98,.12,.022,'bell')]:[])];}
- case 'multiply':return [note(0,74,.055,.020,'slot'),note(.08,81,.055,.020,'slot'),foley(bonusLand,'coin',.045,.022,919),note(bonusLand,93,.17,.055,'bell')];
- case 'extra':return [foley(.04,'key',.10,.035,301),foley(bonusLand,'click',.055,.035,313),note(bonusLand,86,.16,.034,'bell')];
+ // Multiplier: an octave-up register pickup resolves into a short cabinet
+ // chord on the badge. Extra unlock: physical key contact, then a two-note
+ // credit confirmation. Both use the established voices, with no extra bed.
+ case 'multiply':return [note(0,74,.070,.040,'slot'),note(.09,86,.060,.034,'slot'),note(bonusLand,86,.150,.065,'jackpot'),note(bonusLand,98,.130,.025,'bell')];
+ case 'extra':return [foley(.015,'key',.110,.055,301),foley(bonusLand,'click',.040,.030,313),note(bonusLand,81,.070,.033,'slot'),note(bonusLand+.10,86,.065,.040,'slot')];
  case 'collect':{const land=VAULT_COLLECT_TRAVEL_MS/1000,count=vaultCollectionCount(tier);return Array.from({length:count},(_,i)=>foley(land+i*VAULT_COLLECT_STAGGER_MS/1000,'coin',.035,.027-i*.0015,401+i*13));}
  case 'wing':return [foley(0,'reel',.18,.023,857)];
  case 'special':{

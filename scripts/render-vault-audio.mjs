@@ -17,6 +17,9 @@ function wav(data){
 const db=v=>v>0?20*Math.log10(v):null;
 function metrics(data){let peak=0,sum=0;for(const s of data){peak=Math.max(peak,Math.abs(s));sum+=s*s;}return {seconds:data.length/rate,peakDbFS:db(peak),rmsDbFS:db(Math.sqrt(sum/data.length)),defaultVolumePeakDbFS:db(peak*volume)};}
 const report={},reel=[];let at=0;
+const signatureMix=renderVaultSequence([{at:0,sound:'multiply'},{at:1.15,sound:'extra'}],rate);
+report['bonus-signatures']=metrics(signatureMix);
+await writeFile(join(output,'bonus-signatures.wav'),wav(signatureMix));
 // A concise comparison: Standard, Big, then Royal, at the same preview volume.
 const jackpots=[];let jackpotAt=0;
 for(const sound of ['standard','big','royal']){

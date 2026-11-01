@@ -20,7 +20,7 @@ test('the casino palette uses dry mechanics and short register attacks without s
 });
 test('cash, multiplier and extra-unlock register hits retain the existing visual landing beats',()=>{
  for(let tier=0;tier<3;tier++)assert.ok(vaultSoundScore('cash',{tier}).some(c=>c.voice==='bell'&&c.at===VAULT_CASH_LAND_MS/1000));
- for(const name of ['multiply','extra'])assert.ok(vaultSoundScore(name).some(c=>c.voice==='bell'&&c.at===VAULT_BONUS_LAND_MS/1000));
+ for(const [name,voice] of [['multiply','jackpot'],['extra','slot']])assert.ok(vaultSoundScore(name).some(c=>c.voice===voice&&c.at===VAULT_BONUS_LAND_MS/1000));
  assert.notDeepEqual(renderVaultSound('multiply'),renderVaultSound('extra'));
  for(const [tier,name] of ['standard','big','royal'].entries())assert.ok(vaultSoundScore(name).some(c=>c.voice==='jackpot'&&c.at===finalePose(0,tier).build/1000));
 });

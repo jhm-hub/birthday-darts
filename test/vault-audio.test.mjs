@@ -13,6 +13,8 @@ import {sampleVaultReset,sampleVaultTreasureReset} from '../src/vault-reset-prev
 import {VAULT_FAREWELL_LEAD_MS} from '../src/vault-exit-motion.js';
 import {startVaultRound,unlockVault} from '../src/vault-game.js';
 import {sampleVaultChamberHandoff,VAULT_CHAMBER_GUIDE_LEAD_MS} from '../src/vault-chamber-handoff.js';
+import {sampleVaultBonus} from '../src/vault-bonus-preview.js';
+import {vaultBonusAt} from '../src/vault-bonus-motion.js';
 const peak=data=>data.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
 function context(state='running'){
  const nodes=[],param=()=>({value:0,calls:[],setValueAtTime(...a){this.calls.push(['set',...a]);},linearRampToValueAtTime(...a){this.calls.push(['linear',...a]);},setTargetAtTime(...a){this.calls.push(['target',...a]);},cancelAndHoldAtTime(...a){this.calls.push(['hold',...a]);},cancelScheduledValues(...a){this.calls.push(['cancel',...a]);}});
@@ -20,6 +22,18 @@ function context(state='running'){
  return {state,nodes,currentTime:10,destination:{},sampleRate:48000,createGain:()=>node('gain'),createBufferSource:()=>node('buffer'),createBuffer:(_,length)=>{const data=new Float32Array(length);return {length,getChannelData:()=>data};},async resume(){this.state='running';},async close(){this.state='closed';}};
 }
 const sources=ctx=>ctx.nodes.filter(n=>n.kind==='buffer');
+test('each bonus reveal selects its own cue once, including configured multipliers and late joins',()=>{
+ for(const [kind,value] of [['multiply',2],['multiply',4],['extra',2]]){
+  const r=sampleVaultBonus(kind,10000,value),at=vaultBonusAt(r.flight),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
+  a.sync(r,at-1);assert.equal(sources(ctx).length,0);
+  a.sync(r,at);assert.equal(sources(ctx).length,1);
+  assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound(kind));
+  a.sync(structuredClone(r),at+50);assert.equal(sources(ctx).length,1);
+  const joined=context(),b=createVaultAudio({createContext:()=>joined});b.setEnabled(true);b.sync(r,at+90);
+  assert.equal(sources(joined).length,1);assert.deepEqual(sources(joined)[0].started,[10,.09]);
+  const muted=context(),c=createVaultAudio({createContext:()=>muted});c.sync(r,at);c.setEnabled(true);c.sync(r,at+1);assert.equal(sources(muted).length,0);
+ }
+});
 const round=(patch={})=>({id:'round',startedAt:0,flight:{id:'shot',index:0,startAt:2000,revealAt:2780,finishAt:4000,cashCents:2500,bonus:{kind:'multiply',value:2}},opened:[],completedAt:null,...patch});
 
 test('five locks keep distinct textures with only three mechanical layers',()=>{
