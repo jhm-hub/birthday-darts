@@ -13,7 +13,7 @@ test('each prepared lock carries continuously through immediate, normal and long
   const a=vaultChamberHandoff(s.waiting,s.clickAt),b=vaultChamberHandoff(s.flight,s.clickAt);
   assert.deepEqual(a.focuses,b.focuses);assert.deepEqual(a.attention,b.attention);assert.deepEqual(a.bank,b.bank);
   assert.equal(a.focuses[index+1],.3);
-  let previous=b.focuses[index+1];for(let age=0;age<=160;age+=5){const p=vaultChamberHandoff(s.flight,s.clickAt+age);assert.ok(p.focuses[index+1]>=previous-1e-12);previous=p.focuses[index+1];}
+  let previous=b.focuses[index+1];for(let age=0;age<=220;age+=5){const p=vaultChamberHandoff(s.flight,s.clickAt+age);assert.ok(p.focuses[index+1]>=previous-1e-12);previous=p.focuses[index+1];}
   assert.equal(previous,.85);assert.equal(JSON.stringify(s),old);
  }
 });
@@ -64,7 +64,7 @@ test('the final chamber has no next invitation, including a capped extra award a
 test('previous prize labels ease into and out of the next spotlight without a click-time jump',()=>{
  const s=sampleVaultChamberHandoff(),shot=s.flight.flight;
  assert.equal(vaultOtherAwardOpacity(null,s.clickAt),1);assert.equal(vaultOtherAwardOpacity(shot,s.clickAt),1);
- assert.equal(vaultOtherAwardOpacity(shot,s.clickAt+160),.55);
+ assert.equal(vaultOtherAwardOpacity(shot,s.clickAt+220),.55);
  assert.equal(vaultOtherAwardOpacity(shot,shot.finishAt),1);
  for(let t=shot.startAt;t<=shot.finishAt;t+=10){const v=vaultOtherAwardOpacity(shot,t);assert.ok(v>=.55&&v<=1);}
 });
@@ -107,7 +107,7 @@ test('the next guide begins at the fitted bankroll catch and stays outside its d
 });
 test('the guide resolves at readiness and the prepared click uses the simplified door mechanism',()=>{
  const sample=sampleVaultChamberHandoff(),at=sample.readyAt-VAULT_CHAMBER_GUIDE_LEAD_MS;
- assert.equal(at+VAULT_CHAMBER_GUIDE_TRAVEL_MS,sample.readyAt);
+ assert.equal(at+VAULT_CHAMBER_GUIDE_TRAVEL_MS,sample.readyAt-60);
  assert.equal(vaultChamberHandoff(sample.before,at).focuses[1],0);
  assert.equal(vaultChamberHandoff(sample.waiting,sample.readyAt).focuses[1],.3);
  for(let i=0;i<3;i++)assert.equal(vaultChamberTrail(vaultChamberHandoff(sample.waiting,sample.readyAt+40),i,sample.readyAt+40).visible,false);
@@ -115,6 +115,32 @@ test('the guide resolves at readiness and the prepared click uses the simplified
   const original=vaultSoundScore('unlock',{index}),linked=vaultSoundScore('linked-unlock',{index});
   for(const voice of ['hinge','bolt','seat'])assert.deepEqual(linked.filter(c=>c.voice===voice),original.filter(c=>c.voice===voice));
   assert.deepEqual(linked.filter(c=>c.voice==='click').map(c=>c.at),[.06]);
-  const next=vaultSoundScore('next',{index});assert.ok(next.some(c=>c.at===VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000));
+  const next=vaultSoundScore('next',{index});assert.equal(next.length,1);assert.equal(next[0].at,0);assert.equal(next[0].length,VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000);
+ }
+});
+
+test('every guide arrives before readiness and the caught lock survives paused or immediate clicks',()=>{
+ for(const index of [0,1,2,3,4])for(const wait of [0,400,60000]){
+  const s=sampleVaultChamberHandoff(index,wait),catchAt=s.readyAt-60;
+  for(let i=0;i<3;i++){
+   assert.equal(vaultChamberTrail(vaultChamberHandoff(s.before,catchAt-1),i,catchAt-1).visible,true);
+   for(const t of [catchAt,s.readyAt,s.clickAt,s.clickAt+100])assert.equal(vaultChamberTrail(vaultChamberHandoff(vaultChamberSampleRound(s,t),t),i,t).visible,false);
+  }
+  assert.equal(vaultChamberHandoff(s.before,catchAt).lock,0);
+  const waiting=vaultChamberHandoff(s.waiting,s.clickAt),clicked=vaultChamberHandoff(s.flight,s.clickAt);
+  assert.equal(waiting.lock,.14);assert.equal(clicked.lock,waiting.lock);
+  assert.equal(vaultChamberHandoff(s.flight,s.clickAt+220).lock,0);
+  let prior=clicked.focuses[index+1];
+  for(let t=5;t<=220;t+=5){const pose=vaultChamberHandoff(s.flight,s.clickAt+t);assert.ok(pose.focuses[index+1]>=prior);assert.ok(pose.focuses[index+1]-prior<.025);prior=pose.focuses[index+1];}
+ }
+});
+test('private settings do not affect the ordinary or special lock handoff',()=>{
+ for(const index of [0,4]){
+  const s=sampleVaultChamberHandoff(index);const altered=structuredClone(s.before);
+  altered.privateExperience={name:'extreme'};altered.privateViewerRange={min:9999,max:9999};altered.prizePlan=[999];
+  for(const age of [1680,1740,1830,1940,2000,2200]){
+   const original=vaultChamberHandoff(s.before,s.startAt+age),p=vaultChamberHandoff(altered,s.startAt+age);
+   for(const key of ['focuses','attention','bank','lock'])assert.deepEqual(p[key],original[key]);
+  }
  }
 });

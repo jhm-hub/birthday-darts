@@ -95,9 +95,9 @@ export function createVaultView(root,{audio}={}){
    const doors=vaultSpecialDoors(pose.open),finish=doorFinish(activeShot?time-activeShot.startAt:0,pose.open,quiet),edge=1-ease((pose.open-.94)/.06);
    s.left.setAttribute('transform',doors.left);s.right.setAttribute('transform',doors.right);s.left.style.opacity=s.right.style.opacity=edge;
    s.shades.forEach(el=>el.style.opacity=finish.shade);
-   const ready=current&&!activeShot;
-   s.focus.style.opacity=finished?0:Math.max(ready?.16:finish.focus*.5,current&&arriving?arrival.rim*.32:0);
-   s.lock.style.opacity=quiet?0:Math.max(finish.lock*.8,current&&between.linked?between.lock:0);
+   const ready=current&&!activeShot,prepared=current&&between.linked&&between.link.index===special.current.index;
+   s.focus.style.opacity=finished?0:Math.max(prepared?between.focuses[special.current.index]*.5:ready?.15:finish.focus*.5,current&&arriving?arrival.rim*.32:0);
+   s.lock.style.opacity=quiet?0:Math.max(finish.lock*.8,prepared?between.lock:0);
   });
   if(bankPose.bank>0&&bankPose.blend>0&&!finished&&!special.current)els.count.textContent='WING '+(bankPose.bank+1)+' · '+(r?readout.remaining:allocated)+' LEFT';
   if(special.current&&!finished)els.count.textContent=special.current.name+' · '+readout.remaining+' LEFT';

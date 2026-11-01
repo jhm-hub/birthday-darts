@@ -4,7 +4,7 @@ import {doorFinish} from './vault-effects.js';
 import {VAULT_ART} from './vault-layout.js';
 
 export const VAULT_CHAMBER_GUIDE_LEAD_MS=260;
-export const VAULT_CHAMBER_GUIDE_TRAVEL_MS=260,VAULT_CHAMBER_GUIDE_STAGGER_MS=18;
+export const VAULT_CHAMBER_GUIDE_TRAVEL_MS=200,VAULT_CHAMBER_GUIDE_STAGGER_MS=18;
 export const VAULT_WING_LEAD_MS=40;
 const prepare=(shot,time)=>ease((time-shot.finishAt+VAULT_CHAMBER_GUIDE_LEAD_MS)/VAULT_CHAMBER_GUIDE_LEAD_MS);
 // Derive links from saved awards, including an uncommitted +1 unlock. Nothing
@@ -22,24 +22,30 @@ export function vaultChamberHandoff(round,time,quiet=false){
  const focuses=Array(20).fill(0),attention=Array(20).fill(0);
  if(active&&!quiet)focuses[shot.index]=doorFinish(age,0).focus*.85;
  const ready=quiet?Number(time>=link.from.finishAt):prepare(link.from,time);
- const click=link.next,blend=click?ease((time-click.startAt)/160):0,start=click?prepare(link.from,click.startAt):ready;
- const target=click?focuses[link.index]:0;
- focuses[link.index]=quiet?(time>=link.from.finishAt&&(!click||time<click.revealAt)?.22:0):click?.3*start*(1-blend)+Math.max(target,blend<1?.3*start:0)*blend:.3*ready;
- const activeDim=quiet?0:.18*ease(age/160)*(1-ease((age-1520)/480));
+ const click=link.next,clickAge=click?time-click.startAt:0,blend=click?ease(clickAge/220):0,start=click?prepare(link.from,click.startAt):ready;
+ const settle=click?1-ease((clickAge-1580)/420):1;
+ // Keep the caught light while waiting, then carry the same pose into the
+ // next mechanism. Match the first chamber's gentle, uninterrupted pickup.
+ focuses[link.index]=quiet?(time>=link.from.finishAt&&(!click||time<click.revealAt)?.22:0):(.3*start*(1-blend)+.85*blend)*settle;
+ const activeDim=quiet?0:.18*ease(age/220)*(1-ease((age-1520)/480));
  for(let i=0;i<20;i++){
   attention[i]=active&&i!==shot.index?activeDim:0;
   if(i!==link.index&&!quiet)attention[i]+=.06*start*(1-blend);
  }
  const wingBlend=quiet?Number(time>=link.from.finishAt):ease((time-link.from.finishAt+VAULT_WING_LEAD_MS)/300);
  const bank=link.wing?{bank:Math.floor(link.index/5),previous:Math.floor(link.from.index/5),blend:wingBlend}:vaultBankPose(round,time,quiet);
- const lock=quiet?0:.32*ease((time-link.from.finishAt+30)/50)*(1-ease((time-link.from.finishAt-70)/170));
+ const caughtAt=link.from.finishAt-VAULT_CHAMBER_GUIDE_LEAD_MS+VAULT_CHAMBER_GUIDE_TRAVEL_MS;
+ const lock=quiet?0:.14*ease(((click?.startAt??time)-caughtAt)/60)*(1-blend);
  return {linked:true,link,focuses,attention,bank,lock};
 }
 export function vaultChamberTrail(handoff,index,time,quiet=false,dock={left:138,right:282,y:386},target=null){
  const off={visible:false,x:0,y:0,opacity:0};
- if(quiet||!handoff.linked||index>=3)return off;
+ if(quiet||!handoff.linked||index<0||index>=3)return off;
  const {from,index:next}=handoff.link;
- const t=(time-from.finishAt+VAULT_CHAMBER_GUIDE_LEAD_MS-index*VAULT_CHAMBER_GUIDE_STAGGER_MS)/VAULT_CHAMBER_GUIDE_TRAVEL_MS;
+ // Stagger the departure, not the arrival: every glint reaches the receiving
+ // lock before readiness, even if Faith clicks at the earliest possible time.
+ const stagger=index*VAULT_CHAMBER_GUIDE_STAGGER_MS;
+ const t=(time-from.finishAt+VAULT_CHAMBER_GUIDE_LEAD_MS-stagger)/(VAULT_CHAMBER_GUIDE_TRAVEL_MS-stagger);
  if(t<=0||t>=1)return off;
  const slot=next%5;
  const end=target??{x:VAULT_ART.x+[310,941,310,941,624][slot]*VAULT_ART.size/VAULT_ART.source,y:VAULT_ART.y+[475,475,851,851,599][slot]*VAULT_ART.size/VAULT_ART.source};
@@ -48,9 +54,9 @@ export function vaultChamberTrail(handoff,index,time,quiet=false,dock={left:138,
  // The receiving plaque supplies the origin; large totals stay unobstructed.
  const rail=Math.max(14,Math.min(406,(side<0?Math.min(start.x,end.x)-36:Math.max(start.x,end.x)+36)));
  const u=ease(t),v=1-u,c1={x:rail,y:start.y-55},c2={x:rail,y:end.y+36};
- return {visible:true,x:Math.round(v**3*start.x+3*v*v*u*c1.x+3*v*u*u*c2.x+u**3*end.x),y:Math.round(v**3*start.y+3*v*v*u*c1.y+3*v*u*u*c2.y+u**3*end.y),opacity:Math.min(1,t*10,(1-t)*6)*.85};
+ return {visible:true,x:Math.round(v**3*start.x+3*v*v*u*c1.x+3*v*u*u*c2.x+u**3*end.x),y:Math.round(v**3*start.y+3*v*v*u*c1.y+3*v*u*u*c2.y+u**3*end.y),opacity:Math.min(1,t*10,(1-t)*6)*(.85-index*.12)};
 }
-export const vaultOtherAwardOpacity=(shot,time,quiet=false)=>!shot||time>=shot.finishAt?1:quiet?.7:1-.45*ease((time-shot.startAt)/160)*(1-ease((time-shot.startAt-1520)/480));
+export const vaultOtherAwardOpacity=(shot,time,quiet=false)=>!shot||time>=shot.finishAt?1:quiet?.7:1-.45*ease((time-shot.startAt)/220)*(1-ease((time-shot.startAt-1520)/480));
 
 // Two real sample clicks with a short, visible pause; no saved game is touched.
 export function sampleVaultChamberHandoff(index=0,waitMs=400,time=10000,bonus=null){

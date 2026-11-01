@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {DEFAULT_VAULT,startVaultRound,unlockVault,advanceVault} from '../src/vault-game.js';
 import {vaultSpecialTheme,vaultSpecialScene,vaultRewardPoint,vaultSpecialDoors,VAULT_SPECIAL_POINT} from '../src/vault-special.js';
 import {vaultCollectionCoin} from '../src/vault-collection-motion.js';
-import {vaultChamberHandoff,vaultChamberTrail,sampleVaultChamberHandoff} from '../src/vault-chamber-handoff.js';
+import {vaultChamberHandoff,vaultChamberTrail,sampleVaultChamberHandoff,VAULT_CHAMBER_GUIDE_LEAD_MS,VAULT_CHAMBER_GUIDE_TRAVEL_MS} from '../src/vault-chamber-handoff.js';
 import {renderVaultSequence,vaultSoundScore} from '../src/vault-sound-design.js';
 import {chamberPoint} from '../src/vault-motion.js';
 
@@ -63,7 +63,7 @@ test('consecutive bonus chambers transition once and reduced motion changes at r
 test('bonus cash, coin and lock guides use the new center while ordinary chambers keep their positions',()=>{
  const s=sampleVaultChamberHandoff(4),r=s.flight,dock={left:130,right:290,y:386};
  assert.deepEqual(vaultRewardPoint(r,4),chamberPoint(4));assert.deepEqual(vaultRewardPoint(r,5),VAULT_SPECIAL_POINT);
- const at=s.readyAt-50,hand=vaultChamberHandoff(s.before,at);
+ const at=s.readyAt-VAULT_CHAMBER_GUIDE_LEAD_MS+VAULT_CHAMBER_GUIDE_TRAVEL_MS*.75,hand=vaultChamberHandoff(s.before,at);
  const guide=vaultChamberTrail(hand,0,at,false,dock,VAULT_SPECIAL_POINT);
  assert.ok(guide.visible&&guide.x>=0&&guide.x<=420&&guide.y>=0&&guide.y<=460);
  for(let t=r.flight.startAt+1241;t<r.flight.finishAt;t+=10){

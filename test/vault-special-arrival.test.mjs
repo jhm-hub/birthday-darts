@@ -82,3 +82,12 @@ test('the sound palette audition matches both live phases and strikes on the pix
   }
  }
 });
+
+test('special entrances retain distinct identities with only a brief invitation and warm arrival',()=>{
+ for(let index=0;index<3;index++){
+  const score=vaultSoundScore('special',{index});assert.equal(score.length,5);
+  assert.equal(score.filter(c=>c.voice==='coin'||c.voice==='click'||c.voice==='celesta').length,0);
+  assert.equal(new Set(score.map(c=>c.at)).size,3);
+ }
+ assert.equal(vaultSoundScore('wing').length,1);
+});
