@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,HIT_MS,SWING_MS} from '../src/pinata-game.js';
-import {swingSide,bonusPose,bonusParticlePose,BONUS_PARTICLES} from '../src/pinata-bonus.js';
+import {swingSide,bonusPose,bonusParticleSpec,bonusParticlePose,BONUS_PARTICLES} from '../src/pinata-bonus.js';
 import {damagePose,damageArt,DAMAGE_HITS} from '../src/pinata-damage.js';
 import {particlePose,particleSpec,PARTICLE_COUNT} from '../src/pinata-motion.js';
 
@@ -55,7 +55,9 @@ test('multiplier and Encore celebrations have distinct emphasis and clear before
 test('bonus confetti avoids labels, header and footer at all times',()=>{
  for(const kind of ['cash','multiply','extra'])for(let t=0;t<1500;t+=10)for(let i=0;i<BONUS_PARTICLES;i++){
   const p=bonusParticlePose(i,kind,t);if(p.opacity<=0)continue;
-  assert.notEqual(kind,'cash');assert.ok(p.x>=24&&p.x+15<=401);assert.ok(p.y>=105&&p.y+15<=305);
+  const size=bonusParticleSpec(i,kind).size,edge=size*Math.SQRT2/2+1,cx=p.x+size/2,cy=p.y+size/2;
+  assert.ok(cx-edge>=24&&cx+edge<=401);
+  assert.ok(cy-edge>=(kind==='extra'&&i>=12?78:105)&&cy+edge<=305,'particles clear the header and reward labels');
  }
  for(const kind of ['multiply','extra'])for(let i=0;i<BONUS_PARTICLES;i++)assert.equal(bonusParticlePose(i,kind,1060).opacity,0);
 });

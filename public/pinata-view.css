@@ -27,8 +27,6 @@
 .pina-reward[data-kind=extra] .pina-reward-kicker{color:#b9ffe6}
 .pina-reward[data-kind=multiply] strong,.pina-reward[data-kind=extra] strong{display:table;margin:auto;padding:0 13px 3px;line-height:1.02;background:linear-gradient(135deg,#50305bdb,#39243cdb);clip-path:polygon(8px 0,calc(100% - 8px) 0,calc(100% - 8px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 8px) calc(100% - 3px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 3px),0 calc(100% - 3px),0 3px,8px 3px)}
 .pina-bonus-feature{position:absolute;left:164px;top:174px;width:92px;height:92px;z-index:5;pointer-events:none;opacity:0;transform-origin:50% 50%}
-.pina-bonus-feature:before{content:"";position:absolute;inset:-28px;background:radial-gradient(ellipse,#e3b6ff5c 0,transparent 69%)}
-.pina-bonus-feature[data-kind=extra]:before{background:radial-gradient(ellipse,#b7ffe969 0,transparent 69%)}
 .pina-bonus-gem,.pina-bonus-encore{position:absolute;inset:9px;filter:drop-shadow(0 3px 0 #42234088);display:none}
 .pina-bonus-feature[data-kind=multiply] .pina-bonus-gem,.pina-bonus-feature[data-kind=extra] .pina-bonus-encore{display:block}
 .pina-bonus-encore>span{position:absolute;width:90px;height:30px;left:-8px;top:36px;transform:rotate(-32deg);filter:drop-shadow(0 2px 0 #42234077)}
@@ -115,3 +113,18 @@ html.pinata-overlay,html.pinata-overlay body{margin:0;width:100%;height:100%;ove
 
 /* Grand's birthday paper and ribbons use the existing bounded particle pool. */
 .pinata-stage[data-tier="2"] .pina-tier-particles .paper{background:none;clip-path:none}
+
+/* Reward accents stay inside the crown area or just below the swing counter. */
+.pina-bonus-halo{position:absolute;inset:-12px;opacity:0;pointer-events:none}
+.pina-bonus-gem,.pina-bonus-encore{filter:brightness(calc(1 + var(--bonus-light,0))) drop-shadow(0 3px 0 #42234088)}
+.pina-bonus-feature[data-kind=extra] .pina-bonus-halo path:nth-child(2){fill:#a5f3d9}
+.pina-bonus-feature[data-kind=extra] .pina-bonus-halo path:last-child{fill:#eefff2}
+.pina-reward strong{filter:brightness(calc(1 + var(--reward-light,0)))}
+.pina-bonus-particles span{position:absolute;inset:0;display:block}
+.pina-bonus-particles .pina-reward-coin{display:none}
+.pina-bonus-particles[data-kind=cash] .pina-reward-coin{display:block}
+.pina-bonus-particles[data-kind=cash] .pina-reward-fragment{display:none}
+.pina-bonus-particles[data-kind=multiply] i:nth-child(even) .pina-reward-fragment path:nth-child(2){fill:#d7b4ff}
+.pina-bonus-particles[data-kind=extra] .pina-reward-fragment path:nth-child(2){fill:#9ef0d5}
+.pina-bonus-particles[data-kind=extra] .pina-reward-fragment path:nth-child(3){fill:#e6fff3}
+@media(prefers-reduced-motion:reduce){.pina-bonus-halo{display:none}}

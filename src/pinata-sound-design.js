@@ -5,12 +5,14 @@ import {pinataTotal,projectedPinata} from './pinata-game.js';
 import {BREAK_DELAY} from './pinata-motion.js';
 import {finaleRevealAt,GRAND_ENCORE_MS,GRAND_REVEAL_MS} from './pinata-finale-timing.js';
 import {ARRIVAL_SOUND_AT} from './pinata-intro.js';
+import {REWARD_SOUND_AFTER_MS,CASH_RESOLVE_SECONDS,MULTIPLIER_LIFT_SECONDS,MULTIPLIER_RESOLVE_SECONDS,EXTRA_REPEAT_SECONDS,ENCORE_CATCH_SECONDS} from './pinata-reward-timing.js';
+export {MULTIPLIER_RESOLVE_SECONDS,ENCORE_CATCH_SECONDS} from './pinata-reward-timing.js';
 export const PINATA_SOUND_LABELS={arrival:'Arcade ready clicks',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Cash victory ka-ching',multiply:'Multiplier power-up fanfare',extra:'Encore credit celebration',burst:'Crown crack and coin candy',rise:'Birthday reel stop','royal-rise':'Royal reel stops','royal-final':'Royal arcade fanfare','grand-rise':'Grand reel anticipation',final:'Birthday victory chord','grand-final':'Grand Royal jackpot fanfare'};
 export const SWING_SOUND_LEAD_MS=310, ROYAL_BUILDUP_MS=40;
 export const GRAND_RESOLVE_SECONDS=(GRAND_ENCORE_MS-GRAND_REVEAL_MS)/1000;
 // Offsets within the existing hit+160ms bonus cue: jewel/total pulse, then the
 // Encore token reaching the counter. One cue keeps late joins and mute atomic.
-export const MULTIPLIER_RESOLVE_SECONDS=.49, ENCORE_CATCH_SECONDS=.66;
+
 const note=(at,frequency,length,gain,voice='bell')=>({at,frequency,length,gain,voice});
 const noise=(at,voice,length,gain,seed=41)=>({at,voice,length,gain,seed});
 const trims={arrival:1.2,swing:1.6,burst:1.6,rise:2.4,'royal-rise':2.4,'grand-rise':1.8};
@@ -27,15 +29,15 @@ export function pinataSoundScore(kind,{index=0}={}){
   // lower chord carries on small speakers; the coin edge stays short and dry.
   case 'cash':return [noise(0,'reel',.04,.026,1001),noise(0,'body',.09,.025,1009),
    note(0,392,.075,.028,'fanfare'),note(0,587.33,.075,.018,'fanfare'),
-   note(.105,523.25,.32,.036,'fanfare'),note(.105,659.25,.29,.023,'fanfare'),
-   note(.105,783.99,.26,.019,'fanfare'),note(.105,261.63,.23,.027,'fanfare'),
-   note(.105,2093,.2,.034,'coin'),noise(.105,'victoryShimmer',.19,.012,1013)];
+   note(CASH_RESOLVE_SECONDS,523.25,.32,.036,'fanfare'),note(CASH_RESOLVE_SECONDS,659.25,.29,.023,'fanfare'),
+   note(CASH_RESOLVE_SECONDS,783.99,.26,.019,'fanfare'),note(CASH_RESOLVE_SECONDS,261.63,.23,.027,'fanfare'),
+   note(CASH_RESOLVE_SECONDS,2093,.2,.034,'coin'),noise(CASH_RESOLVE_SECONDS,'victoryShimmer',.19,.012,1013)];
   // The golden multiplier announces itself with an octave lift, then lands
   // as a compact victory chord on the visible total pulse.
   case 'multiply':return [note(0,523.25,.13,.034,'fanfare'),note(0,783.99,.13,.024,'fanfare'),
    note(0,261.63,.11,.024,'fanfare'),noise(0,'victorySnap',.085,.025,1019),
-   note(.17,1046.5,.17,.032,'fanfare'),note(.17,1318.5,.17,.022,'fanfare'),
-   note(.17,523.25,.15,.018,'fanfare'),
+   note(MULTIPLIER_LIFT_SECONDS,1046.5,.17,.032,'fanfare'),note(MULTIPLIER_LIFT_SECONDS,1318.5,.17,.022,'fanfare'),
+   note(MULTIPLIER_LIFT_SECONDS,523.25,.15,.018,'fanfare'),
    note(MULTIPLIER_RESOLVE_SECONDS,523.25,.32,.04,'fanfare'),
    note(MULTIPLIER_RESOLVE_SECONDS,659.25,.28,.027,'fanfare'),
    note(MULTIPLIER_RESOLVE_SECONDS,783.99,.25,.023,'fanfare'),
@@ -47,8 +49,8 @@ export function pinataSoundScore(kind,{index=0}={}){
   // raised octave chord confirms the new swing when its token hits the count.
   case 'extra':return [note(0,523.25,.105,.044,'chip'),note(0,783.99,.105,.03,'chip'),
    note(0,261.63,.09,.027,'fanfare'),noise(0,'reel',.045,.029,1031),
-   note(.14,523.25,.12,.044,'chip'),note(.14,783.99,.12,.03,'chip'),
-   noise(.14,'victorySnap',.08,.025,1033),
+   note(EXTRA_REPEAT_SECONDS,523.25,.12,.044,'chip'),note(EXTRA_REPEAT_SECONDS,783.99,.12,.03,'chip'),
+   noise(EXTRA_REPEAT_SECONDS,'victorySnap',.08,.025,1033),
    note(ENCORE_CATCH_SECONDS,1046.5,.29,.041,'chip'),
    note(ENCORE_CATCH_SECONDS,1318.5,.26,.026,'chip'),
    note(ENCORE_CATCH_SECONDS,783.99,.26,.022,'fanfare'),
@@ -151,7 +153,7 @@ export function pinataAudioCues(round){
  return welcome.concat([
   {kind:'swing',at:shot.startAt+SWING_SOUND_LEAD_MS},
   {kind:'hit',at:shot.hitAt},
-  {kind:shot.prize.kind,at:shot.hitAt+160},
+  {kind:shot.prize.kind,at:shot.hitAt+REWARD_SOUND_AFTER_MS},
   ...(final?[{kind:'burst',at:shot.hitAt+BREAK_DELAY},{kind:tier===2?'grand-rise':tier===1?'royal-rise':'rise',at:shot.finishAt+ROYAL_BUILDUP_MS},{kind:tier===2?'grand-final':tier===1?'royal-final':'final',at:shot.finishAt+finaleRevealAt(tier)}]:[])
  ].map(c=>({...c,id:shot.id+':'+c.kind,index:shot.index})));
 }
