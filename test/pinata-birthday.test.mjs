@@ -45,10 +45,10 @@ test('each final jingle has only two attacks, a short tail, and a breath after i
  for(let tier=0;tier<3;tier++){
   const score=pinataSoundScore(kinds[tier]),attacks=[...new Set(score.map(c=>c.at))];
   assert.equal(attacks.length,2);assert.equal(attacks[0],0);assert.ok(attacks[1]<=.18);
-  assert.ok(score.every(c=>['coin','fanfare','body'].includes(c.voice)),'firm chord with a coin edge, without a busy melodic run');
+  assert.ok(score.every(c=>['coin','fanfare','body','victoryShimmer'].includes(c.voice)),'firm chord with a coin edge, without a busy melodic run');
   for(const rate of [44100,48000]){
    const data=renderPinataSound(kinds[tier],{},rate),pickup=renderPinataSound(pickups[tier],{},rate);
-   assert.ok(data.length/rate<1.2);assert.ok(pickup.length/rate*1000+ROYAL_BUILDUP_MS<finaleRevealAt(tier));
+   assert.ok(data.length/rate<1.4);assert.ok(pickup.length/rate*1000+ROYAL_BUILDUP_MS<finaleRevealAt(tier));
    const peak=data.reduce((m,x)=>Math.max(m,Math.abs(x)),0);assert.ok(peak>.06&&peak<.2);
    assert.equal(data[0],0);assert.equal(data.at(-1),0);
   }

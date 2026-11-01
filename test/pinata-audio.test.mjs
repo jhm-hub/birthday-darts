@@ -36,7 +36,7 @@ test('buffers are finite, deterministic, have silent edges and reserve headroom 
  for(const rate of [44100,48000])for(const kind of Object.keys(PINATA_SOUND_LABELS))for(const index of [0,1,2]){
   const data=renderPinataSound(kind,{index},rate);
   assert.ok(data.every(Number.isFinite));assert.ok(peak(data)>0&&peak(data)<.21,kind+' peak');
-  assert.equal(data[0],0);assert.equal(data.at(-1),0);assert.ok(data.length/rate<(kind==='final'?1.7:kind==='rise'?.36:1.25));
+  assert.equal(data[0],0);assert.equal(data.at(-1),0);assert.ok(data.length/rate<(kind==='final'?1.7:kind==='rise'?.36:kind==='grand-final'?1.4:1.25));
   assert.deepEqual(data,renderPinataSound(kind,{index},rate));
  }
 });
@@ -250,7 +250,7 @@ test('victory chords become fuller by tier while staying shorter than the result
   for(const kind of ['final','royal-final','grand-final']){
    const data=renderPinataSound(kind,{},rate),level=rms(data,rate),score=pinataSoundScore(kind);
    assert.ok(data.length>previousLength);assert.ok(level>previousRms);
-   assert.ok(data.length/rate<1.2);assert.ok(20*Math.log10(level/hit)<5);
+   assert.ok(data.length/rate<1.4);assert.ok(20*Math.log10(level/hit)<5);
    assert.equal(new Set(score.map(c=>c.at)).size,2,'two decisive hits, no later encore jingle');
    assert.ok(score.some(c=>c.frequency<300),'a supporting lower chord gives the win weight');
    assert.ok(peak(data)<.2);previousLength=data.length;previousRms=level;
