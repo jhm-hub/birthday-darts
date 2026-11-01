@@ -10,3 +10,23 @@
 @media(max-width:520px){.viewer-range-form{grid-template-columns:1fr 1fr}.viewer-range-form label:first-child{grid-column:1/-1}.viewer-ranges{padding:16px}.viewer-range-row strong{min-width:0;flex-basis:100%}}
 
 .viewer-range-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.viewer-range-actions .range-demo{background:#eaa0cd;color:#27172e;border-color:#f8b7dd;font-weight:800;white-space:nowrap}.viewer-range-actions .range-demo:hover{background:#ffc1e4}.viewer-range-actions .range-demo:focus-visible{outline:2px solid #ffe1a1;outline-offset:3px}
+
+/* Four private range presets; the transparent game stage keeps its dimensions. */
+.game-ranges{margin:22px 0;padding:20px;background:#292033;border:1px solid #665077;border-radius:16px}
+.game-ranges h3{font-size:21px;margin:5px 0 10px}.game-ranges p,.custom-amount-settings p{font-size:13px;line-height:1.6;color:#d5c2dd}
+#game-range-editor{display:grid;gap:12px;margin:18px 0}.game-range-card{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px;background:#1f1928;border:1px solid #594262;border-radius:12px}
+.game-range-card label{display:grid;gap:7px;font-size:11px;min-width:0}.game-range-card label:first-child{grid-column:1/-1}.game-range-card input{width:100%;min-width:0;box-sizing:border-box}.game-range-card button{grid-column:1/-1;justify-self:start}
+.range-demo{background:#eaa0cd;color:#27172e;border:1px solid #f8b7dd;font-weight:800;border-radius:8px;padding:9px 14px;cursor:pointer}
+.custom-amount-settings{margin:20px 0;padding:16px;border:1px solid #51405e;border-radius:12px}.custom-amount-settings summary,.custom-start summary{cursor:pointer;color:#dec4df;font-size:13px;font-weight:700}
+.demo-game-field{display:grid;gap:10px;margin:18px 0}.demo-game-field select{width:100%;min-width:0}.demo-game-field button{justify-self:start}
+.remote .name-field,.remote-caption{grid-column:1/-1}.remote .name-field{max-width:460px}.range-starts{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.range-start-card{min-width:0;display:grid;gap:8px}
+.range-start-card [data-start-range]{width:100%;height:auto;min-height:88px;padding:14px 8px;flex-direction:column;gap:7px}.range-start-card strong{font-size:16px;overflow-wrap:anywhere}.range-start-card span{font-size:13px}.range-start-card .range-demo{height:34px;font-size:12px;box-shadow:none;background:#30233b;color:#efd1e9;border-color:#78597e}
+.custom-start{grid-column:1/-1}.custom-start p{font-size:12px;color:#d5c2dd}.custom-start button{height:40px;font-size:13px;padding:0 16px}.remote #throw{grid-column:1/-1;max-width:460px;width:100%}.remote #throw[hidden],#demo-stop[hidden]{display:none!important}
+.range-start-card button:focus-visible,.range-demo:focus-visible{outline:3px solid #ffe1a1;outline-offset:3px}
+@media(max-width:850px){.range-starts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.game-ranges{padding:14px}.game-range-card{padding:12px}.range-start-card strong{font-size:14px}.range-start-card span{font-size:12px}.game-ranges .range-note{font-size:12px}}
+
+.demo-game-field select{font:inherit;height:42px;background:#110d17;color:#fff0f7;border:1px solid #604352;border-radius:6px;padding:0 10px}.demo-game-field select:focus-visible{outline:3px solid #ffdb9d;outline-offset:3px}
+.game-range-card label{margin-bottom:0}.game-range-card input{height:40px}.game-range-card button{min-height:36px;padding:7px 14px}
+
+.game-range-card label:first-child{grid-column:1}.game-range-card button{grid-column:2;grid-row:1;align-self:end;justify-self:end;height:40px}.game-ranges .save-ranges{width:100%;margin-top:4px}

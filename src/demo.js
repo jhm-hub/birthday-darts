@@ -1,3 +1,4 @@
+import {dartsGameRange} from './darts-game-ranges.js';
 import {newWidgets,validateWidget,widgetSnapshot,applyWidgetAction,advanceWidgets,RESULT_HOLD_MS} from './widgets.js';
 import {CELEBRATION_CHOICES} from './celebrations.js';
 import {eligibleDartPrizes} from './darts-bonuses.js';
@@ -5,21 +6,22 @@ import {eligibleDartPrizes} from './darts-bonuses.js';
 export const DEMO_DART_PAUSE_MS=650;
 // A disposable game: no storage, pairing keys or stream connection.
 export function createDemo(){
- let state=null,error='Finish setting up a game to try it.',previewCelebration='',previewBonus='',viewer='',autoPlaying=false,nextThrowAt=null;
+ let state=null,error='Finish setting up a game to try it.',previewCelebration='',previewBonus='',viewer='',rangeId='custom',autoPlaying=false,nextThrowAt=null;
  function ensureReady(){if(error||!state)throw Error(error);}
  function stop(){autoPlaying=false;nextThrowAt=null;}
  function reset(){stop();previewBonus='';if(state){state.widgets[0].round=null;state.widgets[0].lastResult=null;state.revision++;}}
  function throwDart(now=Date.now()){
   ensureReady();advanceWidgets(state,now);
-  applyWidgetAction(state,{action:'throw',id:'demo',viewer:viewer||'Demo viewer'},now);
+  applyWidgetAction(state,{action:rangeId!=='custom'&&!state.widgets[0].round?'start-range':'throw',rangeId,id:'demo',viewer:viewer||'Demo viewer'},now);
  }
  return {
-  configure(input,validationError='',demoViewer=''){
+  configure(input,validationError='',demoViewer='',demoRange='custom'){
    stop();
    viewer=typeof demoViewer==='string'?demoViewer.trim().replace(/^@/,''):'';
    try{
     if(validationError)throw Error(validationError);
     const preset=validateWidget({...input,id:'demo',name:input?.name?.trim()||'Darts preview'});
+    if(demoRange!=='custom')dartsGameRange(preset.gameRanges,demoRange);rangeId=demoRange;
     state=newWidgets([preset]);error='';previewBonus='';
    }catch(e){error=e.message;if(state){state.widgets[0].round=null;state.widgets[0].lastResult=null;}}
   },
@@ -32,6 +34,7 @@ export function createDemo(){
   },
   previewBonus(kind,now=Date.now()){
    ensureReady();
+   if(rangeId!=='custom')throw Error('Choose Custom amounts before using a forced bonus sample.');
    if(viewer)throw Error('Clear the demo username before using a forced bonus sample.');
    if(!['multiply','extra','gold','stacked-gold'].includes(kind))throw Error('Choose a bonus preview from the buttons.');
    const draft=state.widgets[0];
@@ -63,7 +66,7 @@ export function createDemo(){
    // draws and balloon pool. Only its finale starts now; no live state exists.
    let cursor=now-60000;
    for(let i=0;i<16;i++){
-    applyWidgetAction(state,{action:'throw',id:'demo',viewer:viewer||'Demo viewer'},cursor);
+    throwDart(cursor);
     cursor=state.widgets[0].round.flight.finishAt;advanceWidgets(state,cursor);
     if(state.widgets[0].round.hideAt)break;
    }

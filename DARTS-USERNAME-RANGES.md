@@ -16,8 +16,8 @@ first three throws still follow the game’s settings. Every award comes from th
 value shown on the hit balloon, including its current gold boost. Classic boards
 also support ranges with prepared band values.
 
-These rounds replace ordinary cash amounts and random prize draws. The default
-amounts and odds still apply to viewers without a matching range. A multiplier-only
+These rounds replace ordinary cash amounts and random prize draws. For viewers without a matching username, the selected game range applies.
+Custom amounts and odds apply only when Faith chooses **Start custom game**. A multiplier-only
 game may not support an exact, very narrow range (for example exactly $1 with a
 required ×3); the game reports this before starting. Widen the range or enable
 another bonus if that happens. Totals and individual values can include cents.

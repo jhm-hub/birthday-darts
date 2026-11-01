@@ -6,6 +6,8 @@ A browser game for Faith's streams: enter a viewer's name, press once per dart, 
 
 **Simple stream setup:** https://jhm-hub.github.io/birthday-darts/setup.html
 
+**Four private Darts game buttons:** [range setup, demos and play](DARTS-FOUR-GAMES.md).
+
 **Recurring Darts username ranges:** [setup, demo and behavior](DARTS-USERNAME-RANGES.md).
 
 ## Playing

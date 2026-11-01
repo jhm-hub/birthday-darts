@@ -13,7 +13,7 @@ export function connectDemo(onSnapshot,audio){
   const data=event.data;
   try{
    if(data.type==='hello'){ready();return;}
-   if(data.type==='configure'||data.type==='play'){audio.cancel();game.configure(data.widget,data.error,data.viewer);game.selectCelebration(data.celebration);if(data.type==='play'){void audio.unlock();game.play();}}
+   if(data.type==='configure'||data.type==='play'){audio.cancel();game.configure(data.widget,data.error,data.viewer,data.rangeId);game.selectCelebration(data.celebration);if(data.type==='play'){void audio.unlock();game.play();}}
    else if(data.type==='stop')game.stop();
    else if(data.type==='throw'){void audio.unlock();game.throw();}
    else if(data.type==='finale'){audio.cancel();game.previewFinale();}

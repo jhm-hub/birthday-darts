@@ -1,3 +1,4 @@
+import {validateWidget} from './widgets.js';
 import {findDartsViewerRange,dartsViewerRangeText} from './darts-targets.js';
 import {dartsScore} from './darts-bonuses.js';
 import {CELEBRATION_CHOICES,chooseCelebration} from './celebrations.js';
@@ -7,20 +8,22 @@ export function createEditorPreview(readDraft){
  const frame=document.querySelector('#demo-frame'),button=document.querySelector('#demo-throw'),reset=document.querySelector('#demo-reset'),sound=document.querySelector('#demo-sound'),status=document.querySelector('#demo-status'),celebration=document.querySelector('#demo-celebration'),finale=document.querySelector('#demo-finale');
  const bonusPanel=document.querySelector('#demo-bonuses'),bonusButtons=[...bonusPanel.querySelectorAll('[data-demo-bonus]')];
  const viewer=document.querySelector('#demo-viewer'),match=document.querySelector('#demo-viewer-match');
- const stop=document.querySelector('#demo-stop');
+ const stop=document.querySelector('#demo-stop'),game=document.querySelector('#demo-game'),play=document.querySelector('#demo-play-range');
  let ready=false,artReady=false,artError=false,latest=null,lastState=null,validationError='',soundEnabled=false,pendingAuto=false,instance=null;
  function send(data){if(ready)frame.contentWindow.postMessage({kind:'darts-demo',...data},location.origin);}
- const configuration=()=>({widget:latest,error:validationError,celebration:celebration.value,viewer:viewer.value});
+ const configuration=()=>({widget:latest,error:validationError,celebration:celebration.value,viewer:viewer.value,rangeId:game.value});
  function configure(){send({type:'configure',...configuration()});}
  function startPending(){if(pendingAuto&&ready&&artReady){pendingAuto=false;send({type:'play',...configuration()});}}
  function refresh(){
   pendingAuto=false;
   latest=readDraft();
-  const rule=findDartsViewerRange(latest.viewerRanges,viewer.value);match.textContent=rule?'Testing @'+rule.username+' · '+dartsViewerRangeText(rule)+' final total. Cash values are prepared for this demo.':viewer.value.trim()?'No matching range · usual amounts and odds.':'Leave blank for the usual random game.';
+  for(const option of game.options){const range=latest.gameRanges?.find(r=>r.id===option.value);if(range)option.textContent=range.name+' · '+dartsViewerRangeText(range);}
+  const rule=findDartsViewerRange(latest.viewerRanges,viewer.value),range=latest.gameRanges?.find(r=>r.id===game.value);match.textContent=rule?'Testing @'+rule.username+' · '+dartsViewerRangeText(rule)+' final total. This username range takes priority.':range?range.name+' · '+dartsViewerRangeText(range)+' final total, including bonuses.':'Custom amounts · uses the saved cash values and odds.';
   bonusPanel.hidden=latest.theme!=='balloons';
   const b=latest.bonuses,labels={multiply:'×'+b.multiplier+(b.bonusDarts?' · +1 dart':' total'),extra:'+'+b.extraDarts+' dart'+(b.extraDarts===1?'':'s'),gold:'Gold +'+b.goldPercent+'%'+(b.bonusDarts?' · +1 dart':''),'stacked-gold':'Stacked +'+(b.goldPercent*2)+'%'};
   for(const control of bonusButtons){control.textContent=labels[control.dataset.demoBonus];control.disabled=true;}
   validationError=[...document.querySelectorAll('#settings input')].some(input=>!input.validity.valid)?'Finish the highlighted settings before throwing a demo dart.':'';
+  try{validateWidget(latest);}catch(e){validationError=e.message;}
   frame.parentElement.style.aspectRatio='1 / 1';
   button.disabled=true;finale.disabled=true;status.textContent=ready?'Updating preview…':'Loading preview…';
   configure();
@@ -30,8 +33,8 @@ export function createEditorPreview(readDraft){
   const r=data.snapshot?.round,finished=!!r?.hideAt,flight=!!r?.flight,playing=!!data.snapshot?.autoPlaying||pendingAuto;
   button.disabled=!artReady||!!data.error||!data.snapshot||flight||finished||playing;
   finale.disabled=!artReady||!!data.error||!data.snapshot||flight||playing;
-  for(const control of bonusButtons)control.disabled=finale.disabled||latest?.theme!=='balloons'||!!viewer.value.trim();
-  celebration.disabled=!artReady||flight||playing;reset.disabled=!data.snapshot;sound.disabled=false;stop.hidden=!playing;
+  for(const control of bonusButtons)control.disabled=finale.disabled||latest?.theme!=='balloons'||!!viewer.value.trim()||game.value!=='custom';
+  play.disabled=!artReady||!!data.error||!data.snapshot;celebration.disabled=!artReady||flight||playing;reset.disabled=!data.snapshot;sound.disabled=false;stop.hidden=!playing;
   button.textContent=playing?'Playing demo…':flight?'Throwing…':finished?'Total revealed':r?'Throw next demo dart':'Throw demo dart';
   soundEnabled=!!data.sound;sound.textContent=soundEnabled?'Sound on':'Sound off';sound.setAttribute('aria-pressed',String(soundEnabled));
   const selected=data.snapshot?.previewCelebration,variant=selected?CELEBRATION_CHOICES.find(c=>c.id===selected):chooseCelebration(r?.id,CELEBRATION_CHOICES);
@@ -52,7 +55,9 @@ export function createEditorPreview(readDraft){
  // Repeated handshakes from the same frame must not restart a running demo.
  const hello=()=>frame.contentWindow.postMessage({kind:'darts-demo',type:'hello'},location.origin);
  frame.addEventListener('load',hello);hello();
- viewer.addEventListener('input',refresh);
+ viewer.addEventListener('input',refresh);game.addEventListener('change',refresh);
+ function autoplay(){if(validationError)throw Error(validationError);pendingAuto=true;startPending();const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;frame.scrollIntoView({behavior:reduced?'instant':'smooth',block:'center'});}
+ play.addEventListener('click',()=>{try{refresh();autoplay();}catch(e){status.textContent=e.message;}});
  button.addEventListener('click',()=>{button.disabled=true;send({type:'throw'});});
  reset.addEventListener('click',()=>{pendingAuto=false;send({type:'reset'});});
  stop.addEventListener('click',()=>{pendingAuto=false;send({type:'stop'});});
@@ -60,12 +65,9 @@ export function createEditorPreview(readDraft){
  celebration.addEventListener('change',()=>send({type:'celebration',id:celebration.value}));
  finale.addEventListener('click',()=>{finale.disabled=true;send({type:'finale'});});
  for(const control of bonusButtons)control.addEventListener('click',()=>{for(const b of bonusButtons)b.disabled=true;button.disabled=true;finale.disabled=true;send({type:'bonus',bonus:control.dataset.demoBonus});});
- return {refresh,playViewer(username){
-  viewer.value=username;refresh();
+ return {refresh,playRange(id){if(![...game.options].some(o=>o.value===id))throw Error('Choose one of the game ranges.');game.value=id;viewer.value='';refresh();autoplay();},playViewer(username){
+  game.value='custom';viewer.value=username;refresh();
   if(!findDartsViewerRange(latest.viewerRanges,username))throw Error('That username range is no longer saved.');
-  if(validationError)throw Error(validationError);
-  pendingAuto=true;startPending();
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  frame.scrollIntoView({behavior:reduced?'instant':'smooth',block:'center'});
+  autoplay();
  }};
 }

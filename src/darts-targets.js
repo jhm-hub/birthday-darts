@@ -4,11 +4,15 @@ import {balloonDeck,hasDartBonuses,dartsScore,eligibleDartPrizes,drawDartPrize,g
 import {remainingBalloonSlots} from './balloon-slots.js';
 
 export const normalizeDartsUsername=value=>typeof value==='string'?value.trim().replace(/^@/,'').toLowerCase():'';
-export function validateDartsViewerRange(input){
- const username=normalizeDartsUsername(input?.username),min=Number(input?.min),max=Number(input?.max);
- if(!/^[a-z0-9_]{1,32}$/.test(username))throw Error('Use a username with 1–32 letters, numbers or underscores. A leading @ is optional.');
+export function validateDartsTotalRange(input){
+ const min=Number(input?.min),max=Number(input?.max);
  if(!Number.isInteger(min)||!Number.isInteger(max)||min<1||max>1000000||max<min)throw Error('Use whole-dollar totals from $1–$1,000,000, with maximum at least minimum.');
- return {username,min,max};
+ return {min,max};
+}
+export function validateDartsViewerRange(input){
+ const username=normalizeDartsUsername(input?.username);
+ if(!/^[a-z0-9_]{1,32}$/.test(username))throw Error('Use a username with 1–32 letters, numbers or underscores. A leading @ is optional.');
+ return {username,...validateDartsTotalRange(input)};
 }
 export function validateDartsViewerRanges(input=[]){
  if(!Array.isArray(input)||input.length>100)throw Error('Save up to 100 username ranges per game.');
@@ -88,11 +92,12 @@ function allocateCash(cash,budget,percent,pick){
  return null;
 }
 
-export function prepareDartsViewerRound(input,range,draw=randomInt){
- const rule=validateDartsViewerRange(range),round=structuredClone(input);
+export function prepareDartsTotalRound(input,range,draw=randomInt){
+ const rule=validateDartsTotalRange(range),round=structuredClone(input);
  const pick=bound=>{const n=draw(bound);if(!Number.isInteger(n)||n<0||n>=bound)throw Error('Invalid username-range draw.');return n;};
  // Keep private settings out of the frozen public game preset entirely.
  delete round.preset.viewerRanges;
+ delete round.preset.gameRanges;
  if(round.preset.theme!=='balloons'){
   const target=(rule.min+pick(rule.max-rule.min+1))*100,n=round.preset.darts,base=Math.floor(target/n),remainder=target%n;
   round.preset.outcomes=[{amountCents:base,weight:1},...(remainder?[{amountCents:base+1,weight:1}]:[])];
@@ -124,6 +129,10 @@ export function prepareDartsViewerRound(input,range,draw=randomInt){
   }
   if(!prepared)throw Error('This range cannot be prepared with these bonus settings. Widen the range or enable another bonus. No round was started.');
  }
+ return round;
+}
+export function prepareDartsViewerRound(input,range,draw=randomInt){
+ const rule=validateDartsViewerRange(range),round=prepareDartsTotalRound(input,rule,draw);
  round.privateViewerRange={...rule,version:1};
  return round;
 }
