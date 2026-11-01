@@ -128,3 +128,12 @@ html.pinata-overlay,html.pinata-overlay body{margin:0;width:100%;height:100%;ove
 .pina-bonus-particles[data-kind=extra] .pina-reward-fragment path:nth-child(2){fill:#9ef0d5}
 .pina-bonus-particles[data-kind=extra] .pina-reward-fragment path:nth-child(3){fill:#e6fff3}
 @media(prefers-reduced-motion:reduce){.pina-bonus-halo{display:none}}
+
+/* Jackpot accents occupy the crown's open sides; text and stream remain clear. */
+.pina-jackpot-frame{position:absolute;left:70px;top:125px;width:280px;height:170px;z-index:3;opacity:0;pointer-events:none;transform-origin:50% 65%}
+.pina-jackpot-particles{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.pina-jackpot-particles i{position:absolute;left:0;top:0;opacity:0;transform-origin:center;filter:drop-shadow(0 1px 0 #49233d66)}
+.pina-jackpot-particles[data-kind=extra] i:nth-child(4n) path:nth-child(2){fill:#9ef0d5}
+.pina-jackpot-particles[data-kind=multiply] i:nth-child(4n) path:nth-child(2){fill:#d7b4ff}
+.pina-reward[data-kind=cash] .pina-reward-kicker{color:#ffe6aa}
+@media(prefers-reduced-motion:reduce){.pina-jackpot-frame,.pina-jackpot-particles{display:none}}

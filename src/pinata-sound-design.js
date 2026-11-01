@@ -15,6 +15,12 @@ export const GRAND_RESOLVE_SECONDS=(GRAND_ENCORE_MS-GRAND_REVEAL_MS)/1000;
 
 const note=(at,frequency,length,gain,voice='bell')=>({at,frequency,length,gain,voice});
 const noise=(at,voice,length,gain,seed=41)=>({at,voice,length,gain,seed});
+// A short mechanical coin payout adds casino weight without another melody.
+function jackpotReward(score,kind){
+ const at=kind==='multiply'?MULTIPLIER_RESOLVE_SECONDS:kind==='extra'?ENCORE_CATCH_SECONDS:CASH_RESOLVE_SECONDS;
+ return score.map(c=>c.at===at&&c.voice==='fanfare'?{...c,gain:c.gain*1.06}:c).concat(
+  noise(at,'payout',.24,kind==='cash'?.018:.024,kind==='extra'?1409:1403));
+}
 const trims={arrival:1.2,swing:1.6,burst:1.6,rise:2.4,'royal-rise':2.4,'grand-rise':1.8};
 
 export function pinataSoundScore(kind,{index=0}={}){
@@ -27,14 +33,14 @@ export function pinataSoundScore(kind,{index=0}={}){
   case 'hit':return [noise(0,'body',.17,.105,821),note(.002,525*pitch,.115,.054,'wood'),noise(.001,'slap',.082,.12,839+variation*7),noise(.043,'rattle',.075,.025,853),noise(.086,'rattle',.065,.015,857)];
   // Cash stamps the award, then opens into a bright major ka-ching. The
   // lower chord carries on small speakers; the coin edge stays short and dry.
-  case 'cash':return [noise(0,'reel',.04,.026,1001),noise(0,'body',.09,.025,1009),
+  case 'cash':return jackpotReward([noise(0,'reel',.04,.026,1001),noise(0,'body',.09,.025,1009),
    note(0,392,.075,.028,'fanfare'),note(0,587.33,.075,.018,'fanfare'),
    note(CASH_RESOLVE_SECONDS,523.25,.32,.036,'fanfare'),note(CASH_RESOLVE_SECONDS,659.25,.29,.023,'fanfare'),
    note(CASH_RESOLVE_SECONDS,783.99,.26,.019,'fanfare'),note(CASH_RESOLVE_SECONDS,261.63,.23,.027,'fanfare'),
-   note(CASH_RESOLVE_SECONDS,2093,.2,.034,'coin'),noise(CASH_RESOLVE_SECONDS,'victoryShimmer',.19,.012,1013)];
+   note(CASH_RESOLVE_SECONDS,2093,.2,.034,'coin'),noise(CASH_RESOLVE_SECONDS,'victoryShimmer',.19,.012,1013)],kind);
   // The golden multiplier announces itself with an octave lift, then lands
   // as a compact victory chord on the visible total pulse.
-  case 'multiply':return [note(0,523.25,.13,.034,'fanfare'),note(0,783.99,.13,.024,'fanfare'),
+  case 'multiply':return jackpotReward([note(0,523.25,.13,.034,'fanfare'),note(0,783.99,.13,.024,'fanfare'),
    note(0,261.63,.11,.024,'fanfare'),noise(0,'victorySnap',.085,.025,1019),
    note(MULTIPLIER_LIFT_SECONDS,1046.5,.17,.032,'fanfare'),note(MULTIPLIER_LIFT_SECONDS,1318.5,.17,.022,'fanfare'),
    note(MULTIPLIER_LIFT_SECONDS,523.25,.15,.018,'fanfare'),
@@ -44,10 +50,10 @@ export function pinataSoundScore(kind,{index=0}={}){
    note(MULTIPLIER_RESOLVE_SECONDS,261.63,.24,.03,'fanfare'),
    note(MULTIPLIER_RESOLVE_SECONDS,2093,.2,.027,'coin'),
    noise(MULTIPLIER_RESOLVE_SECONDS,'body',.16,.032,1021),
-   noise(MULTIPLIER_RESOLVE_SECONDS,'victoryShimmer',.22,.015,1027)];
+   noise(MULTIPLIER_RESOLVE_SECONDS,'victoryShimmer',.22,.015,1027)],kind);
   // A punchy double credit salute has a different rhythm and timbre. The
   // raised octave chord confirms the new swing when its token hits the count.
-  case 'extra':return [note(0,523.25,.105,.044,'chip'),note(0,783.99,.105,.03,'chip'),
+  case 'extra':return jackpotReward([note(0,523.25,.105,.044,'chip'),note(0,783.99,.105,.03,'chip'),
    note(0,261.63,.09,.027,'fanfare'),noise(0,'reel',.045,.029,1031),
    note(EXTRA_REPEAT_SECONDS,523.25,.12,.044,'chip'),note(EXTRA_REPEAT_SECONDS,783.99,.12,.03,'chip'),
    noise(EXTRA_REPEAT_SECONDS,'victorySnap',.08,.025,1033),
@@ -57,7 +63,7 @@ export function pinataSoundScore(kind,{index=0}={}){
    note(ENCORE_CATCH_SECONDS,261.63,.23,.032,'fanfare'),
    note(ENCORE_CATCH_SECONDS,2093,.19,.028,'coin'),
    noise(ENCORE_CATCH_SECONDS,'body',.15,.032,1039),
-   noise(ENCORE_CATCH_SECONDS,'victoryShimmer',.2,.015,1049)];
+   noise(ENCORE_CATCH_SECONDS,'victoryShimmer',.2,.015,1049)],kind);
   case 'burst':return [noise(0,'tear',.29,.105,877),noise(.006,'body',.2,.065,881),
    ...[.035,.078,.127,.19,.27,.36,.47,.61].map((at,i)=>noise(at,'rattle',.065,.026-i*.002,907+i*23)),
    ...[1568,2093,1760].map((hz,i)=>note(.22+i*.125,hz,.12,.018-i*.003,'coin'))];
@@ -121,7 +127,11 @@ function renderVoice(cue,rate){
    else if(cue.voice==='warm')value=(sine+.15*Math.sin(phase*2))*Math.min(1,t/.018)*Math.exp(-u*3.4);
    else if(cue.voice==='pluck')value=(sine+.15*Math.sin(phase*2))*Math.exp(-u*6);
    else value=(sine+.19*Math.sin(phase*2.006)*Math.exp(-u*8)+.045*Math.sin(phase*3.97)*Math.exp(-u*16))*Math.exp(-u*4.2);
-  }else if(cue.voice==='reel')value=(.48*band+.32*Math.sin(2*Math.PI*(1750+(cue.seed%260))*t)+.2*Math.sin(2*Math.PI*980*t))*Math.exp(-u*9);
+  }else if(cue.voice==='payout'){
+   const local=t%.065,clink=Math.exp(-local*75)*Math.sin(Math.PI/2*Math.min(1,local/.0015))**2;
+   value=(.38*band+.44*Math.sin(2*Math.PI*2350*t)+.18*Math.sin(2*Math.PI*1730*t))*clink*(1-.65*u);
+  }
+  else if(cue.voice==='reel')value=(.48*band+.32*Math.sin(2*Math.PI*(1750+(cue.seed%260))*t)+.2*Math.sin(2*Math.PI*980*t))*Math.exp(-u*9);
   else if(cue.voice==='victorySnap')value=(.85*band+.15*Math.sin(2*Math.PI*190*t))*Math.exp(-t*48);
   else if(cue.voice==='victoryShimmer')value=band*Math.min(1,t/.008)*Math.exp(-u*4);
   else if(cue.voice==='swish')value=band*Math.sin(Math.PI*u)**1.9*(.45+.55*u);

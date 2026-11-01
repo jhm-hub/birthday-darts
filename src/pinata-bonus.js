@@ -39,7 +39,7 @@ export function rewardLabelPose(kind,after,quiet=false){
  const delay=kind==='cash'?120:REWARD_SOUND_AFTER_MS,enter=smooth((after-delay)/170);
  const beat=kind==='multiply'?multResolve:kind==='extra'?extraCatch:cashResolve;
  const accent=pulse(after,beat,35,170);
- return {y:Math.round(10*(1-enter)-2*accent),scale:1+.035*Math.sin(enter*Math.PI)+.045*accent,light:.22*accent};
+ return {y:Math.round(10*(1-enter)-4*accent),scale:1+.045*Math.sin(enter*Math.PI)+.085*accent,light:.28*accent};
 }
 
 export function bonusParticleSpec(i,kind){

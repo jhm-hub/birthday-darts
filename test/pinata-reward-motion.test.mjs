@@ -22,7 +22,7 @@ test('reward accents meet the cash chord, multiplier lift and payoff, and Encore
 test('bonus art and rotated traveling token stay inside the transparent stage and clear the labels',()=>{
  for(const kind of ['cash','multiply','extra'])for(let t=-100;t<=1600;t+=3){
   const p=bonusPose(kind,t),label=rewardLabelPose(kind,t);
-  assert.ok(Object.values(p).every(Number.isFinite));assert.ok(label.scale>=1&&label.scale<=1.08);assert.ok(label.y>=-2&&label.y<=10);
+  assert.ok(Object.values(p).every(Number.isFinite));assert.ok(label.scale>=1&&label.scale<=1.11);assert.ok(label.y>=-4&&label.y<=10);
   if(p.opacity>0){
    const extent=58*p.haloScale*p.scale;
    assert.ok(210-extent>24&&210+extent<396);assert.ok(220+p.y-extent>105&&220+p.y+extent<305);

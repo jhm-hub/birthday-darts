@@ -136,7 +136,7 @@ test('distinct bonus textures resolve on the visible bank pulse and token catch'
  assert.ok(multiplier.some(c=>c.voice==='fanfare')&&multiplier.some(c=>c.voice==='coin'));
  assert.ok(extra.some(c=>c.voice==='chip'));
  assert.ok(extra.some(c=>c.voice==='reel'));assert.notDeepEqual(multiplier,extra);
- for(const score of [multiplier,extra])assert.ok(score.every(c=>['chip','coin','reel','fanfare','body','victorySnap','victoryShimmer'].includes(c.voice)));
+ for(const score of [multiplier,extra])assert.ok(score.every(c=>['chip','coin','reel','fanfare','body','victorySnap','victoryShimmer','payout'].includes(c.voice)));
  const bankAt=160+MULTIPLIER_RESOLVE_SECONDS*1000,catchAt=160+ENCORE_CATCH_SECONDS*1000;
  assert.ok(bonusPose('multiply',bankAt).bankScale>1.11);
  const token=bonusPose('extra',catchAt);assert.equal(token.tokenX,352);assert.equal(token.tokenY,90);assert.ok(token.countScale>1);
