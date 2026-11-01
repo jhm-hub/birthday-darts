@@ -9,11 +9,19 @@ const rng=seed=>n=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed%n;
 function finish(round){let time=round.startedAt;while(round.remaining){const before=BigInt(giftTotal(round)),cells=availableGiftCells(round),shot=unwrapGift(round,time,{cell:cells.at(-1)});assert.ok(shot.prize.kind!=='cash'||shot.prize.value>0);time=shot.finishAt;advanceGiftRound(round,time);assert.ok(BigInt(giftTotal(round))>=before);round=JSON.parse(JSON.stringify(round));}return round;}
 function fixture(data=new Map()){let tail=Promise.resolve();return {data,store:createGiftStore({getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)},{request(_key,fn){const next=tail.then(fn);tail=next.catch(()=>{});return next;}})};}
 
-test('four editable ranges validate without silently assigning dollar limits',()=>{
- assert.equal(validateGiftRanges().length,4);assert.ok(validateGiftRanges().every(r=>r.min===null));
+test('four editable ranges use Faith’s approved starting limits and support disabling a button',()=>{
+ assert.equal(validateGiftRanges().length,4);assert.deepEqual(validateGiftRanges().map(r=>[r.min,r.max]),[[10,100],[100,1000],[1000,2500],[2500,10000]]);assert.ok(validateGiftRanges(emptyGiftRanges()).every(r=>r.min===null));
  for(const limits of [{min:5,max:null},{min:0,max:5},{min:5,max:4},{min:5.5,max:6},{min:1,max:1000001}])assert.throws(()=>validateGiftRanges(emptyGiftRanges().map((r,i)=>i? r:{...r,...limits})));
- assert.throws(()=>validateGiftRanges([]));assert.throws(()=>startGiftRange(DEFAULT_GIFTS,'range1'),/minimum/);
+ assert.throws(()=>validateGiftRanges([]));assert.throws(()=>startGiftRange({...DEFAULT_GIFTS,gameRanges:emptyGiftRanges()},'range1'),/minimum/);
  assert.equal(validateGiftRanges(setup().gameRanges)[0].min,100);
+});
+
+test('all four approved buttons start from an existing game with no saved range settings',async()=>{
+ const {store}=fixture();await store.init();assert.deepEqual(store.privateControls('gift-pile').ranges.map(r=>[r.min,r.max]),[[10,100],[100,1000],[1000,2500],[2500,10000]]);
+ for(const range of validateGiftRanges()){
+  const r=finish(startGiftRange(DEFAULT_GIFTS,range.id,'Viewer',0,rng(15)));
+  assert.ok(BigInt(giftTotal(r))>=BigInt(range.min*100)&&BigInt(giftTotal(r))<=BigInt(range.max*100));
+ }
 });
 
 test('1,800 complete rounds stay in range with truthful sums, bonuses and the early guarantee',()=>{

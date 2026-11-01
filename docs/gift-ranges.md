@@ -2,8 +2,9 @@
 
 In **gifts.html**, set a name, minimum and maximum for each of the four games, then
 choose **Save game**. Limits are whole dollars from $1 to $1,000,000; equal limits
-produce an exact total. Both limits may stay blank until Faith is ready to set up
-a button. No payout limits are assumed for existing saved games.
+produce an exact total. The starting ranges approved by Faith are **$10–$100**,
+**$100–$1,000**, **$1,000–$2,500** and **$2,500–$10,000**. Both limits may be cleared
+to disable a button. Existing custom ranges and active rounds are preserved.
 
 In **Open controls**, enter the viewer and press a game button. This reveals the
 board; click one present at a time or use **Unwrap for me**. Buttons lock until

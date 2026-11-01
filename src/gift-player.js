@@ -33,7 +33,7 @@ async function changeVolume(value){
  try{await session.setVolume(value);}catch(e){if(version===volumeVersion)$('#volume-status').textContent='Volume could not be saved. '+e.message;}
  finally{if(version===volumeVersion){volumeTarget=null;mixer.update(snapshot?.audio?.volume);}}
 }
-async function pick(cell=null){if(overlay||!connected||!viewReady||pending||snapshot?.round?.flight||snapshot?.round?.completedAt!==null&&snapshot?.round)return;pending=true;error='';render();try{if(audio.enabled)audio.unlock();receive(await session.unwrap($('#viewer').value,cell));}catch(e){error=e.message;}finally{pending=false;render();}}
+async function pick(cell=null){if(overlay||!connected||!viewReady||pending||!snapshot?.round&&snapshot?.controls?.ranges.some(r=>r.min!==null)||snapshot?.round?.flight||snapshot?.round?.completedAt!==null&&snapshot?.round)return;pending=true;error='';render();try{if(audio.enabled)audio.unlock();receive(await session.unwrap($('#viewer').value,cell));}catch(e){error=e.message;}finally{pending=false;render();}}
 async function startRange(id){if(overlay||!connected||!viewReady||pending||snapshot?.round)return;pending=true;error='';render();try{if(audio.enabled)audio.unlock();receive(await session.startRange(id,$('#viewer').value));}catch(e){error=e.message;}finally{pending=false;render();}}
 async function init(){
  if(overlay){session=connectGiftDisplay(receive,value=>{connected=value;render();});}

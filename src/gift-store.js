@@ -37,7 +37,9 @@ export function createGiftStore(storage,locks){
   async save(input){const p=validateGiftWidget(input);return lock(()=>{const s=read(),w=s.widgets.find(w=>w.id===p.id);if(w)Object.assign(w,p);else{if(s.widgets.length>=30)throw Error('Save up to 30 gift games.');s.widgets.push({...p,round:null,lastResult:null,room:randomKey()});}write(s);return p;});},
   async import(presets){return lock(()=>{const s=read();if(s.widgets.length+presets.length>30)throw Error('This backup would exceed 30 games.');for(const p of presets)s.widgets.push({...validateGiftWidget(p),round:null,lastResult:null,room:randomKey()});write(s);});},
   async startRange(id,rangeId,viewer='',now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);settle(s,now);if(w.round)throw Error('Finish this viewer’s round before starting another game.');w.round=startGiftRange(w,rangeId,viewer,now);write(s);return snapshot(id,now);});},
-  async unwrap(id,viewer,cell=null,now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);settle(s,now);if(!w.round){if(configuredGiftRanges(w).length)throw Error('Choose one of the four game buttons to start this viewer’s round.');w.round=startGiftRound(w,viewer,now);}unwrapGift(w.round,now,{cell});write(s);return snapshot(id,now);});},
+  // Keep the classic API compatible with older saved widgets; current controls
+  // require a range button before unwrapping whenever configured ranges appear.
+  async unwrap(id,viewer,cell=null,now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);settle(s,now);if(!w.round){if(w.gameRanges!==undefined&&configuredGiftRanges(w).length)throw Error('Choose one of the four game buttons to start this viewer’s round.');w.round=startGiftRound(w,viewer,now);}unwrapGift(w.round,now,{cell});write(s);return snapshot(id,now);});},
   async advance(now=Date.now()){return lock(()=>{const s=read();if(settle(s,now))write(s);});},
   subscribe(fn){listeners.add(fn);return ()=>listeners.delete(fn);},
   storageChanged(key){if(key===GIFT_STORE_KEY)for(const fn of listeners)fn();}

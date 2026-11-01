@@ -1,6 +1,7 @@
 export const GIFT_RANGE_IDS=Object.freeze(['range1','range2','range3','range4']);
 export const emptyGiftRanges=()=>GIFT_RANGE_IDS.map((id,i)=>({id,name:'Game '+(i+1),min:null,max:null}));
-export function validateGiftRanges(input=emptyGiftRanges()){
+export const defaultGiftRanges=()=>emptyGiftRanges().map((r,i)=>({...r,min:[10,100,1000,2500][i],max:[100,1000,2500,10000][i]}));
+export function validateGiftRanges(input=defaultGiftRanges()){
  if(!Array.isArray(input)||input.length!==4)throw Error('Use four gift game ranges.');
  return input.map((r,i)=>{
   if(r?.id!==GIFT_RANGE_IDS[i]||typeof r.name!=='string'||!r.name.trim()||r.name.trim().length>24)throw Error('Name each of the four games using 1–24 characters.');
