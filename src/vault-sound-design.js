@@ -50,20 +50,25 @@ export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888}={}
   const span=Math.max(.3,bridgeMs/1000),jewel=name==='finish-jewel';
   return [note(0,jewel?38:50,.12,.016,'punch'),foley(.02,'reel',span-.04,jewel?.026:.022,jewel?1213:1201),note(span-.14,jewel?86:81,.09,.022,'slot')];
  }
- // One rhythmic payoff on the same reveal beat; the bridge already supplies
- // anticipation. Long music-box tails and overlapping flourishes are gone.
+ // One jackpot phrase: a short pickup, separated chord strikes, then a
+ // small payout tail. The last-coins bridge replaces the pickup in live play.
  case 'linked-final':{const name=['standard','big','royal'][tier],hit=finalePose(0,tier).build/1000;return vaultSoundScore(name).filter(c=>c.at>=hit).map(c=>({...c,gain:c.gain*trims[name]}));}
- case 'standard':{const hit=finalePose(0,0).build/1000;return [note(0,74,.07,.022,'slot'),foley(hit,'seat',.11,.030,727),note(hit,50,.13,.025,'punch'),note(hit,86,.18,.042,'bell'),note(hit+.11,90,.09,.027,'slot'),note(hit+.22,93,.20,.034,'bell')];}
- case 'big':{const hit=finalePose(0,1).build/1000;return [note(0,74,.07,.022,'slot'),note(.11,81,.07,.020,'slot'),foley(hit,'seat',.14,.038,733),note(hit,50,.16,.034,'punch'),note(hit,86,.22,.048,'bell'),note(hit,74,.12,.014,'slot'),note(hit+.11,86,.08,.026,'slot'),note(hit+.22,90,.20,.036,'bell'),note(hit+.31,93,.08,.027,'slot'),note(hit+.44,98,.24,.041,'bell')];}
- case 'royal':{const hit=finalePose(0,2).build/1000;return [foley(0,'reel',.53,.025,501),note(.05,74,.07,.020,'slot'),note(.22,81,.07,.018,'slot'),note(.40,86,.08,.022,'slot'),foley(hit,'seat',.18,.054,751),note(hit,38,.16,.041,'punch'),note(hit,86,.22,.052,'bell'),note(hit,90,.18,.022,'bell'),note(hit+.11,93,.09,.025,'slot'),note(hit+.22,98,.22,.037,'bell'),note(hit+.34,93,.09,.025,'slot'),note(hit+.44,102,.26,.040,'bell'),note(hit+.70,98,.24,.030,'bell'),note(hit+.70,62,.12,.018,'punch')];}
+ case 'standard':{const hit=finalePose(0,0).build/1000;return [foley(0,'reel',.09,.018,727),note(hit,74,.14,.078,'jackpot'),foley(hit,'seat',.10,.023,729),foley(hit,'coin',.035,.018,731),note(hit+.22,86,.18,.045,'bell')];}
+ case 'big':{const hit=finalePose(0,1).build/1000;return [foley(.015,'reel',.12,.022,733),note(hit,74,.18,.073,'jackpot'),foley(hit,'seat',.12,.025,739),note(hit,86,.16,.022,'bell'),note(hit+.31,81,.21,.060,'jackpot'),note(hit+.62,98,.20,.035,'bell'),foley(hit+.62,'coin',.045,.018,743)];}
+ case 'royal':{const hit=finalePose(0,2).build/1000;return [foley(.04,'reel',.44,.030,751),note(hit,74,.22,.085,'jackpot'),foley(hit,'seat',.16,.045,757),note(hit,86,.18,.030,'bell'),note(hit+.34,81,.22,.073,'jackpot'),foley(hit+.34,'coin',.04,.021,761),note(hit+.84,86,.26,.075,'jackpot'),note(hit+.84,98,.24,.031,'bell'),...[0,1,2].map(i=>foley(hit+.97+i*.06,'coin',.035,.022-i*.003,769+i*13))];}
  case 'rich-lock':return [note(0,richness>1?38:50,.12,richness>1?.017:.013,'punch')];
  case 'rich-cash':return [note(0,50,.10,.014,'punch'),note(.05,86,.07,.015,'slot'),note(.13,98,.14,.020,'bell'),...(richness>1?[foley(.13,'coin',.055,.010,1129),note(.22,102,.07,.015,'slot')]:[])];
- case 'final-ovation':return vaultSoundScore('rich-final',{richness:1});
- case 'final-coronation':return vaultSoundScore('rich-final',{richness:2});
+ // Palette auditions are the complete live arrangement, not isolated
+ // accents that could make a large-win preview sound unexpectedly small.
+ case 'final-ovation':case 'final-coronation':{
+  const richness=name==='final-coronation'?2:1,hit=finalePose(0,2).build/1000;
+  return [...vaultSoundScore('royal'),...vaultSoundScore('rich-final',{richness}).map(c=>({...c,at:c.at+hit}))];
+ }
  case 'rich-final':{
-  if(richness<2)return [foley(0,'coin',.055,.016,1151),note(0,50,.11,.012,'punch'),foley(.33,'coin',.055,.014,1153),note(.33,86,.07,.013,'slot')];
-  const crown=VAULT_TREASURE_CORONATION_MS/1000,encore=VAULT_TREASURE_ENCORE_MS/1000;
-  return [foley(0,'reel',.25,.014,1163),foley(crown,'seat',.14,.026,1171),note(crown,38,.12,.018,'punch'),note(crown,98,.16,.027,'bell'),foley(encore,'coin',.055,.014,1181),note(encore,102,.18,.025,'bell')];
+  // The main jackpot carries the melody. Gold/jewel flourishes add only a
+  // quiet physical accent at the existing fan/crown/encore animation beats.
+  if(richness<2)return [foley(.33,'coin',.045,.014,1153)];
+  return [foley(VAULT_TREASURE_CORONATION_MS/1000,'seat',.09,.016,1171),foley(VAULT_TREASURE_ENCORE_MS/1000,'coin',.045,.014,1181)];
  }
  case 'rest-gold':return [note(0,86,.08,.008,'slot'),foley(.14,'coin',.05,.010,1237)];
  case 'rest-jewel':return [foley(0,'reel',.16,.009,1249),note(.12,81,.08,.008,'slot')];
@@ -97,6 +102,14 @@ function renderVoice(cue,sampleRate){
    if(cue.voice==='slot'){
     // A dry, fixed-pitch cabinet pulse. No swooping pitch or sustained pad.
     value=partials.reduce((sum,[h,gain])=>sum+gain*Math.sin(phase*h),0)*Math.exp(-u*4);
+   }else if(cue.voice==='jackpot'){
+    // A single staccato cabinet chord: root, third, fifth and octave. Finite
+    // harmonics stay below Nyquist; no detuning, vibrato, echo or reverb bed.
+    for(const [steps,weight] of [[0,.46],[4,.22],[7,.18],[12,.14]]){
+     const frequency=cue.frequency*2**(steps/12),p=2*Math.PI*frequency*t;
+     for(const [h,g] of [[1,.78],[2,.14],[3,.08]])if(h*frequency<sampleRate/2)value+=weight*g*Math.sin(p*h);
+    }
+    value*=Math.exp(-u*2.5);
    }else if(cue.voice==='punch'){
     const p=2*Math.PI*cue.frequency*(t+.12*(1-Math.exp(-35*t))/35);
     value=(.85*Math.sin(p)+.16*Math.sin(p*2))*Math.exp(-t*24);

@@ -17,6 +17,14 @@ function wav(data){
 const db=v=>v>0?20*Math.log10(v):null;
 function metrics(data){let peak=0,sum=0;for(const s of data){peak=Math.max(peak,Math.abs(s));sum+=s*s;}return {seconds:data.length/rate,peakDbFS:db(peak),rmsDbFS:db(Math.sqrt(sum/data.length)),defaultVolumePeakDbFS:db(peak*volume)};}
 const report={},reel=[];let at=0;
+// A concise comparison: Standard, Big, then Royal, at the same preview volume.
+const jackpots=[];let jackpotAt=0;
+for(const sound of ['standard','big','royal']){
+ jackpots.push({at:jackpotAt,sound});jackpotAt+=renderVaultSound(sound).length/rate+.75;
+}
+const jackpotMix=renderVaultSequence(jackpots,rate);
+report['jackpot-tiers']=metrics(jackpotMix);
+await writeFile(join(output,'jackpot-tiers.wav'),wav(jackpotMix));
 for(const [name,label] of Object.entries(VAULT_SOUND_LABELS)){
  const data=renderVaultSound(name,{index:4,tier:2},rate);report[name]={label,...metrics(data)};
  await writeFile(join(output,name+'.wav'),wav(data));reel.push({at,sound:name,options:{index:4,tier:2}});at+=data.length/rate+.65;

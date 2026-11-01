@@ -205,10 +205,10 @@ test('large prizes use one mechanism and payout cue, while finales retain balanc
 test('gold and jewel finales use distinct scores with their impacts on the animation clock',async()=>{
  const {VAULT_TREASURE_CORONATION_MS,VAULT_TREASURE_ENCORE_MS}=await import('../src/vault-treasure.js');
  const gold=vaultSoundScore('final-ovation'),jewel=vaultSoundScore('final-coronation');
- assert.notDeepEqual(gold,jewel);assert.deepEqual(gold,vaultSoundScore('rich-final',{richness:1}));assert.deepEqual(jewel,vaultSoundScore('rich-final',{richness:2}));
- assert.ok(gold.some(c=>c.at===.33&&c.voice==='coin'));
- assert.ok(jewel.some(c=>c.at===VAULT_TREASURE_CORONATION_MS/1000&&c.voice==='seat'));
- assert.ok(jewel.some(c=>c.at===VAULT_TREASURE_ENCORE_MS/1000&&c.voice==='coin'));
+ assert.notDeepEqual(gold,jewel);for(const [richness,score] of [[1,gold],[2,jewel]])assert.deepEqual(score,[...vaultSoundScore('royal'),...vaultSoundScore('rich-final',{richness}).map(c=>({...c,at:c.at+.6}))]);
+ assert.ok(gold.some(c=>Math.abs(c.at-.93)<1e-8&&c.voice==='coin'));
+ assert.ok(jewel.some(c=>c.at===.6+VAULT_TREASURE_CORONATION_MS/1000&&c.voice==='seat'));
+ assert.ok(jewel.some(c=>c.at===.6+VAULT_TREASURE_ENCORE_MS/1000&&c.voice==='coin'));
  for(const richness of [1,2]){
   const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);const r=sampleVaultFinale(DEFAULT_VAULT,2,1000);r.cashCents=richness===1?250000:750000;r.multiplier=1;
   a.sync(r,1000);a.sync(r,1600);const n=sources(ctx).length;assert.deepEqual(sources(ctx).at(-1).buffer.getChannelData(0),renderVaultSound('rich-final',{richness}));a.sync(structuredClone(r),1601);assert.equal(sources(ctx).length,n);
