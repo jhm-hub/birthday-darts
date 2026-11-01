@@ -22,10 +22,10 @@ function context(state='running'){
 const sources=ctx=>ctx.nodes.filter(n=>n.kind==='buffer');
 const round=(patch={})=>({id:'round',startedAt:0,flight:{id:'shot',index:0,startAt:2000,revealAt:2780,cashCents:2500,bonus:{kind:'multiply',value:2}},opened:[],completedAt:null,...patch});
 
-test('five locks use distinct accents and the mechanism follows the exact hinge clock',()=>{
+test('five locks keep distinct textures with only three mechanical layers',()=>{
  const scores=Array.from({length:5},(_,index)=>vaultSoundScore('unlock',{index}));
  assert.equal(new Set(scores.map(JSON.stringify)).size,5);
- for(const s of scores){assert.deepEqual(s.filter(c=>c.voice==='click').map(c=>c.at),[.045,.19]);const hinge=s.find(c=>c.voice==='hinge');assert.equal(hinge.at,.33);assert.equal(hinge.at+hinge.length,.94);assert.ok(Math.max(...s.map(c=>c.at+c.length))<1.2);}
+ for(const s of scores){assert.equal(s.length,3);assert.deepEqual(s.map(c=>c.voice),['click','bolt','hinge']);assert.deepEqual(s.filter(c=>c.voice==='click').map(c=>c.at),[.06]);const hinge=s.find(c=>c.voice==='hinge');assert.equal(hinge.at,.33);assert.equal(hinge.at+hinge.length,.94);assert.ok(Math.max(...s.map(c=>c.at+c.length))<1.2);}
  for(const [tier,name] of ['standard','big','royal'].entries())assert.ok(vaultSoundScore(name).some(c=>c.at===finalePose(0,tier).build/1000));
 });
 test('all original buffers are deterministic, finite, click-free at their edges and leave headroom',()=>{
@@ -272,4 +272,10 @@ test('the late celebration mix remains balanced for all configured tiers',()=>{
   const mix=renderVaultSequence([{at:0,sound:name},{at:build,sound:'rich-final',options:{richness}},{at:settle,sound:'rest-'+suffix},{at:farewell,sound:'clear-'+suffix}]);
   assert.ok(peak(mix)<.2);assert.ok(mix.length/48000<6.95);
  }
+});
+
+test('prepared doors add no pickup melodies and rich locks add only a low body',()=>{
+ assert.deepEqual(vaultSoundScore('first-unlock'),vaultSoundScore('unlock',{index:0}));
+ for(let index=0;index<5;index++)assert.deepEqual(vaultSoundScore('linked-unlock',{index}),vaultSoundScore('unlock',{index}));
+ for(const richness of [1,2]){const score=vaultSoundScore('rich-lock',{richness});assert.equal(score.length,1);assert.equal(score[0].voice,'warm');assert.equal(score[0].at,0);}
 });

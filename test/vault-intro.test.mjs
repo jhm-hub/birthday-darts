@@ -1,7 +1,7 @@
-import {VAULT_WELCOME_START_MS,VAULT_WELCOME_ECHO_MS} from '../src/vault-welcome-flow.js';
+import {VAULT_WELCOME_START_MS} from '../src/vault-welcome-flow.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {vaultIntro,VAULT_OPENING_REVEAL_MS,VAULT_OPENING_LOCK_MS} from '../src/vault-intro-motion.js';
+import {vaultIntro,VAULT_OPENING_REVEAL_MS} from '../src/vault-intro-motion.js';
 import {startVaultRound,unlockVault,sampleVaultFinale,DEFAULT_VAULT,VAULT_INTRO_MS} from '../src/vault-game.js';
 import {vaultSoundScore,renderVaultSound,renderVaultSequence} from '../src/vault-sound-design.js';
 
@@ -31,9 +31,9 @@ test('snapshots sample the saved clock and later chambers or finales never resta
  unlockVault(r,r.readyAt);assert.equal(vaultIntro(r,10500).active,false);
  assert.equal(vaultIntro(sampleVaultFinale(DEFAULT_VAULT,2,10000),10000).active,false);
 });
-test('opening lock clicks and reveal chord share the visual clock, with quiet stream headroom',()=>{
- const score=vaultSoundScore('intro');assert.deepEqual(score.filter(c=>c.voice==='click').map(c=>Math.round(c.at*1000)),VAULT_OPENING_LOCK_MS);
- assert.ok(score.some(c=>c.voice==='coin'&&c.at*1000===VAULT_OPENING_REVEAL_MS));
+test('sparse opening leaves lock lights silent and resolves on the exact balance beat',()=>{
+ const score=vaultSoundScore('intro');assert.equal(score.length,4);assert.ok(score.every(c=>!['click','coin','air'].includes(c.voice)));
+ assert.equal(score.filter(c=>c.at*1000===VAULT_OPENING_REVEAL_MS).length,2);
  for(const rate of [44100,48000]){
   const all=renderVaultSound('intro',{},rate),split=renderVaultSequence([{at:0,sound:'intro-arrive'},{at:.62,sound:'intro-balance'}],rate);
   assert.equal(all.length,split.length);assert.ok(all.every((v,i)=>Number.isFinite(v)&&Math.abs(v-split[i])<1e-7),'audition matches two live cues');
@@ -51,7 +51,7 @@ test('the arrival jewel hands off to the stationary frame before the balance app
 
 test('the new welcome audition matches the live arrival, balance and ready cues',()=>{
  const score=vaultSoundScore('intro');assert.ok(score.some(c=>c.voice==='glass'&&c.at*1000===VAULT_WELCOME_START_MS));
- assert.deepEqual(score.filter(c=>c.voice==='coin').map(c=>Math.round(c.at*1000)),[620,620+VAULT_WELCOME_ECHO_MS,620+VAULT_WELCOME_ECHO_MS*2]);
+ assert.equal(score.filter(c=>c.voice==='coin').length,0);assert.equal(vaultSoundScore('ready').length,1);
  for(const rate of [44100,48000]){
   const audition=renderVaultSound('welcome',{},rate),live=renderVaultSequence([{at:0,sound:'intro-arrive'},{at:.62,sound:'intro-balance'},{at:.94,sound:'ready'}],rate);
   assert.ok(Math.abs(audition.length-live.length)<=1);for(let i=0;i<Math.max(audition.length,live.length);i++)assert.ok(Math.abs((audition[i]??0)-(live[i]??0))<1e-7);

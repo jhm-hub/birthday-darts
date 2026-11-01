@@ -105,7 +105,7 @@ test('the next guide begins at the fitted bankroll catch and stays outside its d
   }
  }
 });
-test('the guide resolves at readiness and the prepared click keeps the original door mechanism',()=>{
+test('the guide resolves at readiness and the prepared click uses the simplified door mechanism',()=>{
  const sample=sampleVaultChamberHandoff(),at=sample.readyAt-VAULT_CHAMBER_GUIDE_LEAD_MS;
  assert.equal(at+VAULT_CHAMBER_GUIDE_TRAVEL_MS,sample.readyAt);
  assert.equal(vaultChamberHandoff(sample.before,at).focuses[1],0);
@@ -114,7 +114,7 @@ test('the guide resolves at readiness and the prepared click keeps the original 
  for(let index=1;index<20;index++){
   const original=vaultSoundScore('unlock',{index}),linked=vaultSoundScore('linked-unlock',{index});
   for(const voice of ['hinge','bolt','seat'])assert.deepEqual(linked.filter(c=>c.voice===voice),original.filter(c=>c.voice===voice));
-  assert.deepEqual(linked.filter(c=>c.voice==='click').map(c=>c.at),[.045,.19]);
+  assert.deepEqual(linked.filter(c=>c.voice==='click').map(c=>c.at),[.06]);
   const next=vaultSoundScore('next',{index});assert.ok(next.some(c=>c.at===VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000));
  }
 });

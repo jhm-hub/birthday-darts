@@ -11,21 +11,21 @@ test('first-door highlight is continuous across immediate and delayed clicks',()
   const ready=vaultOpeningHandoff(s.before,s.clickAt),clicked=vaultOpeningHandoff(s.flight,s.clickAt);
   assert.equal(ready.focus,.3);assert.equal(ready.attention,.06);assert.equal(clicked.focus,ready.focus);assert.equal(clicked.attention,ready.attention);
   for(const quiet of [false,true]){const a=vaultIntro(s.before,s.clickAt,quiet),b=vaultIntro(s.flight,s.clickAt,quiet);assert.deepEqual(a,b);assert.equal(a.amount,1);assert.equal(a.amountScale,1);}
-  let previous=clicked.focus;for(let t=0;t<=160;t+=5){const p=vaultOpeningHandoff(s.flight,s.clickAt+t);assert.ok(p.focus>=previous-1e-12&&p.focus<=.85);previous=p.focus;}
-  assert.equal(vaultOpeningHandoff(s.flight,s.clickAt+160).focus,.85);assert.equal(JSON.stringify(s),before);
+  let previous=clicked.focus;for(let t=0;t<=220;t+=5){const p=vaultOpeningHandoff(s.flight,s.clickAt+t);assert.ok(p.focus>=previous-1e-12&&p.focus<=.85);previous=p.focus;}
+  assert.equal(vaultOpeningHandoff(s.flight,s.clickAt+220).focus,.85);assert.equal(JSON.stringify(s),before);
  }
 });
 test('a waiting viewer keeps a steady first lock without auto-opening or changing awards',()=>{
  const s=sampleVaultOpeningHandoff(),r=s.before,before=JSON.stringify(r);
  assert.equal(vaultOpeningHandoff(r,r.startedAt+900).focus,0);
- for(const t of [r.readyAt+2000,r.readyAt+60000]){const p=vaultOpeningHandoff(r,t);assert.equal(p.focus,.3);assert.equal(p.attention,.06);assert.equal(p.lock,0);assert.ok(Array.from({length:10},(_,i)=>vaultOpeningTrail(r,i,t)).every(p=>!p.visible));}
+ for(const t of [r.readyAt+2000,r.readyAt+60000]){const p=vaultOpeningHandoff(r,t);assert.equal(p.focus,.3);assert.equal(p.attention,.06);assert.equal(p.lock,.14);assert.ok(Array.from({length:10},(_,i)=>vaultOpeningTrail(r,i,t)).every(p=>!p.visible));}
  assert.equal(JSON.stringify(r),before);assert.equal(r.flight,null);assert.equal(vaultTotal(r),'20000');
 });
-test('guide sparkles stay compact, away from the amount, and survive the first click continuously',()=>{
+test('guide sparkles stay compact and finish before the earliest first click',()=>{
  const s=sampleVaultOpeningHandoff(0);let count=0;
  for(let time=s.startAt;time<=s.startAt+1500;time+=10)for(let i=0;i<10;i++){
   const p=vaultOpeningTrail(s.before,i,time);assert.deepEqual(p,vaultOpeningTrail(s.flight,i,time));
-  if(p.visible){count++;assert.ok(i<4);assert.ok(p.x>=48&&p.x<=147);assert.ok(p.y>=167&&p.y<=388);assert.ok(p.opacity>0&&p.opacity<=.8);assert.ok(Number.isInteger(p.x)&&Number.isInteger(p.y));}
+  if(p.visible){count++;assert.ok(i<3);assert.ok(p.x>=48&&p.x<=147);assert.ok(p.y>=167&&p.y<=388);assert.ok(p.opacity>0&&p.opacity<=.8);assert.ok(Number.isInteger(p.x)&&Number.isInteger(p.y));}
  }
  assert.ok(count>0);assert.equal(vaultOpeningTrail(s.before,0,s.startAt+1500).visible,false);
 });
@@ -50,5 +50,31 @@ test('quiet musical bridge and first lock preserve mechanism timing and balanced
   for(const click of [1.2,1.55,3.2]){const mix=renderVaultSequence([{at:0,sound:'intro'},{at:.94,sound:'ready'},{at:click,sound:'first-unlock'}],rate);assert.ok(mix.every(Number.isFinite));assert.equal(mix[0],0);assert.equal(mix.at(-1),0);assert.ok(mix.reduce((m,x)=>Math.max(m,Math.abs(x)),0)<.2);
    if(click===3.2)assert.ok(mix.slice(Math.ceil(1.4*rate),Math.floor(3.2*rate)).every(x=>x===0),'wait does not loop or hum');
   }
+ }
+});
+
+// Wide plaques and an immediate click used to leave a trail over the amount
+// and into the moving lock. Keep the entire path outside the fitted number.
+test('opening guide follows the measured plaque and is settled by first readiness',()=>{
+ const s=sampleVaultOpeningHandoff(0);
+ for(const dock of [{left:14,y:382},{left:80,y:390},{left:147,y:388}])for(let i=0;i<3;i++){
+  const start=s.startAt+940+i*24;
+  const born=vaultOpeningTrail(s.before,i,start+1,false,dock);
+  assert.ok(Math.abs(born.x-dock.left)<=1);assert.ok(Math.abs(born.y-dock.y)<=1);
+  for(let t=start+1;t<s.startAt+1140;t+=5){const p=vaultOpeningTrail(s.before,i,t,false,dock);assert.ok(p.x>=14&&p.x<=147&&p.y>=167&&p.y<=dock.y);}
+  for(const t of [1140,1199,1200,1300])assert.equal(vaultOpeningTrail(s.before,i,s.startAt+t,false,dock).visible,false);
+ }
+ for(const wait of [0,350,60000]){
+  const a=sampleVaultOpeningHandoff(wait),p=vaultOpeningHandoff(a.before,a.clickAt),q=vaultOpeningHandoff(a.flight,a.clickAt);
+  assert.deepEqual(p,q);assert.equal(p.lock,.14);
+  assert.equal(vaultOpeningHandoff(a.flight,a.clickAt+220).lock,0);
+ }
+});
+test('opening presentation does not read private preset or viewer fields',()=>{
+ const s=sampleVaultOpeningHandoff(),changed=structuredClone(s.before);
+ changed.privateExperience={name:'extreme'};changed.privateViewerRange={min:999,max:999};changed.prizePlan=[999];
+ for(const t of [10620,10980,11100,11200,15000]){
+  assert.deepEqual(vaultOpeningHandoff(changed,t),vaultOpeningHandoff(s.before,t));
+  assert.deepEqual(vaultOpeningTrail(changed,0,t),vaultOpeningTrail(s.before,0,t));
  }
 });
