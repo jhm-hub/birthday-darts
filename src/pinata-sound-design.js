@@ -5,56 +5,48 @@ import {pinataTotal,projectedPinata} from './pinata-game.js';
 import {BREAK_DELAY} from './pinata-motion.js';
 import {finaleRevealAt} from './pinata-finale-timing.js';
 import {ARRIVAL_SOUND_AT} from './pinata-intro.js';
-export const PINATA_SOUND_LABELS={arrival:'Birthday crown welcome',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Cash sparkle',multiply:'Royal jewel multiplier',extra:'Encore mallet flourish',burst:'Crown crack and candy shower',rise:'Soft birthday pickup','royal-rise':'Soft golden pickup','royal-final':'Two-note royal finish','grand-rise':'Quiet jewel anticipation',final:'Two-note birthday finish','grand-final':'Warm grand royal finish'};
+export const PINATA_SOUND_LABELS={arrival:'Arcade ready clicks',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Coin payout',multiply:'Multiplier register',extra:'Encore credit awarded',burst:'Crown crack and coin candy',rise:'Birthday reel stop','royal-rise':'Royal reel stops','royal-final':'Royal coin win','grand-rise':'Grand reel anticipation',final:'Birthday coin win','grand-final':'Grand jackpot accent'};
 export const SWING_SOUND_LEAD_MS=310, ROYAL_BUILDUP_MS=40;
 // Offsets within the existing hit+160ms bonus cue: jewel/total pulse, then the
 // Encore token reaching the counter. One cue keeps late joins and mute atomic.
 export const MULTIPLIER_RESOLVE_SECONDS=.49, ENCORE_CATCH_SECONDS=.66;
 const note=(at,frequency,length,gain,voice='bell')=>({at,frequency,length,gain,voice});
 const noise=(at,voice,length,gain,seed=41)=>({at,voice,length,gain,seed});
-const trims={arrival:1.2,swing:1.6,multiply:1.25,extra:1.3,burst:1.6};
+const trims={arrival:1.2,swing:1.6,multiply:1.25,extra:1.3,burst:1.6,rise:2.4,'royal-rise':2.4,'grand-rise':1.8};
 
 export function pinataSoundScore(kind,{index=0}={}){
  const variation=((index%3)+3)%3,pitch=[1,.975,1.025][variation];
  switch(kind){
-  // A short celesta pickup welcomes the crown, then clears before the whoosh.
-  case 'arrival':return [note(0,523.25,.16,.014,'warm'),note(0,1046.5,.13,.039,'mallet'),
-   note(.055,1318.51,.12,.033,'bell'),note(.12,1568,.115,.031,'bell'),
-   note(.185,2093,.075,.012,'bell'),noise(.012,'silk',.105,.008,1063)];
+  // Dry, short ready blips clear before the swing. No music-box tail.
+  case 'arrival':return [note(0,784,.085,.024,'chip'),noise(0,'reel',.035,.018,1063),
+   note(.095,1046.5,.11,.028,'coin')];
   case 'swing':return [noise(0,'swish',.17,.085,811+variation*17)];
   case 'hit':return [noise(0,'body',.17,.105,821),note(.002,525*pitch,.115,.054,'wood'),noise(.001,'slap',.082,.12,839+variation*7),noise(.043,'rattle',.075,.025,853),noise(.086,'rattle',.065,.015,857)];
-  // The small cash sparkle leaves room for the richer, distinct bonus rewards.
-  case 'cash':return [1046,1319,1568].map((hz,i)=>note(i*.065,hz,.23,.035,'sine'));
-  // A warm E-major base blooms into crystalline upward steps. The small second
-  // chord follows the bank pulse; the soft tail clears before the royal finale.
-  case 'multiply':return [note(0,329.63,.38,.023,'warm'),note(0,659.25,.32,.036,'bell'),
-   note(.055,830.61,.31,.029,'bell'),note(.115,987.77,.3,.028,'bell'),note(.18,1318.51,.32,.034,'bell'),
-   noise(.015,'silk',.2,.018,1019),note(.28,1975.53,.27,.016,'bell'),
-   note(MULTIPLIER_RESOLVE_SECONDS,659.25,.33,.025,'warm'),
-   note(MULTIPLIER_RESOLVE_SECONDS,830.61,.31,.019,'warm'),
-   note(MULTIPLIER_RESOLVE_SECONDS,1318.51,.32,.026,'bell'),
-   note(.55,1661.22,.27,.014,'bell'),note(.61,1975.53,.22,.009,'bell')];
-  // Encore is rhythmic and rounded, with a separate bright catch as the mint
-  // token arrives. Its lower mallet notes contrast with the multiplier's glass.
-  case 'extra':return [note(0,587.33,.17,.052,'mallet'),note(.09,440,.14,.038,'mallet'),
-   note(.19,587.33,.18,.049,'mallet'),note(.29,739.99,.2,.046,'mallet'),note(.4,880,.22,.043,'mallet'),
-   note(ENCORE_CATCH_SECONDS,587.33,.23,.027,'mallet'),
-   note(ENCORE_CATCH_SECONDS,1174.66,.32,.029,'bell'),note(.715,1760,.21,.009,'bell')];
+  // A small coin doublet; bonuses answer with distinct registers and timing.
+  case 'cash':return [note(0,1318.5,.12,.047,'coin'),noise(0,'reel',.035,.014,1001),
+   note(.09,1760,.15,.044,'coin')];
+  case 'multiply':return [note(0,659.25,.11,.04,'chip'),note(.09,987.77,.12,.039,'chip'),
+   noise(0,'reel',.04,.017,1019),note(MULTIPLIER_RESOLVE_SECONDS,1975.53,.19,.052,'coin'),
+   note(MULTIPLIER_RESOLVE_SECONDS,659.25,.13,.016,'chip')];
+  // A lower double credit click, then the coin catch at the counter.
+  case 'extra':return [note(0,523.25,.095,.042,'chip'),noise(0,'reel',.04,.023,1027),
+   note(.12,523.25,.095,.038,'chip'),noise(.12,'reel',.04,.02,1031),
+   note(ENCORE_CATCH_SECONDS,1568,.17,.051,'coin'),
+   note(ENCORE_CATCH_SECONDS,783.99,.12,.015,'chip')];
   case 'burst':return [noise(0,'tear',.29,.105,877),noise(.006,'body',.2,.065,881),
    ...[.035,.078,.127,.19,.27,.36,.47,.61].map((at,i)=>noise(at,'rattle',.065,.026-i*.002,907+i*23)),
-   ...[1046.5,1318.5,1568,2093,1568,1318.5].map((hz,i)=>note(.22+i*.095,hz,.22,.026-i*.0015,'bell'))];
-  // Sparse pickups leave a breath before the total. Each payoff has only two
-  // attacks and a soft tail: no arpeggio run, stacked flourish or encore jingle.
-  case 'rise':return [note(0,392,.17,.018,'warm'),noise(.005,'silk',.15,.01,977)];
-  case 'royal-rise':return [note(0,392,.18,.022,'mallet'),note(.16,523.25,.2,.024,'mallet')];
-  case 'grand-rise':return [note(0,392,.55,.016,'warm'),noise(.08,'royalAir',.54,.014,1237),
-   note(.38,523.25,.31,.025,'mallet')];
-  case 'final':return [note(0,523.25,.3,.075,'mallet'),note(.14,659.25,.43,.075,'mallet'),
-   note(.14,261.63,.48,.025,'warm')];
-  case 'royal-final':return [note(0,523.25,.3,.075,'mallet'),note(.16,783.99,.46,.07,'mallet'),
-   note(.16,329.63,.5,.023,'warm'),note(.16,523.25,.48,.018,'warm')];
-  case 'grand-final':return [note(0,783.99,.3,.065,'mallet'),note(.16,1046.5,.56,.065,'mallet'),
-   note(.16,261.63,.72,.028,'warm'),note(.16,392,.65,.018,'warm'),note(.16,523.25,.6,.016,'warm')];
+   ...[1568,2093,1760].map((hz,i)=>note(.22+i*.125,hz,.12,.018-i*.003,'coin'))];
+  // Quiet reel-stop ticks build to two decisive attacks. The extra Grand
+  // confetti remains silent, leaving room for Faith's reaction.
+  case 'rise':return [noise(0,'reel',.045,.027,977),noise(.105,'reel',.05,.032,983)];
+  case 'royal-rise':return [0,.13,.26].map((at,i)=>noise(at,'reel',.045,.026+i*.004,991+i*17));
+  case 'grand-rise':return [0,.14,.265,.375,.47,.55].map((at,i)=>noise(at,'reel',.04,.022+i*.002,1237+i*13)).concat(note(.62,784,.09,.025,'chip'));
+  case 'final':return [note(0,1568,.15,.06,'coin'),note(0,523.25,.1,.024,'chip'),
+   note(.12,2093,.23,.073,'coin'),note(.12,659.25,.14,.026,'chip')];
+  case 'royal-final':return [note(0,1568,.16,.059,'coin'),note(0,659.25,.12,.025,'chip'),
+   note(.14,2349.32,.29,.069,'coin'),note(.14,783.99,.18,.027,'chip'),note(.14,1174.66,.17,.012,'coin')];
+  case 'grand-final':return [note(0,2093,.17,.059,'coin'),note(0,783.99,.13,.025,'chip'),
+   note(.16,2637.02,.36,.069,'coin'),note(.16,1046.5,.22,.028,'chip'),note(.16,1568,.25,.014,'coin')];
   default:throw Error('Unknown piñata sound: '+kind);
  }
 }
@@ -75,12 +67,15 @@ function renderVoice(cue,rate){
     const wave=cue.voice==='sine'?sine:8/(Math.PI*Math.PI)*(sine-Math.sin(phase*3)/9+Math.sin(phase*5)/25-Math.sin(phase*7)/49);
     const env=t<.006?t/.006:Math.exp(Math.log(.0001/cue.gain)*(t-.006)/(cue.length-.006));
     value=wave*env;
-   }else if(cue.voice==='wood')value=(sine+.43*Math.sin(phase*1.57)+.17*Math.sin(phase*2.23))*Math.exp(-t*48);
+   }else if(cue.voice==='coin')value=(sine+.3*Math.sin(phase*2.61)*Math.exp(-u*8)+.1*Math.sin(phase*4.13)*Math.exp(-u*13))*Math.exp(-u*5.6);
+   else if(cue.voice==='chip')value=(sine+.27*Math.sin(phase*3)+.1*Math.sin(phase*5))*Math.exp(-u*5.2);
+   else if(cue.voice==='wood')value=(sine+.43*Math.sin(phase*1.57)+.17*Math.sin(phase*2.23))*Math.exp(-t*48);
    else if(cue.voice==='mallet')value=(sine+.22*Math.sin(phase*2.76)*Math.exp(-u*9)+.07*Math.sin(phase*5.4)*Math.exp(-u*18))*Math.min(1,t/.004)*Math.exp(-u*4.8);
    else if(cue.voice==='warm')value=(sine+.15*Math.sin(phase*2))*Math.min(1,t/.018)*Math.exp(-u*3.4);
    else if(cue.voice==='pluck')value=(sine+.15*Math.sin(phase*2))*Math.exp(-u*6);
    else value=(sine+.19*Math.sin(phase*2.006)*Math.exp(-u*8)+.045*Math.sin(phase*3.97)*Math.exp(-u*16))*Math.exp(-u*4.2);
-  }else if(cue.voice==='swish')value=band*Math.sin(Math.PI*u)**1.9*(.45+.55*u);
+  }else if(cue.voice==='reel')value=(.48*band+.32*Math.sin(2*Math.PI*(1750+(cue.seed%260))*t)+.2*Math.sin(2*Math.PI*980*t))*Math.exp(-u*9);
+  else if(cue.voice==='swish')value=band*Math.sin(Math.PI*u)**1.9*(.45+.55*u);
   else if(cue.voice==='royalAir')value=band*Math.sin(Math.PI*u)**2*(.25+.75*u);
   else if(cue.voice==='silk')value=band*.42*Math.exp(-u*5);
   else if(cue.voice==='body'){

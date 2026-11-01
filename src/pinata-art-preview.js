@@ -4,15 +4,16 @@ import {beginPreviewClear} from './pinata-exit.js';
 
 const $=s=>document.querySelector(s);
 let time=0,playing=false,last=performance.now(),base,maxTime=4800;
-const exitScenes=['exit','large-exit','reset'],resetAt=3200;
+const resetScenes=['reset','royal-reset','grand-reset'];
+const exitScenes=['exit','royal-exit','grand-exit','large-exit',...resetScenes],resetAt=3200;
 $('#quiet').checked=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const view=createPinataView($('#art-preview'),{preview:true,clock:()=>time,quiet:()=>$('#quiet').checked});
 function scene(){
  const mode=$('#scene').value,preset=structuredClone(DEFAULT_PINATA),finish=['tier-0','tier-1','tier-2','break','last-multiply','large',...exitScenes].includes(mode);
- maxTime=mode==='exit'||mode==='large-exit'?9200:4800;$('#time').max=maxTime;
- for(const b of document.querySelectorAll('[data-exit]'))b.disabled=!exitScenes.includes(mode)||(b.dataset.exit==='700'&&mode!=='reset');
+ maxTime=exitScenes.includes(mode)&&!resetScenes.includes(mode)?9200:4800;$('#time').max=maxTime;
+ for(const b of document.querySelectorAll('[data-exit]'))b.disabled=!exitScenes.includes(mode)||(Number(b.dataset.exit)>450&&!resetScenes.includes(mode));
  if(mode==='large'||mode==='large-exit'){preset.outcomes[0].value=999999.99;preset.outcomes[1].value=999999.99;preset.outcomes[3].value=5;}
- if(mode.startsWith('tier-')){const amount=[75,750,2500][Number(mode.at(-1))];preset.outcomes[0].value=amount;preset.outcomes[1].value=amount;}
+ if(mode.startsWith('tier-')||['exit','royal-exit','grand-exit',...resetScenes].includes(mode)){const tier=mode.startsWith('tier-')?Number(mode.at(-1)):mode.startsWith('grand')?2:mode.startsWith('royal')?1:0,amount=[75,750,2500][tier];preset.outcomes[0].value=amount;preset.outcomes[1].value=amount;}
  if(mode==='worn'){preset.outcomes[4].value=3;preset.maxSwings=12;}
  base=startPinata(preset,'Birthday VIP',0);
  if(finish){
@@ -32,7 +33,7 @@ function render(){
  if(!exitScenes.includes(mode))round.hideAt=null;
  if(mode==='intro')readyAt=0;
  if(mode==='between'||mode==='between-back'){const nextAt=1850;if(mode==='between-back'){round=structuredClone(base);advancePinata(round,time);}if(time>=nextAt){advancePinata(round,nextAt);swingPinata(round,nextAt,{forcedIndex:0});advancePinata(round,time);}}
- if(mode==='reset'){if(time<resetAt)round.hideAt=null;else if(time<resetAt+CLEAR_MS)round=beginPreviewClear(round,resetAt);else{round=null;readyAt=resetAt+CLEAR_MS;}}
+ if(resetScenes.includes(mode)){if(time<resetAt)round.hideAt=null;else if(time<resetAt+CLEAR_MS)round=beginPreviewClear(round,resetAt);else{round=null;readyAt=resetAt+CLEAR_MS;}}
  view.update({serverNow:time,widget:base.preset,round},{readyAt});
  $('#time').value=Math.round(time);$('#time-label').textContent=(time/1000).toFixed(2)+'s';$('#pause').textContent=playing?'Pause':'Play';
 }
@@ -44,7 +45,7 @@ $('#replay').onclick=()=>{time=0;playing=true;last=performance.now();render();};
 $('#pause').onclick=()=>{playing=!playing;if(time>=maxTime)time=0;last=performance.now();render();};
 $('#time').oninput=e=>{time=Number(e.target.value);playing=false;render();};
 for(const button of document.querySelectorAll('[data-time]'))button.onclick=()=>{time=Number(button.dataset.time);playing=false;render();};
-for(const button of document.querySelectorAll('[data-exit]'))button.onclick=()=>{time=($('#scene').value==='reset'?resetAt:base.flight.finishAt+HOLD_MS)+Number(button.dataset.exit);playing=false;render();};
+for(const button of document.querySelectorAll('[data-exit]'))button.onclick=()=>{time=(resetScenes.includes($('#scene').value)?resetAt:base.flight.finishAt+HOLD_MS)+Number(button.dataset.exit);playing=false;render();};
 function tick(now){if(playing){time=Math.min(maxTime,time+Math.min(100,now-last)*Number($('#speed').value));if(time>=maxTime)playing=false;render();}last=now;frame=requestAnimationFrame(tick);}
 scene();let frame=requestAnimationFrame(tick);
 window.addEventListener('pagehide',()=>{cancelAnimationFrame(frame);view.dispose();},{once:true});

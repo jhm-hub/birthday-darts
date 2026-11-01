@@ -11,14 +11,14 @@ export const beginPreviewClear=(round,time)=>round?{...round,hideAt:time,manualC
 export function royalExitPose(round,time,quiet=false){
  const scheduled=Number.isFinite(round?.hideAt),age=scheduled?time-round.hideAt:-Infinity;
  const manual=Number.isFinite(round?.manualClearAt);
- const art=smooth((age+(manual?0:260))/(manual?200:360));
- const amount=smooth((age-70)/(CLEAR_MS-90));
+ const art=smooth((age+(manual?0:180))/(manual?260:360));
+ const amount=smooth((age-100)/(CLEAR_MS-130));
  return {sceneTime:age>=0?round.hideAt:time,silent:age>=0,finished:age>=CLEAR_MS,
   stageOpacity:age>=CLEAR_MS?0:1,
-  artOpacity:1-art,headingOpacity:1-smooth(age/260),
-  titleOpacity:1-smooth((age+(manual?0:140))/(manual?240:330)),
-  detailOpacity:1-smooth(age/260),amountOpacity:1-amount,
-  crestY:quiet?0:-3*art,amountY:quiet?0:3*amount};
+  artOpacity:1-art,headingOpacity:1-smooth((age-100)/260),
+  titleOpacity:1-amount,
+  detailOpacity:1-smooth(age/220),amountOpacity:1-amount,
+  crestY:quiet?0:-4*art,amountY:quiet?0:2*amount};
 }
 
 export function readyPose(age,quiet=false){
@@ -34,4 +34,11 @@ export function nextReadyAt(previous,next,time,current=null){
   return Number.isFinite(cleared)?Math.min(time,cleared+CLEAR_MS):time;
  }
  return current;
+}
+
+// Keep already-visible particles moving as they leave. Sampling the held frame
+// prevents a reset from starting a new burst or reviving an invisible particle.
+export function departingPose(sample,heldTime,liveTime){
+ const held=sample(heldTime);
+ return heldTime===liveTime||held.opacity<=0?held:sample(liveTime);
 }

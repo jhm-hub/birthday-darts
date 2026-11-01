@@ -3,6 +3,7 @@ import {join} from 'node:path';
 import {PINATA_SOUND_LABELS,renderPinataSound,renderPinataSequence,pinataAudioCues,ROYAL_BUILDUP_MS} from '../src/pinata-sound-design.js';
 import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata} from '../src/pinata-game.js';
 import {FINALE_REVEAL_MS} from '../src/pinata-finale.js';
+import {finaleRevealAt} from '../src/pinata-finale-timing.js';
 const directory=process.argv[2];if(!directory)throw Error('Pass the external review audio directory.');
 await mkdir(directory,{recursive:true});const rate=48000,volume=.45;
 function wav(data){
@@ -42,8 +43,14 @@ const comparison=renderPinataSequence([
  {at:2.62,kind:'burst'},{at:2.64,kind:'cash'},{at:3.5+ROYAL_BUILDUP_MS/1000,kind:'rise'},{at:3.5+FINALE_REVEAL_MS/1000,kind:'final'}
 ],rate);
 report['hit-and-break']=metrics(comparison);await writeFile(join(directory,'hit-and-break.wav'),wav(comparison));
-const royal=renderPinataSequence([{at:.1,kind:'rise'},{at:.1+(FINALE_REVEAL_MS-ROYAL_BUILDUP_MS)/1000,kind:'final'}],rate);
-report['royal-finale']=metrics(royal);await writeFile(join(directory,'royal-finale.wav'),wav(royal));
+const tierPreview=[];
+for(let tier=0;tier<3;tier++){
+ const pickup=['rise','royal-rise','grand-rise'][tier],payoff=['final','royal-final','grand-final'][tier],gap=(finaleRevealAt(tier)-ROYAL_BUILDUP_MS)/1000;
+ const data=renderPinataSequence([{at:.1,kind:pickup},{at:.1+gap,kind:payoff}],rate);
+ const name=['birthday-finale','royal-finale','grand-finale'][tier];report[name]=metrics(data);await writeFile(join(directory,name+'.wav'),wav(data));
+ tierPreview.push({at:.1+tier*1.6,kind:pickup},{at:.1+tier*1.6+gap,kind:payoff});
+}
+const preview=renderPinataSequence(tierPreview,rate);report['three-win-tiers']=metrics(preview);await writeFile(join(directory,'three-win-tiers.wav'),wav(preview));
 const welcome=sequence([0],1850);report['welcome-and-first-hit']=metrics(welcome);await writeFile(join(directory,'welcome-and-first-hit.wav'),wav(welcome));
 await writeFile(join(directory,'metrics.json'),JSON.stringify({rate,previewVolume:volume,report},null,2));
 console.log(JSON.stringify(report,null,2));

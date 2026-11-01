@@ -40,10 +40,11 @@ test('buffers are finite, deterministic, have silent edges and reserve headroom 
   assert.deepEqual(data,renderPinataSound(kind,{index},rate));
  }
 });
-test('three thwacks vary gently and the established cash motif stays intact',()=>{
+test('three thwacks vary gently and cash uses a short two-coin response',()=>{
  const hits=[0,1,2].map(index=>renderPinataSound('hit',{index}));assert.notDeepEqual(hits[0],hits[1]);assert.notDeepEqual(hits[1],hits[2]);
  const levels=hits.map(peak);assert.ok(20*Math.log10(Math.max(...levels)/Math.min(...levels))<1.5);
- assert.deepEqual(pinataSoundScore('cash').map(c=>c.frequency),[1046,1319,1568]);
+ const cash=pinataSoundScore('cash');assert.equal(new Set(cash.map(c=>c.at)).size,2);
+ assert.ok(cash.filter(c=>c.frequency).every(c=>c.voice==='coin'));assert.ok(renderPinataSound('cash').length/48000<.3);
 });
 test('busiest final hit and fastest round overlaps remain below -13 dBFS at full volume',()=>{
  for(const rate of [44100,48000])for(const kind of [0,3])for(const index of [0,1,2]){
@@ -132,13 +133,13 @@ test('muting during the royal entrance prevents its payoff and resetting cancels
 
 test('distinct bonus textures resolve on the visible bank pulse and token catch',()=>{
  const multiplier=pinataSoundScore('multiply'),extra=pinataSoundScore('extra');
- assert.ok(multiplier.some(c=>c.voice==='warm')&&multiplier.some(c=>c.voice==='bell'));
- assert.ok(extra.filter(c=>c.voice==='mallet').length>=4);
- assert.equal(multiplier.some(c=>c.voice==='mallet'),false);
+ assert.ok(multiplier.some(c=>c.voice==='chip')&&multiplier.some(c=>c.voice==='coin'));
+ assert.ok(extra.some(c=>c.voice==='reel'));assert.notDeepEqual(multiplier,extra);
+ for(const score of [multiplier,extra])assert.ok(score.every(c=>['chip','coin','reel'].includes(c.voice)));
  const bankAt=160+MULTIPLIER_RESOLVE_SECONDS*1000,catchAt=160+ENCORE_CATCH_SECONDS*1000;
  assert.ok(bonusPose('multiply',bankAt).bankScale>1.11);
  const token=bonusPose('extra',catchAt);assert.equal(token.tokenX,352);assert.equal(token.tokenY,90);assert.ok(token.countScale>1);
- assert.ok(extra.some(c=>c.at===ENCORE_CATCH_SECONDS&&c.voice==='bell'));
+ assert.ok(extra.some(c=>c.at===ENCORE_CATCH_SECONDS&&c.voice==='coin'));
  assert.ok(multiplier.some(c=>c.at===MULTIPLIER_RESOLVE_SECONDS));
  assert.ok(renderPinataSound('multiply').length/48000<(1500+ROYAL_BUILDUP_MS-HIT_MS-160)/1000,'bonus tail clears the finale build-up');
 });
@@ -153,11 +154,11 @@ test('bonus mixes retain their balance beside the simpler final notes at either 
  }
 });
 
-test('long bonus buffers still play once and mute/zero/reset cancels their tail',async()=>{
+test('bonus buffers still play once and mute/zero/reset cancels their tail',async()=>{
  for(const kind of [3,4])for(const action of ['mute','zero','reset']){
   const {a,ctx}=await player(),r=startPinata(DEFAULT_PINATA,'Bonus audio',-2000);
   swingPinata(r,-2000,{forcedIndex:0});advancePinata(r,-500);swingPinata(r,0,{forcedIndex:kind});a.update(r,HIT_MS+160);
-  const sound=sources(ctx).at(-1);assert.ok(sound.buffer.length/ctx.sampleRate>.8);
+  const sound=sources(ctx).at(-1);assert.ok(sound.buffer.length/ctx.sampleRate>(kind===3?MULTIPLIER_RESOLVE_SECONDS:ENCORE_CATCH_SECONDS));
   a.update(structuredClone(r),HIT_MS+161);assert.equal(sources(ctx).at(-1),sound);
   if(action==='mute')a.setEnabled(false);if(action==='zero')a.setVolume(0);if(action==='reset')a.update(null,900);
   assert.equal(sound.stops.at(-1),10.015);

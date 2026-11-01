@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,pinataTotal,HOLD_MS,CLEAR_MS} from '../src/pinata-game.js';
-import {royalExitPose,beginPreviewClear,readyPose,nextReadyAt,READY_MS} from '../src/pinata-exit.js';
+import {royalExitPose,beginPreviewClear,readyPose,nextReadyAt,READY_MS,departingPose} from '../src/pinata-exit.js';
+import {finaleParticlePose} from '../src/pinata-finale.js';
+import {tierParticlePose} from '../src/pinata-tier-motion.js';
 import {finalePose} from '../src/pinata-finale.js';
 import {finalHitAge} from '../src/pinata-handoff.js';
 
@@ -16,13 +18,13 @@ test('the exact amount holds while decorations leave, then fades inside the orig
   assert.equal(r.hideAt,r.completedAt+HOLD_MS);
   for(let t=r.hideAt-300;t<=r.hideAt+CLEAR_MS+100;t++){
    const p=royalExitPose(r,t);
-   if(t<=r.hideAt+70)assert.equal(p.amountOpacity,1);
-   if(t>=r.hideAt+430)assert.equal(p.amountOpacity,0);
-   if(t>=r.hideAt+100)assert.equal(p.artOpacity,0);
-   if(t>=r.hideAt+190)assert.equal(p.titleOpacity,0);
+   if(t<=r.hideAt+100)assert.equal(p.amountOpacity,1);
+   if(t>=r.hideAt+420)assert.equal(p.amountOpacity,0);
+   if(t>=r.hideAt+180)assert.equal(p.artOpacity,0);
+   assert.equal(p.titleOpacity,p.amountOpacity);
    assert.equal(p.finished,t>=r.hideAt+CLEAR_MS);
    for(const [key,v] of Object.entries(p))if(key.endsWith('Opacity'))assert.ok(v>=0&&v<=1);
-   assert.ok(Math.abs(p.crestY)<=3&&Math.abs(p.amountY)<=3);
+   assert.ok(Math.abs(p.crestY)<=4&&Math.abs(p.amountY)<=2);
    assert.equal(pinataTotal(r),value);
   }
   assert.deepEqual(r,original);
@@ -69,5 +71,34 @@ test('next-viewer entrance survives heartbeats and late snapshots without replay
   assert.equal(readyPose(t,true).crownY,0);
   assert.equal(readyPose(t,true).opacity,readyPose(t).opacity);
   assert.ok(readyPose(t).crownY>=0&&readyPose(t).crownY<=5);
+ }
+});
+
+
+test('an early reset keeps visible tier confetti moving without starting later bursts',()=>{
+ for(const tier of [0,1,2])for(const held of [430,730,1000,1300]){
+  let moving=0;
+  for(const [count,sample] of [[48,(i,t)=>finaleParticlePose(i,t,false,tier)],[120,(i,t)=>tierParticlePose(i,t,tier)]])for(let i=0;i<count;i++){
+   const at=t=>sample(i,t),a=at(held);
+   for(let elapsed=0;elapsed<260;elapsed+=13){
+    const p=departingPose(at,held,held+elapsed);
+    assert.deepEqual(p,a.opacity>0?at(held+elapsed):a);
+    if(a.opacity<=0)assert.equal(p.opacity,0,'hidden and future particles never reappear');
+    if(a.opacity>0&&p.opacity>0&&(p.x!==a.x||p.y!==a.y))moving++;
+   }
+  }
+  if(held===1000||(held===730&&tier<2))assert.ok(moving>0,`tier ${tier} continues its visible confetti`);
+ }
+});
+
+test('all tier labels stay attached to their exact totals throughout automatic and manual resets',()=>{
+ for(const value of [25,2000,10000]){
+  const r=startPinata({...DEFAULT_PINATA,swings:1,outcomes:[{kind:'cash',value,weight:1}]});swingPinata(r,0,{forcedIndex:0});advancePinata(r,1500);
+  for(const round of [r,beginPreviewClear(r,2500)])for(let age=0;age<=CLEAR_MS;age++){
+   const p=royalExitPose(round,round.hideAt+age);
+   assert.equal(p.titleOpacity,p.amountOpacity);
+   assert.equal(pinataTotal(round),String(value*100));
+   if(age>=CLEAR_MS){assert.equal(p.stageOpacity,0);assert.equal(p.amountOpacity,0);}
+  }
  }
 });
