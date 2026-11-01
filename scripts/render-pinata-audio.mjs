@@ -29,13 +29,15 @@ for(const [name,indices,gap] of [['sample-round',[0,3,1],1850],['fastest-round',
 }
 // Hear both bonuses after a thwack, then the special case where a final
 // multiplier overlaps the crown break and leads into the existing finale.
-for(const kind of ['multiply','extra']){
+for(const kind of ['cash','multiply','extra']){
  const data=renderPinataSequence([{at:.31,kind:'swing',options:{index:1}},
   {at:.48,kind:'hit',options:{index:1}},{at:.64,kind}],rate);
  report[kind+'-hit']=metrics(data);await writeFile(join(directory,kind+'-hit.wav'),wav(data));
 }
 const bonusComparison=renderPinataSequence([{at:.1,kind:'multiply'},{at:1.5,kind:'extra'}],rate);
 report['bonus-comparison']=metrics(bonusComparison);await writeFile(join(directory,'bonus-comparison.wav'),wav(bonusComparison));
+const rewardComparison=renderPinataSequence([{at:.1,kind:'cash'},{at:1.2,kind:'multiply'},{at:2.65,kind:'extra'}],rate);
+report['reward-celebrations']=metrics(rewardComparison);await writeFile(join(directory,'reward-celebrations.wav'),wav(rewardComparison));
 const lastBonus=sequence([0,0,3],1500);report['final-multiplier-round']=metrics(lastBonus);await writeFile(join(directory,'final-multiplier-round.wav'),wav(lastBonus));
 const comparison=renderPinataSequence([
  {at:.31,kind:'swing'},{at:.48,kind:'hit'},{at:.64,kind:'cash'},

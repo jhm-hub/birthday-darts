@@ -5,7 +5,7 @@ import {pinataTotal,projectedPinata} from './pinata-game.js';
 import {BREAK_DELAY} from './pinata-motion.js';
 import {finaleRevealAt,GRAND_ENCORE_MS,GRAND_REVEAL_MS} from './pinata-finale-timing.js';
 import {ARRIVAL_SOUND_AT} from './pinata-intro.js';
-export const PINATA_SOUND_LABELS={arrival:'Arcade ready clicks',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Coin payout',multiply:'Multiplier register',extra:'Encore credit awarded',burst:'Crown crack and coin candy',rise:'Birthday reel stop','royal-rise':'Royal reel stops','royal-final':'Royal arcade fanfare','grand-rise':'Grand reel anticipation',final:'Birthday victory chord','grand-final':'Grand Royal jackpot fanfare'};
+export const PINATA_SOUND_LABELS={arrival:'Arcade ready clicks',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Cash victory ka-ching',multiply:'Multiplier power-up fanfare',extra:'Encore credit celebration',burst:'Crown crack and coin candy',rise:'Birthday reel stop','royal-rise':'Royal reel stops','royal-final':'Royal arcade fanfare','grand-rise':'Grand reel anticipation',final:'Birthday victory chord','grand-final':'Grand Royal jackpot fanfare'};
 export const SWING_SOUND_LEAD_MS=310, ROYAL_BUILDUP_MS=40;
 export const GRAND_RESOLVE_SECONDS=(GRAND_ENCORE_MS-GRAND_REVEAL_MS)/1000;
 // Offsets within the existing hit+160ms bonus cue: jewel/total pulse, then the
@@ -13,7 +13,7 @@ export const GRAND_RESOLVE_SECONDS=(GRAND_ENCORE_MS-GRAND_REVEAL_MS)/1000;
 export const MULTIPLIER_RESOLVE_SECONDS=.49, ENCORE_CATCH_SECONDS=.66;
 const note=(at,frequency,length,gain,voice='bell')=>({at,frequency,length,gain,voice});
 const noise=(at,voice,length,gain,seed=41)=>({at,voice,length,gain,seed});
-const trims={arrival:1.2,swing:1.6,multiply:1.25,extra:1.3,burst:1.6,rise:2.4,'royal-rise':2.4,'grand-rise':1.8};
+const trims={arrival:1.2,swing:1.6,burst:1.6,rise:2.4,'royal-rise':2.4,'grand-rise':1.8};
 
 export function pinataSoundScore(kind,{index=0}={}){
  const variation=((index%3)+3)%3,pitch=[1,.975,1.025][variation];
@@ -23,17 +23,39 @@ export function pinataSoundScore(kind,{index=0}={}){
    note(.095,1046.5,.11,.028,'coin')];
   case 'swing':return [noise(0,'swish',.17,.085,811+variation*17)];
   case 'hit':return [noise(0,'body',.17,.105,821),note(.002,525*pitch,.115,.054,'wood'),noise(.001,'slap',.082,.12,839+variation*7),noise(.043,'rattle',.075,.025,853),noise(.086,'rattle',.065,.015,857)];
-  // A small coin doublet; bonuses answer with distinct registers and timing.
-  case 'cash':return [note(0,1318.5,.12,.047,'coin'),noise(0,'reel',.035,.014,1001),
-   note(.09,1760,.15,.044,'coin')];
-  case 'multiply':return [note(0,659.25,.11,.04,'chip'),note(.09,987.77,.12,.039,'chip'),
-   noise(0,'reel',.04,.017,1019),note(MULTIPLIER_RESOLVE_SECONDS,1975.53,.19,.052,'coin'),
-   note(MULTIPLIER_RESOLVE_SECONDS,659.25,.13,.016,'chip')];
-  // A lower double credit click, then the coin catch at the counter.
-  case 'extra':return [note(0,523.25,.095,.042,'chip'),noise(0,'reel',.04,.023,1027),
-   note(.12,523.25,.095,.038,'chip'),noise(.12,'reel',.04,.02,1031),
-   note(ENCORE_CATCH_SECONDS,1568,.17,.051,'coin'),
-   note(ENCORE_CATCH_SECONDS,783.99,.12,.015,'chip')];
+  // Cash stamps the award, then opens into a bright major ka-ching. The
+  // lower chord carries on small speakers; the coin edge stays short and dry.
+  case 'cash':return [noise(0,'reel',.04,.026,1001),noise(0,'body',.09,.025,1009),
+   note(0,392,.075,.028,'fanfare'),note(0,587.33,.075,.018,'fanfare'),
+   note(.105,523.25,.32,.036,'fanfare'),note(.105,659.25,.29,.023,'fanfare'),
+   note(.105,783.99,.26,.019,'fanfare'),note(.105,261.63,.23,.027,'fanfare'),
+   note(.105,2093,.2,.034,'coin'),noise(.105,'victoryShimmer',.19,.012,1013)];
+  // The golden multiplier announces itself with an octave lift, then lands
+  // as a compact victory chord on the visible total pulse.
+  case 'multiply':return [note(0,523.25,.13,.034,'fanfare'),note(0,783.99,.13,.024,'fanfare'),
+   note(0,261.63,.11,.024,'fanfare'),noise(0,'victorySnap',.085,.025,1019),
+   note(.17,1046.5,.17,.032,'fanfare'),note(.17,1318.5,.17,.022,'fanfare'),
+   note(.17,523.25,.15,.018,'fanfare'),
+   note(MULTIPLIER_RESOLVE_SECONDS,523.25,.32,.04,'fanfare'),
+   note(MULTIPLIER_RESOLVE_SECONDS,659.25,.28,.027,'fanfare'),
+   note(MULTIPLIER_RESOLVE_SECONDS,783.99,.25,.023,'fanfare'),
+   note(MULTIPLIER_RESOLVE_SECONDS,261.63,.24,.03,'fanfare'),
+   note(MULTIPLIER_RESOLVE_SECONDS,2093,.2,.027,'coin'),
+   noise(MULTIPLIER_RESOLVE_SECONDS,'body',.16,.032,1021),
+   noise(MULTIPLIER_RESOLVE_SECONDS,'victoryShimmer',.22,.015,1027)];
+  // A punchy double credit salute has a different rhythm and timbre. The
+  // raised octave chord confirms the new swing when its token hits the count.
+  case 'extra':return [note(0,523.25,.105,.044,'chip'),note(0,783.99,.105,.03,'chip'),
+   note(0,261.63,.09,.027,'fanfare'),noise(0,'reel',.045,.029,1031),
+   note(.14,523.25,.12,.044,'chip'),note(.14,783.99,.12,.03,'chip'),
+   noise(.14,'victorySnap',.08,.025,1033),
+   note(ENCORE_CATCH_SECONDS,1046.5,.29,.041,'chip'),
+   note(ENCORE_CATCH_SECONDS,1318.5,.26,.026,'chip'),
+   note(ENCORE_CATCH_SECONDS,783.99,.26,.022,'fanfare'),
+   note(ENCORE_CATCH_SECONDS,261.63,.23,.032,'fanfare'),
+   note(ENCORE_CATCH_SECONDS,2093,.19,.028,'coin'),
+   noise(ENCORE_CATCH_SECONDS,'body',.15,.032,1039),
+   noise(ENCORE_CATCH_SECONDS,'victoryShimmer',.2,.015,1049)];
   case 'burst':return [noise(0,'tear',.29,.105,877),noise(.006,'body',.2,.065,881),
    ...[.035,.078,.127,.19,.27,.36,.47,.61].map((at,i)=>noise(at,'rattle',.065,.026-i*.002,907+i*23)),
    ...[1568,2093,1760].map((hz,i)=>note(.22+i*.125,hz,.12,.018-i*.003,'coin'))];

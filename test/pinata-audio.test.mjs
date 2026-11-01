@@ -40,11 +40,11 @@ test('buffers are finite, deterministic, have silent edges and reserve headroom 
   assert.deepEqual(data,renderPinataSound(kind,{index},rate));
  }
 });
-test('three thwacks vary gently and cash uses a short two-coin response',()=>{
+test('three thwacks vary gently and cash has a compact two-beat victory chord',()=>{
  const hits=[0,1,2].map(index=>renderPinataSound('hit',{index}));assert.notDeepEqual(hits[0],hits[1]);assert.notDeepEqual(hits[1],hits[2]);
  const levels=hits.map(peak);assert.ok(20*Math.log10(Math.max(...levels)/Math.min(...levels))<1.5);
  const cash=pinataSoundScore('cash');assert.equal(new Set(cash.map(c=>c.at)).size,2);
- assert.ok(cash.filter(c=>c.frequency).every(c=>c.voice==='coin'));assert.ok(renderPinataSound('cash').length/48000<.3);
+ assert.ok(cash.some(c=>c.voice==='coin')&&cash.some(c=>c.voice==='fanfare'));assert.ok(renderPinataSound('cash').length/48000<.5);
 });
 test('busiest final hit and fastest round overlaps remain below -13 dBFS at full volume',()=>{
  for(const rate of [44100,48000])for(const kind of [0,3])for(const index of [0,1,2]){
@@ -133,9 +133,10 @@ test('muting during the royal entrance prevents its payoff and resetting cancels
 
 test('distinct bonus textures resolve on the visible bank pulse and token catch',()=>{
  const multiplier=pinataSoundScore('multiply'),extra=pinataSoundScore('extra');
- assert.ok(multiplier.some(c=>c.voice==='chip')&&multiplier.some(c=>c.voice==='coin'));
+ assert.ok(multiplier.some(c=>c.voice==='fanfare')&&multiplier.some(c=>c.voice==='coin'));
+ assert.ok(extra.some(c=>c.voice==='chip'));
  assert.ok(extra.some(c=>c.voice==='reel'));assert.notDeepEqual(multiplier,extra);
- for(const score of [multiplier,extra])assert.ok(score.every(c=>['chip','coin','reel'].includes(c.voice)));
+ for(const score of [multiplier,extra])assert.ok(score.every(c=>['chip','coin','reel','fanfare','body','victorySnap','victoryShimmer'].includes(c.voice)));
  const bankAt=160+MULTIPLIER_RESOLVE_SECONDS*1000,catchAt=160+ENCORE_CATCH_SECONDS*1000;
  assert.ok(bonusPose('multiply',bankAt).bankScale>1.11);
  const token=bonusPose('extra',catchAt);assert.equal(token.tokenX,352);assert.equal(token.tokenY,90);assert.ok(token.countScale>1);
@@ -144,13 +145,18 @@ test('distinct bonus textures resolve on the visible bank pulse and token catch'
  assert.ok(renderPinataSound('multiply').length/48000<(1500+ROYAL_BUILDUP_MS-HIT_MS-160)/1000,'bonus tail clears the finale build-up');
 });
 
-test('bonus mixes retain their balance beside the simpler final notes at either device rate',()=>{
+test('reward celebrations have body beside the thwack while leaving the final chord dominant',()=>{
  const windowRms=(data,rate)=>{const size=Math.round(rate*.1);let sum=0,best=0;for(let i=0;i<data.length;i++){sum+=data[i]**2;if(i>=size)sum-=data[i-size]**2;if(i>=size-1)best=Math.max(best,sum/size);}return Math.sqrt(best);};
  for(const rate of [44100,48000]){
   const mult=renderPinataSound('multiply',{},rate),extra=renderPinataSound('extra',{},rate),final=renderPinataSound('final',{},rate),hit=renderPinataSound('hit',{},rate);
   assert.ok(Math.abs(20*Math.log10(peak(mult)/peak(extra)))<1.5);
   assert.ok(Math.abs(20*Math.log10(windowRms(mult,rate)/windowRms(extra,rate)))<3.5);
-  for(const data of [mult,extra]){assert.ok(peak(data)<10**(-20/20));assert.ok(peak(data)<peak(final));assert.ok(windowRms(data,rate)<windowRms(hit,rate));}
+  for(const data of [renderPinataSound('cash',{},rate),mult,extra]){
+   const level=windowRms(data,rate),relative=20*Math.log10(level/windowRms(hit,rate));
+   assert.ok(peak(data)<10**(-17/20),'leave stream headroom');
+   assert.ok(relative>-3&&relative<2,'reward body stays present alongside the impact');
+   assert.ok(level<windowRms(final,rate),'the full-game finish stays strongest');
+  }
  }
 });
 
@@ -268,4 +274,16 @@ test('Grand resolution lands on the second birthday burst and leaves a breath be
  }
  const resolve=score.filter(c=>c.at===GRAND_RESOLVE_SECONDS);
  assert.ok(resolve.some(c=>c.frequency<150)&&resolve.some(c=>c.voice==='victoryShimmer'));
+});
+
+test('reward phrases clear the following gameplay or finale cue and stay rhythmically simple',()=>{
+ for(const rate of [44100,48000])for(const kind of ['cash','multiply','extra']){
+  const data=renderPinataSound(kind,{},rate),duration=data.length/rate;
+  const next=kind==='extra'?1500+SWING_SOUND_LEAD_MS:1500+ROYAL_BUILDUP_MS;
+  assert.ok(HIT_MS+160+duration*1000<=next-50,'finish before the next cue with a short breath');
+  const score=pinataSoundScore(kind);
+  assert.ok(new Set(score.map(c=>c.at)).size<=3,'avoid a busy melodic run');
+  assert.ok(score.some(c=>c.frequency<300),'give the reward a lower supporting chord');
+  assert.ok(duration<=1,'keep each individual reward compact');
+ }
 });
