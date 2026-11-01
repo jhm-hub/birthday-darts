@@ -4,7 +4,8 @@ import {doorFinish} from './vault-effects.js';
 import {VAULT_ART} from './vault-layout.js';
 
 export const VAULT_CHAMBER_GUIDE_LEAD_MS=260;
-export const VAULT_CHAMBER_GUIDE_TRAVEL_MS=200,VAULT_CHAMBER_GUIDE_STAGGER_MS=18;
+export const VAULT_CHAMBER_GUIDE_TRAVEL_MS=220,VAULT_CHAMBER_GUIDE_STAGGER_MS=18;
+export const VAULT_CHAMBER_CATCH_LEAD_MS=30;
 export const VAULT_WING_LEAD_MS=40;
 const prepare=(shot,time)=>ease((time-shot.finishAt+VAULT_CHAMBER_GUIDE_LEAD_MS)/VAULT_CHAMBER_GUIDE_LEAD_MS);
 // Derive links from saved awards, including an uncommitted +1 unlock. Nothing
@@ -35,7 +36,10 @@ export function vaultChamberHandoff(round,time,quiet=false){
  const wingBlend=quiet?Number(time>=link.from.finishAt):ease((time-link.from.finishAt+VAULT_WING_LEAD_MS)/300);
  const bank=link.wing?{bank:Math.floor(link.index/5),previous:Math.floor(link.from.index/5),blend:wingBlend}:vaultBankPose(round,time,quiet);
  const caughtAt=link.from.finishAt-VAULT_CHAMBER_GUIDE_LEAD_MS+VAULT_CHAMBER_GUIDE_TRAVEL_MS;
- const lock=quiet?0:.14*ease(((click?.startAt??time)-caughtAt)/60)*(1-blend);
+ // The lock catches the tail of the arriving glint rather than waiting for
+ // it to vanish. Reach the held pose exactly at manual readiness.
+ const catchSpan=VAULT_CHAMBER_GUIDE_LEAD_MS-VAULT_CHAMBER_GUIDE_TRAVEL_MS+VAULT_CHAMBER_CATCH_LEAD_MS;
+ const lock=quiet?0:.14*ease(((click?.startAt??time)-caughtAt+VAULT_CHAMBER_CATCH_LEAD_MS)/catchSpan)*(1-blend);
  return {linked:true,link,focuses,attention,bank,lock};
 }
 export function vaultChamberTrail(handoff,index,time,quiet=false,dock={left:138,right:282,y:386},target=null){
@@ -54,7 +58,7 @@ export function vaultChamberTrail(handoff,index,time,quiet=false,dock={left:138,
  // The receiving plaque supplies the origin; large totals stay unobstructed.
  const rail=Math.max(14,Math.min(406,(side<0?Math.min(start.x,end.x)-36:Math.max(start.x,end.x)+36)));
  const u=ease(t),v=1-u,c1={x:rail,y:start.y-55},c2={x:rail,y:end.y+36};
- return {visible:true,x:Math.round(v**3*start.x+3*v*v*u*c1.x+3*v*u*u*c2.x+u**3*end.x),y:Math.round(v**3*start.y+3*v*v*u*c1.y+3*v*u*u*c2.y+u**3*end.y),opacity:Math.min(1,t*10,(1-t)*6)*(.85-index*.12)};
+ return {visible:true,x:Math.round(v**3*start.x+3*v*v*u*c1.x+3*v*u*u*c2.x+u**3*end.x),y:Math.round(v**3*start.y+3*v*v*u*c1.y+3*v*u*u*c2.y+u**3*end.y),opacity:ease(t/.12)*(1-ease((t-.8)/.2))*[.9,.55,.28][index]};
 }
 export const vaultOtherAwardOpacity=(shot,time,quiet=false)=>!shot||time>=shot.finishAt?1:quiet?.7:1-.45*ease((time-shot.startAt)/220)*(1-ease((time-shot.finishAt+480)/480));
 

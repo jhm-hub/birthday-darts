@@ -27,20 +27,26 @@ export function vaultCollectionCoin(shot,index,time,dock,quiet=false,source=null
  // becomes the travelling coin at the exact same position, without a cut.
  if(age<0){const p=ease((age+VAULT_COIN_PICKUP_MS)/VAULT_COIN_PICKUP_MS);return {visible:true,x:Math.round(from.x),y:Math.round(from.y+2*(1-p)),opacity:p,flip:1,squash:1,landed:false};}
  const end={x:side<0?dock.left:dock.right,y:dock.y};
- if(age>=VAULT_COLLECT_TRAVEL_MS){const t=(age-VAULT_COLLECT_TRAVEL_MS)/55;return {visible:true,x:Math.round(end.x),y:Math.round(end.y+Math.sin(Math.PI*t)*2),opacity:1-ease(t),flip:1,squash:1-.4*Math.sin(Math.PI*t),landed:true};}
- const t=age/VAULT_COLLECT_TRAVEL_MS,u=shot.bonus?ease(t):t*t*(2-t),v=1-u;
+ // Turn face-on before contact, then tuck into the plaque edge. The short
+ // settle has no rebound or extra sound after the landing tick.
+ if(age>=VAULT_COLLECT_TRAVEL_MS){const t=(age-VAULT_COLLECT_TRAVEL_MS)/55;return {visible:true,x:Math.round(end.x),y:Math.round(end.y+2*ease(t)),opacity:1-ease(t),flip:1,squash:1-.35*ease(t),landed:true};}
+ const t=age/VAULT_COLLECT_TRAVEL_MS,u=ease(t),v=1-u;
+ const spin=[1,.65,.3,.65],faceAt=.75,face=ease((t-faceAt)/(1-faceAt));
+ const flip=t<faceAt?spin[Math.floor(t*8+index)%4]:spin[(6+index)%4]+(1-spin[(6+index)%4])*face;
  const rail=Math.max(14,Math.min(406,(side<0?Math.min(from.x,end.x)-40:Math.max(from.x,end.x)+40)));
  const c1={x:rail,y:from.y+22},c2={x:rail,y:end.y-32};
  return {visible:true,x:Math.round(v**3*from.x+3*v*v*u*c1.x+3*v*u*u*c2.x+u**3*end.x),
   y:Math.round(v**3*from.y+3*v*v*u*c1.y+3*v*u*u*c2.y+u**3*end.y),
-  opacity:pickup?1:clamp(age/32),flip:[1,.65,.3,.65][Math.floor(t*8+index)%4],squash:1,landed:false};
+  opacity:pickup?1:clamp(age/32),flip,squash:1,landed:false};
 }
 export function vaultCollectionBank(shot,time,quiet=false){
  const off={scale:1,gleam:0,catch:0};if(!shot||quiet||time>=shot.finishAt)return off;
  const age=time-vaultCollectAt(shot)-VAULT_COLLECT_TRAVEL_MS;
  if(age<=0||age>=220)return off;
  const level=vaultCashLevel(shot.cashCents),envelope=Math.sin(Math.PI*age/220)**2;
- // A single gentle response gathers the coins; no per-coin wobble of the digits.
- return {scale:1+[.008,.011,.014][level]*envelope,gleam:envelope,catch:envelope};
+ // Hold the edge light through the last coin. Its eased tail overlaps the
+ // next guide's departure, while the digits keep their original small pulse.
+ const catchLight=ease(age/72)*(1-ease((age-156)/64));
+ return {scale:1+[.008,.011,.014][level]*envelope,gleam:catchLight,catch:catchLight};
 }
 export function vaultCollectionGlyph(){return '<svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path d="M3 0H9V1H11V3H12V9H11V11H9V12H3V11H1V9H0V3H1V1H3Z" fill="#553047"/><path d="M3 1H9V2H11V9H9V11H3V10H1V3H3Z" fill="#e8b46b"/><path d="M3 1H9V2H11V4H9V3H3V9H1V3H3Z" fill="#fff3c6"/><path d="M4 3H8V4H9V8H8V9H4V8H3V4H4Z" fill="#f8d990"/><path d="M8 4H9V8H8ZM4 9H8V10H4Z" fill="#b9784f"/><path d="M5 4H7V5H6V8H4V6H5Z" fill="#ad754c"/></svg>';}

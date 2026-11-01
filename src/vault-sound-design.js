@@ -1,4 +1,4 @@
-import {VAULT_COLLECT_START_MS,VAULT_REVEAL_MS,VAULT_BONUS_DELAY_MS} from './vault-timing.js';
+import {VAULT_UNLOCK_MS,VAULT_COLLECT_START_MS,VAULT_REVEAL_MS,VAULT_BONUS_DELAY_MS} from './vault-timing.js';
 import {VAULT_OPENING_GUIDE_MS} from './vault-opening-handoff.js';
 import {VAULT_WELCOME_START_MS} from './vault-welcome-flow.js';
 import {VAULT_TREASURE_FAREWELL_MS} from './vault-treasure-coda.js';
@@ -10,17 +10,17 @@ import {VAULT_FAREWELL_LEAD_MS,VAULT_DOORS_SEATED_MS,VAULT_DOOR_CLOSE_START_MS} 
 import {finalePose} from './vault-effects.js';
 import {VAULT_TREASURE_CORONATION_MS,VAULT_TREASURE_ENCORE_MS} from './vault-treasure.js';
 import {VAULT_COLLECT_TRAVEL_MS,VAULT_COLLECT_STAGGER_MS,vaultCollectionTicks} from './vault-collection-motion.js';
-import {VAULT_CHAMBER_GUIDE_TRAVEL_MS} from './vault-chamber-handoff.js';
+import {VAULT_CHAMBER_GUIDE_TRAVEL_MS,VAULT_CHAMBER_GUIDE_LEAD_MS} from './vault-chamber-handoff.js';
 import {VAULT_CASH_LAND_MS} from './vault-cash-motion.js';
 import {VAULT_BONUS_LAND_MS} from './vault-bonus-motion.js';
 import {VAULT_OPENING_REVEAL_MS} from './vault-intro-motion.js';
 const midi=p=>440*2**((p-69)/12);
 const note=(at,pitch,length,gain=.04,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
 const foley=(at,voice,length,gain,seed=41)=>({at,voice,length,gain,seed});
-export const VAULT_SOUND_LABELS={welcome:'Next viewer entrance',intro:'Opening balance',ready:'First chamber invitation',next:'Bankroll → next lock','linked-unlock':'Prepared chamber unlock','first-unlock':'First chamber unlock',unlock:'Key turn & vault latch',cash:'Cash treasure',multiply:'Total multiplier',extra:'Extra unlock','multiply-payout':'Multiplier → coin payout','extra-payout':'+1 unlock → coin payout',collect:'Coins collected',wing:'Next crown wing',special:'Special vault entrance',settle:'Last treasure settles','finish-gold':'Gold finale build-up','finish-jewel':'Jewel finale build-up',standard:'Standard win',big:'Big win',royal:'Royal win','final-ovation':'Gilded ovation finale','final-coronation':'Crown coronation finale','rest-gold':'Gold celebration settles','rest-jewel':'Jewel celebration settles','clear-gold':'Gold vault farewell','clear-jewel':'Jewel vault farewell',rest:'Celebration settles',clear:'Soft vault farewell'};
-const trims={'multiply-payout':1,'extra-payout':1,welcome:1,'rest-gold':1,'rest-jewel':1,'clear-gold':1,'clear-jewel':1,'finish-gold':1,'finish-jewel':1,'linked-final':1,'final-ovation':1,'final-coronation':1,'rich-lock':1,'rich-cash':1,'rich-final':1,intro:1.2,'intro-arrive':1.2,'intro-balance':1.2,ready:2.4,next:2,'linked-unlock':1.35,'first-unlock':1.35,unlock:1.35,cash:1.6,multiply:1,extra:1.85,collect:1.6,wing:1.1,special:1.2,'special-prepare':1.2,'special-arrive':1.2,settle:1,standard:1.05,big:1.2,royal:1,rest:1.4,clear:1.45};
+export const VAULT_SOUND_LABELS={welcome:'Next viewer entrance',intro:'Opening balance',ready:'First chamber invitation',next:'Next lock ready','deposit-next':'Coins → next lock','linked-unlock':'Prepared chamber unlock','first-unlock':'First chamber unlock',unlock:'Key turn & vault latch',cash:'Cash treasure',multiply:'Total multiplier',extra:'Extra unlock','multiply-payout':'Multiplier → coin payout','extra-payout':'+1 unlock → coin payout',collect:'Coins collected',wing:'Next crown wing',special:'Special vault entrance',settle:'Last treasure settles','finish-gold':'Gold finale build-up','finish-jewel':'Jewel finale build-up',standard:'Standard win',big:'Big win',royal:'Royal win','final-ovation':'Gilded ovation finale','final-coronation':'Crown coronation finale','rest-gold':'Gold celebration settles','rest-jewel':'Jewel celebration settles','clear-gold':'Gold vault farewell','clear-jewel':'Jewel vault farewell',rest:'Celebration settles',clear:'Soft vault farewell'};
+const trims={'deposit-next':1,'multiply-payout':1,'extra-payout':1,welcome:1,'rest-gold':1,'rest-jewel':1,'clear-gold':1,'clear-jewel':1,'finish-gold':1,'finish-jewel':1,'linked-final':1,'final-ovation':1,'final-coronation':1,'rich-lock':1,'rich-cash':1,'rich-final':1,intro:1.2,'intro-arrive':1.2,'intro-balance':1.2,ready:2.4,next:2,'linked-unlock':1.35,'first-unlock':1.35,unlock:1.35,cash:1.6,multiply:1,extra:1.85,collect:1.6,wing:1.1,special:1.2,'special-prepare':1.2,'special-arrive':1.2,settle:1,standard:1.05,big:1.2,royal:1,rest:1.4,clear:1.45};
 export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888,bonus=false}={}){
- const bonusLand=VAULT_BONUS_LAND_MS/1000,room=((index%5)+5)%5,accent=[74,78,81,76,86][room];
+ const bonusLand=VAULT_BONUS_LAND_MS/1000,room=((index%5)+5)%5;
  switch(name){
  case 'welcome':return [...vaultSoundScore('intro').map(c=>({...c,gain:c.gain*trims.intro})),...vaultSoundScore('ready').map(c=>({...c,at:c.at+VAULT_OPENING_GUIDE_MS/1000,gain:c.gain*trims.ready}))];
  // Four layers: a quick reel pickup, an electronic tick, then one register
@@ -29,7 +29,10 @@ export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888,bon
  case 'intro-arrive':return vaultSoundScore('intro').filter(c=>c.at<VAULT_OPENING_REVEAL_MS/1000);
  case 'intro-balance':return vaultSoundScore('intro').filter(c=>c.at>=VAULT_OPENING_REVEAL_MS/1000).map(c=>({...c,at:c.at-VAULT_OPENING_REVEAL_MS/1000}));
  case 'ready':return [note(0,81,.13,.016,'slot')];
- case 'next':return [note(0,accent,VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000,.016,'slot')];
+ // One dry cabinet click as the guide reaches the next lock. No note under
+ // the travelling light, and no extra coin flourish between these beats.
+ case 'deposit-next':return [...vaultSoundScore('collect',{tier,bonus:true}).map(c=>({...c,gain:c.gain*trims.collect})),...vaultSoundScore('next',{index}).map(c=>({...c,at:c.at+(VAULT_UNLOCK_MS-VAULT_CHAMBER_GUIDE_LEAD_MS-VAULT_COLLECT_START_MS)/1000,gain:c.gain*trims.next}))];
+ case 'next':return [foley(VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000,'click',.045,.021,907+room*13)];
  // A key turns, the bolt releases, then a dry catch seats as the door stops.
  // No sustained motor/hinge hum beneath the cash reveal.
  case 'linked-unlock':return vaultSoundScore('unlock',{index});

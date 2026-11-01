@@ -1,7 +1,7 @@
 import test from 'node:test';
 import {vaultCollectionBank,vaultCollectionCoin} from '../src/vault-collection-motion.js';
 import assert from 'node:assert/strict';
-import {vaultChamberHandoff,vaultChamberLinks,vaultChamberTrail,vaultOtherAwardOpacity,sampleVaultChamberHandoff,vaultChamberSampleRound,VAULT_CHAMBER_GUIDE_LEAD_MS,VAULT_CHAMBER_GUIDE_TRAVEL_MS,VAULT_CHAMBER_GUIDE_STAGGER_MS} from '../src/vault-chamber-handoff.js';
+import {vaultChamberHandoff,vaultChamberLinks,vaultChamberTrail,vaultOtherAwardOpacity,sampleVaultChamberHandoff,vaultChamberSampleRound,VAULT_CHAMBER_GUIDE_LEAD_MS,VAULT_CHAMBER_GUIDE_TRAVEL_MS,VAULT_CHAMBER_GUIDE_STAGGER_MS,VAULT_CHAMBER_CATCH_LEAD_MS} from '../src/vault-chamber-handoff.js';
 import {advanceVault,unlockVault,vaultTotal,DEFAULT_VAULT,sampleVaultFinale,cleanVaultRound,startVaultRound} from '../src/vault-game.js';
 import {chamberDoorTransforms} from '../src/vault-layout.js';
 import {chamberPose} from '../src/vault-motion.js';
@@ -29,7 +29,7 @@ test('late controller commits preserve the handoff, wing blend and exact once-on
   assert.equal(JSON.stringify(s.before),old);assert.deepEqual(vaultChamberHandoff(cleanVaultRound(s.before),s.readyAt).bank,vaultChamberHandoff(s.before,s.readyAt).bank);
  }
 });
-test('a prepared bonus wing opens no doors and keeps manual readiness at two seconds',()=>{
+test('a prepared bonus wing opens no doors and keeps manual readiness on the saved finish clock',()=>{
  const s=sampleVaultChamberHandoff(4),r=structuredClone(s.waiting);
  for(const time of [s.readyAt-320,s.readyAt-40,s.readyAt,s.readyAt+260,s.readyAt+60000]){
   const p=vaultChamberHandoff(s.before,time);assert.equal(p.bank.bank,1);assert.equal(p.bank.previous,0);assert.ok(p.bank.blend>=0&&p.bank.blend<=1);
@@ -107,7 +107,7 @@ test('the next guide begins at the fitted bankroll catch and stays outside its d
 });
 test('the guide resolves at readiness and the prepared click uses the simplified door mechanism',()=>{
  const sample=sampleVaultChamberHandoff(),at=sample.readyAt-VAULT_CHAMBER_GUIDE_LEAD_MS;
- assert.equal(at+VAULT_CHAMBER_GUIDE_TRAVEL_MS,sample.readyAt-60);
+ assert.equal(at+VAULT_CHAMBER_GUIDE_TRAVEL_MS,sample.readyAt-40);
  assert.equal(vaultChamberHandoff(sample.before,at).focuses[1],0);
  assert.equal(vaultChamberHandoff(sample.waiting,sample.readyAt).focuses[1],.3);
  for(let i=0;i<3;i++)assert.equal(vaultChamberTrail(vaultChamberHandoff(sample.waiting,sample.readyAt+40),i,sample.readyAt+40).visible,false);
@@ -115,18 +115,19 @@ test('the guide resolves at readiness and the prepared click uses the simplified
   const original=vaultSoundScore('unlock',{index}),linked=vaultSoundScore('linked-unlock',{index});
   for(const voice of ['key','bolt','latch'])assert.deepEqual(linked.filter(c=>c.voice===voice),original.filter(c=>c.voice===voice));
   assert.deepEqual(linked.filter(c=>c.voice==='key').map(c=>c.at),[.06]);
-  const next=vaultSoundScore('next',{index});assert.equal(next.length,1);assert.equal(next[0].at,0);assert.equal(next[0].length,VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000);
+  const next=vaultSoundScore('next',{index});assert.equal(next.length,1);assert.equal(next[0].voice,'click');assert.equal(next[0].at,VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000);assert.equal(next[0].length,.045);
  }
 });
 
 test('every guide arrives before readiness and the caught lock survives paused or immediate clicks',()=>{
  for(const index of [0,1,2,3,4])for(const wait of [0,400,60000]){
-  const s=sampleVaultChamberHandoff(index,wait),catchAt=s.readyAt-60;
+  const s=sampleVaultChamberHandoff(index,wait),catchAt=s.readyAt-40;
   for(let i=0;i<3;i++){
    assert.equal(vaultChamberTrail(vaultChamberHandoff(s.before,catchAt-1),i,catchAt-1).visible,true);
    for(const t of [catchAt,s.readyAt,s.clickAt,s.clickAt+100])assert.equal(vaultChamberTrail(vaultChamberHandoff(vaultChamberSampleRound(s,t),t),i,t).visible,false);
   }
-  assert.equal(vaultChamberHandoff(s.before,catchAt).lock,0);
+  assert.equal(vaultChamberHandoff(s.before,catchAt-VAULT_CHAMBER_CATCH_LEAD_MS).lock,0);
+  assert.ok(vaultChamberHandoff(s.before,catchAt).lock>0);
   const waiting=vaultChamberHandoff(s.waiting,s.clickAt),clicked=vaultChamberHandoff(s.flight,s.clickAt);
   assert.equal(waiting.lock,.14);assert.equal(clicked.lock,waiting.lock);
   assert.equal(vaultChamberHandoff(s.flight,s.clickAt+220).lock,0);

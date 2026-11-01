@@ -19,6 +19,8 @@ function metrics(data){let peak=0,sum=0;for(const s of data){peak=Math.max(peak,
 const report={},reel=[];let at=0;
 const payoutMix=renderVaultSequence([{at:0,sound:'multiply-payout',options:{tier:2}},{at:1.6,sound:'extra-payout',options:{tier:2}}],rate);
 report['bonus-payouts']=metrics(payoutMix);await writeFile(join(output,'bonus-payouts.wav'),wav(payoutMix));
+const depositMix=renderVaultSequence([{at:0,sound:'deposit-next',options:{tier:2,index:1}},{at:1.45,sound:'linked-unlock',options:{index:1}}],rate);
+report['coins-next-unlock']=metrics(depositMix);await writeFile(join(output,'coins-next-unlock.wav'),wav(depositMix));
 const signatureMix=renderVaultSequence([{at:0,sound:'multiply'},{at:1.15,sound:'extra'}],rate);
 report['bonus-signatures']=metrics(signatureMix);
 await writeFile(join(output,'bonus-signatures.wav'),wav(signatureMix));
