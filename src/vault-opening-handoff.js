@@ -15,11 +15,11 @@ export function vaultOpeningHandoff(round,time,quiet=false){
  if(quiet)return {linked:true,focus:time>=round.readyAt&&(!first||time<first.revealAt)?.22:0,attention:0,lock:0};
  const waiting=prepare(age),start=first?prepare(first.startAt-round.startedAt):waiting;
  const clickAge=first?time-first.startAt:0,blend=first?ease(clickAge/220):0;
- const settle=first?1-ease((clickAge-1580)/420):1;
+ const settle=first?1-ease((time-first.finishAt+420)/420):1;
  // The lock keeps the light caught from the balance. A click carries that
  // same pose into the mechanism, without restarting a flash or dimming first.
  return {linked:true,focus:(.3*start*(1-blend)+.85*blend)*settle,
-  attention:(.06*start*(1-blend)+.18*blend)*(first?1-ease((clickAge-1520)/480):1),
+  attention:(.06*start*(1-blend)+.18*blend)*(first?1-ease((time-first.finishAt+480)/480):1),
   lock:(first?readyLock(first.startAt-round.startedAt):readyLock(age))*(1-blend)};
 }
 export function vaultOpeningTrail(round,index,time,quiet=false,dock={left:147,y:388}){

@@ -49,8 +49,8 @@ test('the number remains fixed and fully visible until the existing final fade a
 });
 test('projected completion and committed snapshots sample the same settling and farewell',()=>{
  for(const style of [1,2]){
-  const r=sampleVaultTreasureHandoff(style),committed=structuredClone(r);advanceVault(committed,12000);
-  for(let t=12000;t<19000;t+=13)assert.deepEqual(vaultTreasureCoda(presentedVaultRound(r,t),t),vaultTreasureCoda(committed,t));
+  const r=sampleVaultTreasureHandoff(style),committed=structuredClone(r);const end=r.flight.finishAt;advanceVault(committed,end);
+  for(let t=end;t<end+7000;t+=13)assert.deepEqual(vaultTreasureCoda(presentedVaultRound(r,t),t),vaultTreasureCoda(committed,t));
  }
 });
 test('reduced motion removes decoration while preserving its audio clock and the blank reset beat',()=>{

@@ -1,14 +1,15 @@
+import {VAULT_UNLOCK_MS} from './vault-timing.js';
 import {clamp,ease} from './vault-motion.js';
 
 // Every effect samples the saved event clock. Scrubbing and reconnecting do not
 // restart a tween or re-roll decoration, and nothing here changes a reward.
-export function doorFinish(age,open,quiet=false){
+export function doorFinish(age,open,quiet=false,duration=VAULT_UNLOCK_MS){
  if(quiet)return {edge:0,shade:0,sheen:0,sweep:0,lock:0,focus:0};
  const sweep=clamp((age-160)/620),edge=1-ease((open-.87)/.13);
  return {edge:Math.sin(open*Math.PI/2)*edge,shade:Math.sin(open*Math.PI/2)*.34,
   sheen:age>160&&age<780?Math.sin(sweep*Math.PI)*.26:0,sweep,
   lock:age>40&&age<440?Math.sin(ease((age-40)/400)*Math.PI):0,
-  focus:ease(age/100)*(1-ease((age-1580)/420))};
+  focus:ease(age/100)*(1-ease((age-duration+420)/420))};
 }
 export function rimSparkle(index,time,quiet=false){
  if(quiet)return {opacity:0,scale:1};

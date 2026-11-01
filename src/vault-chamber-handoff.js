@@ -1,4 +1,4 @@
-import {DEFAULT_VAULT,startVaultRound,unlockVault,advanceVault} from './vault-game.js';
+import {VAULT_INTRO_MS,VAULT_UNLOCK_MS,DEFAULT_VAULT,startVaultRound,unlockVault,advanceVault} from './vault-game.js';
 import {ease,chamberPoint,vaultBankPose} from './vault-motion.js';
 import {doorFinish} from './vault-effects.js';
 import {VAULT_ART} from './vault-layout.js';
@@ -18,16 +18,16 @@ export function vaultChamberLinks(round,time){
 export function vaultChamberHandoff(round,time,quiet=false){
  const links=vaultChamberLinks(round,time),link=links.filter(l=>time>=l.from.finishAt-320).at(-1);
  if(!link)return {linked:false};
- const shot=round.flight??round.opened.at(-1),active=!!round.flight&&time<shot.finishAt,age=active?time-shot.startAt:2000;
+ const shot=round.flight??round.opened.at(-1),active=!!round.flight&&time<shot.finishAt,age=active?time-shot.startAt:VAULT_UNLOCK_MS;
  const focuses=Array(20).fill(0),attention=Array(20).fill(0);
- if(active&&!quiet)focuses[shot.index]=doorFinish(age,0).focus*.85;
+ if(active&&!quiet)focuses[shot.index]=doorFinish(age,0,false,shot.finishAt-shot.startAt).focus*.85;
  const ready=quiet?Number(time>=link.from.finishAt):prepare(link.from,time);
  const click=link.next,clickAge=click?time-click.startAt:0,blend=click?ease(clickAge/220):0,start=click?prepare(link.from,click.startAt):ready;
- const settle=click?1-ease((clickAge-1580)/420):1;
+ const settle=click?1-ease((time-click.finishAt+420)/420):1;
  // Keep the caught light while waiting, then carry the same pose into the
  // next mechanism. Match the first chamber's gentle, uninterrupted pickup.
  focuses[link.index]=quiet?(time>=link.from.finishAt&&(!click||time<click.revealAt)?.22:0):(.3*start*(1-blend)+.85*blend)*settle;
- const activeDim=quiet?0:.18*ease(age/220)*(1-ease((age-1520)/480));
+ const activeDim=quiet?0:.18*ease(age/220)*(1-ease((time-shot.finishAt+480)/480));
  for(let i=0;i<20;i++){
   attention[i]=active&&i!==shot.index?activeDim:0;
   if(i!==link.index&&!quiet)attention[i]+=.06*start*(1-blend);
@@ -56,13 +56,13 @@ export function vaultChamberTrail(handoff,index,time,quiet=false,dock={left:138,
  const u=ease(t),v=1-u,c1={x:rail,y:start.y-55},c2={x:rail,y:end.y+36};
  return {visible:true,x:Math.round(v**3*start.x+3*v*v*u*c1.x+3*v*u*u*c2.x+u**3*end.x),y:Math.round(v**3*start.y+3*v*v*u*c1.y+3*v*u*u*c2.y+u**3*end.y),opacity:Math.min(1,t*10,(1-t)*6)*(.85-index*.12)};
 }
-export const vaultOtherAwardOpacity=(shot,time,quiet=false)=>!shot||time>=shot.finishAt?1:quiet?.7:1-.45*ease((time-shot.startAt)/220)*(1-ease((time-shot.startAt-1520)/480));
+export const vaultOtherAwardOpacity=(shot,time,quiet=false)=>!shot||time>=shot.finishAt?1:quiet?.7:1-.45*ease((time-shot.startAt)/220)*(1-ease((time-shot.finishAt+480)/480));
 
 // Two real sample clicks with a short, visible pause; no saved game is touched.
 export function sampleVaultChamberHandoff(index=0,waitMs=400,time=10000,bonus=null){
  const p={...structuredClone(DEFAULT_VAULT),guarantee:false};
- const before=startVaultRound(p,'Demo viewer',time-1200-index*2000,()=>100);
- for(let i=0;i<index;i++){const s=unlockVault(before,before.readyAt+i*2000,{forcedCash:1,forcedBonus:null});advanceVault(before,s.finishAt);}
+ const before=startVaultRound(p,'Demo viewer',time-VAULT_INTRO_MS-index*VAULT_UNLOCK_MS,()=>100);
+ for(let i=0;i<index;i++){const s=unlockVault(before,before.readyAt+i*VAULT_UNLOCK_MS,{forcedCash:1,forcedBonus:null});advanceVault(before,s.finishAt);}
  const first=unlockVault(before,time,{forcedCash:1,forcedBonus:index===4?'extra':bonus});
  const waiting=structuredClone(before);advanceVault(waiting,first.finishAt);
  const flight=structuredClone(waiting),second=unlockVault(flight,first.finishAt+waitMs,{forcedCash:2,forcedBonus:null});

@@ -50,7 +50,7 @@ test('the arrival jewel hands off to the stationary frame before the balance app
 });
 
 test('the new welcome audition matches the live arrival, balance and ready cues',()=>{
- const score=vaultSoundScore('intro');assert.ok(score.some(c=>c.voice==='arcade'&&c.at*1000===VAULT_WELCOME_START_MS));
+ const score=vaultSoundScore('intro');assert.ok(score.some(c=>c.voice==='slot'&&c.at*1000===VAULT_WELCOME_START_MS));
  assert.equal(score.filter(c=>c.voice==='coin').length,0);assert.equal(vaultSoundScore('ready').length,1);
  for(const rate of [44100,48000]){
   const audition=renderVaultSound('welcome',{},rate),live=renderVaultSequence([{at:0,sound:'intro-arrive'},{at:.62,sound:'intro-balance'},{at:.94,sound:'ready'}],rate);

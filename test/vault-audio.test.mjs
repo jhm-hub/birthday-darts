@@ -20,12 +20,12 @@ function context(state='running'){
  return {state,nodes,currentTime:10,destination:{},sampleRate:48000,createGain:()=>node('gain'),createBufferSource:()=>node('buffer'),createBuffer:(_,length)=>{const data=new Float32Array(length);return {length,getChannelData:()=>data};},async resume(){this.state='running';},async close(){this.state='closed';}};
 }
 const sources=ctx=>ctx.nodes.filter(n=>n.kind==='buffer');
-const round=(patch={})=>({id:'round',startedAt:0,flight:{id:'shot',index:0,startAt:2000,revealAt:2780,cashCents:2500,bonus:{kind:'multiply',value:2}},opened:[],completedAt:null,...patch});
+const round=(patch={})=>({id:'round',startedAt:0,flight:{id:'shot',index:0,startAt:2000,revealAt:2780,finishAt:4000,cashCents:2500,bonus:{kind:'multiply',value:2}},opened:[],completedAt:null,...patch});
 
 test('five locks keep distinct textures with only three mechanical layers',()=>{
  const scores=Array.from({length:5},(_,index)=>vaultSoundScore('unlock',{index}));
  assert.equal(new Set(scores.map(JSON.stringify)).size,5);
- for(const s of scores){assert.equal(s.length,3);assert.deepEqual(s.map(c=>c.voice),['click','bolt','hinge']);assert.deepEqual(s.filter(c=>c.voice==='click').map(c=>c.at),[.06]);const hinge=s.find(c=>c.voice==='hinge');assert.equal(hinge.at,.33);assert.equal(hinge.at+hinge.length,.94);assert.ok(Math.max(...s.map(c=>c.at+c.length))<1.2);}
+ for(const s of scores){assert.equal(s.length,3);assert.deepEqual(s.map(c=>c.voice),['key','bolt','latch']);assert.deepEqual(s.filter(c=>c.voice==='key').map(c=>c.at),[.06]);const latch=s.find(c=>c.voice==='latch');assert.equal(latch.at,.86);assert.ok(Math.abs(latch.at+latch.length-.935)<1e-9);assert.ok(Math.max(...s.map(c=>c.at+c.length))<1.2);}
  for(const [tier,name] of ['standard','big','royal'].entries())assert.ok(vaultSoundScore(name).some(c=>c.at===finalePose(0,tier).build/1000));
 });
 test('all original buffers are deterministic, finite, click-free at their edges and leave headroom',()=>{
@@ -86,17 +86,17 @@ test('finale and farewell play once, and sampler cancellation wins over a pendin
 test('last-prize bridge flows into one clock-timed finale even before the controller commit arrives',()=>{
  const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),r=sampleVaultHandoff(2,10000);a.setEnabled(true);
  const bridge=vaultTreasureBridge(r,11720);a.sync(r,bridge.startAt-1);const count=sources(ctx).length;a.sync(r,bridge.startAt);assert.equal(sources(ctx).length,count+1);
- a.sync(r,11999);assert.equal(sources(ctx).length,count+1);
- a.sync(r,12000);assert.equal(sources(ctx).length,count+2);assert.equal(r.completedAt,null);
- advanceVault(r,12120);a.sync(r,12120);assert.equal(sources(ctx).length,count+2,'stored commit must not replay the final cue');
+ a.sync(r,r.flight.finishAt-1);assert.equal(sources(ctx).length,count+1);
+ a.sync(r,r.flight.finishAt);assert.equal(sources(ctx).length,count+2);assert.equal(r.completedAt,null);
+ const committedAt=r.flight.finishAt+120;advanceVault(r,committedAt);a.sync(r,committedAt);assert.equal(sources(ctx).length,count+2,'stored commit must not replay the final cue');
 });
 test('the settling phrase uses the final projected tier before the last multiplier is committed',()=>{
  for(let tier=0;tier<3;tier++){
   const ctx=context(),a=createVaultAudio({createContext:()=>ctx}),r=sampleVaultHandoff(tier,10000);
-  a.setEnabled(true);a.sync(r,11720);
+  const at=r.flight.finishAt-280;a.setEnabled(true);a.sync(r,at);
   assert.equal(sources(ctx).length,1);
-  const bridge=vaultTreasureBridge(r,11720);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),bridge.linked?renderVaultSound('finish-gold',{bridgeMs:bridge.bridgeMs}):renderVaultSound('settle',{tier}));
-  a.sync(r,11721);assert.equal(sources(ctx).length,1);
+  const bridge=vaultTreasureBridge(r,at);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),bridge.linked?renderVaultSound('finish-gold',{bridgeMs:bridge.bridgeMs}):renderVaultSound('settle',{tier}));
+  a.sync(r,at+1);assert.equal(sources(ctx).length,1);
  }
 });
 test('farewell plays once on its lead-in, clears, and does not leak into the next viewer',()=>{
@@ -137,7 +137,7 @@ test('first-chamber invitation and click resolve once, including delayed viewers
  unlockVault(r,11200,{forcedCash:0,forcedBonus:null});a.sync(r,11200);assert.equal(sources(ctx).length,2);a.sync(structuredClone(r),11300);assert.equal(sources(ctx).length,2);
  assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('first-unlock'));
  const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,11280);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.08]);
- advanceVault(r,13200);unlockVault(r,13200,{forcedCash:0,forcedBonus:null});a.sync(r,13200);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('linked-unlock',{index:1}));
+ const end=r.flight.finishAt;advanceVault(r,end);unlockVault(r,end,{forcedCash:0,forcedBonus:null});a.sync(r,end);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('linked-unlock',{index:1}));
 });
 test('next-lock cues survive award commits once and do not restart on a paused or reconnecting display',()=>{
  const s=sampleVaultChamberHandoff(),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
@@ -189,7 +189,7 @@ test('special anticipation and arrival survive snapshots, consume muted cues and
  const stale=context(),d=createVaultAudio({createContext:()=>stale});d.setEnabled(true);d.sync(s.waiting,s.readyAt+640);assert.equal(sources(stale).length,0);
 });
 
-test('treasure accents track revealed amounts once and keep rich overlapping mixes below -14 dBFS',()=>{
+test('large prizes use one mechanism and payout cue, while finales retain balanced accents',()=>{
  for(const richness of [1,2]){
   const events=[{at:0,sound:'linked-unlock'},{at:.285,sound:'rich-lock',options:{richness}},{at:.78,sound:'cash',options:{tier:2}},{at:.92,sound:'rich-cash',options:{richness}},{at:1.04,sound:'multiply'},{at:1.24,sound:'collect',options:{tier:2}},{at:1.74,sound:'special-prepare',options:{index:2}},{at:1.96,sound:'special-arrive',options:{index:2}},{at:2,sound:'linked-unlock'}];
   assert.ok(peak(renderVaultSequence(events))<.2,'chamber overlap');
@@ -197,8 +197,8 @@ test('treasure accents track revealed amounts once and keep rich overlapping mix
  }
  const ctx=context(),audio=createVaultAudio({createContext:()=>ctx});audio.setEnabled(true);
  const r=startVaultRound({...DEFAULT_VAULT,openingMin:3000,openingMax:3000,outcomes:[{value:500,weight:1}],guarantee:false},'',0,()=>0);const shot=unlockVault(r,r.readyAt,{forcedCash:0,forcedBonus:null});
- audio.sync(r,shot.startAt);const n=sources(ctx).length;audio.sync(r,shot.startAt+285);assert.equal(sources(ctx).length,n+1);audio.sync(r,shot.startAt+286);assert.equal(sources(ctx).length,n+1);
- audio.sync(r,shot.revealAt);const m=sources(ctx).length;audio.sync(r,shot.revealAt+140);assert.equal(sources(ctx).length,m+1);audio.sync(r,shot.revealAt+141);assert.equal(sources(ctx).length,m+1);
+ audio.sync(r,shot.startAt);const n=sources(ctx).length;audio.sync(r,shot.startAt+285);assert.equal(sources(ctx).length,n);audio.sync(r,shot.startAt+286);assert.equal(sources(ctx).length,n);
+ audio.sync(r,shot.revealAt);const m=sources(ctx).length;audio.sync(r,shot.revealAt+140);assert.equal(sources(ctx).length,m);audio.sync(r,shot.revealAt+141);assert.equal(sources(ctx).length,m);
  const muted=createVaultAudio({createContext:()=>ctx});muted.sync(r,shot.revealAt+140);muted.setEnabled(true);const count=sources(ctx).length;muted.sync(r,shot.revealAt+141);assert.equal(sources(ctx).length,count);
 });
 
@@ -223,8 +223,8 @@ test('large finish bridges play once, preserve late offsets, consume muted event
   a.sync(r,b.startAt-1);assert.equal(sources(ctx).length,0);a.sync(r,b.startAt);assert.equal(sources(ctx).length,1);
   assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound(name,{bridgeMs:b.bridgeMs}));
   a.sync(structuredClone(r),b.startAt+100);assert.equal(sources(ctx).length,1);
-  a.sync(r,12000);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('linked-final',{tier:2}));
-  advanceVault(r,12050);a.sync(r,12050);assert.equal(sources(ctx).length,2);
+  a.sync(r,r.flight.finishAt);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('linked-final',{tier:2}));
+  const committedAt=r.flight.finishAt+50;advanceVault(r,committedAt);a.sync(r,committedAt);assert.equal(sources(ctx).length,2);
   a.sync(r,b.revealAt);assert.equal(sources(ctx).length,3);assert.deepEqual(sources(ctx)[2].buffer.getChannelData(0),renderVaultSound('rich-final',{richness:style}));
   const late=context(),joined=createVaultAudio({createContext:()=>late});joined.setEnabled(true);joined.sync(r,b.startAt+70);assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].started,[10,.07]);
   const stale=context(),old=createVaultAudio({createContext:()=>stale});old.setEnabled(true);old.sync(r,b.startAt+201);assert.equal(sources(stale).length,0);

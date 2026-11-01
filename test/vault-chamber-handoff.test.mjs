@@ -113,8 +113,8 @@ test('the guide resolves at readiness and the prepared click uses the simplified
  for(let i=0;i<3;i++)assert.equal(vaultChamberTrail(vaultChamberHandoff(sample.waiting,sample.readyAt+40),i,sample.readyAt+40).visible,false);
  for(let index=1;index<20;index++){
   const original=vaultSoundScore('unlock',{index}),linked=vaultSoundScore('linked-unlock',{index});
-  for(const voice of ['hinge','bolt','seat'])assert.deepEqual(linked.filter(c=>c.voice===voice),original.filter(c=>c.voice===voice));
-  assert.deepEqual(linked.filter(c=>c.voice==='click').map(c=>c.at),[.06]);
+  for(const voice of ['key','bolt','latch'])assert.deepEqual(linked.filter(c=>c.voice===voice),original.filter(c=>c.voice===voice));
+  assert.deepEqual(linked.filter(c=>c.voice==='key').map(c=>c.at),[.06]);
   const next=vaultSoundScore('next',{index});assert.equal(next.length,1);assert.equal(next[0].at,0);assert.equal(next[0].length,VAULT_CHAMBER_GUIDE_TRAVEL_MS/1000);
  }
 });

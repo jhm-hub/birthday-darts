@@ -3,12 +3,14 @@ import {vaultCashLevel} from './vault-cash-motion.js';
 
 // One saved event clock drives the travelling coins and their landing sounds.
 // These are presentation effects: the exact cash/bonus readout never counts up.
-export const VAULT_COLLECT_START_MS=1240,VAULT_COLLECT_TRAVEL_MS=300,VAULT_COLLECT_STAGGER_MS=22;
+import {vaultCollectAt} from './vault-timing.js';
+export {VAULT_COLLECT_START_MS,vaultCollectAt} from './vault-timing.js';
+export const VAULT_COLLECT_TRAVEL_MS=300,VAULT_COLLECT_STAGGER_MS=22;
 export const vaultCollectionCount=tier=>[3,5,7][Math.max(0,Math.min(2,tier))];
 const empty={visible:false,x:0,y:0,opacity:0,flip:1,squash:1,landed:false};
 export function vaultCollectionCoin(shot,index,time,dock,quiet=false,source=null){
  if(!shot||quiet||index>=vaultCollectionCount(vaultCashLevel(shot.cashCents))||time>=shot.finishAt)return {...empty};
- const age=time-shot.startAt-VAULT_COLLECT_START_MS-index*VAULT_COLLECT_STAGGER_MS;
+ const age=time-vaultCollectAt(shot)-index*VAULT_COLLECT_STAGGER_MS;
  if(age<=0||age>=VAULT_COLLECT_TRAVEL_MS+55)return {...empty};
  const point=source??chamberPoint(shot.index),side=[-1,1,-1,1,-1][shot.index%5];
  const revealX=Math.max(8,Math.min(192,point.x-110)),revealY=Math.max(112,Math.min(255,point.y-39));
@@ -24,7 +26,7 @@ export function vaultCollectionCoin(shot,index,time,dock,quiet=false,source=null
 }
 export function vaultCollectionBank(shot,time,quiet=false){
  const off={scale:1,gleam:0,catch:0};if(!shot||quiet||time>=shot.finishAt)return off;
- const age=time-shot.startAt-VAULT_COLLECT_START_MS-VAULT_COLLECT_TRAVEL_MS;
+ const age=time-vaultCollectAt(shot)-VAULT_COLLECT_TRAVEL_MS;
  if(age<=0||age>=220)return off;
  const level=vaultCashLevel(shot.cashCents),envelope=Math.sin(Math.PI*age/220)**2;
  // A single gentle response gathers the coins; no per-coin wobble of the digits.

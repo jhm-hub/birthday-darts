@@ -65,11 +65,11 @@ test('saved games freeze active settings and persist one committed result across
  await f.store.action(id,'Viewer',10000);const start=f.store.snapshot(id,10000),opening=start.round.openingCents;
  await f.store.save(preset({openingMin:999,openingMax:999,chambers:1,maxChambers:1,bonusChance:0}));
  const resumed=createVaultStore(f.storage,f.locks);assert.equal(resumed.snapshot(id).round.preset.chambers,5);assert.equal(resumed.snapshot(id).round.openingCents,opening);
- const attempts=await Promise.allSettled([resumed.action(id,'Viewer',12000),resumed.action(id,'Viewer',12000)]);assert.equal(attempts.filter(x=>x.status==='fulfilled').length,1);await resumed.advance(14000);assert.equal(resumed.snapshot(id).round.opened.length,1);
+ const attempts=await Promise.allSettled([resumed.action(id,'Viewer',12000),resumed.action(id,'Viewer',12000)]);assert.equal(attempts.filter(x=>x.status==='fulfilled').length,1);await resumed.advance(12000+VAULT_UNLOCK_MS);assert.equal(resumed.snapshot(id).round.opened.length,1);
 });
 test('round clears automatically and next viewer gets a fresh opening draw',async()=>{
  const f=fixture();await f.store.init();await f.store.save(preset({openingMin:321,openingMax:321,chambers:1,maxChambers:1,bonusChance:0}));const id=DEFAULT_VAULT.id;
- await f.store.action(id,'First',10000);await f.store.action(id,'First',11200);await f.store.advance(13200);const done=f.store.snapshot(id).round;assert.equal(done.opened.length,1);await f.store.advance(done.hideAt+VAULT_CLEAR_MS);assert.equal(f.store.snapshot(id).round,null);assert.equal(f.store.snapshot(id).lastResult.viewer,'First');await f.store.action(id,'Second',done.hideAt+500);assert.equal(f.store.snapshot(id).round.openingCents,32100);assert.equal(f.store.snapshot(id).round.multiplier,1);
+ await f.store.action(id,'First',10000);await f.store.action(id,'First',11200);await f.store.advance(11200+VAULT_UNLOCK_MS);const done=f.store.snapshot(id).round;assert.equal(done.opened.length,1);await f.store.advance(done.hideAt+VAULT_CLEAR_MS);assert.equal(f.store.snapshot(id).round,null);assert.equal(f.store.snapshot(id).lastResult.viewer,'First');await f.store.action(id,'Second',done.hideAt+500);assert.equal(f.store.snapshot(id).round.openingCents,32100);assert.equal(f.store.snapshot(id).round.multiplier,1);
 });
 test('corrupt storage is preserved and never silently overwritten',async()=>{const f=fixture();f.data.set(VAULT_STORE_KEY,'broken');await assert.rejects(f.store.init());assert.equal(f.data.get(VAULT_STORE_KEY),'broken');});
 

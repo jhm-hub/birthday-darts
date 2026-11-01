@@ -3,7 +3,7 @@ import {projectedVault,vaultTotal,vaultLevel,DEFAULT_VAULT,startVaultRound,unloc
 import {vaultTreasureLevel} from './vault-treasure.js';
 import {finalePose} from './vault-effects.js';
 import {vaultCashLevel} from './vault-cash-motion.js';
-import {VAULT_COLLECT_START_MS,VAULT_COLLECT_TRAVEL_MS,VAULT_COLLECT_STAGGER_MS,vaultCollectionCount} from './vault-collection-motion.js';
+import {vaultCollectAt,VAULT_COLLECT_TRAVEL_MS,VAULT_COLLECT_STAGGER_MS,vaultCollectionCount} from './vault-collection-motion.js';
 import {ease} from './vault-motion.js';
 
 // One saved clock joins the last deposited coin to the final ornament. This is
@@ -14,7 +14,7 @@ export function vaultTreasureBridge(round,time,quiet=false){
  const final=projectedVault(round,time),style=vaultTreasureLevel(vaultTotal(final),'final');
  if(!style)return off;
  const count=vaultCollectionCount(vaultCashLevel(shot.cashCents));
- const startAt=shot.startAt+VAULT_COLLECT_START_MS+VAULT_COLLECT_TRAVEL_MS+(count-1)*VAULT_COLLECT_STAGGER_MS+40;
+ const startAt=vaultCollectAt(shot)+VAULT_COLLECT_TRAVEL_MS+(count-1)*VAULT_COLLECT_STAGGER_MS+40;
  const revealAt=shot.finishAt+finalePose(0,vaultLevel(final)).build;
  return {linked:true,active:!quiet&&time>=startAt&&time<revealAt+1500,style,startAt,revealAt,bridgeMs:revealAt-startAt,lead:style===1?300:220,age:time-revealAt};
 }

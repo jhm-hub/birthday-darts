@@ -31,7 +31,7 @@ test('guide sparkles stay compact and finish before the earliest first click',()
 });
 test('quiet mode is a static cue and the handoff ends cleanly before later chambers or finales',()=>{
  const s=sampleVaultOpeningHandoff();assert.equal(vaultOpeningHandoff(s.before,s.before.readyAt,true).focus,.22);
- assert.equal(vaultOpeningHandoff(s.flight,s.clickAt,true).focus,.22);assert.equal(vaultOpeningHandoff(s.flight,s.clickAt+780,true).focus,0);
+ assert.equal(vaultOpeningHandoff(s.flight,s.clickAt,true).focus,.22);assert.equal(vaultOpeningHandoff(s.flight,s.flight.flight.revealAt,true).focus,0);
  for(let i=0;i<4;i++)assert.equal(vaultOpeningTrail(s.before,i,s.startAt+1100,true).visible,false);
  assert.equal(vaultOpeningHandoff(s.flight,s.finishAt-1).focus<.0001,true);
  assert.equal(vaultOpeningHandoff(s.settled,s.finishAt).linked,false);

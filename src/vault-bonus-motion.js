@@ -1,8 +1,9 @@
 import {ease} from './vault-motion.js';
 import {vaultTotal} from './vault-game.js';
 
-export const VAULT_BONUS_DELAY_MS=260,VAULT_BONUS_LAND_MS=180;
-export const vaultBonusAt=shot=>shot.revealAt+VAULT_BONUS_DELAY_MS;
+import {VAULT_BONUS_DELAY_MS,vaultBonusAt} from './vault-timing.js';
+export {VAULT_BONUS_DELAY_MS,vaultBonusAt};
+export const VAULT_BONUS_LAND_MS=180;
 const pulse=v=>v<=0||v>=1?0:Math.sin(Math.PI*v);
 const neutral={visible:false,kind:'',opacity:0,scale:1,y:0,shine:0,sweep:0,iconOffset:0,bankScale:1,gleam:0,countScale:1};
 // One saved clock drives the badge, its musical resolution and the readout.

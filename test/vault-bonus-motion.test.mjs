@@ -20,9 +20,10 @@ test('cash appears first, then the exact multiplier resolves with the badge with
 });
 test('stacked large multipliers keep integer precision in both phases and on reconnect',()=>{
  const r=sampleVaultBonus('multiply',10000,10);r.multiplier='10000000000000000000';
- for(const time of [10780,11040,11219,11220,11999]){
+ const land=vaultBonusAt(r.flight)+VAULT_BONUS_LAND_MS;
+ for(const time of [r.flight.revealAt,vaultBonusAt(r.flight),land-1,land,r.flight.finishAt-1]){
   const p=vaultBonusReadout(r,projectedVault(r,time),time);
-  assert.equal(p.total,(22500n*10000000000000000000n*(time<11220?1n:10n)).toString());
+  assert.equal(p.total,(22500n*10000000000000000000n*(time<land?1n:10n)).toString());
   const copy=structuredClone(r);assert.deepEqual(vaultBonusReadout(copy,projectedVault(copy,time),time),p);
  }
 });
@@ -43,7 +44,7 @@ test('badge motion is bounded, continuous at landing and settles before the next
   for(let t=at;t<shot.finishAt;t++){
    const p=vaultBonusPose(shot,t);assert.ok(p.scale>=.84&&p.scale<=1.12);assert.ok(p.y>=0&&p.y<=9);assert.ok(p.bankScale>=1&&p.bankScale<=1.035);assert.ok(Math.abs(p.scale-last.scale)<.003);last=p;
   }
-  const settled=vaultBonusPose(shot,shot.startAt+1660);assert.equal(settled.scale,1);assert.equal(settled.bankScale,1);assert.equal(settled.countScale,1);assert.equal(settled.gleam,0);assert.equal(settled.shine,0);assert.deepEqual(vaultBonusBirth(shot.revealAt,shot.finishAt),{opacity:1,scale:1,glow:0,lock:0});
+  const settled=vaultBonusPose(shot,land+440);assert.equal(settled.scale,1);assert.equal(settled.bankScale,1);assert.equal(settled.countScale,1);assert.equal(settled.gleam,0);assert.equal(settled.shine,0);assert.deepEqual(vaultBonusBirth(shot.revealAt,shot.finishAt),{opacity:1,scale:1,glow:0,lock:0});
   assert.equal(vaultBonusPose(shot,shot.finishAt).visible,false);assert.equal(vaultBonusPose(shot,land).scale,kind==='multiply'?1.12:1.1);
   for(let i=0;i<8;i++)for(let t=at;t<shot.finishAt;t+=10){const p=vaultBonusSpark(i,vaultBonusPose(shot,t),shot,t);if(p.visible){assert.ok(Number.isInteger(p.x)&&Number.isInteger(p.y));assert.ok(Math.abs(p.x)<=38&&p.y>=-42&&p.y<=0);}}
  }

@@ -7,7 +7,7 @@ import {chamberDoorTransforms} from '../src/vault-layout.js';
 const shot={startAt:10000,revealAt:10780,finishAt:12000};
 test('door lighting settles before the next pick and never replays on a late display',()=>{
  for(let age=0;age<=2400;age+=10){
-  const pose=chamberPose(shot,shot.startAt+age),finish=doorFinish(age,pose.open);
+  const pose=chamberPose(shot,shot.startAt+age),finish=doorFinish(age,pose.open,false,shot.finishAt-shot.startAt);
   for(const value of Object.values(finish))assert.ok(Number.isFinite(value)&&value>=0&&value<=1);
   if(age>=940)assert.equal(finish.edge,0);
   if(age>=2000)assert.equal(finish.focus+finish.lock+finish.sheen,0);

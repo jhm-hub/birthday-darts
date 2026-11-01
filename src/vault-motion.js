@@ -1,3 +1,4 @@
+import {vaultCollectAt,vaultBonusAt,VAULT_BONUS_DELAY_MS} from './vault-timing.js';
 import {CHAMBER_SLOTS,VAULT_ART} from './vault-layout.js';
 export {CHAMBER_SLOTS} from './vault-layout.js';
 // Presentation only: each award belongs to one physical chamber. The saved
@@ -12,7 +13,7 @@ export function chamberBirths(round){
  let index=round.preset.chambers;const seen=new Set();
  for(const shot of [...round.opened,...(round.flight?[round.flight]:[])]){
   if(seen.has(shot.id))continue;seen.add(shot.id);
-  if(shot.bonus?.kind==='extra')births.set(index++,shot.revealAt);
+  if(shot.bonus?.kind==='extra')births.set(index++,vaultBonusAt(shot)-VAULT_BONUS_DELAY_MS);
  }
  return births;
 }
@@ -22,9 +23,9 @@ export function chamberPose(shot,time,quiet=false){
  if(quiet)return {open:Number(shown),bolt:Number(shown),turn:shown?120:0,glow:0,reward:0,loot:1};
  return {
   open:smoother((age-330)/610),bolt:ease((age-190)/220),turn:ease((age-60)/430)*150,
-  glow:shown&&age<1430?Math.sin(clamp((age-780)/650)*Math.PI):0,
-  reward:ease((age-780)/180)*(1-ease((age-1640)/360)),
-  loot:1-.55*ease((age-780)/180)*(1-ease((age-1650)/350))
+  glow:shown&&time<shot.revealAt+650?Math.sin(clamp((time-shot.revealAt)/650)*Math.PI):0,
+  reward:ease((time-shot.revealAt)/180)*(1-ease((time-shot.finishAt+360)/360)),
+  loot:1-.55*ease((time-shot.revealAt)/180)*(1-ease((time-shot.finishAt+350)/350))
  };
 }
 export function vaultBankPose(round,time,quiet=false){
@@ -38,7 +39,7 @@ export function vaultBankPose(round,time,quiet=false){
 export function chamberPoint(index){const s=CHAMBER_SLOTS[index%5],a=VAULT_ART;return {x:a.x+s.cx*a.size/a.source,y:a.y+s.cy*a.size/a.source};}
 export function vaultTrail(index,particle,time,shot,quiet=false){
  if(!shot||quiet)return {visible:false,x:210,y:405,opacity:0};
- const t=(time-shot.startAt-1240-particle*22)/500;
+ const t=(time-vaultCollectAt(shot)-particle*22)/500;
  if(t<=0||t>=1)return {visible:false,x:210,y:405,opacity:0};
  const start=chamberPoint(index),curve={x:start.x+(particle%2?40:-40),y:start.y-45},end={x:210+(particle%3-1)*8,y:402};
  return {visible:true,x:Math.round((1-t)**2*start.x+2*(1-t)*t*curve.x+t*t*end.x),y:Math.round((1-t)**2*start.y+2*(1-t)*t*curve.y+t*t*end.y),opacity:Math.min(1,t*9,(1-t)*7)};

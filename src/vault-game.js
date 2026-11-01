@@ -3,7 +3,9 @@ import {chooseOutcome} from './game.js';
 import {money} from './gift-game.js';
 import {validateGiftCelebration,giftCelebrationLevel} from './gift-celebration.js';
 export {money};
-export const VAULT_INTRO_MS=1200,VAULT_REVEAL_MS=780,VAULT_UNLOCK_MS=2000,VAULT_HOLD_MS=6500,VAULT_CLEAR_MS=450;
+import {VAULT_REVEAL_MS,VAULT_UNLOCK_MS} from './vault-timing.js';
+export {VAULT_REVEAL_MS,VAULT_UNLOCK_MS};
+export const VAULT_INTRO_MS=1200,VAULT_HOLD_MS=6500,VAULT_CLEAR_MS=450;
 export const DEFAULT_VAULT={id:'birthday-vault',name:'Faith’s Birthday Vault',openingMin:100,openingMax:300,chambers:5,maxChambers:12,bonusChance:35,multiplyValue:2,multiplyWeight:1,extraWeight:1,guarantee:true,celebration:{big:500,royal:1500},outcomes:[{value:10,weight:35},{value:25,weight:27},{value:50,weight:15},{value:100,weight:5}],specialOutcomes:[{value:25,weight:35},{value:50,weight:27},{value:100,weight:15},{value:250,weight:5}]};
 const integer=(v,min,max)=>Number.isInteger(v)&&v>=min&&v<=max;
 function validateCashPrizes(prizes,label){
