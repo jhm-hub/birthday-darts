@@ -48,7 +48,7 @@ for(let tier=0;tier<3;tier++){
  const pickup=['rise','royal-rise','grand-rise'][tier],payoff=['final','royal-final','grand-final'][tier],gap=(finaleRevealAt(tier)-ROYAL_BUILDUP_MS)/1000;
  const data=renderPinataSequence([{at:.1,kind:pickup},{at:.1+gap,kind:payoff}],rate);
  const name=['birthday-finale','royal-finale','grand-finale'][tier];report[name]=metrics(data);await writeFile(join(directory,name+'.wav'),wav(data));
- tierPreview.push({at:.1+tier*1.6,kind:pickup},{at:.1+tier*1.6+gap,kind:payoff});
+ tierPreview.push({at:.1+tier*1.85,kind:pickup},{at:.1+tier*1.85+gap,kind:payoff});
 }
 const preview=renderPinataSequence(tierPreview,rate);report['three-win-tiers']=metrics(preview);await writeFile(join(directory,'three-win-tiers.wav'),wav(preview));
 const welcome=sequence([0],1850);report['welcome-and-first-hit']=metrics(welcome);await writeFile(join(directory,'welcome-and-first-hit.wav'),wav(welcome));

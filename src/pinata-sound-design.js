@@ -3,10 +3,11 @@
 import {pinataCelebrationTier} from './pinata-celebration.js';
 import {pinataTotal,projectedPinata} from './pinata-game.js';
 import {BREAK_DELAY} from './pinata-motion.js';
-import {finaleRevealAt} from './pinata-finale-timing.js';
+import {finaleRevealAt,GRAND_ENCORE_MS,GRAND_REVEAL_MS} from './pinata-finale-timing.js';
 import {ARRIVAL_SOUND_AT} from './pinata-intro.js';
 export const PINATA_SOUND_LABELS={arrival:'Arcade ready clicks',swing:'Swing whoosh',hit:'Paper-and-wood thwack',cash:'Coin payout',multiply:'Multiplier register',extra:'Encore credit awarded',burst:'Crown crack and coin candy',rise:'Birthday reel stop','royal-rise':'Royal reel stops','royal-final':'Royal arcade fanfare','grand-rise':'Grand reel anticipation',final:'Birthday victory chord','grand-final':'Grand Royal jackpot fanfare'};
 export const SWING_SOUND_LEAD_MS=310, ROYAL_BUILDUP_MS=40;
+export const GRAND_RESOLVE_SECONDS=(GRAND_ENCORE_MS-GRAND_REVEAL_MS)/1000;
 // Offsets within the existing hit+160ms bonus cue: jewel/total pulse, then the
 // Encore token reaching the counter. One cue keeps late joins and mute atomic.
 export const MULTIPLIER_RESOLVE_SECONDS=.49, ENCORE_CATCH_SECONDS=.66;
@@ -36,26 +37,33 @@ export function pinataSoundScore(kind,{index=0}={}){
   case 'burst':return [noise(0,'tear',.29,.105,877),noise(.006,'body',.2,.065,881),
    ...[.035,.078,.127,.19,.27,.36,.47,.61].map((at,i)=>noise(at,'rattle',.065,.026-i*.002,907+i*23)),
    ...[1568,2093,1760].map((hz,i)=>note(.22+i*.125,hz,.12,.018-i*.003,'coin'))];
-  // Quiet reel-stop ticks build to two decisive attacks. The extra Grand
-  // confetti remains silent, leaving room for Faith's reaction.
+  // The approved reel-stop pickups lead into one short, self-contained fanfare.
   case 'rise':return [noise(0,'reel',.045,.027,977),noise(.105,'reel',.05,.032,983)];
   case 'royal-rise':return [0,.13,.26].map((at,i)=>noise(at,'reel',.045,.026+i*.004,991+i*17));
   case 'grand-rise':return [0,.14,.265,.375,.47,.55].map((at,i)=>noise(at,'reel',.04,.022+i*.002,1237+i*13)).concat(note(.62,784,.09,.025,'chip'));
-  // Two broad, brass-like arcade stabs give the win weight. A low accent and
-  // octave coin edge support the chord rather than adding a busy melody.
-  case 'final':return [note(0,392,.18,.035,'fanfare'),note(0,587.33,.18,.022,'fanfare'),
-   note(0,1568,.15,.034,'coin'),noise(0,'body',.15,.032,1301),
-   note(.16,523.25,.56,.047,'fanfare'),note(.16,659.25,.49,.03,'fanfare'),note(.16,783.99,.43,.014,'fanfare'),
-   note(.16,261.63,.38,.025,'fanfare'),note(.16,2093,.27,.037,'coin'),noise(.16,'victoryShimmer',.3,.009,1321)];
-  case 'royal-final':return [note(0,392,.2,.039,'fanfare'),note(0,587.33,.2,.026,'fanfare'),
-   note(0,1568,.17,.038,'coin'),noise(0,'body',.18,.043,1307),
-   note(.18,523.25,.82,.047,'fanfare'),note(.18,659.25,.73,.029,'fanfare'),
-   note(.18,783.99,.68,.026,'fanfare'),note(.18,261.63,.61,.03,'fanfare'),note(.18,2093,.35,.04,'coin'),noise(.18,'victoryShimmer',.42,.012,1327)];
-  case 'grand-final':return [note(0,392,.22,.042,'fanfare'),note(0,587.33,.22,.029,'fanfare'),
-   note(0,783.99,.18,.018,'fanfare'),note(0,2093,.18,.039,'coin'),noise(0,'body',.21,.055,1319),
-   note(.18,523.25,1.16,.047,'fanfare'),note(.18,659.25,1.04,.032,'fanfare'),
-   note(.18,783.99,.96,.029,'fanfare'),note(.18,261.63,.87,.035,'fanfare'),
-   note(.18,130.81,.75,.024,'fanfare'),note(.18,1046.5,.8,.02,'fanfare'),note(.18,2637.02,.44,.037,'coin'),noise(.18,'victoryShimmer',.56,.016,1361)];
+  // A compact victory cadence: Birthday gets a two-beat salute; the Royals
+  // get two clipped calls and a full major resolution. No melodic coin run.
+  case 'final':return [note(0,392,.13,.037,'fanfare'),note(0,587.33,.13,.023,'fanfare'),
+   noise(0,'victorySnap',.075,.018,1301),
+   note(.16,523.25,.5,.048,'fanfare'),note(.16,659.25,.46,.03,'fanfare'),
+   note(.16,783.99,.42,.023,'fanfare'),note(.16,261.63,.36,.03,'fanfare'),
+   noise(.16,'body',.17,.04,1321),noise(.16,'victoryShimmer',.3,.013,1327),note(.16,2093,.18,.019,'coin')];
+  case 'royal-final':return [note(0,392,.105,.035,'fanfare'),note(0,587.33,.105,.023,'fanfare'),
+   noise(0,'victorySnap',.075,.019,1307),
+   note(.14,493.88,.17,.037,'fanfare'),note(.14,587.33,.17,.023,'fanfare'),note(.14,783.99,.17,.018,'fanfare'),
+   noise(.14,'victorySnap',.075,.021,1333),
+   note(.36,523.25,.64,.048,'fanfare'),note(.36,659.25,.59,.031,'fanfare'),
+   note(.36,783.99,.55,.026,'fanfare'),note(.36,261.63,.48,.034,'fanfare'),
+   noise(.36,'body',.2,.05,1351),noise(.36,'victoryShimmer',.4,.016,1357),note(.36,2093,.23,.022,'coin')];
+  case 'grand-final':return [note(0,392,.14,.04,'fanfare'),note(0,587.33,.14,.027,'fanfare'),
+   note(0,196,.12,.025,'fanfare'),noise(0,'victorySnap',.09,.022,1319),
+   note(.18,493.88,.24,.042,'fanfare'),note(.18,587.33,.24,.026,'fanfare'),note(.18,783.99,.24,.022,'fanfare'),
+   noise(.18,'victorySnap',.09,.024,1361),
+   note(GRAND_RESOLVE_SECONDS,523.25,.86,.048,'fanfare'),note(GRAND_RESOLVE_SECONDS,659.25,.8,.033,'fanfare'),
+   note(GRAND_RESOLVE_SECONDS,783.99,.76,.028,'fanfare'),note(GRAND_RESOLVE_SECONDS,261.63,.72,.038,'fanfare'),
+   note(GRAND_RESOLVE_SECONDS,130.81,.6,.027,'fanfare'),note(GRAND_RESOLVE_SECONDS,1046.5,.66,.019,'fanfare'),
+   noise(GRAND_RESOLVE_SECONDS,'body',.25,.059,1373),noise(GRAND_RESOLVE_SECONDS,'victoryShimmer',.5,.021,1381),
+   note(GRAND_RESOLVE_SECONDS,2093,.29,.025,'coin')];
   default:throw Error('Unknown piñata sound: '+kind);
  }
 }
@@ -77,10 +85,11 @@ function renderVoice(cue,rate){
     const env=t<.006?t/.006:Math.exp(Math.log(.0001/cue.gain)*(t-.006)/(cue.length-.006));
     value=wave*env;
    }else if(cue.voice==='fanfare'){
-    const bloom=Math.min(1,t/.008),hold=Math.min(.115,cue.length*.45),release=Math.max(0,t-hold)/(cue.length-hold);
+    const bloom=Math.min(1,t/.007),hold=Math.min(.16,cue.length*.5),release=Math.max(0,t-hold)/(cue.length-hold);
     // Closely tuned voices give the chord an ensemble sound without extra notes.
-    const horn=p=>(Math.sin(p)+.32*Math.sin(p*2)+.22*Math.sin(p*3)+.1*Math.sin(p*4)+.05*Math.sin(p*5))/1.45;
-    value=(.62*horn(phase)+.19*horn(phase*.9977)+.19*horn(phase*1.0023))*bloom*Math.exp(-release*3.6);
+    const brightness=.7+.3*Math.exp(-t*10);
+    const horn=p=>(Math.sin(p)+brightness*(.48*Math.sin(p*2)+.3*Math.sin(p*3)+.14*Math.sin(p*4)+.07*Math.sin(p*5)))/1.6;
+    value=(.62*horn(phase)+.19*horn(phase*.9977)+.19*horn(phase*1.0023))*bloom*Math.exp(-release*3.2);
    }else if(cue.voice==='coin')value=(sine+.3*Math.sin(phase*2.61)*Math.exp(-u*8)+.1*Math.sin(phase*4.13)*Math.exp(-u*13))*Math.exp(-u*5.6);
    else if(cue.voice==='chip')value=(sine+.27*Math.sin(phase*3)+.1*Math.sin(phase*5))*Math.exp(-u*5.2);
    else if(cue.voice==='wood')value=(sine+.43*Math.sin(phase*1.57)+.17*Math.sin(phase*2.23))*Math.exp(-t*48);
@@ -89,6 +98,7 @@ function renderVoice(cue,rate){
    else if(cue.voice==='pluck')value=(sine+.15*Math.sin(phase*2))*Math.exp(-u*6);
    else value=(sine+.19*Math.sin(phase*2.006)*Math.exp(-u*8)+.045*Math.sin(phase*3.97)*Math.exp(-u*16))*Math.exp(-u*4.2);
   }else if(cue.voice==='reel')value=(.48*band+.32*Math.sin(2*Math.PI*(1750+(cue.seed%260))*t)+.2*Math.sin(2*Math.PI*980*t))*Math.exp(-u*9);
+  else if(cue.voice==='victorySnap')value=(.85*band+.15*Math.sin(2*Math.PI*190*t))*Math.exp(-t*48);
   else if(cue.voice==='victoryShimmer')value=band*Math.min(1,t/.008)*Math.exp(-u*4);
   else if(cue.voice==='swish')value=band*Math.sin(Math.PI*u)**1.9*(.45+.55*u);
   else if(cue.voice==='royalAir')value=band*Math.sin(Math.PI*u)**2*(.25+.75*u);

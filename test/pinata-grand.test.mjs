@@ -51,3 +51,14 @@ test('Grand confetti comes in two generous bursts, frames both sides, and clears
  assert.ok(Array.from({length:GRAND_PARTICLES-GRAND_FIRST_PARTICLES},(_,i)=>tierParticlePose(i+GRAND_FIRST_PARTICLES,GRAND_ENCORE_MS+200,2)).some(p=>p.opacity>0));
  for(let i=0;i<FINALE_PARTICLES;i++)assert.equal(finaleParticlePose(i,GRAND_REVEAL_MS-1,false,2).opacity,0);
 });
+
+test('birthday fans spread across the crown with smooth, unclipped flutter and fades',()=>{
+ let minX=420,maxX=0;const seen=new Set();
+ for(let age=0;age<=3400;age+=5)for(let i=0;i<GRAND_PARTICLES;i++){
+  const size=tierParticleSpec(i,2).size,p=grandParticlePose(i,age,size),next=grandParticlePose(i,age+5,size);
+  assert.ok(Math.abs(next.opacity-p.opacity)<.23,'no particle vanishes at a crop edge');
+  if(p.opacity>.05){seen.add(i);minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x+size);assert.ok(p.flip>=.58&&p.flip<=1);}
+  if(p.opacity>.05&&next.opacity>.05)assert.ok(Math.hypot(next.x-p.x,next.y-p.y)<10,'flight stays continuous');
+ }
+ assert.equal(seen.size,GRAND_PARTICLES);assert.ok(minX<55&&maxX>365,'fans fill the safe width');
+});

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {PINATA_SOUND_LABELS,pinataSoundScore,pinataAudioCues,renderPinataSound,renderPinataSequence,SWING_SOUND_LEAD_MS,ROYAL_BUILDUP_MS,MULTIPLIER_RESOLVE_SECONDS,ENCORE_CATCH_SECONDS} from '../src/pinata-sound-design.js';
+import {PINATA_SOUND_LABELS,pinataSoundScore,pinataAudioCues,renderPinataSound,renderPinataSequence,SWING_SOUND_LEAD_MS,ROYAL_BUILDUP_MS,MULTIPLIER_RESOLVE_SECONDS,ENCORE_CATCH_SECONDS,GRAND_RESOLVE_SECONDS} from '../src/pinata-sound-design.js';
 import {createPinataAudio} from '../src/pinata-audio.js';
 import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,HIT_MS} from '../src/pinata-game.js';
 import {BREAK_DELAY,batPose} from '../src/pinata-motion.js';
@@ -36,7 +36,7 @@ test('buffers are finite, deterministic, have silent edges and reserve headroom 
  for(const rate of [44100,48000])for(const kind of Object.keys(PINATA_SOUND_LABELS))for(const index of [0,1,2]){
   const data=renderPinataSound(kind,{index},rate);
   assert.ok(data.every(Number.isFinite));assert.ok(peak(data)>0&&peak(data)<.21,kind+' peak');
-  assert.equal(data[0],0);assert.equal(data.at(-1),0);assert.ok(data.length/rate<(kind==='final'?1.7:kind==='rise'?.36:kind==='grand-final'?1.4:1.25));
+  assert.equal(data[0],0);assert.equal(data.at(-1),0);assert.ok(data.length/rate<(kind==='final'?1.7:kind==='rise'?.36:kind==='grand-final'?1.5:1.25));
   assert.deepEqual(data,renderPinataSound(kind,{index},rate));
  }
 });
@@ -199,13 +199,13 @@ test('welcome obeys mute and volume, and reset cancels its tail without a ghost 
  assert.equal(sources(ctx).length,0);
 });
 
-test('Grand Royal has one clean payoff and a silent visual encore',async()=>{
+test('Grand Royal has one cancellable fanfare that includes the second burst',async()=>{
  const r=round(true);r.flight.prize.value=3000;
  const finish=r.flight.finishAt,{a,ctx}=await player();a.update(r,finish+40);
  assert.equal(sources(ctx).length,1,'dedicated gathering cue starts before the number');
  advancePinata(r,finish+41);a.update(r,finish+41);assert.equal(sources(ctx).length,1);
  a.update(r,finish+GRAND_REVEAL_MS);assert.equal(sources(ctx).length,2,'one clean payoff meets the amount');
- a.update(r,finish+GRAND_ENCORE_MS);assert.equal(sources(ctx).length,2,'the second burst adds no busy jingle');
+ a.update(r,finish+GRAND_ENCORE_MS);assert.equal(sources(ctx).length,2,'the second burst belongs to the same cancellable cue');
  a.update(structuredClone(r),finish+GRAND_ENCORE_MS+1);assert.equal(sources(ctx).length,2);
  const encore=sources(ctx).at(-1);a.update(null,finish+GRAND_ENCORE_MS+40);assert.equal(encore.stops.at(-1),10.015);
  const {a:late,ctx:other}=await player();late.update(r,finish+GRAND_ENCORE_MS+200);assert.equal(sources(other).length,0);
@@ -250,10 +250,22 @@ test('victory chords become fuller by tier while staying shorter than the result
   for(const kind of ['final','royal-final','grand-final']){
    const data=renderPinataSound(kind,{},rate),level=rms(data,rate),score=pinataSoundScore(kind);
    assert.ok(data.length>previousLength);assert.ok(level>previousRms);
-   assert.ok(data.length/rate<1.4);assert.ok(20*Math.log10(level/hit)<5);
-   assert.equal(new Set(score.map(c=>c.at)).size,2,'two decisive hits, no later encore jingle');
+   assert.ok(data.length/rate<1.5);assert.ok(20*Math.log10(level/hit)<5);
+   assert.equal(new Set(score.map(c=>c.at)).size,kind==='final'?2:3,'a brief cadence without a separate encore jingle');
    assert.ok(score.some(c=>c.frequency<300),'a supporting lower chord gives the win weight');
    assert.ok(peak(data)<.2);previousLength=data.length;previousRms=level;
   }
  }
+});
+
+test('Grand resolution lands on the second birthday burst and leaves a breath between calls',()=>{
+ const score=pinataSoundScore('grand-final');
+ assert.equal(GRAND_REVEAL_MS+GRAND_RESOLVE_SECONDS*1000,GRAND_ENCORE_MS);
+ const attacks=[...new Set(score.map(c=>c.at))].sort((a,b)=>a-b);
+ for(let i=0;i<attacks.length-1;i++){
+  const end=Math.max(...score.filter(c=>c.at===attacks[i]).map(c=>c.at+c.length));
+  assert.ok(attacks[i+1]-end>=.035,'separate brass attacks remain distinct');
+ }
+ const resolve=score.filter(c=>c.at===GRAND_RESOLVE_SECONDS);
+ assert.ok(resolve.some(c=>c.frequency<150)&&resolve.some(c=>c.voice==='victoryShimmer'));
 });

@@ -21,7 +21,7 @@ export function royalOrnamentPose(i,age,tier,quiet=false){
   angle:quiet?0:side*(tier===2?(1-p)*22:row*7-14),opacity:smooth((age-start)/130)*fade};
 }
 
-export function tierParticleSpec(i,tier){return {size:i%4===0?(tier===2?15:12):5+i%3,jewel:tier===2&&i%4===0,coin:tier===1&&i%4===0};}
+export function tierParticleSpec(i,tier){return {size:tier===2?[16,10,14,9,16,12][Math.floor(i/2)%6]:i%4===0?12:5+i%3,jewel:tier===2&&i%4===0,coin:tier===1&&i%4===0};}
 export function tierParticlePose(i,age,tier,quiet=false){
  const off={x:0,y:0,angle:0,opacity:0};
  if(!tier||quiet||i<0||i>=(tier===2?TIER_PARTICLES:ROYAL_PARTICLES))return off;

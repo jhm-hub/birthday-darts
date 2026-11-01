@@ -112,3 +112,6 @@ html.pinata-overlay,html.pinata-overlay body{margin:0;width:100%;height:100%;ove
 .pina-birthday-sparks i:nth-child(even) path:nth-child(2){fill:#aee2d4}.pina-birthday-sparks i:nth-child(even) path:nth-child(3){fill:#e7fff2}.pina-birthday-sparks i:nth-child(even) path:last-child{fill:#5eab9d}
 .pinata-stage[data-tier="0"] .pina-total-tag:before{background:linear-gradient(125deg,#ffe4ef,#eea8cb 32%,#fbd4b0 60%,#bee9dd)}
 @media(prefers-reduced-motion:reduce){.pina-birthday-sparks{display:none}}
+
+/* Grand's birthday paper and ribbons use the existing bounded particle pool. */
+.pinata-stage[data-tier="2"] .pina-tier-particles .paper{background:none;clip-path:none}

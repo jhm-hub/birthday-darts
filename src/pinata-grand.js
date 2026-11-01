@@ -15,21 +15,25 @@ export function grandGlintPose(i,age,tier,quiet=false){
   opacity:smooth(t/.16)*(1-smooth((t-.7)/.3))};
 }
 
+// Two broad, mirrored party-popper fans. Every path is contained from birth
+// through its fade: pieces flutter to rest instead of hitting an invisible crop.
 export function grandParticlePose(i,age,size,quiet=false){
- const off={x:0,y:0,angle:0,opacity:0};
+ const off={x:0,y:0,angle:0,flip:1,opacity:0};
  if(quiet||i<0||i>=GRAND_PARTICLES)return off;
  const encore=i>=GRAND_FIRST_PARTICLES,j=encore?i-GRAND_FIRST_PARTICLES:i;
- const lower=j%4===3,start=(encore?GRAND_ENCORE_MS:GRAND_REVEAL_MS)+(j%7)*18;
- const t=(age-start)/1000;if(t<=0||t>=1.65)return off;
- const side=lower||j%4===0?(Math.floor(j/4)%2?1:-1):(j%2?1:-1);
- const x=Math.round(210+side*((lower?52:24+Math.floor(j/4)%5*8)+(110+j%11*15)*t));
- const y=Math.round(lower?382+8*t+15*t*t:188-(Math.floor(j/4)%4)*6-(110+j%9*13)*t+120*t*t);
- let opacity=smooth(t/.045)*(1-smooth((t-.8)/.8));
- if(!lower)opacity*=1-smooth((y-178)/17);
- // Reserve the title and total even at the widest point of a rotated jewel,
- // including its small pixel shadow. Nothing crosses the reading band.
- const edge=size*(Math.SQRT2-1)/2+2;
- if(x-edge<16||x+size+edge>404||y-edge<102||y+size+edge>405||
-  (!lower&&y+size+edge>200)||(lower&&y-edge<376))opacity=0;
- return {x,y,angle:Math.round(i*39+side*t*200),opacity};
+ const pair=Math.floor(j/2),side=j%2?1:-1,lower=pair%7===6;
+ const start=(encore?GRAND_ENCORE_MS:GRAND_REVEAL_MS)+(pair%4)*12;
+ const t=(age-start)/1000,life=1.36+(pair%4)*.06;
+ if(t<=0||t>=life)return off;
+ const u=t/life,p=1-(1-clamp(t/.65))**3;
+ const spread=lower?76+(pair*19)%88:34+(pair*37+(encore?23:0))%138;
+ const origin=lower?65:52+(pair%3)*7;
+ const flutter=Math.sin(t*10+pair*1.7)*Math.sin(Math.PI*u)*(lower?2:4);
+ const cx=210+side*(origin+(spread-origin)*p+flutter);
+ const cy=lower?390+Math.sin(Math.PI*u)*(pair%2?.5:-.5):
+  179-(14+(pair*17)%49)*smooth(t/.32)*(1-smooth((t-.65)/.65))+(pair%3)*2*smooth((t-1.1)/.3);
+ const opacity=smooth(t/.035)*(1-smooth((u-.63)/.37));
+ return {x:Math.round(cx-size/2),y:Math.round(cy-size/2),
+  angle:Math.round(side*(pair*29+t*(160+(pair%4)*35))),
+  flip:.58+.42*Math.abs(Math.cos(t*5+pair*.7)),opacity};
 }
