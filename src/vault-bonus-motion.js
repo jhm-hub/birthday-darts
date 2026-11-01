@@ -1,7 +1,7 @@
 import {ease} from './vault-motion.js';
 import {vaultTotal} from './vault-game.js';
 
-import {VAULT_BONUS_DELAY_MS,vaultBonusAt} from './vault-timing.js';
+import {VAULT_BONUS_DELAY_MS,vaultBonusAt,vaultCollectAt} from './vault-timing.js';
 export {VAULT_BONUS_DELAY_MS,vaultBonusAt};
 export const VAULT_BONUS_LAND_MS=180;
 const pulse=v=>v<=0||v>=1?0:Math.sin(Math.PI*v);
@@ -13,11 +13,14 @@ export function vaultBonusPose(shot,time,quiet=false){
  const age=time-vaultBonusAt(shot),multiply=shot.bonus.kind==='multiply';
  if(quiet)return {...neutral,visible:true,kind:shot.bonus.kind,opacity:1};
  const arrive=ease(age/VAULT_BONUS_LAND_MS),settle=ease((age-VAULT_BONUS_LAND_MS)/200);
- const emphasis=pulse((age-VAULT_BONUS_LAND_MS)/360);
+ // Hand attention to the lead coin without flashing the bank and badge
+ // through the payout. Derive the span from the saved clocks for old rounds.
+ const handoffSpan=Math.max(20,vaultCollectAt(shot)-vaultBonusAt(shot)-VAULT_BONUS_LAND_MS);
+ const emphasis=pulse((age-VAULT_BONUS_LAND_MS)/handoffSpan);
  return {visible:true,kind:shot.bonus.kind,opacity:ease(age/85),
   scale:age<VAULT_BONUS_LAND_MS?(multiply?.84:.9)+(multiply?.28:.2)*arrive:1+(multiply?.12:.1)*(1-settle),
   y:(1-arrive)*(multiply?6:9),iconOffset:Math.round(3*(1-arrive)),
-  shine:pulse((age-VAULT_BONUS_LAND_MS)/280)*.32,sweep:ease((age-VAULT_BONUS_LAND_MS)/280),
+  shine:pulse((age-VAULT_BONUS_LAND_MS)/handoffSpan)*.32,sweep:ease((age-VAULT_BONUS_LAND_MS)/handoffSpan),
   bankScale:multiply?1+.035*emphasis:1,gleam:multiply?emphasis:0,countScale:multiply?1:1+.12*emphasis};
 }
 export function vaultBonusReadout(round,shown,time){
@@ -42,7 +45,8 @@ export function vaultBonusBirth(revealAt,time,quiet=false){
 export function vaultBonusSpark(index,pose,shot,time,quiet=false){
  const off={visible:false,x:0,y:0,opacity:0};
  if(quiet||!pose.visible||index>=8)return off;
- const age=time-vaultBonusAt(shot)-VAULT_BONUS_LAND_MS-index%2*24,t=age/380;
+ const start=vaultBonusAt(shot)+VAULT_BONUS_LAND_MS+index%2*24;
+ const age=time-start,t=age/Math.max(20,vaultCollectAt(shot)-start);
  if(t<=0||t>=1)return off;
  // Two small sprays beside the text, leaving its centre and the total clear.
  const side=index<4?-1:1,row=index%4;

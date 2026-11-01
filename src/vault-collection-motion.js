@@ -6,23 +6,34 @@ import {vaultCashLevel} from './vault-cash-motion.js';
 import {vaultCollectAt} from './vault-timing.js';
 export {VAULT_COLLECT_START_MS,vaultCollectAt} from './vault-timing.js';
 export const VAULT_COLLECT_TRAVEL_MS=300,VAULT_COLLECT_STAGGER_MS=22;
+export const VAULT_COIN_PICKUP_MS=100;
 export const vaultCollectionCount=tier=>[3,5,7][Math.max(0,Math.min(2,tier))];
+// Bonus deposits use three actual landings as a small payout cadence. The
+// remaining visual coins are silent, avoiding a second flurry after the badge.
+export function vaultCollectionTicks(tier,bonus=false){
+ const count=vaultCollectionCount(tier);
+ return bonus?[0,Math.floor(count/2),count-1]:Array.from({length:count},(_,i)=>i);
+}
 const empty={visible:false,x:0,y:0,opacity:0,flip:1,squash:1,landed:false};
 export function vaultCollectionCoin(shot,index,time,dock,quiet=false,source=null){
  if(!shot||quiet||index>=vaultCollectionCount(vaultCashLevel(shot.cashCents))||time>=shot.finishAt)return {...empty};
  const age=time-vaultCollectAt(shot)-index*VAULT_COLLECT_STAGGER_MS;
- if(age<=0||age>=VAULT_COLLECT_TRAVEL_MS+55)return {...empty};
+ const pickup=!!shot.bonus&&index===0;
+ if(age<=(pickup?-VAULT_COIN_PICKUP_MS:0)||age>=VAULT_COLLECT_TRAVEL_MS+55)return {...empty};
  const point=source??chamberPoint(shot.index),side=[-1,1,-1,1,-1][shot.index%5];
  const revealX=Math.max(8,Math.min(192,point.x-110)),revealY=Math.max(112,Math.min(255,point.y-39));
  const from={x:revealX+(side<0?8:212),y:revealY+43};
+ // Materialise the lead coin at the prize's edge as the bonus settles. It
+ // becomes the travelling coin at the exact same position, without a cut.
+ if(age<0){const p=ease((age+VAULT_COIN_PICKUP_MS)/VAULT_COIN_PICKUP_MS);return {visible:true,x:Math.round(from.x),y:Math.round(from.y+2*(1-p)),opacity:p,flip:1,squash:1,landed:false};}
  const end={x:side<0?dock.left:dock.right,y:dock.y};
  if(age>=VAULT_COLLECT_TRAVEL_MS){const t=(age-VAULT_COLLECT_TRAVEL_MS)/55;return {visible:true,x:Math.round(end.x),y:Math.round(end.y+Math.sin(Math.PI*t)*2),opacity:1-ease(t),flip:1,squash:1-.4*Math.sin(Math.PI*t),landed:true};}
- const t=age/VAULT_COLLECT_TRAVEL_MS,u=t*t*(2-t),v=1-u;
+ const t=age/VAULT_COLLECT_TRAVEL_MS,u=shot.bonus?ease(t):t*t*(2-t),v=1-u;
  const rail=Math.max(14,Math.min(406,(side<0?Math.min(from.x,end.x)-40:Math.max(from.x,end.x)+40)));
  const c1={x:rail,y:from.y+22},c2={x:rail,y:end.y-32};
  return {visible:true,x:Math.round(v**3*from.x+3*v*v*u*c1.x+3*v*u*u*c2.x+u**3*end.x),
   y:Math.round(v**3*from.y+3*v*v*u*c1.y+3*v*u*u*c2.y+u**3*end.y),
-  opacity:clamp(age/32),flip:[1,.65,.3,.65][Math.floor(t*8+index)%4],squash:1,landed:false};
+  opacity:pickup?1:clamp(age/32),flip:[1,.65,.3,.65][Math.floor(t*8+index)%4],squash:1,landed:false};
 }
 export function vaultCollectionBank(shot,time,quiet=false){
  const off={scale:1,gleam:0,catch:0};if(!shot||quiet||time>=shot.finishAt)return off;

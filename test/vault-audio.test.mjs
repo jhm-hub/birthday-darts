@@ -15,6 +15,7 @@ import {startVaultRound,unlockVault} from '../src/vault-game.js';
 import {sampleVaultChamberHandoff,VAULT_CHAMBER_GUIDE_LEAD_MS} from '../src/vault-chamber-handoff.js';
 import {sampleVaultBonus} from '../src/vault-bonus-preview.js';
 import {vaultBonusAt} from '../src/vault-bonus-motion.js';
+import {vaultCollectAt} from '../src/vault-collection-motion.js';
 const peak=data=>data.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
 function context(state='running'){
  const nodes=[],param=()=>({value:0,calls:[],setValueAtTime(...a){this.calls.push(['set',...a]);},linearRampToValueAtTime(...a){this.calls.push(['linear',...a]);},setTargetAtTime(...a){this.calls.push(['target',...a]);},cancelAndHoldAtTime(...a){this.calls.push(['hold',...a]);},cancelScheduledValues(...a){this.calls.push(['cancel',...a]);}});
@@ -22,6 +23,16 @@ function context(state='running'){
  return {state,nodes,currentTime:10,destination:{},sampleRate:48000,createGain:()=>node('gain'),createBufferSource:()=>node('buffer'),createBuffer:(_,length)=>{const data=new Float32Array(length);return {length,getChannelData:()=>data};},async resume(){this.state='running';},async close(){this.state='closed';}};
 }
 const sources=ctx=>ctx.nodes.filter(n=>n.kind==='buffer');
+test('bonus collection uses its sparse buffer once and never reuses the cash-only buffer',()=>{
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
+ for(const kind of [null,'multiply','extra',null]){
+  const r=sampleVaultBonus(kind??'multiply');r.flight.cashCents=10000;if(!kind)r.flight.bonus=null;
+  const at=vaultCollectAt(r.flight),before=sources(ctx).length;
+  a.sync(r,at);a.sync(r,at+1);
+  assert.equal(sources(ctx).length,before+1);
+  assert.deepEqual(sources(ctx).at(-1).buffer.getChannelData(0),renderVaultSound('collect',{tier:2,bonus:!!kind}));
+ }
+});
 test('each bonus reveal selects its own cue once, including configured multipliers and late joins',()=>{
  for(const [kind,value] of [['multiply',2],['multiply',4],['extra',2]]){
   const r=sampleVaultBonus(kind,10000,value),at=vaultBonusAt(r.flight),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
@@ -181,7 +192,7 @@ test('collection uses the cash tier, joins its current offset once and stays con
  for(const [cashCents,tier] of [[1000,0],[2500,1],[10000,2]]){
   const r=round();r.flight.cashCents=cashCents;
   const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(r,3280);
-  assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('collect',{tier}));assert.deepEqual(sources(ctx)[0].started,[10,.04]);
+  assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('collect',{tier,bonus:true}));assert.deepEqual(sources(ctx)[0].started,[10,.04]);
   a.sync(structuredClone(r),3340);assert.equal(sources(ctx).length,1);a.sync(null,3400);assert.equal(sources(ctx)[0].stops.at(-1),10.015);
   const muted=context(),b=createVaultAudio({createContext:()=>muted});b.sync(r,3240);b.setEnabled(true);b.sync(r,3241);assert.equal(sources(muted).length,0);
   const late=context(),c=createVaultAudio({createContext:()=>late});c.setEnabled(true);c.sync(r,3500);assert.equal(sources(late).length,0);

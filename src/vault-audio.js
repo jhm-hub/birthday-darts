@@ -36,7 +36,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
   }
  }
  function play(sound,options={},elapsed=0){
-  const key=sound+':'+(options.index??0)%5+':'+(options.tier??0)+':'+(options.richness??1)+':'+(options.bridgeMs??888);
+  const key=sound+':'+(options.index??0)%5+':'+(options.tier??0)+':'+(options.richness??1)+':'+(options.bridgeMs??888)+':'+!!options.bonus;
   let buffer=buffers.get(key);
   if(!buffer){const data=renderVaultSound(sound,options,ctx.sampleRate);buffer=ctx.createBuffer(1,data.length,ctx.sampleRate);buffer.getChannelData(0).set(data);buffers.set(key,buffer);}
   if(elapsed>=buffer.length/ctx.sampleRate)return;
@@ -77,7 +77,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
     cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'linked-unlock',{index:shot.index});
     cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:vaultCashLevel(shot.cashCents)});
     if(shot.bonus)cue(shot.id+':bonus',vaultBonusAt(shot),time,shot.bonus.kind==='multiply'?'multiply':'extra');
-    cue(shot.id+':collect',vaultCollectAt(shot),time,'collect',{tier:vaultCashLevel(shot.cashCents)});
+    cue(shot.id+':collect',vaultCollectAt(shot),time,'collect',{tier:vaultCashLevel(shot.cashCents),bonus:!!shot.bonus});
    }
    for(const link of vaultChamberLinks(r,time)){
     const special=vaultSpecialTheme(r,link.index);

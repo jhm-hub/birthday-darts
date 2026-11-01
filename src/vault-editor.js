@@ -9,7 +9,11 @@ import {bindGiftVolume} from './gift-mixer.js';
 const $=s=>document.querySelector(s),audio=createVaultAudio(),view=createVaultView($('#vault-preview'),{audio});
 bindGiftVolume($('#vault-mixer'),audio,()=>{});
 let widgets=[],selected=null,draft=null,draftError='',dirty=false,demo=null,auto=false,nextAuto=0,timer,demoCashKey='';
-for(const e of VAULT_EXPERIENCES)$('#demo-experience').add(new Option(e.name+' · '+vaultExperienceRange(e.id),e.id));
+for(const e of VAULT_EXPERIENCES){
+ $('#demo-experience').add(new Option(e.name+' · '+vaultExperienceRange(e.id),e.id));
+ const card=document.createElement('div');card.className='experience-card';
+ const name=document.createElement('strong'),range=document.createElement('span');name.textContent=e.name;range.textContent=vaultExperienceRange(e.id);card.append(name,range);$('#tier-overview').append(card);
+}
 const fields={'opening-min':'openingMin','opening-max':'openingMax',chambers:'chambers','max-chambers':'maxChambers','bonus-chance':'bonusChance','multiply-value':'multiplyValue','multiply-weight':'multiplyWeight','extra-weight':'extraWeight'};
 function message(text,error=false){$('#editor-status').textContent=text;$('#editor-status').classList.toggle('error',error);}
 function readDraft(){
@@ -22,7 +26,7 @@ function cashRow(o={value:25,weight:10},pool='cash'){
  if(pool==='special-cash')row.querySelectorAll('[aria-label]').forEach(el=>el.setAttribute('aria-label','Special vault '+el.getAttribute('aria-label').toLowerCase()));
  row.querySelector('.cash-value').value=o.value;row.querySelector('.cash-weight').value=o.weight;row.querySelectorAll('input').forEach(x=>x.addEventListener('input',changed));row.querySelector('button').onclick=()=>{if(container.children.length===1)return message('Keep at least one cash amount.',true);row.remove();changed();};container.append(row);
 }
-function links(){const open=$('#open-controls'),input=$('#vault-display-url');if(!selected){open.removeAttribute('href');open.textContent='Save this vault first';input.value='Save this vault to create its display link.';$('#copy-display').disabled=true;return;}const url=new URL('./vault-display.html',location.href);url.hash='room='+vaultStore.roomKey(selected);input.value=url.href;open.href='./vault-play.html?id='+encodeURIComponent(selected);open.textContent='Open controls ↗';$('#copy-display').disabled=false;}
+function links(){const open=$('#open-controls'),shortcut=$('#tier-controls'),input=$('#vault-display-url');if(!selected){shortcut.removeAttribute('href');shortcut.textContent='Save this vault first';open.removeAttribute('href');open.textContent='Save this vault first';input.value='Save this vault to create its display link.';$('#copy-display').disabled=true;return;}const url=new URL('./vault-display.html',location.href);url.hash='room='+vaultStore.roomKey(selected);input.value=url.href;open.href='./vault-play.html?id='+encodeURIComponent(selected);open.textContent='Open controls ↗';shortcut.href=open.href;shortcut.textContent='Choose live tier ↗';$('#copy-display').disabled=false;}
 function list(){const el=$('#vault-list');el.replaceChildren();widgets.forEach(w=>{const b=document.createElement('button');b.type='button';b.className='saved-game';b.textContent=w.name;b.setAttribute('aria-current',String(selected===w.id));b.onclick=()=>{if(dirty&&!confirm('Discard the unsaved vault changes?'))return;edit(w);};el.append(b);});}
 function edit(w){selected=w.id??null;dirty=false;$('#demo-experience').value=w.experience??'custom';$('#game-name').value=w.name;for(const[id,key]of Object.entries(fields))$('#'+id).value=w[key];$('#guarantee').checked=w.guarantee;$('#celebration-big').value=w.celebration.big;$('#celebration-royal').value=w.celebration.royal;for(const[key,pool]of [['outcomes','cash'],['specialOutcomes','special-cash']]){$('#'+pool+'-rows').replaceChildren();w[key].forEach(o=>cashRow(o,pool));}$('#duplicate').disabled=!selected;$('#save-game').textContent=selected?'Save vault':'Create vault';message('');refresh();list();links();}
 function refresh(){

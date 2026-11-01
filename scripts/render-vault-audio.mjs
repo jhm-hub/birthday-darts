@@ -17,6 +17,8 @@ function wav(data){
 const db=v=>v>0?20*Math.log10(v):null;
 function metrics(data){let peak=0,sum=0;for(const s of data){peak=Math.max(peak,Math.abs(s));sum+=s*s;}return {seconds:data.length/rate,peakDbFS:db(peak),rmsDbFS:db(Math.sqrt(sum/data.length)),defaultVolumePeakDbFS:db(peak*volume)};}
 const report={},reel=[];let at=0;
+const payoutMix=renderVaultSequence([{at:0,sound:'multiply-payout',options:{tier:2}},{at:1.6,sound:'extra-payout',options:{tier:2}}],rate);
+report['bonus-payouts']=metrics(payoutMix);await writeFile(join(output,'bonus-payouts.wav'),wav(payoutMix));
 const signatureMix=renderVaultSequence([{at:0,sound:'multiply'},{at:1.15,sound:'extra'}],rate);
 report['bonus-signatures']=metrics(signatureMix);
 await writeFile(join(output,'bonus-signatures.wav'),wav(signatureMix));
@@ -33,11 +35,11 @@ for(const [name,label] of Object.entries(VAULT_SOUND_LABELS)){
  await writeFile(join(output,name+'.wav'),wav(data));reel.push({at,sound:name,options:{index:4,tier:2}});at+=data.length/rate+.65;
 }
 for(const bonus of ['multiply','extra']){
- const sequence=[{at:0,sound:'first-unlock'},{at:cash,sound:'cash',options:{tier:2}},{at:bonusAt,sound:bonus},{at:collect,sound:'collect',options:{tier:2}}];
+ const sequence=[{at:0,sound:'first-unlock'},{at:cash,sound:'cash',options:{tier:2}},{at:bonusAt,sound:bonus},{at:collect,sound:'collect',options:{tier:2,bonus:true}}];
  const data=renderVaultSequence(sequence,rate);report['chamber-'+bonus]=metrics(data);await writeFile(join(output,'chamber-'+bonus+'.wav'),wav(data));
 }
 for(const sound of ['standard','big','royal']){
- const data=renderVaultSequence([{at:0,sound:'linked-unlock',options:{index:4}},{at:cash,sound:'cash',options:{tier:2}},{at:bonusAt,sound:'multiply'},{at:collect,sound:'collect',options:{tier:2}},{at:end-.28,sound:'settle',options:{tier:['standard','big','royal'].indexOf(sound)}},{at:end,sound}],rate);
+ const data=renderVaultSequence([{at:0,sound:'linked-unlock',options:{index:4}},{at:cash,sound:'cash',options:{tier:2}},{at:bonusAt,sound:'multiply'},{at:collect,sound:'collect',options:{tier:2,bonus:true}},{at:end-.28,sound:'settle',options:{tier:['standard','big','royal'].indexOf(sound)}},{at:end,sound}],rate);
  report['last-chamber-'+sound]=metrics(data);await writeFile(join(output,'last-chamber-'+sound+'.wav'),wav(data));
 }
 await writeFile(join(output,'crown-vault-sound-reel.wav'),wav(renderVaultSequence(reel,rate)));
@@ -51,7 +53,7 @@ for(const [label,click] of [['immediate',1.2],['normal',1.55],['paused',3.2]]){
  report['opening-first-'+label]=metrics(data);await writeFile(join(output,label==='normal'?'opening-and-first-chamber.wav':'opening-first-'+label+'.wav'),wav(data));
 }
 for(const [label,click,wing] of [['immediate',end,false],['normal',end+.4,false],['paused',end+1.2,false],['bonus-wing',end+.4,true]]){
- const data=renderVaultSequence([{at:0,sound:wing?'linked-unlock':'first-unlock',options:{index:wing?4:0}},{at:cash,sound:'cash',options:{tier:2}},{at:bonusAt,sound:wing?'extra':'multiply'},{at:collect,sound:'collect',options:{tier:2}},{at:end-.26,sound:wing?'special-prepare':'next',options:{index:wing?0:1}},...(wing?[{at:end-.04,sound:'special-arrive',options:{index:0}}]:[]),{at:click,sound:'linked-unlock',options:{index:wing?5:1}},{at:click+cash,sound:'cash',options:{tier:1}},{at:click+collect,sound:'collect',options:{tier:1}}],rate);
+ const data=renderVaultSequence([{at:0,sound:wing?'linked-unlock':'first-unlock',options:{index:wing?4:0}},{at:cash,sound:'cash',options:{tier:2}},{at:bonusAt,sound:wing?'extra':'multiply'},{at:collect,sound:'collect',options:{tier:2,bonus:true}},{at:end-.26,sound:wing?'special-prepare':'next',options:{index:wing?0:1}},...(wing?[{at:end-.04,sound:'special-arrive',options:{index:0}}]:[]),{at:click,sound:'linked-unlock',options:{index:wing?5:1}},{at:click+cash,sound:'cash',options:{tier:1}},{at:click+collect,sound:'collect',options:{tier:1}}],rate);
  report['between-'+label]=metrics(data);await writeFile(join(output,'between-'+label+'.wav'),wav(data));
 }
 const cashComparison=[];
@@ -63,15 +65,15 @@ for(let tier=0;tier<3;tier++){
 const cashMix=renderVaultSequence(cashComparison,rate);report['cash-tiers']=metrics(cashMix);await writeFile(join(output,'cash-tiers.wav'),wav(cashMix));
 const bonusComparison=[];
 for(const [i,bonus] of ['multiply','extra'].entries()){
- const at=i*(end+1.6);bonusComparison.push({at,sound:i?'linked-unlock':'first-unlock',options:{index:i}},{at:at+cash,sound:'cash',options:{tier:1}},{at:at+bonusAt,sound:bonus},{at:at+collect,sound:'collect',options:{tier:1}},{at:at+end-.26,sound:'next',options:{index:i+1}});
+ const at=i*(end+1.6);bonusComparison.push({at,sound:i?'linked-unlock':'first-unlock',options:{index:i}},{at:at+cash,sound:'cash',options:{tier:1}},{at:at+bonusAt,sound:bonus},{at:at+collect,sound:'collect',options:{tier:1,bonus:true}},{at:at+end-.26,sound:'next',options:{index:i+1}});
 }
 const comparison=renderVaultSequence(bonusComparison,rate);report['bonus-reveals']=metrics(comparison);await writeFile(join(output,'bonus-reveals.wav'),wav(comparison));
 await writeFile(join(output,'crown-vault-quick-listen.wav'),wav(renderVaultSequence([
  {at:0,sound:'intro'},{at:1.4,sound:'linked-unlock',options:{index:4}},
  {at:1.4+cash,sound:'cash',options:{tier:2}},{at:1.4+bonusAt,sound:'multiply'},
- {at:1.4+collect,sound:'collect',options:{tier:2}},{at:1.4+end-.28,sound:'settle',options:{tier:2}},{at:1.4+end,sound:'royal'}
+ {at:1.4+collect,sound:'collect',options:{tier:2,bonus:true}},{at:1.4+end-.28,sound:'settle',options:{tier:2}},{at:1.4+end,sound:'royal'}
 ],rate)));
 
-for(let index=0;index<3;index++){const data=renderVaultSequence([{at:0,sound:'special',options:{index}},{at:.26,sound:'linked-unlock',options:{index:5+index}},{at:.26+cash,sound:'cash',options:{tier:2}},{at:.26+bonusAt,sound:'extra'},{at:.26+collect,sound:'collect',options:{tier:2}}],rate);report['special-'+index]=metrics(data);await writeFile(join(output,'special-'+index+'.wav'),wav(data));}
+for(let index=0;index<3;index++){const data=renderVaultSequence([{at:0,sound:'special',options:{index}},{at:.26,sound:'linked-unlock',options:{index:5+index}},{at:.26+cash,sound:'cash',options:{tier:2}},{at:.26+bonusAt,sound:'extra'},{at:.26+collect,sound:'collect',options:{tier:2,bonus:true}}],rate);report['special-'+index]=metrics(data);await writeFile(join(output,'special-'+index+'.wav'),wav(data));}
 await writeFile(join(output,'audio-metrics.json'),JSON.stringify({sampleRate:rate,previewVolume:70,cues:report,reel},null,2)+'\n');
 console.log(JSON.stringify({directory:resolve(output),cues:report},null,2));
