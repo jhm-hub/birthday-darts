@@ -3,6 +3,8 @@ import {connectGiftControl,connectGiftDisplay} from './gift-session.js';
 import {createGiftAudio} from './gift-audio.js';
 import {bindGiftVolume} from './gift-mixer.js';
 import {money,giftTotal,giftModifierDue} from './gift-game.js';
+import {renderGiftRangeButtons} from './gift-range-controls.js';
+import {giftRangeText} from './gift-ranges.js';
 const $=s=>document.querySelector(s),overlay=document.documentElement.classList.contains('gift-overlay'),audio=createGiftAudio();
 let session,snapshot,connected=false,pending=false,viewReady=false,readiness='Loading gifts…',error='',volumeTarget=null,volumeVersion=0;
 const mixer=overlay?null:bindGiftVolume($('#gift-mixer'),audio,changeVolume);
@@ -10,13 +12,17 @@ const view=createGiftView($('#gift-control-preview'),{interactive:!overlay,onPic
 if(overlay){try{audio.setEnabled(true);}catch{}}
 document.addEventListener('pointerdown',()=>{try{audio.unlock();}catch{}},{once:true});
 function render(){
- if(snapshot)view.update(snapshot,{preview:!overlay,canPick:connected&&!pending,show:!overlay||connected});
+ const needsRange=!overlay&&!snapshot?.round&&snapshot?.controls?.ranges.some(r=>r.min!==null);
+ if(snapshot)view.update(snapshot,{preview:!overlay,canPick:connected&&!pending&&!needsRange,show:!overlay||connected});
  if(overlay){if(!connected)view.hide();return;}
  mixer.setEnabled(connected);
  const r=snapshot?.round,busy=!!r?.flight,finished=r?.completedAt!==null&&!!r;
- $('#live-unwrap').disabled=!viewReady||!connected||pending||busy||finished;
+ $('#live-unwrap').disabled=!viewReady||!connected||pending||busy||finished||needsRange;
  $('#live-unwrap').textContent=!viewReady?'Loading gifts…':busy?'Unwrapping…':finished?'Total revealed':'Unwrap for me';
  $('#viewer').disabled=!!r||pending;
+ renderGiftRangeButtons($('#live-ranges'),snapshot?.controls?.ranges,{disabled:!viewReady||!connected||pending||!!r,activeId:snapshot?.controls?.activeRange?.id,onStart:startRange});
+ const active=snapshot?.controls?.activeRange;
+ $('#live-range-status').textContent=active?active.name+' · '+giftRangeText(active)+' final total. Locked for this viewer.':needsRange?'Enter a viewer, then choose a game. Its final total includes all multipliers and bonus picks.':'Set your four ranges in Edit gift games. Your saved prize setup is available until then.';
  $('#control-status').textContent=error||(!viewReady?'Loading gifts…':!connected?readiness:busy?'Opening one present…':finished?money(giftTotal(r))+' total. Clearing automatically…':r?r.remaining+' pick'+(r.remaining===1?'':'s')+' left. Choose any wrapped present.':snapshot?.lastResult?'Ready for the next viewer. Last total: '+money(snapshot.lastResult.totalCents):'First pick: appear + unwrap. Last pick: total reveal.');
  if(!error&&connected&&!busy&&!finished&&giftModifierDue(r))$('#control-status').textContent+=' A modifier is guaranteed on this pick.';
 }
@@ -28,6 +34,7 @@ async function changeVolume(value){
  finally{if(version===volumeVersion){volumeTarget=null;mixer.update(snapshot?.audio?.volume);}}
 }
 async function pick(cell=null){if(overlay||!connected||!viewReady||pending||snapshot?.round?.flight||snapshot?.round?.completedAt!==null&&snapshot?.round)return;pending=true;error='';render();try{if(audio.enabled)audio.unlock();receive(await session.unwrap($('#viewer').value,cell));}catch(e){error=e.message;}finally{pending=false;render();}}
+async function startRange(id){if(overlay||!connected||!viewReady||pending||snapshot?.round)return;pending=true;error='';render();try{if(audio.enabled)audio.unlock();receive(await session.startRange(id,$('#viewer').value));}catch(e){error=e.message;}finally{pending=false;render();}}
 async function init(){
  if(overlay){session=connectGiftDisplay(receive,value=>{connected=value;render();});}
  else{

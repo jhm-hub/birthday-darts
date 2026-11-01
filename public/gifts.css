@@ -7,3 +7,13 @@
 #celebration-summary{float:right;color:var(--cream);font-size:10px;text-align:right}
 .celebration-settings .settings-pair{grid-template-columns:1fr 1fr}
 .finale-preview-note{margin:8px 0 0;font-size:11px}
+
+/* Private range controls never load on the transparent display. */
+.gift-range-settings{margin-top:24px;border-top:1px solid var(--line);padding-top:22px}
+.gift-range-row{border:1px solid var(--line);border-radius:9px;margin:15px 0 0;padding:13px;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
+.gift-range-row legend{color:var(--pink);font-size:12px;padding:0 5px}.gift-range-row>div:first-of-type{grid-column:1/-1}
+.gift-range-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0 18px}
+.gift-range-button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;background:#3b2338;border-color:#a45b85;min-width:0;padding:13px}
+.gift-range-button strong{font:500 17px Fredoka,sans-serif;overflow-wrap:anywhere}.gift-range-button span{font-size:11px;line-height:1.4;color:#f5d5df}
+.gift-range-button[aria-pressed=true]{border-color:#ffd495;background:#59402f;opacity:1}.gift-range-button:disabled:not([aria-pressed=true]){opacity:.55}
+.range-section-label{font-size:11px;color:var(--cream);margin-top:22px}.gift-live-ranges{margin-top:16px}.gift-live-ranges .hint{margin-top:0}

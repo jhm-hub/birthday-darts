@@ -1,6 +1,7 @@
 import {randomUUID,randomInt} from './random.js';
 import {chooseOutcome} from './game.js';
 import {DEFAULT_GIFT_CELEBRATION,validateGiftCelebration} from './gift-celebration.js';
+import {validateGiftRanges} from './gift-ranges.js';
 
 export const UNWRAP_MS=2000, REVEAL_MS=850, GIFT_HOLD_MS=5500, GIFT_CLEAR_MS=400;
 export const DEFAULT_GIFTS={id:'gift-pile',name:'Faith’s gift pile',side:3,picks:3,maxSide:5,maxPicks:12,celebration:{...DEFAULT_GIFT_CELEBRATION},outcomes:[
@@ -36,7 +37,7 @@ export function validateGiftWidget(input){
  });
  if(!outcomes.some(o=>o.kind==='cash'&&o.weight>0))throw Error('Include at least one money prize with odds above zero.');
  const id=input.id??randomUUID();if(!/^[\w-]{1,80}$/.test(id))throw Error('Invalid game identifier.');
- return {id,name:input.name.trim(),side:input.side,picks:input.picks,maxSide:input.maxSide,maxPicks:input.maxPicks,celebration:validateGiftCelebration(input.celebration),outcomes};
+ return {id,name:input.name.trim(),side:input.side,picks:input.picks,maxSide:input.maxSide,maxPicks:input.maxPicks,celebration:validateGiftCelebration(input.celebration),outcomes,...(input.gameRanges===undefined?{}:{gameRanges:validateGiftRanges(input.gameRanges)})};
 }
 export const giftTotal=r=>r?(BigInt(r.cashCents)*BigInt(r.multiplier)).toString():'0';
 export function startGiftRound(widget,viewer='',now=Date.now()){
@@ -62,9 +63,15 @@ export function unwrapGift(round,now=Date.now(),{cell=null,draw=randomInt,forced
  if(round.flight)throw Error('Wait for this present to finish opening.');
  const cells=availableGiftCells(round);if(cell===null)cell=cells[randomInt(cells.length)];
  if(!cells.includes(cell))throw Error('Choose a wrapped present on this board.');
- const outcomes=eligibleGiftOutcomes(round),i=forcedIndex===null?chooseOutcome(outcomes,draw):forcedIndex;
+ const planned=round.prizePlan?.[round.opened.length];
+ if(round.prizePlan&&(!planned||forcedIndex!==null))throw Error('This round already has its prizes prepared.');
+ const outcomes=eligibleGiftOutcomes(round),i=planned?planned.outcomeIndex:forcedIndex===null?chooseOutcome(outcomes,draw):forcedIndex;
  if(!Number.isInteger(i)||!outcomes[i]||outcomes[i].weight<=0)throw Error('That prize is unavailable in this round.');
  const o=outcomes[i],prize={kind:o.kind,value:o.value};
+ if(planned&&o.kind==='cash'){
+  if(!Number.isSafeInteger(planned.cashCents)||planned.cashCents<1||planned.cashCents>100000000)throw Error('This prepared prize is invalid.');
+  prize.value=planned.cashCents/100;
+ }
  if(isGiftExpansion(o.kind)){const {rows,cols}=giftDimensions(round);prize.nextRows=rows+(o.kind!=='column'?1:0);prize.nextCols=cols+(o.kind!=='row'?1:0);prize.granted=Math.min(o.value,round.preset.maxPicks-round.allocated,prize.nextRows*prize.nextCols-round.allocated);}
  round.flight={id:randomUUID(),cell,index:round.opened.length,prize,startAt:now,revealAt:now+REVEAL_MS,finishAt:now+UNWRAP_MS};return round.flight;
 }
@@ -81,7 +88,7 @@ export function advanceGiftRound(round,now=Date.now()){
  const shot=round.flight;award(round,shot);round.flight=null;
  if(round.remaining===0){round.completedAt=shot.finishAt;round.hideAt=shot.finishAt+GIFT_HOLD_MS;}return true;
 }
-export function cleanGiftRound(round){if(!round)return null;const copy=structuredClone(round);copy.preset.outcomes=copy.preset.outcomes.map(({kind,value})=>({kind,value}));return copy;}
+export function cleanGiftRound(round){if(!round)return null;const copy=structuredClone(round);delete copy.prizePlan;delete copy.privateRange;delete copy.preset.gameRanges;copy.preset.outcomes=copy.preset.outcomes.map(({kind,value})=>({kind,value}));return copy;}
 export function sampleGiftFinale(widget,now=Date.now(),draw=randomInt){
  const r=startGiftRound(widget,'Demo viewer',now-120000);let cursor=now-120000;
  while(r.remaining){unwrapGift(r,cursor,{draw});cursor+=UNWRAP_MS;advanceGiftRound(r,cursor);}

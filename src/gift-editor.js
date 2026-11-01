@@ -1,16 +1,20 @@
 import {giftStore,exportGiftSettings,importGiftSettings} from './gift-store.js';
-import {GIFT_CLEAR_MS,DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,eligibleGiftOutcomes,giftModifierDeadline,giftModifierDue,sampleGiftFinale,prizeLabel,giftTotal,money,isGiftExpansion} from './gift-game.js';
+import {GIFT_CLEAR_MS,GIFT_HOLD_MS,DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,eligibleGiftOutcomes,giftModifierDeadline,giftModifierDue,sampleGiftFinale,prizeLabel,giftTotal,money,isGiftExpansion} from './gift-game.js';
 import {createGiftView} from './gift-view.js';
 import {createGiftAudio} from './gift-audio.js';
 import {bindGiftPreviewVolume} from './gift-mixer.js';
 import {GIFT_CELEBRATIONS,giftCelebrationLevel} from './gift-celebration.js';
+import {bindGiftRangeFields,renderGiftRangeButtons} from './gift-range-controls.js';
+import {configuredGiftRanges} from './gift-ranges.js';
+import {startGiftRange} from './gift-range-round.js';
 import {sampleGiftTierFinale} from './gift-finale-preview.js';
 const $=s=>document.querySelector(s),audio=createGiftAudio();
 bindGiftPreviewVolume($('#gift-mixer'),audio);
+const rangeFields=bindGiftRangeFields($('#gift-range-fields'),changed);
 let widgets=[],selected=null,dirty=false,draftValue=null,draftError='',demo=null,ready=false,refreshTimer;
 const view=createGiftView($('#gift-preview'),{interactive:true,onPick:pick,onReady(){ready=true;renderDemo();},onError(e){$('#demo-status').textContent=e.message;},audio});
 function message(text,error=false){$('#editor-status').textContent=text;$('#editor-status').classList.toggle('error',error);}
-function readDraft(){if([...$('#gift-settings').querySelectorAll('input')].some(i=>!i.validity.valid))throw Error('Finish the highlighted settings before playing the demo.');return validateGiftWidget({...(selected?{id:selected}:{}),name:$('#game-name').value,side:Number($('#board-size').value),picks:Number($('#pick-count').value),maxSide:Number($('#max-board').value),maxPicks:Number($('#max-picks').value),celebration:{big:Number($('#celebration-big').value),royal:Number($('#celebration-royal').value)},outcomes:[...$('#prize-rows').children].map(r=>({kind:r.querySelector('select').value,value:Number(r.querySelector('.prize-value').value),weight:Number(r.querySelector('.prize-weight').value)}))});}
+function readDraft(){if([...$('#gift-settings').querySelectorAll('input')].some(i=>!i.validity.valid))throw Error('Finish the highlighted settings before playing the demo.');return validateGiftWidget({...(selected?{id:selected}:{}),name:$('#game-name').value,gameRanges:rangeFields.read(),side:Number($('#board-size').value),picks:Number($('#pick-count').value),maxSide:Number($('#max-board').value),maxPicks:Number($('#max-picks').value),celebration:{big:Number($('#celebration-big').value),royal:Number($('#celebration-royal').value)},outcomes:[...$('#prize-rows').children].map(r=>({kind:r.querySelector('select').value,value:Number(r.querySelector('.prize-value').value),weight:Number(r.querySelector('.prize-weight').value)}))});}
 function row(prize={kind:'cash',value:25,weight:10}){
  const r=document.createElement('div');r.className='prize-row';r.innerHTML='<select aria-label="Prize type"><option value="cash">Money $</option><option value="multiply">×Y total</option><option value="extra">Grow board</option><option value="row">Bonus row</option><option value="column">Bonus column</option></select><input class="prize-value" aria-label="Prize value" type="number" required><input class="prize-weight" aria-label="Relative odds" type="number" min="0" max="1000" step=".01" required><output aria-label="Chance"></output><button type="button" aria-label="Remove prize">×</button>';
  const kind=r.querySelector('select'),value=r.querySelector('.prize-value'),weight=r.querySelector('.prize-weight');kind.value=prize.kind;value.value=prize.value;weight.value=prize.weight;
@@ -39,28 +43,45 @@ function refresh(){
  renderDemo();
 }
 function changed(){dirty=true;$('#save-game').textContent=selected?'Save changes':'Create game';clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,120);}
-function edit(w){selected=w.id??null;dirty=false;$('#game-name').value=w.name;$('#board-size').value=w.side;$('#pick-count').value=w.picks;$('#max-board').value=w.maxSide;$('#max-picks').value=w.maxPicks;$('#celebration-big').value=w.celebration.big;$('#celebration-royal').value=w.celebration.royal;$('#prize-rows').replaceChildren();w.outcomes.forEach(row);$('#save-game').textContent=selected?'Save game':'Create game';$('#duplicate').disabled=!selected;message('');refresh();list();links();}
+function edit(w){rangeFields.set(w.gameRanges);selected=w.id??null;dirty=false;$('#game-name').value=w.name;$('#board-size').value=w.side;$('#pick-count').value=w.picks;$('#max-board').value=w.maxSide;$('#max-picks').value=w.maxPicks;$('#celebration-big').value=w.celebration.big;$('#celebration-royal').value=w.celebration.royal;$('#prize-rows').replaceChildren();w.outcomes.forEach(row);$('#save-game').textContent=selected?'Save game':'Create game';$('#duplicate').disabled=!selected;message('');refresh();list();links();}
 function list(){const container=$('#gift-list');container.replaceChildren();for(const w of widgets){const b=document.createElement('button');b.className='saved-game';b.type='button';b.textContent=w.name;b.setAttribute('aria-current',String(w.id===selected));b.addEventListener('click',()=>{if(dirty&&!confirm('Discard these unsaved game changes?'))return;edit(w);});container.append(b);}}
 function links(){const open=$('#open-controls'),input=$('#gift-display-url');if(!selected){open.removeAttribute('href');open.textContent='Save this game first';input.value='Save this game to create its display link.';$('#copy-display').disabled=true;return;}const url=new URL('./gift-display.html',location.href);url.hash='room='+giftStore.roomKey(selected);input.value=url.href;open.href='./gift-play.html?id='+encodeURIComponent(selected);open.textContent='Open controls ↗';$('#copy-display').disabled=false;}
 function renderDemo(){
  if(!draftValue){$('#demo-unwrap').disabled=true;$('#demo-finale').disabled=true;return;}
- if(draftValue)view.update({widget:draftValue,round:demo},{preview:true,canPick:!draftError&&ready});
+ const needsRange=!demo&&configuredGiftRanges(draftValue).length>0;
+ renderGiftRangeButtons($('#demo-ranges'),draftValue.gameRanges,{disabled:!ready||!!draftError||!!demo,activeId:demo?.privateRange?.id,onStart:startDemoRange});
+ $('#manual-demo-prize').hidden=configuredGiftRanges(draftValue).length>0;
+ if(draftValue)view.update({widget:draftValue,round:demo},{preview:true,canPick:!draftError&&ready&&!needsRange});
  const busy=!!demo?.flight||demo?.completedAt!==null&&!!demo;
- $('#demo-unwrap').disabled=!ready||!!draftError||busy;$('#demo-reset').disabled=!ready;$('#demo-finale').disabled=!ready||!!draftError;
+ $('#demo-unwrap').disabled=!ready||!!draftError||busy||needsRange;$('#demo-reset').disabled=!ready;$('#demo-finale').disabled=!ready||!!draftError;
  $('#demo-unwrap').textContent=demo?.flight?'Unwrapping…':demo?.completedAt!==null&&demo?'Total revealed':'Unwrap for me';
  const eligible=eligibleGiftOutcomes(demo??{preset:draftValue,side:draftValue.side,allocated:draftValue.picks});
  for(const o of $('#demo-prize').options)if(o.value!=='')o.disabled=eligible[Number(o.value)]?.weight<=0;
  if($('#demo-prize').selectedOptions[0]?.disabled)$('#demo-prize').value='';
- const text=draftError||(!ready?'Loading gifts…':demo?.celebrationPreview?money(giftTotal(demo))+' sample total · '+GIFT_CELEBRATIONS[giftCelebrationLevel(demo)].label+' celebration.':demo?.flight?'Opening your present…':demo?.completedAt!==null&&demo?money(giftTotal(demo))+' total · '+demo.opened.length+' presents opened.':demo?demo.remaining+' pick'+(demo.remaining===1?'':'s')+' left. Choose any wrapped present.':'Choose any of the '+draftValue.side**2+' presents. You have '+draftValue.picks+' picks.');
+ const text=draftError||(needsRange?'Choose a game button above to demo its guaranteed total range.':!ready?'Loading gifts…':demo?.celebrationPreview?money(giftTotal(demo))+' sample total · '+GIFT_CELEBRATIONS[giftCelebrationLevel(demo)].label+' celebration.':demo?.flight?'Opening your present…':demo?.completedAt!==null&&demo?money(giftTotal(demo))+' total · '+demo.opened.length+' presents opened.':demo?demo.remaining+' pick'+(demo.remaining===1?'':'s')+' left. Choose any wrapped present.':'Choose any of the '+draftValue.side**2+' presents. You have '+draftValue.picks+' picks.');
  $('#demo-status').textContent=text+(!draftError&&demo&&!busy&&giftModifierDue(demo)?' A modifier is guaranteed on this pick.':'');$('#demo-status').classList.toggle('error',!!draftError);
 }
 function pick(cell=null){
- if(!ready||draftError||demo?.flight||demo?.completedAt!==null&&demo)return;
- try{if(audio.enabled)audio.unlock();demo??=startGiftRound(draftValue,'Demo viewer');const forced=$('#demo-prize').value;unwrapGift(demo,Date.now(),{cell,forcedIndex:forced===''?null:Number(forced)});renderDemo();}catch(e){$('#demo-status').textContent=e.message;}
+ if(!ready||draftError||demo?.flight||demo?.completedAt!==null&&demo||!demo&&configuredGiftRanges(draftValue).length)return;
+ try{if(audio.enabled)audio.unlock();demo??=startGiftRound(draftValue,'Demo viewer');const forced=demo.privateRange?'':$('#demo-prize').value;unwrapGift(demo,Date.now(),{cell,forcedIndex:forced===''?null:Number(forced)});renderDemo();}catch(e){$('#demo-status').textContent=e.message;}
 }
+function startDemoRange(id){if(!ready||draftError||demo)return;try{if(audio.enabled)audio.unlock();demo=startGiftRange(draftValue,id,'Demo viewer');renderDemo();}catch(e){$('#demo-status').textContent=e.message;}}
 $('#demo-unwrap').addEventListener('click',()=>pick());
 $('#demo-reset').addEventListener('click',()=>{demo=null;audio.reset();renderDemo();});
-$('#demo-finale').addEventListener('click',()=>{if(draftError)return;audio.reset();const tier=$('#demo-finale-level').value;demo=tier===''?sampleGiftFinale(draftValue):sampleGiftTierFinale(draftValue,Number(tier));renderDemo();});
+$('#demo-finale').addEventListener('click',()=>{
+ if(draftError)return;
+ audio.reset();const tier=$('#demo-finale-level').value;
+ const rangeId=demo?.privateRange?.id??configuredGiftRanges(draftValue)[0]?.id;
+ try{
+  if(tier===''&&rangeId){
+   demo=startGiftRange(draftValue,rangeId,'Demo viewer',Date.now()-120000);
+   let time=demo.startedAt;
+   while(demo.remaining){const shot=unwrapGift(demo,time);advanceGiftRound(demo,shot.finishAt);time=shot.finishAt;}
+   demo.completedAt=Date.now();demo.hideAt=demo.completedAt+GIFT_HOLD_MS;
+  }else demo=tier===''?sampleGiftFinale(draftValue):sampleGiftTierFinale(draftValue,Number(tier));
+  renderDemo();
+ }catch(e){$('#demo-status').textContent=e.message;}
+});
 $('#demo-sound').addEventListener('click',()=>{audio.setEnabled(!audio.enabled);$('#demo-sound').textContent=audio.enabled?'Sound on':'Sound off';$('#demo-sound').setAttribute('aria-pressed',String(audio.enabled));});
 for(const id of ['game-name','board-size','pick-count','max-board','max-picks','celebration-big','celebration-royal'])$('#'+id).addEventListener('input',changed);
 $('#add-prize').addEventListener('click',()=>{row();changed();});

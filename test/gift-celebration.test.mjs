@@ -45,7 +45,7 @@ test('each game saves thresholds independently and active rounds freeze their or
 });
 test('new backups retain thresholds and older backups import with defaults',()=>{
  const widget={...DEFAULT_GIFTS,celebration:{big:12.34,royal:56.78}},backup=exportGiftSettings([widget]);
- assert.equal(backup.version,3);assert.deepEqual(importGiftSettings(backup)[0].celebration,widget.celebration);
+ assert.equal(backup.version,4);assert.deepEqual(importGiftSettings(backup)[0].celebration,widget.celebration);
  for(const version of [1,2]){const old=structuredClone(widget);delete old.celebration;assert.deepEqual(importGiftSettings({format:'faith-gift-pile',version,widgets:[old]})[0].celebration,DEFAULT_GIFT_CELEBRATION);}
 });
 test('explicit tier previews use labelled sample totals without modifying game settings',()=>{
