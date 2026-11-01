@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,projectedPinata,pinataTotal,SWING_MS} from '../src/pinata-game.js';
 import {finalePose,FINALE_REVEAL_MS} from '../src/pinata-finale.js';
 import {HANDOFF_SPARKS,finalHitAge,handoffPose,handoffSparkPose} from '../src/pinata-handoff.js';
-import {particlePose,PARTICLE_COUNT} from '../src/pinata-motion.js';
+import {particlePose,PARTICLE_COUNT,breakPose} from '../src/pinata-motion.js';
 import {pinataAudioCues} from '../src/pinata-sound-design.js';
 
 function lastShot(kind=0){
@@ -33,7 +33,7 @@ test('one exact total remains readable until the final amount is established',()
   const p=handoffPose(age),f=finalePose(age);
   assert.ok(Math.max(p.bankOpacity,f.amountOpacity)>=.95);
  }
- assert.equal(handoffPose(160).rewardOpacity,0);assert.equal(handoffPose(220).detailOpacity,0);
+ assert.equal(handoffPose(220).rewardOpacity,0);assert.equal(handoffPose(260).detailOpacity,0);
  assert.equal(handoffPose(FINALE_REVEAL_MS).bankOpacity,1);
  assert.equal(handoffPose(FINALE_REVEAL_MS+80).bankOpacity,1);
  assert.equal(handoffPose(FINALE_REVEAL_MS+160).bankOpacity,0);
@@ -65,5 +65,39 @@ test('quiet mode keeps the total handoff but removes travel and sparkles',()=>{
   assert.ok(Math.max(p.bankOpacity,finalePose(age,true).amountOpacity)>=.95);
   for(let i=0;i<HANDOFF_SPARKS;i++)assert.equal(handoffSparkPose(i,age,true).opacity,0);
  }
- assert.deepEqual(handoffPose(null),{rewardOpacity:1,rewardY:0,detailOpacity:1,captionOpacity:1,bankOpacity:1,bankY:0,ropeOpacity:1});
+ assert.deepEqual(handoffPose(null),{rewardOpacity:1,rewardY:0,detailOpacity:1,captionOpacity:1,bankOpacity:1,bankY:0,ropeOpacity:1,burstOpacity:1});
+});
+
+test('the crown forms through the clearing break without a blank beat or size change',()=>{
+ for(let age=-300;age<=300;age++){
+  const fragments=breakPose(age+SWING_MS-480),crest=finalePose(age),h=handoffPose(age);
+  assert.ok(Math.max(fragments.opacity,crest.crestOpacity)>=.12,`empty crown handoff at ${age}`);
+  assert.equal(crest.crestScale,1);assert.equal(crest.crestAngle,0);
+  assert.ok(crest.crestY>=0&&crest.crestY<=18);
+  assert.ok(h.burstOpacity>=0&&h.burstOpacity<=1);
+  if(age>=120)assert.equal(h.burstOpacity,0);
+  const next=handoffPose(age+1);
+  assert.ok(next.burstOpacity<=h.burstOpacity);
+  assert.ok(Math.abs(next.burstOpacity-h.burstOpacity)<.005);
+ }
+ assert.equal(handoffPose(null).burstOpacity,1);
+});
+
+test('all tiers keep a labelled exact total while the last cash or multiplier clears',()=>{
+ for(const tier of [0,1,2])for(let age=-500;age<1200;age++){
+  const h=handoffPose(age),p=handoffPose(age,false,tier),f=finalePose(age,false,tier);
+  assert.ok(Math.max(p.bankOpacity,f.amountOpacity)>=.95);
+  if(f.amountOpacity<.95)assert.equal(p.captionOpacity,1);
+  if(f.amountOpacity>0){assert.equal(p.rewardOpacity,0);assert.equal(p.detailOpacity,0);assert.equal(p.burstOpacity,0);}
+  assert.equal(p.rewardOpacity,h.rewardOpacity);
+ }
+});
+
+test('gathering glints arrive in balanced pairs and finish before any total reveal',()=>{
+ for(let age=-500;age<600;age+=4)for(let i=0;i<HANDOFF_SPARKS;i+=2){
+  const a=handoffSparkPose(i,age),b=handoffSparkPose(i+1,age);
+  assert.equal(a.opacity,b.opacity);assert.equal(a.y,b.y);assert.equal(a.scale,b.scale);
+  if(a.opacity>0){assert.equal(a.x+b.x,420);assert.equal(a.angle,-b.angle);}
+  if(age>=FINALE_REVEAL_MS){assert.equal(a.opacity,0);assert.equal(b.opacity,0);}
+ }
 });

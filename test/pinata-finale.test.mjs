@@ -18,7 +18,7 @@ test('the reveal settles for reading and a late display joins the settled pose',
  assert.equal(hold.crestScale,1);assert.equal(Math.abs(hold.crestY),0);assert.equal(Math.abs(hold.crestAngle),0);
  assert.equal(hold.amountScale,1);assert.equal(hold.amountOpacity,1);assert.equal(hold.detailOpacity,1);
  assert.deepEqual(finalePose(HOLD_MS-1),hold);
- assert.equal(finalePose(-1).visible,false);
+ assert.equal(finalePose(-381).visible,false);
 });
 test('celebration particles leave the entire amount and detail region clear',()=>{
  let upper=0,lower=0;

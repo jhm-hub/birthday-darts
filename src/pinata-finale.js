@@ -10,10 +10,12 @@ const smooth=x=>{const t=clamp(x);return t*t*(3-2*t);};
 // Join the authoritative round clock, including late displays and scrubbed
 // previews. Grand Royal adds a brief gathering beat before the same payoff.
 export function finalePose(age,quiet=false,tier=0){
- const reveal=finaleRevealAt(tier),enter=smooth((age-40)/230),p=clamp((age-reveal)/420);
- return {visible:age>=40,crestOpacity:enter,
-  crestY:quiet?0:(1-enter)*-14,crestScale:quiet?1:1+.045*Math.sin(enter*Math.PI),
-  crestAngle:quiet?0:(1-enter)*-5,
+ // Begin inside the final break, so the small crown receives the gathering
+ // glints before the last prize fades. Its size and the tier reveal clocks stay fixed.
+ const reveal=finaleRevealAt(tier),enter=smooth((age+380)/520),p=clamp((age-reveal)/420);
+ return {visible:age>=-380,crestOpacity:enter,
+  crestY:quiet?0:(1-enter)*18,crestScale:1,
+  crestAngle:0,
   titleOpacity:smooth((age-(tier===2?570:tier===1?200:130))/(tier===2?180:150)),amountOpacity:smooth((age-reveal)/100),
   amountScale:quiet?1:1-.1*(1-p)**3+.035*Math.sin(p*Math.PI),
   detailOpacity:smooth((age-reveal-280)/180),previousOpacity:1-smooth(Math.max(0,age)/160),...(tier===0?birthdayAmountPose(age,quiet):tier===1?royalAmountPose(age,quiet):{})};
