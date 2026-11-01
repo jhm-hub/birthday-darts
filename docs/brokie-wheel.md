@@ -73,3 +73,7 @@ remain operator acceptance checks.
 
 Builds use copy-on-write asset copying when supported, with ordinary copying
 as Node's fallback, to reduce duplicate data on the full external workspace.
+
+Saved versions use one permanent display link, adopting the original wheel key. The private live selector switches versions between viewers. Editing a version updates that version; Save as new version creates a copy using the same source. Legacy links remain usable when their version is selected. Only one control tab can own the Brokie stream.
+
+Tests in test/brokie-permanent.test.mjs cover saved settings, migration, permanent connections, duplicate controls and unfinished rounds.

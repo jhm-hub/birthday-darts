@@ -34,3 +34,9 @@ transparent. Existing game art, audio, odds and prize rules are unchanged.
 Settings and permanent links remain local to the browser/profile. Clearing
 browser data or moving to another browser/computer does not transfer its link.
 Download a settings backup before moving; keep complete display links private.
+
+## Brokie Wheel
+
+Brokie also uses one permanent source (420 x 460). Open [its editor](https://jhm-hub.github.io/birthday-darts/brokie.html), edit the wheel name and amounts, then **Save changes**. **Save as new version** keeps a copy. Use **Saved version** above the live preview to switch between viewers. **Edit this version** opens the selected settings. Its **Permanent OBS link** stays the same.
+
+The [Birthday Scam Wheel](https://jhm-hub.github.io/birthday-scam-wheel/) and [original Scam Wheel](https://jhm-hub.github.io/scam-wheel/browser.html) also have saved versions. Their private controls apply a saved version between viewers on the existing paired source. See each game's **SAVED-VERSIONS.md** for its exact buttons.

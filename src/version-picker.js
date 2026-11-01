@@ -1,6 +1,6 @@
 // Private control UI only. Selection changes the saved setup on the permanent
 // display, without navigating or replacing the connected browser source.
-export function bindVersionPicker(root,session,{canSwitch=()=>true,onSwitch=()=>{},editor}={}){
+export function bindVersionPicker(root,session,{canSwitch=()=>true,onSwitch=()=>{},editor,idleNote='All saved versions and range buttons use this one permanent OBS source.'}={}){
  const label=document.createElement('label'),select=document.createElement('select'),note=document.createElement('p'),edit=document.createElement('a');
  label.textContent='Saved version';select.setAttribute('aria-label','Saved version');label.append(select);
  note.className='version-note';note.setAttribute('role','status');
@@ -13,7 +13,7 @@ export function bindVersionPicker(root,session,{canSwitch=()=>true,onSwitch=()=>
   select.value=snapshot?.widget.id??session.id;
   select.disabled=!available||busy||!!snapshot?.round;
   edit.href=editor+'?id='+encodeURIComponent(select.value);
-  note.textContent=snapshot?.round?'Finish this viewer before switching versions. Your OBS link stays the same.':'All saved versions and range buttons use this one permanent OBS source.';
+  note.textContent=snapshot?.round?'Finish this viewer before switching versions. Your OBS link stays the same.':idleNote;
  }
  select.onchange=async()=>{
   if(busy||!available||snapshot?.round){render();return;}
