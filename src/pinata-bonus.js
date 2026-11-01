@@ -18,10 +18,10 @@ function tokenFlight(after){
 export function bonusPose(kind,after,quiet=false){
  const bonus=kind==='multiply'||kind==='extra',enter=out((after-REWARD_SOUND_AFTER_MS)/190);
  const intro=pulse(after,REWARD_SOUND_AFTER_MS,20,130),lift=pulse(after,kind==='multiply'?multLift:extraRepeat,35,180);
- const resolve=pulse(after,kind==='multiply'?multResolve:extraCatch,45,180),flight=tokenFlight(after);
+ const resolve=pulse(after,kind==='multiply'?multResolve:extraCatch,45,180),flight=tokenFlight(after),retire=smooth((after-820)/190);
  return {opacity:bonus?smooth((after-150)/70)*(1-smooth((after-800)/210)):0,
-  scale:quiet?1:.78+.22*enter+.045*intro+.065*lift+(kind==='multiply'?.14:.06)*resolve,
-  y:quiet?0:(1-enter)*10-(kind==='multiply'?6*lift+3*resolve:4*intro+5*lift),
+  scale:quiet?1:.78+.22*enter+.045*intro+.065*lift+(kind==='multiply'?.14:.06)*resolve-.025*retire,
+  y:quiet?0:(1-enter)*10-(kind==='multiply'?6*lift+3*resolve:4*intro+5*lift)+4*retire,
   orbit:quiet?0:kind==='multiply'?24*smooth((after-160)/170)+42*smooth((after-multLift)/320):8*intro-12*lift,
   haloOpacity:quiet?0:bonus?Math.min(1,.35*intro+.5*lift+resolve):0,
   haloScale:quiet?1:.85+.2*lift+.28*resolve,

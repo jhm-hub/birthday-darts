@@ -5,6 +5,7 @@ import {beginPreviewClear} from './pinata-exit.js';
 const $=s=>document.querySelector(s);
 let time=0,playing=false,last=performance.now(),base,maxTime=4800;
 const resetScenes=['reset','royal-reset','grand-reset'];
+const rewardNextScenes=['cash-next','multiply-next','extra-next'];
 const exitScenes=['exit','royal-exit','grand-exit','large-exit',...resetScenes],resetAt=3200;
 $('#quiet').checked=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const view=createPinataView($('#art-preview'),{preview:true,clock:()=>time,quiet:()=>$('#quiet').checked});
@@ -20,25 +21,25 @@ function scene(){
   swingPinata(base,-4000,{forcedIndex:0});advancePinata(base,-2500);
   swingPinata(base,-2000,{forcedIndex:mode==='last-multiply'?1:3});advancePinata(base,-500);
  }
- if(['second','multiply','extra','worn','between-back'].includes(mode)){
+ if(['second','multiply','extra','worn','between-back','multiply-next','extra-next'].includes(mode)){
   swingPinata(base,-14000,{forcedIndex:0});advancePinata(base,-12500);
  }
  if(mode==='worn')for(let i=0;i<6;i++){
   swingPinata(base,-12000+i*1800,{forcedIndex:i%2===0?4:0});advancePinata(base,-10500+i*1800);
  }
- swingPinata(base,0,{forcedIndex:['multiply','last-multiply'].includes(mode)?3:mode==='extra'?4:finish?1:0});time=0;playing=false;render();
+ swingPinata(base,0,{forcedIndex:['multiply','last-multiply','multiply-next'].includes(mode)?3:['extra','extra-next'].includes(mode)?4:finish?1:0});time=0;playing=false;render();
 }
 function render(){
  const mode=$('#scene').value;let round=structuredClone(base),readyAt=null;advancePinata(round,time);
  if(!exitScenes.includes(mode))round.hideAt=null;
  if(mode==='intro')readyAt=0;
- if(mode==='between'||mode==='between-back'){const nextAt=1850;if(mode==='between-back'){round=structuredClone(base);advancePinata(round,time);}if(time>=nextAt){advancePinata(round,nextAt);swingPinata(round,nextAt,{forcedIndex:0});advancePinata(round,time);}}
+ if(mode==='between'||mode==='between-back'||rewardNextScenes.includes(mode)){const nextAt=rewardNextScenes.includes(mode)?1500:1850;if(mode==='between-back'){round=structuredClone(base);advancePinata(round,time);}if(time>=nextAt){advancePinata(round,nextAt);swingPinata(round,nextAt,{forcedIndex:0});advancePinata(round,time);}}
  if(resetScenes.includes(mode)){if(time<resetAt)round.hideAt=null;else if(time<resetAt+CLEAR_MS)round=beginPreviewClear(round,resetAt);else{round=null;readyAt=resetAt+CLEAR_MS;}}
  view.update({serverNow:time,widget:base.preset,round},{readyAt});
  $('#time').value=Math.round(time);$('#time-label').textContent=(time/1000).toFixed(2)+'s';$('#pause').textContent=playing?'Pause':'Play';
 }
 const requested=new URLSearchParams(location.search).get('scene');
-if(['tier-0','tier-1','tier-2','intro','between','between-back','hit','second','multiply','extra','worn','break','last-multiply','large',...exitScenes].includes(requested))$('#scene').value=requested;
+if(['tier-0','tier-1','tier-2','intro','between','between-back','hit','second','multiply','extra','worn','break','last-multiply','large',...exitScenes,...rewardNextScenes].includes(requested))$('#scene').value=requested;
 $('#scene').onchange=scene;
 $('#backdrop').onchange=e=>{$('.preview-wrap').dataset.bg=e.target.value;};
 $('#replay').onclick=()=>{time=0;playing=true;last=performance.now();render();};
