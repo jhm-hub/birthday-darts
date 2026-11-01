@@ -5,9 +5,12 @@ export const normalizeVaultUsername=value=>typeof value==='string'?value.trim().
 export function validateVaultViewerRange(input){
  const username=normalizeVaultUsername(input?.username);
  if(!/^[a-z0-9_]{1,32}$/.test(username))throw Error('Use a username with 1–32 letters, numbers or underscores. A leading @ is optional.');
- const min=Number(input.min),max=Number(input.max);
+ return {username,...validateVaultTotalRange(input)};
+}
+export function validateVaultTotalRange(input){
+ const min=Number(input?.min),max=Number(input?.max);
  if(!Number.isInteger(min)||!Number.isInteger(max)||min<1||max>1000000||max<min)throw Error('Use whole-dollar totals from $1–$1,000,000, with maximum at least minimum.');
- return {username,min,max};
+ return {min,max};
 }
 export function validateVaultViewerRanges(input=[]){
  if(!Array.isArray(input)||input.length>100)throw Error('Save up to 100 username ranges per vault.');
@@ -23,7 +26,15 @@ export const vaultViewerRangeText=range=>'$'+range.min.toLocaleString('en-US')+'
 // is removed or clamped at the end, and every chamber pays positive cash.
 export function startVaultViewerRange(widget,input,viewer='',now=Date.now(),draw=randomInt){
  const rule=validateVaultViewerRange(input);
- const pick=bound=>{const value=draw(bound);if(!Number.isInteger(value)||value<0||value>=bound)throw Error('Invalid viewer-range draw.');return value;};
+ const round=startVaultTotalRange(widget,rule,viewer,now,draw);
+ round.privateViewerRange={...rule,version:1};
+ return round;
+}
+
+// Shared bounded planner for editable games and username overrides.
+export function startVaultTotalRange(widget,input,viewer='',now=Date.now(),draw=randomInt){
+ const rule=validateVaultTotalRange(input);
+ const pick=bound=>{const value=draw(bound);if(!Number.isInteger(value)||value<0||value>=bound)throw Error('Invalid total-range draw.');return value;};
  const target=rule.min+pick(rule.max-rule.min+1),extras=1+pick(3),count=5+extras;
  const powers=[1,2,4,8].filter(m=>target%m===0&&target/m>=count);
  const multiplier=powers.length?powers[pick(powers.length)]:1,baseCents=target*100/multiplier;
@@ -45,12 +56,11 @@ export function startVaultViewerRange(widget,input,viewer='',now=Date.now(),draw
  const amounts=cash.map(n=>n*unit),outcomes=makePool(amounts.slice(0,5)),specialOutcomes=makePool(amounts.slice(5));
  const preset={...widget,openingMin:opening,openingMax:opening,chambers:5,maxChambers:8,bonusChance:35,multiplyValue:2,multiplyWeight:1,extraWeight:1,guarantee:true,outcomes,specialOutcomes};
  const fresh=startVaultRound(preset,viewer.trim().replace(/^@/,''),now,()=>0);
- fresh.privateViewerRange={...rule,version:1};
  fresh.prizePlan=amounts.map((cents,index)=>({cashIndex:(index<5?outcomes:specialOutcomes).findIndex(p=>Math.round(p.value*100)===cents),bonus:bonuses[index]}));
  // Validate the actual engine path, including extra-chamber eligibility and
  // the early bonus guarantee, before the store writes or announces a round.
  const check=structuredClone(fresh);let time=check.readyAt;
  while(check.remaining){const shot=unlockVault(check,time);advanceVault(check,shot.finishAt);time=shot.finishAt;}
- if(vaultTotal(check)!==String(target*100))throw Error('Could not prepare this username range. No round was started.');
+ if(vaultTotal(check)!==String(target*100))throw Error('Could not prepare this total range. No round was started.');
  return fresh;
 }

@@ -1,4 +1,6 @@
 import {validateVault,startVaultRound,unlockVault,advanceVault,vaultTotal,vaultCashPrizes} from './vault-game.js';
+import {validateVaultGameRanges} from './vault-game-ranges.js';
+import {startVaultTotalRange} from './vault-targets.js';
 import {randomInt} from './random.js';
 
 export const VAULT_EXPERIENCES=Object.freeze([
@@ -11,7 +13,7 @@ export function validateVaultExperience(value='custom'){
  if(value!=='custom'&&!VAULT_EXPERIENCES.some(x=>x.id===value))throw Error('Choose Low, Medium, High, Extreme or custom settings.');
  return value;
 }
-export const vaultExperienceInfo=id=>VAULT_EXPERIENCES.find(x=>x.id===id)??null;
+export const vaultExperienceInfo=(id,ranges)=>{const e=VAULT_EXPERIENCES.find(x=>x.id===id);return e?{...e,...validateVaultGameRanges(ranges).find(r=>r.id===id)}:null;};
 export function vaultExperiencePreset(widget,id='custom'){
  validateVaultExperience(id);const base=validateVault(widget),experience=vaultExperienceInfo(id);
  if(!experience)return base;
@@ -19,15 +21,21 @@ export function vaultExperiencePreset(widget,id='custom'){
  return validateVault({...base,openingMin:experience.opening[0],openingMax:experience.opening[1],chambers:5,maxChambers:12,bonusChance:35,multiplyValue:2,multiplyWeight:1,extraWeight:1,guarantee:true,
   outcomes:experience.cash.map((value,i)=>({value,weight:weights[i]})),specialOutcomes:experience.special.map((value,i)=>({value,weight:weights[i]}))});
 }
-export const vaultExperienceRange=id=>{const e=vaultExperienceInfo(id);return e?'$'+e.min.toLocaleString('en-US')+'–$'+e.max.toLocaleString('en-US'):'Custom settings';};
+export const vaultExperienceRange=(id,ranges)=>{const e=vaultExperienceInfo(id,ranges);return e?'$'+e.min.toLocaleString('en-US')+'–$'+e.max.toLocaleString('en-US'):'Custom settings';};
 const inside=(round,e)=>{const total=BigInt(vaultTotal(round));return total>=BigInt(e.min*100)&&total<=BigInt(e.max*100);};
 
 // Condition a complete ordinary round on its final total before showing any
 // prize. Every displayed award still uses real cash-list entries and full ×2
 // multipliers; there is no final clamp, hidden subtraction or partial bonus.
 export function startVaultExperience(widget,id='custom',viewer='',now=Date.now(),draw=randomInt){
- const preset=vaultExperiencePreset(widget,id),experience=vaultExperienceInfo(id);
+ const preset=vaultExperiencePreset(widget,id),experience=vaultExperienceInfo(id,widget.gameRanges);
  if(!experience)return startVaultRound(preset,viewer,now,draw);
+ const original=vaultExperienceInfo(id);
+ if(experience.min!==original.min||experience.max!==original.max){
+  const round=startVaultTotalRange(preset,experience,viewer,now,draw);
+  round.privateExperience={id,version:2,min:experience.min,max:experience.max};
+  return round;
+ }
  function planRound(fallback=false){
   const openingDraw=fallback?()=>Math.floor((preset.openingMax-preset.openingMin)/2):draw;
   const round=startVaultRound(preset,viewer,now,openingDraw),plan=[];let time=round.readyAt;

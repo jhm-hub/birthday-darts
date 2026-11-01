@@ -12,6 +12,8 @@ export async function connectVaultControl(id,onSnapshot,onStatus){
  function dispose(){disposed=true;ready=false;clearInterval(pulse);clearInterval(heartbeat);clearTimeout(retry);unsubscribe?.();link?.dispose();release?.();}
  window.addEventListener('pagehide',dispose,{once:true});
  return {id,displayURL:url.href,get ready(){return ready&&peerStatus!=='duplicate';},start:claim,dispose,
+  async setGameRanges(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setGameRanges(id,value);},
+  async startExperience(value,viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.startExperience(id,value,viewer);},
   async setExperience(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setExperience(id,value);},
   async setViewerRange(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setViewerRange(id,value);},
   async removeViewerRange(username){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.removeViewerRange(id,username);},
