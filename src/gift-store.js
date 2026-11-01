@@ -1,3 +1,4 @@
+import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
 import {GIFT_CLEAR_MS,DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,cleanGiftRound,giftTotal} from './gift-game.js';
 import {randomKey,validKey} from './protocol.js';
 import {giftVolume} from './gift-volume.js';
@@ -29,7 +30,8 @@ export function createGiftStore(storage,locks){
  function settle(s,now){let changed=false;for(const w of s.widgets){if(advanceGiftRound(w.round,now)){changed=true;if(w.round.completedAt!==null)w.lastResult={viewer:w.round.viewer,totalCents:giftTotal(w.round),opened:w.round.opened.length,completedAt:w.round.completedAt};}if(w.round?.hideAt&&now>=w.round.hideAt+GIFT_CLEAR_MS){w.round=null;changed=true;}if(upgradeStarter(w))changed=true;}return changed;}
  function snapshot(id,now=Date.now()){const w=find(read(),id),{outcomes,gameRanges,...widget}=validateGiftWidget(w);return {kind:'faith-gifts',serverNow:now,widget,audio:{volume:giftVolume(w.audioVolume)},round:cleanGiftRound(w.round),lastResult:w.lastResult??null};}
  return {
-  async init(){return lock(()=>{let s=read()??{schema:1,widgets:[{...structuredClone(DEFAULT_GIFTS),round:null,lastResult:null,room:randomKey()}]};for(const w of s.widgets)if(!validKey(w.room))w.room=randomKey();settle(s,Date.now());write(s);});},
+  ...permanentDisplayStore({read,write,lock}),
+  async init(){return lock(()=>{let s=read()??{schema:1,widgets:[{...structuredClone(DEFAULT_GIFTS),round:null,lastResult:null,room:randomKey()}]};for(const w of s.widgets)if(!validKey(w.room))w.room=randomKey();ensurePermanentDisplay(s);settle(s,Date.now());write(s);});},
   list:()=>read().widgets.map(validateGiftWidget),snapshot,
   privateControls(id){const w=find(read(),id);return {ranges:validateGiftRanges(w.gameRanges),activeRange:w.round?.privateRange??null};},
   roomKey:id=>find(read(),id).room,

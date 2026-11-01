@@ -4,6 +4,8 @@ A browser game for Faith's streams: enter a viewer's name, press once per dart, 
 
 **Play and configure:** https://jhm-hub.github.io/birthday-darts/
 
+**One permanent source per game:** [keep the same OBS source when settings change](PERMANENT-SOURCES.md).
+
 **Simple stream setup:** https://jhm-hub.github.io/birthday-darts/setup.html
 
 **Four private Darts game buttons:** [range setup, demos and play](DARTS-FOUR-GAMES.md).
@@ -28,7 +30,7 @@ Copy the **private display link** from the controls into an OBS or Streamlabs Br
 
 - Both styles: **540 × 540** (square, transparent).
 - For an existing wide source, change both dimensions to 540 and refresh. Resize evenly in your scene; 420 × 420 is a useful compact on-stream size.
-- Keep the control page open in the browser where you saved the game. Use one control tab per widget.
+- Keep the control page open in the browser where you saved the game. Use one control tab per game type; switch saved versions using its Saved version selector.
 - Only the separate display goes on stream. Its background is transparent and it hides between rounds.
 - The control page reports when the display connects. A temporarily disconnected display hides stale content and reconnects automatically.
 - A normal browser may need a click on the display to enable audio. Check Browser Source audio routing in your broadcasting software before a live stream. Mute the control preview to avoid hearing the pop twice.
@@ -39,7 +41,7 @@ The site does not accept payments, send chat messages or connect to a Twitch acc
 
 Settings, pairing keys and the current round stay in this browser's local storage. They are not uploaded to a database or committed to GitHub. Refreshing controls recovers the chosen prize and round. Clearing browser data, changing browser/profile, or using another computer does not transfer those games.
 
-Use **Download settings backup** before switching computers. **Import backup** creates independent copies, including fresh display links; it does not overwrite existing games. Backups omit pairing keys, viewer names and rounds. The initial amounts and odds are examples that can be edited.
+Use **Download settings backup** before switching computers. **Import backup** creates independent saved versions on the same permanent display for that game type; it does not overwrite existing games. Moving to another browser/computer still requires its local display link. Backups omit pairing keys, viewer names and rounds. The initial amounts and odds are examples that can be edited.
 
 Keep complete display links private. A 256-bit pairing key is stored in the URL fragment, with nonce/HMAC authentication between the controls and display. The display receives game state without configured odds and has no control commands. Pairing uses PeerJS's public signaling service and encrypted WebRTC data channels, so an internet connection and a network that permits WebRTC are required. This is browser-local configuration, not an account/login system.
 

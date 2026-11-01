@@ -1,3 +1,4 @@
+import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
 import {DEFAULT_PINATA,validatePinata,startPinata,swingPinata,advancePinata,pinataTotal,cleanPinata,CLEAR_MS} from './pinata-game.js';
 import {validatePinataViewerRanges,validatePinataViewerRange,normalizePinataUsername,findPinataViewerRange,startPinataViewerRange} from './pinata-targets.js';
 import {validatePinataGameRanges,startPinataGameRange} from './pinata-game-ranges.js';
@@ -13,7 +14,8 @@ export function createPinataStore(storage,locks){
  function snapshot(id,now=Date.now()){const w=find(read(),id),{outcomes,...widget}=validatePinata(w);return {kind:'faith-pinata',serverNow:now,widget,round:cleanPinata(w.round),audio:{volume:volume(w.volume??.45)},lastResult:w.lastResult??null};}
  function controlSnapshot(id,now=Date.now()){const w=find(read(),id);return {...snapshot(id,now),control:{viewerRanges:validatePinataViewerRanges(w.viewerRanges),activeViewerRange:w.round?.privateViewerRange??null,gameRanges:validatePinataGameRanges(w.gameRanges),activeGameRange:w.round?.privateGameRange??null}};}
  return {
-  async init(){return lock(()=>{const s=read()??{schema:3,widgets:[{...structuredClone(DEFAULT_PINATA),room:randomKey(),volume:.45,round:null,lastResult:null}]};s.schema=3;for(const w of s.widgets)if(!validKey(w.room))w.room=randomKey();settle(s,Date.now());write(s);});},
+  ...permanentDisplayStore({read,write,lock}),
+  async init(){return lock(()=>{const s=read()??{schema:3,widgets:[{...structuredClone(DEFAULT_PINATA),room:randomKey(),volume:.45,round:null,lastResult:null}]};s.schema=3;for(const w of s.widgets)if(!validKey(w.room))w.room=randomKey();ensurePermanentDisplay(s);settle(s,Date.now());write(s);});},
   list:()=>read().widgets.map(w=>({...validatePinata(w),viewerRanges:validatePinataViewerRanges(w.viewerRanges),gameRanges:validatePinataGameRanges(w.gameRanges)})),snapshot,controlSnapshot,roomKey:id=>find(read(),id).room,
   async save(input){const p=validatePinata(input);return lock(()=>{const s=read(),w=s.widgets.find(x=>x.id===p.id);if(w)Object.assign(w,p);else{if(s.widgets.length>=30)throw Error('Save up to 30 piñata games.');s.widgets.push({...p,room:randomKey(),round:null,volume:.45,lastResult:null});}write(s);return p;});},
   async swing(id,viewer,now=Date.now()){return lock(()=>{const s=read();settle(s,now);const w=find(s,id);if(!w.round){const rule=findPinataViewerRange(validatePinataViewerRanges(w.viewerRanges),viewer);w.round=rule?startPinataViewerRange(w,rule,viewer,now):startPinata(w,viewer,now);}swingPinata(w.round,now);write(s);return snapshot(id,now);});},

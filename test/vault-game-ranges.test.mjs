@@ -65,7 +65,7 @@ test('actual session start and range save publish no ranges or future awards to 
  const f=fixture();await f.store.init();const wire=[];let room;
  const source=(await readFile(new URL('../src/vault-session.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replaceAll('export ','');
  const connect=new Function('vaultStore','connectRoom','validKey','navigator','window','location','setInterval','clearInterval','setTimeout','clearTimeout',source+'\nreturn connectVaultControl;')(f.store,o=>{room=o;return {send:m=>wire.push(structuredClone(m)),dispose(){}};},()=>true,{locks:{request:(_key,_options,fn)=>fn({})}},{addEventListener(){}},{href:'https://example.test/vault-play.html'},()=>1,()=>{},()=>1,()=>{});
- const session=await connect(DEFAULT_VAULT.id,()=>{},()=>{});session.start();await session.setGameRanges(ranges());const s=await session.startExperience('medium','Demo');room.ready();
+ const session=await connect(DEFAULT_VAULT.id,()=>{},()=>{});session.start();await new Promise(setImmediate);await session.setGameRanges(ranges());const s=await session.startExperience('medium','Demo');room.ready();
  assert.equal(s.control.activeExperience,'medium');assert.equal(s.control.activeGameRange.min,1200);assert.ok(wire.length>=3);wire.forEach(m=>publicOnly(m.snapshot));session.dispose();
 });
 

@@ -104,7 +104,7 @@ test('the real control session publishes only sanitized range state and allows e
  const f=fixture(),wire=[],controls=[];let options;
  const source=(await readFile(new URL('../src/session.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replaceAll('export ','');
  const connect=new Function('store','connectRoom','validKey','navigator','window','location','setInterval','clearInterval','setTimeout','clearTimeout',source+'\nreturn connectControl;')(f.store,o=>{options=o;return {send:m=>wire.push(structuredClone(m)),dispose(){}};},()=>true,{locks:{request:(_key,_options,fn)=>fn({})}},{addEventListener(){}},{href:'https://example.test/play.html'},()=>1,()=>{},()=>1,()=>{});
- const session=await connect('birthday',s=>controls.push(s),()=>{});await assert.rejects(session.startRange('viewer','low'),/active/);session.start();await session.startRange('viewer','medium');
+ const session=await connect('birthday',s=>controls.push(s),()=>{});await assert.rejects(session.startRange('viewer','low'),/active/);session.start();await new Promise(setImmediate);await session.startRange('viewer','medium');
  await assert.rejects(session.startRange('other','high'),/current round/);options.ready();assert.ok(controls.some(s=>s.control.activeGameRange?.id==='medium'));
  for(const message of wire)assertPublic(message.snapshot);session.dispose();
 });

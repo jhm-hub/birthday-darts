@@ -1,3 +1,4 @@
+import {bindVersionPicker} from './version-picker.js';
 import {createGiftView} from './gift-view.js';
 import {connectGiftControl,connectGiftDisplay} from './gift-session.js';
 import {createGiftAudio} from './gift-audio.js';
@@ -6,7 +7,7 @@ import {money,giftTotal,giftModifierDue} from './gift-game.js';
 import {renderGiftRangeButtons} from './gift-range-controls.js';
 import {giftRangeText} from './gift-ranges.js';
 const $=s=>document.querySelector(s),overlay=document.documentElement.classList.contains('gift-overlay'),audio=createGiftAudio();
-let session,snapshot,connected=false,pending=false,viewReady=false,readiness='Loading gifts…',error='',volumeTarget=null,volumeVersion=0;
+let versionPicker,session,snapshot,connected=false,pending=false,viewReady=false,readiness='Loading gifts…',error='',volumeTarget=null,volumeVersion=0;
 const mixer=overlay?null:bindGiftVolume($('#gift-mixer'),audio,changeVolume);
 const view=createGiftView($('#gift-control-preview'),{interactive:!overlay,onPick:pick,onReady(){viewReady=true;render();},onError(e){error=e.message;render();},audio});
 if(overlay){try{audio.setEnabled(true);}catch{}}
@@ -15,7 +16,7 @@ function render(){
  const needsRange=!overlay&&!snapshot?.round&&snapshot?.controls?.ranges.some(r=>r.min!==null);
  if(snapshot)view.update(snapshot,{preview:!overlay,canPick:connected&&!pending&&!needsRange,show:!overlay||connected});
  if(overlay){if(!connected)view.hide();return;}
- mixer.setEnabled(connected);
+ versionPicker?.update(snapshot,connected&&!pending&&volumeTarget===null);mixer.setEnabled(connected);
  const r=snapshot?.round,busy=!!r?.flight,finished=r?.completedAt!==null&&!!r;
  $('#live-unwrap').disabled=!viewReady||!connected||pending||busy||finished||needsRange;
  $('#live-unwrap').textContent=!viewReady?'Loading gifts…':busy?'Unwrapping…':finished?'Total revealed':'Unwrap for me';
@@ -39,7 +40,7 @@ async function init(){
  if(overlay){session=connectGiftDisplay(receive,value=>{connected=value;render();});}
  else{
   session=await connectGiftControl(new URLSearchParams(location.search).get('id'),receive,(value,text)=>{connected=value;readiness=text;$('#connection-status').textContent=text;render();});
-  $('#live-display-url').value=session.displayURL;$('#open-display').href=session.displayURL;
+  versionPicker=bindVersionPicker($('#saved-version-controls'),session,{editor:'gifts.html',onSwitch(){error='';render();}});$('#live-display-url').value=session.displayURL;$('#open-display').href=session.displayURL;
   $('#copy-live').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(session.displayURL);$('#copy-live').textContent='Copied';}catch{$('#live-display-url').select();}});
  }
  session.start();

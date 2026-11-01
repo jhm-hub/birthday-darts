@@ -1,3 +1,4 @@
+import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
 import {newWidgets,validateWidget,library,widgetSnapshot,widgetControlSnapshot,applyWidgetAction,advanceWidgets} from './widgets.js';
 import {randomKey,validKey} from './protocol.js';
 const STORE_KEY='birthday-darts-library-v1';
@@ -14,7 +15,8 @@ export function createStore(storage,locks){
  const locked=fn=>locks.request('birthday-darts-library',fn);
  function rooms(state){state.rooms??={};for(const w of state.widgets)if(!validKey(state.rooms[w.id]))state.rooms[w.id]=randomKey();}
  return {
-  async init(){await locked(()=>{const state=read()??newWidgets(defaults);rooms(state);advanceWidgets(state);persist(state);});},
+  ...permanentDisplayStore({read,write:persist,lock:locked}),
+  async init(){await locked(()=>{const state=read()??newWidgets(defaults);rooms(state);ensurePermanentDisplay(state,w=>state.rooms[w.id]);advanceWidgets(state);persist(state);});},
   library:()=>library(read()),
   snapshot:id=>widgetSnapshot(read(),id),
   controlSnapshot:id=>widgetControlSnapshot(read(),id),

@@ -1,3 +1,4 @@
+import {bindVersionPicker} from './version-picker.js';
 import {createVaultView} from './vault-view.js';
 import {connectVaultControl,connectVaultDisplay} from './vault-session.js';
 import {createVaultAudio} from './vault-audio.js';
@@ -8,17 +9,17 @@ import {bindVaultViewerRanges} from './vault-target-controls.js';
 import {findVaultViewerRange,vaultViewerRangeText} from './vault-targets.js';
 import {money,vaultTotal,vaultBonusDue} from './vault-game.js';
 const $=s=>document.querySelector(s),overlay=document.documentElement.classList.contains('vault-overlay'),audio=createVaultAudio(),view=createVaultView($('#vault-control-preview'),{audio});
-let session,snapshot,connected=false,pending=false,error='',readiness='Connecting…',volumeTarget=null,volumeVersion=0;
+let versionPicker,session,snapshot,connected=false,pending=false,error='',readiness='Connecting…',volumeTarget=null,volumeVersion=0;
 const gameRanges=overlay?null:bindVaultGameRanges($('#game-ranges'),{save:async value=>{const next=await session.setGameRanges(value);error='';receive(next);}});
 const ranges=overlay?null:bindVaultViewerRanges($('#viewer-ranges'),{save:async value=>receive(await session.setViewerRange(value)),remove:async username=>receive(await session.removeViewerRange(username))});
 const mixer=overlay?null:bindGiftVolume($('#vault-mixer'),audio,changeVolume);if(overlay)try{audio.setEnabled(true);}catch{}
 document.addEventListener('pointerdown',()=>{try{audio.unlock();}catch{}},{once:true});
 function render(){
  if(snapshot)view.update(snapshot,{preview:!overlay,show:!overlay||connected});if(overlay){if(!connected)view.hide();return;}
- mixer.setEnabled(connected);const r=snapshot?.round,opening=r&&Date.now()<r.readyAt,busy=!!r?.flight,finished=!!r&&r.completedAt!==null;
+ versionPicker?.update(snapshot,connected&&!pending&&volumeTarget===null);mixer.setEnabled(connected);const r=snapshot?.round,opening=r&&Date.now()<r.readyAt,busy=!!r?.flight,finished=!!r&&r.completedAt!==null;
  const activeRule=snapshot?.control?.activeViewerRange,matched=activeRule??(!r?findVaultViewerRange(snapshot?.control?.viewerRanges,$('#viewer').value):null);
  ranges.update(snapshot?.control?.viewerRanges,connected&&!pending);
- gameRanges.update(snapshot?.control?.gameRanges,connected&&!pending&&!r);
+ gameRanges.update(snapshot?.control?.gameRanges,connected&&!pending&&!r,snapshot?.widget.id);
  $('#viewer-range-match').textContent=matched?'@'+matched.username+' · '+vaultViewerRangeText(matched)+' final total'+(r?' · locked for this round.':' · automatically replaces the preset for this viewer.') : '';
  const chosen=activeRule?'viewer':snapshot?.control?.activeExperience??snapshot?.control?.experience??'custom',locked=!connected||pending||!!r;
  for(const button of document.querySelectorAll('[data-experience]')){button.disabled=locked;button.setAttribute('aria-pressed',String(button.dataset.experience===chosen));if(button.dataset.experience!=='custom'){const info=vaultExperienceInfo(button.dataset.experience,snapshot?.control?.gameRanges);button.querySelector('strong').textContent='Start '+info.name;button.querySelector('span').textContent=vaultExperienceRange(button.dataset.experience,snapshot?.control?.gameRanges);}}
@@ -34,7 +35,7 @@ async function startGame(id){
  try{if(audio.enabled)audio.unlock();receive(await session.startExperience(id,$('#viewer').value));$('#vault-play-station').scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}catch(e){error=e.message;}finally{pending=false;render();}
 }
 async function action(){if(!overlay&&!snapshot?.round&&gameRanges.dirty){error='Save the edited game names and ranges before starting.';render();return;}if(overlay||!connected||pending||snapshot?.round?.flight||snapshot?.round&&snapshot.round.completedAt!==null)return;pending=true;error='';render();try{if(audio.enabled)audio.unlock();receive(await session.action($('#viewer').value));}catch(e){error=e.message;}finally{pending=false;render();}}
-async function init(){if(overlay)session=connectVaultDisplay(receive,value=>{connected=value;render();});else{session=await connectVaultControl(new URLSearchParams(location.search).get('id'),receive,(value,text)=>{connected=value;readiness=text;$('#connection-status').textContent=text;render();});$('#live-display-url').value=session.displayURL;$('#open-display').href=session.displayURL;$('#copy-live').onclick=async()=>{try{await navigator.clipboard.writeText(session.displayURL);$('#copy-live').textContent='Copied';}catch{$('#live-display-url').select();}};}session.start();}
+async function init(){if(overlay)session=connectVaultDisplay(receive,value=>{connected=value;render();});else{session=await connectVaultControl(new URLSearchParams(location.search).get('id'),receive,(value,text)=>{connected=value;readiness=text;$('#connection-status').textContent=text;render();});versionPicker=bindVersionPicker($('#saved-version-controls'),session,{editor:'vault.html',canSwitch:()=>!gameRanges.dirty,onSwitch(){error='';render();}});$('#live-display-url').value=session.displayURL;$('#open-display').href=session.displayURL;$('#copy-live').onclick=async()=>{try{await navigator.clipboard.writeText(session.displayURL);$('#copy-live').textContent='Copied';}catch{$('#live-display-url').select();}};}session.start();}
 if(!overlay){
  $('#viewer').addEventListener('input',render);
  for(const e of VAULT_EXPERIENCES){const button=document.createElement('button');button.type='button';button.className='experience-card';button.dataset.experience=e.id;button.innerHTML='<strong>Start '+e.name+'</strong><span>'+vaultExperienceRange(e.id)+'</span>';button.setAttribute('aria-pressed','false');$('#experience-options').append(button);}

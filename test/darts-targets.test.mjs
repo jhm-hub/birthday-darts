@@ -102,7 +102,7 @@ test('actual Darts publisher sends only public snapshots on start, edits, throws
  const f=fixture();const wire=[],controls=[];let options;
  const source=(await readFile(new URL('../src/session.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replaceAll('export ','');
  const connect=new Function('store','connectRoom','validKey','navigator','window','location','setInterval','clearInterval','setTimeout','clearTimeout',source+'\nreturn connectControl;')(f.store,o=>{options=o;return {send:m=>wire.push(structuredClone(m)),dispose(){}};},()=>true,{locks:{request:(_key,_options,fn)=>fn({})}},{addEventListener(){}},{href:'https://example.test/play.html'},()=>1,()=>{},()=>1,()=>{});
- const session=await connect('birthday',s=>controls.push(s),()=>{});session.start();await session.saveViewerRange(rule);await session.throw('tester');options.ready();await session.removeViewerRange('tester');
+ const session=await connect('birthday',s=>controls.push(s),()=>{});session.start();await new Promise(setImmediate);await session.saveViewerRange(rule);await session.throw('tester');options.ready();await session.removeViewerRange('tester');
  assert.ok(wire.length>=4);for(const message of wire)assertPublic(message.snapshot);assert.ok(controls.some(s=>s.control.activeViewerRange));session.dispose();
 });
 

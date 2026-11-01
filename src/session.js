@@ -3,24 +3,25 @@ import {connectRoom} from './room.js';
 import {validKey} from './protocol.js';
 export async function connectControl(id,onSnapshot,onStatus){
  if(!navigator.locks)throw Error('Open this game in an up-to-date browser over HTTPS.');
- await store.init();id??=store.library().widgets[0].id;store.snapshot(id);
- const key=store.roomKey(id),url=new URL('./display.html',location.href);url.hash='room='+key;
+ await store.init();id=store.selectedId(id);store.snapshot(id);
+ const key=store.displayKey(),url=new URL('./display.html',location.href);url.hash='room='+key;
+ let legacyLink,legacyKey='';
  let ready=false,disposed=false,link,timer,pulse,release,unsubscribe,retry;
  let peerStatus='connecting';
- function status(){const text=!ready?'This widget is open in another control tab.':peerStatus==='connected'?'Stream display connected':peerStatus==='offline'?'Preview ready · stream connection offline':peerStatus==='duplicate'?'Another browser is hosting this display.':'Preview ready · open the stream display to connect';onStatus(ready&&peerStatus!=='duplicate',text);}
- function publish(){if(disposed)return;const snapshot=store.snapshot(id);onSnapshot(store.controlSnapshot(id));link?.send({type:'state',snapshot});clearTimeout(timer);const next=snapshot.round?.flight?.finishAt??(snapshot.round?.hideAt?snapshot.round.hideAt+400:null);if(ready&&next)timer=setTimeout(()=>void store.advance().then(publish).catch(e=>onStatus(false,e.message)),Math.max(10,next-Date.now()));}
+ function status(){const text=!ready?'Darts already has a control tab open. Use its Saved version selector, or close it to use this tab.':peerStatus==='connected'?'Stream display connected':peerStatus==='offline'?'Preview ready · stream connection offline':peerStatus==='duplicate'?'Another browser is hosting this display.':'Preview ready · open the stream display to connect';onStatus(ready&&peerStatus!=='duplicate',text);}
+ function publish(){if(disposed)return;id=store.selectedId();const alias=store.roomKey(id);if(alias!==legacyKey){legacyLink?.dispose();legacyKey=alias;legacyLink=alias===key?null:connectRoom({role:'host',key:alias,status(){},message(){},ready(){legacyLink?.send({type:'state',snapshot:store.snapshot(id)});}});}const snapshot=store.snapshot(id);onSnapshot(store.controlSnapshot(id));link?.send({type:'state',snapshot});legacyLink?.send({type:'state',snapshot});clearTimeout(timer);const next=snapshot.round?.flight?.finishAt??(snapshot.round?.hideAt?snapshot.round.hideAt+400:null);if(ready&&next)timer=setTimeout(()=>void store.advance().then(publish).catch(e=>onStatus(false,e.message)),Math.max(10,next-Date.now()));}
  function claim(){
-  void navigator.locks.request('birthday-darts-control:'+id,{ifAvailable:true},async lock=>{
+  void navigator.locks.request('birthday-darts-stream-control',{ifAvailable:true},async lock=>{
    if(disposed)return;if(!lock){ready=false;status();retry=setTimeout(claim,2500);return;}
-   ready=true;
+   try{id=await store.selectVersion(store.selectedId(id));}catch(e){onStatus(false,e.message);return;}if(disposed)return;ready=true;
    link=connectRoom({role:'host',key,status(value){peerStatus=value;status();},message(){/* Displays are read-only. */},ready:publish});
    unsubscribe=store.subscribe(publish);status();publish();pulse=setInterval(()=>{void store.advance().then(publish).catch(e=>onStatus(false,e.message));},1000);
    await new Promise(resolve=>{release=resolve;});
   });
  }
- function dispose(){disposed=true;ready=false;clearTimeout(timer);clearTimeout(retry);clearInterval(pulse);unsubscribe?.();link?.dispose();release?.();}
+ function dispose(){disposed=true;ready=false;clearTimeout(timer);clearTimeout(retry);clearInterval(pulse);unsubscribe?.();link?.dispose();legacyLink?.dispose();release?.();}
  window.addEventListener('pagehide',dispose,{once:true});
- return {get ready(){return ready&&peerStatus!=='duplicate';},id,displayURL:url.href,start:claim,async throw(viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab for this widget.');await store.action({action:'throw',id,viewer});return store.controlSnapshot(id);},async startRange(viewer,rangeId){if(!this.ready)throw Error('Use the active control tab.');await store.action({action:'start-range',id,viewer,rangeId});return store.controlSnapshot(id);},async saveViewerRange(range){if(!this.ready)throw Error('Use the active control tab.');await store.action({action:'save-viewer-range',id,range});return store.controlSnapshot(id);},async removeViewerRange(username){if(!this.ready)throw Error('Use the active control tab.');await store.action({action:'remove-viewer-range',id,username});return store.controlSnapshot(id);},dispose};
+ return {get ready(){return ready&&peerStatus!=='duplicate';},get id(){return id;},versions:()=>store.versions(),async selectVersion(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');await store.selectVersion(value);publish();return id;},displayURL:url.href,start:claim,async throw(viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab for this widget.');await store.action({action:'throw',id,viewer});return store.controlSnapshot(id);},async startRange(viewer,rangeId){if(!this.ready)throw Error('Use the active control tab.');await store.action({action:'start-range',id,viewer,rangeId});return store.controlSnapshot(id);},async saveViewerRange(range){if(!this.ready)throw Error('Use the active control tab.');await store.action({action:'save-viewer-range',id,range});return store.controlSnapshot(id);},async removeViewerRange(username){if(!this.ready)throw Error('Use the active control tab.');await store.action({action:'remove-viewer-range',id,username});return store.controlSnapshot(id);},dispose};
 }
 export async function connectDisplay(onSnapshot){
  const key=new URLSearchParams(location.hash.slice(1)).get('room');

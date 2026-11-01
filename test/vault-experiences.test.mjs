@@ -71,7 +71,7 @@ test('the actual control publisher sends only public snapshots, including action
  const source=(await readFile(new URL('../src/vault-session.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replaceAll('export ','');
  const load=new Function('vaultStore','connectRoom','validKey','navigator','window','location','setInterval','clearInterval','setTimeout','clearTimeout',source+'\nreturn connectVaultControl;');
  const connect=load(f.store,options=>{roomOptions=options;return {send:message=>wire.push(structuredClone(message)),dispose(){}};},()=>true,{locks:{request:(_key,_options,fn)=>fn({})}},{addEventListener(){}},{href:'https://example.test/vault-play.html'},()=>1,()=>{},()=>1,()=>{});
- const session=await connect(DEFAULT_VAULT.id,s=>controls.push(s),()=>{});session.start();
+ const session=await connect(DEFAULT_VAULT.id,s=>controls.push(s),()=>{});session.start();await new Promise(setImmediate);
  await session.action('Viewer');roomOptions.ready();
  assert.ok(wire.length>=2);assert.equal(controls.at(-1).control.activeExperience,'extreme');
  for(const message of wire){assert.equal(message.type,'vault-state');assert.equal(message.snapshot.control,undefined);assert.equal(message.snapshot.widget.experience,undefined);if(message.snapshot.round){assert.equal(message.snapshot.round.privateExperience,undefined);assert.equal(message.snapshot.round.prizePlan,undefined);}}

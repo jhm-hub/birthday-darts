@@ -54,7 +54,7 @@ test('actual session publisher never sends username table, range or future plan 
  const f=fixture();await f.store.init();const wire=[];let roomOptions;
  const source=(await readFile(new URL('../src/vault-session.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replaceAll('export ','');
  const connect=new Function('vaultStore','connectRoom','validKey','navigator','window','location','setInterval','clearInterval','setTimeout','clearTimeout',source+'\nreturn connectVaultControl;')(f.store,options=>{roomOptions=options;return {send:m=>wire.push(structuredClone(m)),dispose(){}};},()=>true,{locks:{request:(_key,_options,fn)=>fn({})}},{addEventListener(){}},{href:'https://example.test/vault-play.html'},()=>1,()=>{},()=>1,()=>{});
- const session=await connect(DEFAULT_VAULT.id,()=>{},()=>{});session.start();await session.setViewerRange({username:'private_test',min:20000,max:30000});await session.action('PRIVATE_TEST');roomOptions.ready();
+ const session=await connect(DEFAULT_VAULT.id,()=>{},()=>{});session.start();await new Promise(setImmediate);await session.setViewerRange({username:'private_test',min:20000,max:30000});await session.action('PRIVATE_TEST');roomOptions.ready();
  assert.ok(wire.length>=3);for(const message of wire){const json=JSON.stringify(message);for(const key of ['viewerRanges','privateViewerRange','prizePlan','activeViewerRange','privateExperience'])assert.ok(!json.includes(key),key);assert.equal(message.snapshot.control,undefined);}
  session.dispose();
 });

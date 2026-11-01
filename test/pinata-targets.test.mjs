@@ -61,7 +61,7 @@ test('actual publisher sends only the display snapshot, never the username list 
  const f=fixture();await f.store.init();const wire=[],controls=[];let room;
  const source=(await readFile(new URL('../src/pinata-session.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replaceAll('export ','');
  const connect=new Function('pinataStore','connectRoom','validKey','navigator','window','location','setInterval','clearInterval','setTimeout','clearTimeout',source+'\nreturn connectPinataControl;')(f.store,options=>{room=options;return {send:m=>wire.push(structuredClone(m)),dispose(){}};},()=>true,{locks:{request:(_key,_options,fn)=>fn({})}},{addEventListener(){}},{href:'https://example.test/pinata-play.html'},()=>1,()=>{},()=>1,()=>{});
- const session=await connect(DEFAULT_PINATA.id,s=>controls.push(s),()=>{});session.start();await session.setViewerRange({username:'private_test',min:20000,max:30000});const response=await session.swing('PRIVATE_TEST');room.ready();
+ const session=await connect(DEFAULT_PINATA.id,s=>controls.push(s),()=>{});session.start();await new Promise(setImmediate);await session.setViewerRange({username:'private_test',min:20000,max:30000});const response=await session.swing('PRIVATE_TEST');room.ready();
  assert.ok(response.control.activeViewerRange);assert.ok(controls.some(s=>s.control.viewerRanges.length));assert.ok(wire.length>=3);
  for(const m of wire){const json=JSON.stringify(m);for(const key of ['viewerRanges','privateViewerRange','prizePlan','activeViewerRange'])assert.ok(!json.includes(key),key);assert.equal(m.snapshot.control,undefined);}
  session.dispose();

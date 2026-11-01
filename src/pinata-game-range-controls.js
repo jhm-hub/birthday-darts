@@ -24,5 +24,5 @@ export function bindPinataGameRanges(settings,launches,{save,start}){
   const next=validatePinataGameRanges(cards.map(c=>({id:c.slot.id,name:c.inputs.name.value,min:c.inputs.min.value,max:c.inputs.max.value})));
   await save(next);ranges=next;dirty=false;formKey='';status.textContent='Four range buttons saved. Changes apply to the next game.';
  }catch(error){status.textContent=error.message;}finally{busy=false;render();}};
- return {update(next,enabled,round){ranges=validatePinataGameRanges(next);available=enabled;active=!!round;render();}};
+ return {get dirty(){return dirty;},update(next,enabled,round){ranges=validatePinataGameRanges(next);available=enabled;active=!!round;render();}};
 }
