@@ -68,3 +68,16 @@ test('actual session start and range save publish no ranges or future awards to 
  const session=await connect(DEFAULT_VAULT.id,()=>{},()=>{});session.start();await session.setGameRanges(ranges());const s=await session.startExperience('medium','Demo');room.ready();
  assert.equal(s.control.activeExperience,'medium');assert.equal(s.control.activeGameRange.min,1200);assert.ok(wire.length>=3);wire.forEach(m=>publicOnly(m.snapshot));session.dispose();
 });
+
+test('private game names migrate, preserve slot ranges and round-trip backups without changing prize plans',async()=>{
+ const old=ranges().map(({name,...r})=>r);assert.deepEqual(validateVaultGameRanges(old),ranges());
+ for(const name of ['', '   ', 'x'.repeat(25),null,'bad\nname'])assert.throws(()=>validateVaultGameRanges(ranges().map(r=>({...r,name}))));
+ const named=ranges().map((r,i)=>({...r,name:['Pocket Crown','Royal Treat','Goddess Gold','Crown Jewels'][i]}));
+ const f=fixture();await f.store.init();await f.store.setGameRanges(DEFAULT_VAULT.id,named);assert.deepEqual(f.store.list()[0].gameRanges,named);
+ assert.deepEqual(importVaultSettings(exportVaultSettings(f.store.list()))[0].gameRanges,named);
+ const a=startVaultExperience({...DEFAULT_VAULT,gameRanges:named},'high','Demo',0,rng(123));
+ const b=startVaultExperience({...DEFAULT_VAULT,gameRanges:ranges()},'high','Demo',0,rng(123));
+ assert.equal(a.openingCents,b.openingCents);assert.deepEqual(a.prizePlan,b.prizePlan);
+ await f.store.startExperience(DEFAULT_VAULT.id,'high','Demo',0);publicOnly(f.store.snapshot(DEFAULT_VAULT.id));assert.ok(!JSON.stringify(f.store.snapshot(DEFAULT_VAULT.id)).includes('Goddess Gold'));
+ const saved=f.raw().round;await assert.rejects(f.store.setGameRanges(DEFAULT_VAULT.id,ranges(),100),/before starting/);assert.deepEqual(f.raw().round,saved);
+});

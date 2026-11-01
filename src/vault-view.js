@@ -1,3 +1,4 @@
+import {vaultStory,vaultStoryFlight,vaultStoryGlyph} from './vault-story.js';
 import {vaultWelcomeFlow,vaultWelcomeParticle} from './vault-welcome-flow.js';
 import {vaultTreasureCoda,vaultTreasureRestOrnament} from './vault-treasure-coda.js';
 import {vaultTreasureBridge,vaultTreasureBridgeParticle} from './vault-treasure-handoff.js';
@@ -39,6 +40,8 @@ export function createVaultView(root,{audio}={}){
  const welcomeLayer=document.createElement('div');welcomeLayer.className='vault-welcome-flow';welcomeLayer.setAttribute('aria-hidden','true');welcomeLayer.innerHTML=Array.from({length:6},()=>'<i>'+vaultChamberGuideGlyph()+'</i>').join('');stage.append(welcomeLayer);const welcomePieces=[...welcomeLayer.children];
  const treasure=document.createElement('div');treasure.className='vault-treasure';treasure.setAttribute('aria-hidden','true');treasure.innerHTML='<span class="vault-treasure-rim">'+vaultTreasureRing()+'</span><span class="vault-treasure-decor">'+vaultTreasureDecor()+'</span>'+Array.from({length:48},(_,i)=>'<i>'+vaultFinalePiece(i%3===0?2:i)+'</i>').join('');stage.append(treasure);
  const treasureRim=treasure.querySelector('span'),treasurePieces=[...treasure.querySelectorAll('i')],laurelLeaves=[...treasure.querySelectorAll('.treasure-laurel-leaf')],laurelStems=[...treasure.querySelectorAll('.treasure-laurel-stem')],coronetGems=[...treasure.querySelectorAll('.treasure-coronet-gem')],coronetArc=treasure.querySelector('.treasure-jewel-arc'),coronetStar=treasure.querySelector('.treasure-coronet-star');let treasureStyle=-1;
+ const storyFlight=document.createElement('div');storyFlight.className='vault-story-flight';storyFlight.setAttribute('aria-hidden','true');storyFlight.innerHTML='<span></span><b></b>';stage.append(storyFlight);let storyKind='';
+ const receipt=document.createElement('div');receipt.className='vault-story-receipt';receipt.setAttribute('aria-label','How the total grew');receipt.innerHTML=Array.from({length:3},()=>'<div><small></small><strong></strong></div>').join('');stage.append(receipt);
  const coins=[...root.querySelectorAll('.vault-collection i')],catchStars=[...catches.children];let dockKey='',dock={left:130,right:290,y:386};
  const pips=[...openingPips.children],bonusSparks=[...root.querySelectorAll('.vault-bonus-spark')],cashSparks=[...root.querySelectorAll('.vault-cash-spark')];
  let bonusKind='',cashLevel=-1;
@@ -177,7 +180,8 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   if(cashPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,235,173,${.5+.5*cashPose.gleam}),inset 0 -2px #a57968`;
   if(collection.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,239,181,${.55+.45*collection.gleam}),inset 0 -2px #bc8f68`;
   if(bonusPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(241,210,255,${.65+.35*bonusPose.gleam}),inset 0 -2px #a567a7`;
-  els.calc.textContent=now?money(now.cashCents)+' collected  ·  ×'+readout.multiplier:'Cash in every chamber. Bonuses on top.';
+  const story=vaultStory(r,time,quiet);
+  els.calc.textContent=story.text;els.calc.dataset.kind=story.kind;els.calc.style.transform=`translateY(${-2*story.pulse}px)`;
   els.calc.style.marginTop=handoff.linked?handoff.gap+'px':'';
   els.calc.style.opacity=exit.labels*entrance.calc;
   els.calc.setAttribute('aria-hidden',String(entrance.calc===0));
@@ -186,6 +190,13 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   // very large totals stay unobstructed; all positions remain in stage pixels.
   const nextDockKey=els.bank.textContent+':'+els.bank.style.fontSize+':'+els.calc.style.fontSize+':'+els.bankWrap.style.bottom;
   if(nextDockKey!==dockKey){dockKey=nextDockKey;dock={left:Math.max(14,els.bankWrap.offsetLeft+els.bank.offsetLeft-8),right:Math.min(406,els.bankWrap.offsetLeft+els.bank.offsetLeft+els.bank.offsetWidth+8),y:els.bankWrap.offsetTop+els.bank.offsetTop+12};}
+  const storyToken=vaultStoryFlight(story,time,point,dock,quiet);
+  if(storyKind!==storyToken.kind){storyKind=storyToken.kind;storyFlight.querySelector('span').innerHTML=vaultStoryGlyph(storyKind);}
+  storyFlight.querySelector('b').textContent=storyToken.label;storyFlight.dataset.kind=storyToken.kind;
+  storyFlight.style.opacity=finished?0:storyToken.opacity;storyFlight.style.transform=`translate(${storyToken.x}px,${storyToken.y}px) scale(${storyToken.scale})`;
+  if(storyToken.kind==='extra'&&storyToken.catch)els.count.style.transform=`scale(${1+.08*storyToken.catch})`;
+  receipt.style.opacity=exit.labels;receipt.setAttribute('aria-hidden',String(!story.receipt.length));
+  [...receipt.children].forEach((el,i)=>{const item=story.receipt[i];el.style.opacity=item?.opacity??0;el.style.transform=`translateY(${item?.y??0}px) scale(${item?.scale??1})`;el.dataset.kind=item?.kind??'';el.querySelector('small').textContent=item?.label??'';fit(el.querySelector('strong'),item?.value??'',21,105);});
   trails.forEach((el,i)=>{const openingGuide=vaultOpeningTrail(r,i,time,quiet,dock),guide=openingGuide.visible?openingGuide:vaultChamberTrail(between,i,time,quiet,dock,between.linked&&vaultSpecialTheme(r,between.link.index)?VAULT_SPECIAL_POINT:null),t=guide;el.dataset.guide=String(guide.visible);el.dataset.relay=String(!openingGuide.visible&&guide.visible);el.style.opacity=t.visible&&!finished?t.opacity:0;el.style.transform=`translate(${t.x}px,${t.y}px)`;});
   coins.forEach((el,i)=>{const coin=vaultCollectionCoin(shot,i,time,dock,quiet,point);el.style.opacity=finished?0:coin.opacity;el.style.transform=`translate(${coin.x}px,${coin.y}px) scale(${coin.flip},${coin.squash})`;});
   welcomePieces.forEach((el,i)=>{const spark=vaultWelcomeParticle(welcome,i,dock);el.style.opacity=spark.opacity;el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});

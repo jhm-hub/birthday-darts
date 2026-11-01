@@ -1,6 +1,6 @@
 import {vaultStore,exportVaultSettings,importVaultSettings} from './vault-store.js';
 import {DEFAULT_VAULT,validateVault,unlockVault,advanceVault,vaultTotal,vaultBonuses,vaultBonusDue,vaultCashPrizes,money,sampleVaultFinale,VAULT_CLEAR_MS} from './vault-game.js';
-import {VAULT_EXPERIENCES,vaultExperienceRange,vaultExperiencePreset,startVaultExperience} from './vault-experiences.js';
+import {VAULT_EXPERIENCES,vaultExperienceInfo,vaultExperienceRange,vaultExperiencePreset,startVaultExperience} from './vault-experiences.js';
 import {validateVaultGameRanges} from './vault-game-ranges.js';
 import {bindVaultGameRanges} from './vault-game-range-controls.js';
 import {findVaultViewerRange,startVaultViewerRange,vaultViewerRangeText} from './vault-targets.js';
@@ -19,7 +19,7 @@ const gameRanges=bindVaultGameRanges($('#game-ranges'),{save:async ranges=>{
  if(draft)draft={...draft,gameRanges:ranges};resetDemo();renderRangeChoices();
 }});
 function renderRangeChoices(){
- for(const e of VAULT_EXPERIENCES){const option=[...$('#demo-experience').options].find(o=>o.value===e.id);option.textContent=e.name+' · '+vaultExperienceRange(e.id,savedGameRanges);}
+ for(const e of VAULT_EXPERIENCES){const option=[...$('#demo-experience').options].find(o=>o.value===e.id);option.textContent=vaultExperienceInfo(e.id,savedGameRanges).name+' · '+vaultExperienceRange(e.id,savedGameRanges);}
  gameRanges.update(savedGameRanges,!!selected,selected??'new');
 }
 const fields={'opening-min':'openingMin','opening-max':'openingMax',chambers:'chambers','max-chambers':'maxChambers','bonus-chance':'bonusChance','multiply-value':'multiplyValue','multiply-weight':'multiplyWeight','extra-weight':'extraWeight'};
