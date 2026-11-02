@@ -1,5 +1,9 @@
 # Crown Vault — private experiences (v20)
 
+Historical implementation notes. High/Extreme now use the
+[bonus-led planner](vault-bonus-led-wins.md); their old fixed cash pools and
+128-attempt selection described below apply only to the earlier release.
+
 Faith’s controls offer four pre-round buttons: Low ($500–$1,500), Medium
 ($1,000–$2,000), High ($1,500–$4,000), and Extreme ($2,500–$10,000). These are
 inclusive bounds on the final multiplied total, including all extra vaults.

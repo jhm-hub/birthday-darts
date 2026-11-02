@@ -3,7 +3,7 @@ import {DEFAULT_VAULT,validateVault,unlockVault,advanceVault,vaultTotal,vaultBon
 import {VAULT_EXPERIENCES,vaultExperienceInfo,vaultExperienceRange,vaultExperiencePreset,startVaultExperience} from './vault-experiences.js';
 import {validateVaultGameRanges} from './vault-game-ranges.js';
 import {bindVaultGameRanges} from './vault-game-range-controls.js';
-import {findVaultViewerRange,startVaultViewerRange,vaultViewerRangeText} from './vault-targets.js';
+import {findVaultViewerRange,startVaultViewerRange,startVaultTotalRange,vaultViewerRangeText} from './vault-targets.js';
 import {createVaultView} from './vault-view.js';
 import {createVaultAudio} from './vault-audio.js';
 import {VAULT_SOUND_LABELS} from './vault-sound-design.js';
@@ -11,7 +11,7 @@ import {bindGiftVolume} from './gift-mixer.js';
 const $=s=>document.querySelector(s),audio=createVaultAudio(),view=createVaultView($('#vault-preview'),{audio});
 bindGiftVolume($('#vault-mixer'),audio,()=>{});
 let savedGameRanges=validateVaultGameRanges();
-let widgets=[],selected=null,draft=null,draftError='',dirty=false,demo=null,auto=false,nextAuto=0,timer,demoCashKey='';
+let widgets=[],selected=null,draft=null,draftError='',dirty=false,demo=null,demoExample=false,auto=false,nextAuto=0,timer,demoCashKey='';
 for(const e of VAULT_EXPERIENCES)$('#demo-experience').add(new Option(e.name+' · '+vaultExperienceRange(e.id),e.id));
 const gameRanges=bindVaultGameRanges($('#game-ranges'),{save:async ranges=>{
  if(!selected)throw Error('Create this vault first, then save its four ranges.');
@@ -44,7 +44,7 @@ function refresh(){
  $('#vault-preview').style.opacity=draftError?'.45':'1';render();
 }
 function changed(){dirty=true;$('#save-game').textContent=selected?'Save changes':'Create vault';clearTimeout(timer);timer=setTimeout(refresh,120);}
-function resetDemo(paint=true){auto=false;demo=null;audio.reset();if(paint)render();}
+function resetDemo(paint=true){auto=false;demo=null;demoExample=false;audio.reset();if(paint)render();}
 function showPreview(){$('#vault-preview').scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
 function renderDemoCash(){
  const special=!!demo&&demo.opened.length>=demo.preset.chambers,prizes=draft&&!draftError?(demo?vaultCashPrizes(demo):vaultExperiencePreset(draft,$('#demo-experience').value).outcomes):[];
@@ -54,12 +54,13 @@ function renderDemoCash(){
  prizes.forEach((o,i)=>{if(o.weight>0)select.add(new Option(money(Math.round(o.value*100)),String(i)));});
  $('#demo-cash-label').textContent=special?'Next demo cash · special vault':'Next demo cash · starting chamber';
 }
-function demoRule(){return demo?(demo.privateViewerRange??null):findVaultViewerRange(vaultStore.list().find(w=>w.id===selected)?.viewerRanges,$('#demo-viewer').value);}
+function demoRule(){return demoExample?null:demo?(demo.privateViewerRange??null):findVaultViewerRange(vaultStore.list().find(w=>w.id===selected)?.viewerRanges,$('#demo-viewer').value);}
 function render(){
  renderDemoCash();
- const experience=$('#demo-experience').value,rule=demoRule(),presetMode=!!rule||experience!=='custom';
+ const experience=$('#demo-experience').value,rule=demoRule(),presetMode=demoExample||!!rule||experience!=='custom';
  $('#demo-viewer-rule').textContent=rule?'@'+rule.username+' · '+vaultViewerRangeText(rule)+' final total. This username range takes priority.':'Try a saved username to preview their range. Manage names in Faith’s controls.';
- $('#demo-experience-note').textContent=rule?'This sample uses the saved username range, including all bonuses.':presetMode?vaultExperienceRange(experience,demo?.privateExperience?savedGameRanges.map(r=>r.id===experience?{...r,min:demo.privateExperience.min,max:demo.privateExperience.max}:r):savedGameRanges)+' final total, including bonuses. Five starting chambers; this demo uses the saved game range. Chamber amounts are automatic.':'Uses the cash amounts and odds in this editor.';
+ $('#demo-experience-note').textContent=demoExample?'$10,000 example · modest cash, stacked ×2 boosts and bonus vaults. This sample does not change your saved ranges.':rule?'This sample uses the saved username range, including all bonuses.':presetMode?vaultExperienceRange(experience,demo?.privateExperience?savedGameRanges.map(r=>r.id===experience?{...r,min:demo.privateExperience.min,max:demo.privateExperience.max}:r):savedGameRanges)+' final total, including bonuses. Five starting chambers; this demo uses the saved game range. Higher totals build through stacked multipliers and bonus vaults.':'Uses the cash amounts and odds in this editor.';
+ $('#demo-luck-run').disabled=!!draftError||!draft;
  $('#demo-cash').disabled=$('#demo-bonus').disabled=$('#demo-finale').disabled=presetMode;
  if(draft)view.update({widget:vaultExperiencePreset(draft,experience),round:demo},{preview:true});
  const opening=demo&&Date.now()<demo.readyAt,busy=!!demo?.flight,finished=!!demo&&demo.completedAt!==null;
@@ -74,6 +75,7 @@ $('#demo-experience').onchange=()=>resetDemo();
 $('#demo-viewer').oninput=()=>resetDemo();
 $('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-reset').onclick=()=>resetDemo();
 $('#demo-auto').onclick=()=>{if(auto){auto=false;render();return;}resetDemo(false);auto=true;pick();nextAuto=Date.now()+1550;render();showPreview();};
+$('#demo-luck-run').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=startVaultTotalRange(draft,{min:10000,max:10000},'Demo viewer');demoExample=true;auto=true;nextAuto=demo.readyAt;render();showPreview();}catch(e){resetDemo(false);$('#demo-status').textContent=e.message;}};
 $('#preview-finale').onclick=()=>{if(draftError||!draft)return;resetDemo(false);demo=sampleVaultFinale(draft,Number($('#demo-finale').value));render();showPreview();};
 $('#demo-sound').onclick=()=>{audio.setEnabled(!audio.enabled);$('#demo-sound').textContent=audio.enabled?'Sound on':'Sound off';$('#demo-sound').setAttribute('aria-pressed',String(audio.enabled));};
 for(const [value,label] of Object.entries(VAULT_SOUND_LABELS))$('#sound-cue').add(new Option(label,value));

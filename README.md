@@ -411,6 +411,11 @@ Under Birthday bonuses, change **Extra-dart balloons** (1–3) or toggle **+1 da
 
 **Configure and demo:** https://jhm-hub.github.io/birthday-darts/vault.html
 
+High/Extreme now build larger wins through stacked ×2 boosts and 2–3 richer
+bonus vaults. Their saved final-total ranges remain guaranteed. Use **Watch
+$10,000 bonus run** in the Vault editor for a full sample that leaves settings
+and live rounds untouched. See [bonus-led wins](docs/vault-bonus-led-wins.md).
+
 Faith rolls a fresh opening balance, then clicks once per chamber. The default
 is five chambers. Every chamber adds a weighted cash prize; a separate bonus draw
 can add a total multiplier or one more unlock. The opening balance is a uniform
