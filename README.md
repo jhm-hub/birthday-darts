@@ -138,6 +138,14 @@ Use **Copy OBS display link** at the top of live controls for a **420 × 460**
 Browser Source; keep an existing source if it already uses that same address.
 Enter a viewer and choose a game to make the transparent display appear. It is
 intentionally blank between rounds. Keep the desk open while playing.
+
+Presents supports multiple live control tabs in the same browser/profile. Only
+one tab sends to OBS, while every tab can control the shared round. **Game 1–4**
+always starts a fresh round, including during an opening or celebration.
+**End round** immediately clears the display without awarding an unfinished
+prize. Repeated unwrap clicks cannot award the same present twice. Closing the
+broadcasting tab lets a remaining controller reconnect to the same OBS source.
+Refresh already-open control pages once when installing this update.
 The gifts match the birthday game’s pixel style: stepped outlines, pastel wrappers,
 satin ribbon highlights, separate lids and paper rustle / celesta sounds.
 The grid and final-total plaque share one 420 × 460 frame, including expanded

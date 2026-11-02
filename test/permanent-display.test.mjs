@@ -53,7 +53,7 @@ for(const g of games){
   assert.ok(hosts.some(h=>h.options.key===s.roomKey('second-version')),'old selected-version link remains supported');
   await g.save(s,{...g.list(s).find(w=>w.id==='second-version'),name:'Changed without a new link'});
   assert.equal(wire.filter(w=>w.key===s.displayKey()).at(-1).message.snapshot.widget.name,'Changed without a new link');
-  const duplicate=await connect(first.id,()=>{},()=>{});duplicate.start();await tick();assert.equal(s.selectedId(),'second-version');await assert.rejects(duplicate.selectVersion(first.id),/active control/);
+  const duplicate=await connect(first.id,()=>{},()=>{});duplicate.start();await tick();assert.equal(s.selectedId(),'second-version');if(g.name==='Gifts'){assert.equal(duplicate.ready,true);await duplicate.selectVersion('second-version');}else await assert.rejects(duplicate.selectVersion(first.id),/active control/);
   await g.start(s,'second-version');await assert.rejects(session.selectVersion(first.id),/Finish/);
   for(const {message} of wire){assert.equal(message.snapshot.control,undefined);assert.equal(message.snapshot.controls,undefined);assert.equal(message.snapshot.stream,undefined);assert.ok(!JSON.stringify(message).includes(s.displayKey()));}
   session.dispose();duplicate.dispose();await tick();assert.ok(hosts.every(h=>h.disposed));assert.equal(held.size,0);

@@ -22,7 +22,7 @@ export function bindGiftRangeFields(container,onChange){
  return {set,read};
 }
 
-export function renderGiftRangeButtons(container,ranges,{disabled=false,activeId=null,onStart}){
+export function renderGiftRangeButtons(container,ranges,{disabled=false,alwaysEnabled=false,activeId=null,onStart}){
  const clean=validateGiftRanges(ranges),signature=JSON.stringify(clean);
  if(container.dataset.ranges!==signature){
   container.dataset.ranges=signature;container.replaceChildren();
@@ -33,7 +33,7 @@ export function renderGiftRangeButtons(container,ranges,{disabled=false,activeId
   }
  }
  for(const [i,button] of [...container.children].entries()){
-  button.disabled=disabled||clean[i].min===null;
+  button.disabled=!alwaysEnabled&&(disabled||clean[i].min===null);
   button.setAttribute('aria-pressed',String(clean[i].id===activeId));
  }
 }

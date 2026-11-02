@@ -41,6 +41,10 @@ export function createGiftStore(storage,locks,sharedOptions={}){
   async save(input){const p=validateGiftWidget(input);return lock(()=>{const s=read(),w=s.widgets.find(w=>w.id===p.id);if(w)Object.assign(w,p);else{if(s.widgets.length>=30)throw Error('Save up to 30 gift games.');s.widgets.push({...p,round:null,lastResult:null,room:randomKey()});}write(s);return p;});},
   async import(presets){return lock(()=>{const s=read();if(s.widgets.length+presets.length>30)throw Error('This backup would exceed 30 games.');for(const p of presets)s.widgets.push({...validateGiftWidget(p),round:null,lastResult:null,room:randomKey()});write(s);});},
   async startRange(id,rangeId,viewer='',now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);settle(s,now);if(w.round)throw Error('Finish this viewer’s round before starting another game.');w.round=startGiftRange(w,rangeId,viewer,now);write(s);return snapshot(id,now);});},
+  // Explicit live game buttons may replace a round even during an animation.
+  // Prepare before assigning so invalid input never destroys the current round.
+  async restartRange(id,rangeId,viewer='',now=Date.now()){return lock(()=>{const s=read(),w=find(s,id),round=startGiftRange(w,rangeId,viewer,now);w.round=round;write(s);return snapshot(id,now);});},
+  async endRound(id,now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);w.round=null;write(s);return snapshot(id,now);});},
   // Keep the classic API compatible with older saved widgets; current controls
   // require a range button before unwrapping whenever configured ranges appear.
   async unwrap(id,viewer,cell=null,now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);settle(s,now);if(!w.round){if(w.gameRanges!==undefined&&configuredGiftRanges(w).length)throw Error('Choose one of the four game buttons to start this viewer’s round.');w.round=startGiftRound(w,viewer,now);}unwrapGift(w.round,now,{cell});write(s);return snapshot(id,now);});},
