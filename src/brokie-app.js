@@ -69,3 +69,7 @@ async function init(){
 document.addEventListener('pointerdown',()=>{if(overlay||sound)void audio.unlock();});
 init().catch(e=>{if(overlay){$('#display-help').hidden=false;$('#display-help').textContent=e.message;}else{ready=false;status(e.message,true);$('#action').disabled=true;}});
 window.addEventListener('pagehide',()=>{closed=true;clearInterval(pulse);clearInterval(heartbeat);clearTimeout(retry);unsubscribe?.();link?.dispose();session?.dispose();release?.();observer?.disconnect();view.dispose();audio.dispose();},{once:true});
+
+window.addEventListener('shared-settings-updated',()=>{if(overlay||live)return;const latest=store.list().find(w=>w.id===id);if(latest){config=latest;saved=true;demo=null;audio.stop();list();fields();links();render();$('#save-status').textContent='Updated from the shared link.';}});
+
+window.addEventListener('shared-settings-before-update',event=>{if(!saved)event.preventDefault();});

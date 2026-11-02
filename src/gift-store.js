@@ -1,3 +1,4 @@
+import {createSharedSettings} from './shared-settings.js';
 import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
 import {GIFT_CLEAR_MS,DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,cleanGiftRound,giftTotal} from './gift-game.js';
 import {randomKey,validKey} from './protocol.js';
@@ -22,10 +23,11 @@ export function importGiftSettings(raw){
  if(raw?.format!=='faith-gift-pile'||![1,2,3,4].includes(raw.version)||!Array.isArray(raw.widgets)||!raw.widgets.length||raw.widgets.length>30)throw Error('Choose a Gift Pile settings backup.');
  return raw.widgets.map(w=>validateGiftWidget({...w,id:crypto.randomUUID()}));
 }
-export function createGiftStore(storage,locks){
+export function createGiftStore(storage,locks,sharedOptions={}){
+ const shared=createSharedSettings({storage,locks,key:GIFT_STORE_KEY,game:'gifts',validate:validateGiftWidget,...sharedOptions});storage=shared.storage;locks=shared.locks;
  const listeners=new Set(),lock=fn=>locks.request('faith-gift-pile-library',fn);
  function read(){const raw=storage.getItem(GIFT_STORE_KEY);if(!raw)return null;let state;try{state=JSON.parse(raw);if(state.schema!==1||!Array.isArray(state.widgets)||!state.widgets.length)throw Error();for(const w of state.widgets)validateGiftWidget(w);}catch{throw Error('Saved Gift Pile data could not be read. It has not been overwritten.');}return state;}
- function write(s){storage.setItem(GIFT_STORE_KEY,JSON.stringify(s));for(const fn of listeners)fn();}
+ function write(s){storage.setItem(GIFT_STORE_KEY,JSON.stringify(s));shared.notify(()=>{for(const fn of listeners)fn();});}
  function find(s,id){const w=s.widgets.find(w=>w.id===id);if(!w)throw Error('This gift game was not found.');return w;}
  function settle(s,now){let changed=false;for(const w of s.widgets){if(advanceGiftRound(w.round,now)){changed=true;if(w.round.completedAt!==null)w.lastResult={viewer:w.round.viewer,totalCents:giftTotal(w.round),opened:w.round.opened.length,completedAt:w.round.completedAt};}if(w.round?.hideAt&&now>=w.round.hideAt+GIFT_CLEAR_MS){w.round=null;changed=true;}if(upgradeStarter(w))changed=true;}return changed;}
  function snapshot(id,now=Date.now()){const w=find(read(),id),{outcomes,gameRanges,...widget}=validateGiftWidget(w);return {kind:'faith-gifts',serverNow:now,widget,audio:{volume:giftVolume(w.audioVolume)},round:cleanGiftRound(w.round),lastResult:w.lastResult??null};}
@@ -44,7 +46,7 @@ export function createGiftStore(storage,locks){
   async unwrap(id,viewer,cell=null,now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);settle(s,now);if(!w.round){if(w.gameRanges!==undefined&&configuredGiftRanges(w).length)throw Error('Choose one of the four game buttons to start this viewer’s round.');w.round=startGiftRound(w,viewer,now);}unwrapGift(w.round,now,{cell});write(s);return snapshot(id,now);});},
   async advance(now=Date.now()){return lock(()=>{const s=read();if(settle(s,now))write(s);});},
   subscribe(fn){listeners.add(fn);return ()=>listeners.delete(fn);},
-  storageChanged(key){if(key===GIFT_STORE_KEY)for(const fn of listeners)fn();}
+  storageChanged(key){shared.changed(key,()=>{for(const fn of listeners)fn();});}
  };
 }
 export const giftStore=typeof window==='undefined'?null:createGiftStore(localStorage,{request:(...args)=>navigator.locks.request(...args)});

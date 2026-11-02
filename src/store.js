@@ -1,3 +1,4 @@
+import {createSharedSettings} from './shared-settings.js';
 import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
 import {newWidgets,validateWidget,library,widgetSnapshot,widgetControlSnapshot,applyWidgetAction,advanceWidgets} from './widgets.js';
 import {randomKey,validKey} from './protocol.js';
@@ -8,10 +9,11 @@ export function importSettings(raw){
  if(raw?.format!=='birthday-darts-settings'||raw.version!==1||!Array.isArray(raw.widgets)||!raw.widgets.length||raw.widgets.length>30)throw Error('Choose a Birthday Darts settings backup.');
  return raw.widgets.map(p=>validateWidget({...p,id:crypto.randomUUID()}));
 }
-export function createStore(storage,locks){
+export function createStore(storage,locks,sharedOptions={}){
+ const shared=createSharedSettings({storage,locks,key:STORE_KEY,game:'darts',validate:validateWidget,...sharedOptions});storage=shared.storage;locks=shared.locks;
  const listeners=new Set();
  function read(){const raw=storage.getItem(STORE_KEY);if(!raw)return null;let state;try{state=JSON.parse(raw);}catch{throw Error('Your saved widgets could not be read. Export or recover your browser data before resetting it.');}if(state?.schema!==1||!Array.isArray(state.widgets)||!state.widgets.length)throw Error('Saved widget data is invalid. It has not been overwritten.');for(const w of state.widgets)validateWidget(w);return state;}
- function persist(state){try{storage.setItem(STORE_KEY,JSON.stringify(state));}catch{throw Error('Your browser could not save this change. Check storage permissions or free space.');}for(const fn of listeners)fn();}
+ function persist(state){try{storage.setItem(STORE_KEY,JSON.stringify(state));}catch{throw Error('Your browser could not save this change. Check storage permissions or free space.');}shared.notify(()=>{for(const fn of listeners)fn();});}
  const locked=fn=>locks.request('birthday-darts-library',fn);
  function rooms(state){state.rooms??={};for(const w of state.widgets)if(!validKey(state.rooms[w.id]))state.rooms[w.id]=randomKey();}
  return {
@@ -25,7 +27,7 @@ export function createStore(storage,locks){
   async advance(){return locked(()=>{const state=read();if(advanceWidgets(state))persist(state);});},
   async import(presets){return locked(()=>{const state=read();if(state.widgets.length+presets.length>30)throw Error('This backup would exceed the 30-widget limit.');for(const p of presets)applyWidgetAction(state,{action:'save',widget:p});rooms(state);persist(state);});},
   subscribe(fn){listeners.add(fn);return ()=>listeners.delete(fn);},
-  storageChanged(key){if(key===STORE_KEY)for(const fn of listeners)fn();}
+  storageChanged(key){shared.changed(key,()=>{for(const fn of listeners)fn();});}
  };
 }
 // Web Locks serialize edits and prevent two control tabs owning one widget.

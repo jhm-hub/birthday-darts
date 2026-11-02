@@ -1,3 +1,4 @@
+import {readSharedConnection,sharedStorageKey} from './shared-settings-connection.js';
 import {GAMES,savedSummary,gameLinks,legacyDartsLink} from './home-catalog.js';
 import {activeGiftSVG} from './gift-concept-art.js';
 import {balloonPixelLayers} from './balloon-art.js';
@@ -30,7 +31,7 @@ function init(){
  }
  function refresh(){
   for(const game of GAMES){
-   let summary;try{summary=savedSummary(localStorage,game);}catch{summary={unavailable:true};}
+   let summary;try{summary=savedSummary({getItem:key=>localStorage.getItem(sharedStorageKey(key,readSharedConnection()))??localStorage.getItem(key)},game);}catch{summary={unavailable:true};}
    const card=cards.get(game.id),links=gameLinks(game,summary),note=card.querySelector('.saved-note');
    card.querySelector('a.settings').href=links.editor;card.querySelector('a.live').href=links.controls;
    note.textContent=summary.unavailable?'Open settings to check your saved versions.':summary.count?summary.count+' saved version'+(summary.count===1?'':'s')+' · '+summary.name:'Your first setup is ready to make yours.';

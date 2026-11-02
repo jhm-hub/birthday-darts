@@ -42,8 +42,8 @@ function refresh(){
  if([...select.options].some(o=>o.value===previous))select.value=previous;
  renderDemo();
 }
-function changed(){dirty=true;$('#save-game').textContent=selected?'Save changes':'Create game';clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,120);}
-function edit(w){rangeFields.set(w.gameRanges);selected=w.id??null;dirty=false;$('#game-name').value=w.name;$('#board-size').value=w.side;$('#pick-count').value=w.picks;$('#max-board').value=w.maxSide;$('#max-picks').value=w.maxPicks;$('#celebration-big').value=w.celebration.big;$('#celebration-royal').value=w.celebration.royal;$('#prize-rows').replaceChildren();w.outcomes.forEach(row);$('#save-game').textContent=selected?'Save game':'Create game';$('#duplicate').disabled=!selected;message('');refresh();list();links();}
+function changed(){window.dispatchEvent(new CustomEvent('shared-settings-dirty'));dirty=true;$('#save-game').textContent=selected?'Save changes':'Create game';clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,120);}
+function edit(w){window.dispatchEvent(new CustomEvent('shared-settings-clean'));if(w.id){const link=new URL(location.href);link.searchParams.set('id',w.id);history.replaceState(null,'',link);}rangeFields.set(w.gameRanges);selected=w.id??null;dirty=false;$('#game-name').value=w.name;$('#board-size').value=w.side;$('#pick-count').value=w.picks;$('#max-board').value=w.maxSide;$('#max-picks').value=w.maxPicks;$('#celebration-big').value=w.celebration.big;$('#celebration-royal').value=w.celebration.royal;$('#prize-rows').replaceChildren();w.outcomes.forEach(row);$('#save-game').textContent=selected?'Save game':'Create game';$('#duplicate').disabled=!selected;message('');refresh();list();links();}
 function list(){const container=$('#gift-list');container.replaceChildren();for(const w of widgets){const b=document.createElement('button');b.className='saved-game';b.type='button';b.textContent=w.name;b.setAttribute('aria-current',String(w.id===selected));b.addEventListener('click',()=>{if(dirty&&!confirm('Discard these unsaved game changes?'))return;edit(w);});container.append(b);}}
 function links(){const open=$('#open-controls'),input=$('#gift-display-url');if(!selected){open.removeAttribute('href');open.textContent='Save this game first';input.value='Save this game to create its display link.';$('#copy-display').disabled=true;return;}const url=new URL('./gift-display.html',location.href);url.hash='room='+giftStore.displayKey();input.value=url.href;open.href='./gift-play.html?id='+encodeURIComponent(selected);open.textContent='Open controls ↗';$('#copy-display').disabled=false;}
 function renderDemo(){
@@ -95,3 +95,7 @@ const timer=setInterval(()=>{if(!demo)return;if(advanceGiftRound(demo))renderDem
 window.addEventListener('pagehide',()=>{clearInterval(timer);view.dispose();audio.dispose();},{once:true});
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 giftStore.init().then(()=>{widgets=giftStore.list();edit(widgets.find(w=>w.id===new URLSearchParams(location.search).get('id'))??widgets[0]);}).catch(e=>message(e.message,true));
+
+window.addEventListener('shared-settings-updated',()=>{widgets=giftStore.list();const latest=widgets.find(w=>w.id===selected);if(latest)edit(latest);});
+
+window.addEventListener('shared-settings-before-update',event=>{if(dirty)event.preventDefault();});

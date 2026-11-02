@@ -4,6 +4,8 @@ import {pinataViewerRangeText} from './pinata-targets.js';
 export function bindPinataGameRanges(settings,launches,{save,start}){
  const form=settings.querySelector('form'),fields=settings.querySelector('[data-game-range-fields]'),status=settings.querySelector('[data-game-range-status]');
  let ranges=emptyPinataGameRanges(),available=false,active=false,busy=false,dirty=false,formKey='';
+ form.classList.add('game-range-form');
+ if(typeof window!=='undefined'){window.addEventListener('shared-settings-before-update',event=>{if(dirty)event.preventDefault();});window.addEventListener('shared-settings-discard',()=>{dirty=false;formKey='';});}
  const cards=ranges.map((slot,i)=>{
   const field=document.createElement('fieldset');field.className='pinata-range-field';
   field.innerHTML=`<legend>Button ${i+1}</legend><label class="range-name">Button name<input name="name" maxlength="24" required aria-label="Button ${i+1} name"></label><label>Minimum $<input name="min" type="number" min="1" max="1000000" step="1" aria-label="Button ${i+1} minimum"></label><label>Maximum $<input name="max" type="number" min="1" max="1000000" step="1" aria-label="Button ${i+1} maximum"></label>`;

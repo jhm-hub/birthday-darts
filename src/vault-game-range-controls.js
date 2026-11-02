@@ -19,6 +19,7 @@ export function bindVaultGameRanges(root,{save}){
  const status=document.createElement('p');status.className='hint';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
  form.append(grid,button,status);root.append(form);
  let key='',enabled=false,busy=false,dirty=false;
+ if(typeof window!=='undefined'){window.addEventListener('shared-settings-before-update',event=>{if(dirty)event.preventDefault();});window.addEventListener('shared-settings-discard',()=>{dirty=false;key='';});}
  const setDisabled=()=>{for(const input of form.querySelectorAll('input,button'))input.disabled=!enabled||busy;};
  form.addEventListener('input',()=>{dirty=true;status.textContent='Unsaved game settings. Save before starting.';});
  form.onsubmit=async event=>{

@@ -1,3 +1,4 @@
+import {createSharedSettings} from './shared-settings.js';
 import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
 import {DEFAULT_PINATA,validatePinata,startPinata,swingPinata,advancePinata,pinataTotal,cleanPinata,CLEAR_MS} from './pinata-game.js';
 import {validatePinataViewerRanges,validatePinataViewerRange,normalizePinataUsername,findPinataViewerRange,startPinataViewerRange} from './pinata-targets.js';
@@ -5,10 +6,11 @@ import {validatePinataGameRanges,startPinataGameRange} from './pinata-game-range
 import {randomKey,validKey} from './protocol.js';
 export const PINATA_KEY='faith-pinata-party-v1';
 const volume=v=>Number.isFinite(Number(v))?Math.max(0,Math.min(1,Number(v))):.45;
-export function createPinataStore(storage,locks){
+export function createPinataStore(storage,locks,sharedOptions={}){
+ const shared=createSharedSettings({storage,locks,key:PINATA_KEY,game:'pinata',validate:w=>({...validatePinata(w),viewerRanges:validatePinataViewerRanges(w.viewerRanges),gameRanges:validatePinataGameRanges(w.gameRanges)}),...sharedOptions});storage=shared.storage;locks=shared.locks;
  const listeners=new Set(),lock=fn=>locks.request('faith-pinata-library',fn);
  function read(){const raw=storage.getItem(PINATA_KEY);if(!raw)return null;try{const s=JSON.parse(raw);if(![1,2,3].includes(s.schema)||!Array.isArray(s.widgets)||!s.widgets.length)throw Error();for(const w of s.widgets){validatePinata(w);validatePinataViewerRanges(w.viewerRanges);validatePinataGameRanges(w.gameRanges);}return s;}catch{throw Error('Saved piñata games could not be read. Nothing has been overwritten.');}}
- function write(s){storage.setItem(PINATA_KEY,JSON.stringify(s));for(const fn of listeners)fn();}
+ function write(s){storage.setItem(PINATA_KEY,JSON.stringify(s));shared.notify(()=>{for(const fn of listeners)fn();});}
  function find(s,id){const w=s?.widgets.find(w=>w.id===id);if(!w)throw Error('This piñata game was not found.');return w;}
  function settle(s,now){let changed=false;for(const w of s.widgets){if(advancePinata(w.round,now)){changed=true;if(w.round.completedAt!==null)w.lastResult={viewer:w.round.viewer,totalCents:pinataTotal(w.round)};}if(w.round?.hideAt&&now>=w.round.hideAt+CLEAR_MS){w.round=null;changed=true;}}return changed;}
  function snapshot(id,now=Date.now()){const w=find(read(),id),{outcomes,...widget}=validatePinata(w);return {kind:'faith-pinata',serverNow:now,widget,round:cleanPinata(w.round),audio:{volume:volume(w.volume??.45)},lastResult:w.lastResult??null};}
@@ -26,7 +28,7 @@ export function createPinataStore(storage,locks){
   async advance(now=Date.now()){return lock(()=>{const s=read();if(settle(s,now))write(s);});},
   async setVolume(id,value){return lock(()=>{const s=read();find(s,id).volume=volume(value);write(s);});},
   subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},
-  storageChanged(key){if(key===PINATA_KEY)for(const fn of listeners)fn();}
+  storageChanged(key){shared.changed(key,()=>{for(const fn of listeners)fn();});}
  };
 }
 export const pinataStore=typeof window==='undefined'?null:createPinataStore(localStorage,{request:(...a)=>navigator.locks.request(...a)});
