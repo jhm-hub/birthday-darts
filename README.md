@@ -80,6 +80,10 @@ and shared saves across isolated browsers. It includes failed and conflicting
 saves against a local API fixture; no production settings are changed. Optional
 `PLAYWRIGHT_MODULE` and `BROWSER_EXECUTABLE` select an existing runtime/browser.
 `VAULT_QA_OUTPUT` chooses where screenshots and the JSON report are saved.
+`npm run test:vault-reset` checks emergency reset through the built controls
+and a separate display browser, including audio cancellation, pending starts,
+reloads, duplicate control tabs and the game desk. It uses the same runtime
+options and requires access to the normal PeerJS signaling service.
 
 ## Animation art and review
 
@@ -473,6 +477,11 @@ are sample settings, editable alongside all cash values and odds.
 3. Choose **Open live controls** (or **Play** in the desk). Enter a viewer,
    press a game’s Start button, then **Open vault** once per chamber.
    Space also works outside inputs. Switch saved setups between viewers.
+   To stop early, click **End game & reset** directly below **Open vault**.
+   It works during the opening, any chamber or bonus, and the celebration.
+   It cancels unfinished play, stops the audio and clears the stream display;
+   it does not award the unfinished total. Enter the next viewer and press
+   any game’s Start button. Saved settings and the OBS source stay the same.
 4. Keep the existing permanent OBS source. For first-time setup, open **OBS
    setup & settings backups**, copy the display link into a **420 × 460**
    Browser Source and keep the controls open. Only the transparent display
