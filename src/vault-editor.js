@@ -4,6 +4,7 @@ import {VAULT_EXPERIENCES,vaultExperienceInfo,vaultExperienceRange,vaultExperien
 import {validateVaultGameRanges} from './vault-game-ranges.js';
 import {bindVaultGameRanges} from './vault-game-range-controls.js';
 import {findVaultViewerRange,startVaultViewerRange,startVaultTotalRange,vaultViewerRangeText} from './vault-targets.js';
+import {sampleVaultLatePayoff} from './vault-payoff-preview.js';
 import {createVaultView} from './vault-view.js';
 import {createVaultAudio} from './vault-audio.js';
 import {VAULT_SOUND_LABELS} from './vault-sound-design.js';
@@ -60,7 +61,7 @@ function render(){
  const experience=$('#demo-experience').value,rule=demoRule(),presetMode=demoExample||!!rule||experience!=='custom';
  $('#demo-viewer-rule').textContent=rule?'@'+rule.username+' · '+vaultViewerRangeText(rule)+' final total. This username range takes priority.':'Try a saved username to preview their range. Manage names in Faith’s controls.';
  $('#demo-experience-note').textContent=demoExample?'$10,000 example · modest cash, stacked ×2 boosts and bonus vaults. This sample does not change your saved ranges.':rule?'This sample uses the saved username range, including all bonuses.':presetMode?vaultExperienceRange(experience,demo?.privateExperience?savedGameRanges.map(r=>r.id===experience?{...r,min:demo.privateExperience.min,max:demo.privateExperience.max}:r):savedGameRanges)+' final total, including bonuses. Five starting chambers; this demo uses the saved game range. Higher totals build through stacked multipliers and bonus vaults.':'Uses the cash amounts and odds in this editor.';
- $('#demo-luck-run').disabled=!!draftError||!draft;
+ $('#demo-luck-run').disabled=$('#demo-payoff').disabled=!!draftError||!draft;
  $('#demo-cash').disabled=$('#demo-bonus').disabled=$('#demo-finale').disabled=presetMode;
  if(draft)view.update({widget:vaultExperiencePreset(draft,experience),round:demo},{preview:true});
  const opening=demo&&Date.now()<demo.readyAt,busy=!!demo?.flight,finished=!!demo&&demo.completedAt!==null;
@@ -75,6 +76,7 @@ $('#demo-experience').onchange=()=>resetDemo();
 $('#demo-viewer').oninput=()=>resetDemo();
 $('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-reset').onclick=()=>resetDemo();
 $('#demo-auto').onclick=()=>{if(auto){auto=false;render();return;}resetDemo(false);auto=true;pick();nextAuto=Date.now()+1550;render();showPreview();};
+$('#demo-payoff').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=sampleVaultLatePayoff(draft);demoExample=true;render();showPreview();}catch(e){$('#demo-status').textContent=e.message;}};
 $('#demo-luck-run').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=startVaultTotalRange(draft,{min:10000,max:10000},'Demo viewer');demoExample=true;auto=true;nextAuto=demo.readyAt;render();showPreview();}catch(e){resetDemo(false);$('#demo-status').textContent=e.message;}};
 $('#preview-finale').onclick=()=>{if(draftError||!draft)return;resetDemo(false);demo=sampleVaultFinale(draft,Number($('#demo-finale').value));render();showPreview();};
 $('#demo-sound').onclick=()=>{audio.setEnabled(!audio.enabled);$('#demo-sound').textContent=audio.enabled?'Sound on':'Sound off';$('#demo-sound').setAttribute('aria-pressed',String(audio.enabled));};

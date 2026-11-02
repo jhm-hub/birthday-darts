@@ -1,5 +1,7 @@
 import {vaultStory,vaultStoryFlight,vaultStoryGlyph} from './vault-story.js';
 import {vaultJourney} from './vault-journey.js';
+import {createVaultClock} from './vault-clock.js';
+import {vaultMultiplierPayoff,vaultPayoffFlight,vaultPayoffDock} from './vault-multiplier-payoff.js';
 import {vaultWelcomeFlow,vaultWelcomeParticle} from './vault-welcome-flow.js';
 import {vaultTreasureCoda,vaultTreasureRestOrnament} from './vault-treasure-coda.js';
 import {vaultTreasureBridge,vaultTreasureBridgeParticle} from './vault-treasure-handoff.js';
@@ -48,14 +50,15 @@ export function createVaultView(root,{audio}={}){
  const coins=[...root.querySelectorAll('.vault-collection i')],catchStars=[...catches.children];let dockKey='',dock={left:130,right:290,y:386};
  const pips=[...openingPips.children],bonusSparks=[...root.querySelectorAll('.vault-bonus-spark')],cashSparks=[...root.querySelectorAll('.vault-cash-spark')];
  let bonusKind='',cashLevel=-1;
- let snapshot=null,options={preview:true,show:true},offset=0,raf,disposed=false,progressKey='',tier=-1,idleAt=null;
+ let snapshot=null,options={preview:true,show:true},raf,disposed=false,progressKey='',tier=-1,idleAt=null;
+ const clock=createVaultClock();
  const resize=()=>{stage.style.transform=`translate(-50%,-50%) scale(${Math.min(root.clientWidth/420,root.clientHeight/460)})`;};
  const observer=new ResizeObserver(()=>{dockKey='';resize();});observer.observe(root);observer.observe(els.bank);resize();
  function fit(el,text,max,width){if(el.textContent!==text)el.textContent=text;el.style.fontSize=Math.min(max,width/(Math.max(1,text.length)*.61))+'px';}
  function render(){
   if(disposed)return;raf=requestAnimationFrame(render);
   const quiet=options.quiet??reduced.matches;
-  const time=options.frozenAt??Date.now()+offset,r=presentedVaultRound(snapshot?.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=vaultBonusReadout(r,now,time),bonusPose=vaultBonusPose(r?.flight,time,quiet),cashPose=vaultCashPose(r?.flight,time,quiet),collection=vaultCollectionBank(r?.flight,time,quiet);
+  const time=options.frozenAt??clock.now(),r=presentedVaultRound(snapshot?.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=vaultBonusReadout(r,now,time),bonusPose=vaultBonusPose(r?.flight,time,quiet),cashPose=vaultCashPose(r?.flight,time,quiet),collection=vaultCollectionBank(r?.flight,time,quiet);
   const visible=options.show!==false&&(options.preview||!!r),exit=vaultExit(r,time,quiet),entrance=vaultIntro(r,time,quiet),welcome=vaultWelcomeFlow(r,time,quiet),opening=vaultOpeningHandoff(r,time,quiet),between=vaultChamberHandoff(r,time,quiet);
   stage.style.opacity=visible?exit.stage*(r?entrance.stage:vaultIdleOpacity(idleAt,time)):0;
   stage.setAttribute('aria-hidden',String(!visible||exit.done));
@@ -191,7 +194,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   if(collection.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,239,181,${.55+.45*collection.gleam}),inset 0 -2px #bc8f68`;
   if(bonusPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(241,210,255,${.65+.35*bonusPose.gleam}),inset 0 -2px #a567a7`;
   const story=vaultStory(r,time,quiet);
-  els.calc.textContent=story.text;els.calc.dataset.kind=story.kind;els.calc.style.transform=`translateY(${-2*story.pulse}px)`;
+  els.calc.textContent=story.text;els.calc.dataset.kind=story.kind;
   els.calc.style.marginTop=handoff.linked?handoff.gap+'px':'';
   els.calc.style.opacity=exit.labels*entrance.calc;
   els.calc.setAttribute('aria-hidden',String(entrance.calc===0));
@@ -200,10 +203,12 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   // very large totals stay unobstructed; all positions remain in stage pixels.
   const nextDockKey=els.bank.textContent+':'+els.bank.style.fontSize+':'+els.calc.style.fontSize+':'+els.bankWrap.style.bottom;
   if(nextDockKey!==dockKey){dockKey=nextDockKey;dock={left:Math.max(14,els.bankWrap.offsetLeft+els.bank.offsetLeft-8),right:Math.min(406,els.bankWrap.offsetLeft+els.bank.offsetLeft+els.bank.offsetWidth+8),y:els.bankWrap.offsetTop+els.bank.offsetTop+12};}
-  const storyToken=vaultStoryFlight(story,time,point,dock,quiet);
+  const payoff=vaultMultiplierPayoff(r,time),tokenDock=payoff.linked?vaultPayoffDock(dock):dock;
+  const anchor=payoff.linked?vaultStoryFlight({shot:payoff.boost},payoff.catchAt,vaultRewardPoint(r,payoff.boost.index),tokenDock,quiet):undefined;
+  const storyToken=vaultPayoffFlight(payoff,vaultStoryFlight(story,time,point,tokenDock,quiet),time,tokenDock,quiet,anchor);
   if(storyKind!==storyToken.kind){storyKind=storyToken.kind;storyFlight.querySelector('span').innerHTML=vaultStoryGlyph(storyKind);}
   storyFlight.querySelector('b').textContent=storyToken.label;storyFlight.dataset.kind=storyToken.kind;
-  storyFlight.style.opacity=finished?0:storyToken.opacity;storyFlight.style.transform=`translate(${storyToken.x}px,${storyToken.y}px) scale(${storyToken.scale})`;
+  storyFlight.style.opacity=finished&&!payoff.linked?0:storyToken.opacity;storyFlight.style.transform=`translate(${storyToken.x}px,${storyToken.y}px) scale(${storyToken.scale})`;
   if(storyToken.kind==='extra'&&storyToken.catch)els.count.style.transform=`scale(${1+.08*storyToken.catch})`;
   receipt.style.opacity=exit.labels;receipt.setAttribute('aria-hidden',String(!story.receipt.length));
   [...receipt.children].forEach((el,i)=>{const item=story.receipt[i];el.style.opacity=item?.opacity??0;el.style.transform=`translateY(${item?.y??0}px) scale(${item?.scale??1})`;el.dataset.kind=item?.kind??'';el.querySelector('small').textContent=item?.label??'';fit(el.querySelector('strong'),item?.value??'',21,105);});
@@ -220,8 +225,8 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
  }
  render();
  return {update(next,opts={}){
-  offset=Number.isFinite(next.serverNow)?next.serverNow-Date.now():0;
-  const time=opts.frozenAt??Date.now()+offset;
+  clock.receive(next.serverNow);
+  const time=opts.frozenAt??clock.now();
   if(snapshot?.round&&!next.round)idleAt=vaultResetAt(presentedVaultRound(snapshot.round,time),time);
   else if(next.round)idleAt=null;
   snapshot=next;options={preview:true,show:true,...opts};

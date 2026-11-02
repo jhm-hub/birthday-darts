@@ -5,6 +5,7 @@ import {finalePose} from './vault-effects.js';
 import {vaultCashLevel} from './vault-cash-motion.js';
 import {vaultCollectAt,VAULT_COLLECT_TRAVEL_MS,VAULT_COLLECT_STAGGER_MS,vaultCollectionCount} from './vault-collection-motion.js';
 import {ease} from './vault-motion.js';
+import {vaultMultiplierPayoff} from './vault-multiplier-payoff.js';
 
 // One saved clock joins the last deposited coin to the final ornament. This is
 // presentation only: it reads revealed awards, never a preset or future plan.
@@ -14,9 +15,10 @@ export function vaultTreasureBridge(round,time,quiet=false){
  const final=projectedVault(round,time),style=vaultTreasureLevel(vaultTotal(final),'final');
  if(!style)return off;
  const count=vaultCollectionCount(vaultCashLevel(shot.cashCents));
- const startAt=vaultCollectAt(shot)+VAULT_COLLECT_TRAVEL_MS+(count-1)*VAULT_COLLECT_STAGGER_MS+40;
+ const depositedAt=vaultCollectAt(shot)+VAULT_COLLECT_TRAVEL_MS+(count-1)*VAULT_COLLECT_STAGGER_MS+40;
+ const payoff=vaultMultiplierPayoff(round,time),startAt=payoff.linked?Math.min(depositedAt,payoff.catchAt+60):depositedAt;
  const revealAt=shot.finishAt+finalePose(0,vaultLevel(final)).build;
- return {linked:true,active:!quiet&&time>=startAt&&time<revealAt+1500,style,startAt,revealAt,bridgeMs:revealAt-startAt,lead:style===1?300:220,age:time-revealAt};
+ return {linked:true,active:!quiet&&time>=startAt&&time<revealAt+1500,style,startAt,revealAt,bridgeMs:revealAt-startAt,lead:payoff.linked?460:style===1?300:220,age:time-revealAt,payoff:payoff.linked};
 }
 export function vaultTreasureBridgeParticle(bridge,index,time,dock={left:138,right:282,y:386}){
  const off={opacity:0,x:0,y:0};if(!bridge.active||index<0||index>=6)return off;

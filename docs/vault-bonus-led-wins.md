@@ -48,3 +48,30 @@ Ordinary chambers retain their pace. Old saved shots retain their old timing.
 Special entrances rise subtly in register as the journey deepens, using the
 same number of sound layers. The cash, anticipation, multiplier and coin
 sounds stay separated; the total remains exact and readable throughout.
+
+## Multiplier-to-jackpot handoff and display stability
+
+The last late boost (including one in the penultimate chamber) carries its
+multiplier seal from the bankroll into the crown. The final ×2 equation stays
+visible through the jackpot strike; the receipt then explains the completed
+round. Existing award, coin, celebration and clear deadlines remain unchanged.
+The connecting casino phrase replaces the second wind-up, using two spaced
+pickup notes before the established jackpot. Wide totals route the seal above
+the plaque so the digits remain clear. Reduced motion disables the seal travel.
+
+The editor's **Preview last boost + finale** button skips to the last chamber
+of a disposable, mathematically complete $10,000 example. It changes no settings
+or live round.
+
+Display fix: UI refreshes previously reapplied an old server timestamp as a new
+clock offset. During the opening this could repeatedly rewind the animation;
+network jitter could also move the display clock backward. The view now accepts
+each fresh timestamp once and uses a monotonic clock with gentle corrections.
+Control-only refreshes do not resend snapshots to the view. The explanation
+line under the bankroll no longer has a decorative vertical pulse.
+
+A real browser test repeating the same display snapshot every100ms showed the
+opening completing normally and0.000px lower-text movement over239updates.
+This verifies the browser rendering path; Faith's actual OBS instance was not
+available for direct confirmation. Refresh the Vault controls and the existing
+OBS Browser Source once to load the update; retain the same source URL.

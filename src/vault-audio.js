@@ -94,7 +94,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
     }
    }
    const last=vaultLastShot(r),bridge=vaultTreasureBridge(r,time);
-   if(bridge.linked)cue(last.id+':treasure-bridge',bridge.startAt,time,bridge.style===1?'finish-gold':'finish-jewel',{bridgeMs:bridge.bridgeMs});
+   if(bridge.linked)cue(last.id+':treasure-bridge',bridge.startAt,time,bridge.payoff?'finish-boost':bridge.style===1?'finish-gold':'finish-jewel',{bridgeMs:bridge.bridgeMs});
    else if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle',{tier:vaultLevel(projectedVault(r,time))});
    if(r.completedAt!==null){
     const level=vaultLevel(r);

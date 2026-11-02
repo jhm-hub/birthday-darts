@@ -2,6 +2,7 @@ import {money,vaultTotal} from './vault-game.js';
 import {ease,clamp} from './vault-motion.js';
 import {vaultBonusAt,vaultBonusBuildAt,vaultBonusBuildMs} from './vault-timing.js';
 import {VAULT_BONUS_LAND_MS} from './vault-bonus-motion.js';
+import {vaultMultiplierPayoff} from './vault-multiplier-payoff.js';
 
 // A receipt of revealed awards only. Private names, ranges and future plans
 // are deliberately unnecessary: the OBS snapshot has everything this needs.
@@ -19,7 +20,9 @@ export function vaultStory(round,time,quiet=false){
   const entries=[{label:'OPENING',value:money(round.openingCents),kind:'opening'},
    {label:'CHAMBER CASH',value:'+'+money(earned),kind:'cash'},
    {label:'MULTIPLIER',value:'×'+round.multiplier,kind:'multiply'}];
-  return {...off,kind:'final',text:shots.length+' chambers opened'+(extra?' · '+extra+' bonus vault'+(extra===1?'':'s'):''),
+  const payoff=vaultMultiplierPayoff(round,time),holdMath=payoff.linked&&payoff.direct&&time<payoff.revealAt+300;
+  const total=BigInt(vaultTotal(round)),math=holdMath?money(total/BigInt(payoff.boost.bonus.value))+' ×'+payoff.boost.bonus.value+' = '+money(total):null;
+  return {...off,kind:'final',text:math??shots.length+' chambers opened'+(extra?' · '+extra+' bonus vault'+(extra===1?'':'s'):''),
    receipt:entries.map((e,i)=>{const p=quiet?Number(age>=1000):ease((age-1000-i*130)/300);return {...e,opacity:p,y:quiet?0:Math.round(9*(1-p)),scale:quiet?1:1+.045*Math.sin(clamp((age-1000-i*130)/430)*Math.PI)};})};
  }
  if(!shot)return {...off,kind:'opening',text:'Opening balance · '+money(round.openingCents)};

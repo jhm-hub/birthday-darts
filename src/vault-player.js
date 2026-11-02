@@ -15,7 +15,7 @@ const ranges=overlay?null:bindVaultViewerRanges($('#viewer-ranges'),{save:async 
 const mixer=overlay?null:bindGiftVolume($('#vault-mixer'),audio,changeVolume);if(overlay)try{audio.setEnabled(true);}catch{}
 document.addEventListener('pointerdown',()=>{try{audio.unlock();}catch{}},{once:true});
 function render(){
- if(snapshot)view.update(snapshot,{preview:!overlay,show:!overlay||connected});if(overlay){if(!connected)view.hide();return;}
+ if(overlay){if(!connected)view.hide();return;}
  versionPicker?.update(snapshot,connected&&!pending&&volumeTarget===null);mixer.setEnabled(connected);const r=snapshot?.round,opening=r&&Date.now()<r.readyAt,busy=!!r?.flight,finished=!!r&&r.completedAt!==null;
  const activeRule=snapshot?.control?.activeViewerRange,matched=activeRule??(!r?findVaultViewerRange(snapshot?.control?.viewerRanges,$('#viewer').value):null);
  ranges.update(snapshot?.control?.viewerRanges,connected&&!pending);
@@ -28,7 +28,7 @@ function render(){
  $('#live-unlock').disabled=!connected||pending||busy||finished||opening;$('#live-unlock').textContent=opening?'Rolling opening balance…':busy?'Unlocking…':finished?'Vault cleared':r?'Open vault · chamber '+(r.opened.length+1):chosen==='custom'?'Roll opening balance':'Start '+(experience?.name??'game')+' again';$('#viewer').disabled=!!r||pending;
  $('#control-status').textContent=error||(!connected?readiness:opening?'Revealing the opening balance…':busy?'Opening one chamber…':finished?money(vaultTotal(r))+' final bankroll. Clearing automatically…':r?r.remaining+' unlock'+(r.remaining===1?'':'s')+' left.'+(vaultBonusDue(r)?' A bonus is guaranteed in this chamber.':''):snapshot?.lastResult?'Ready for the next viewer. Last total: '+money(snapshot.lastResult.totalCents):'Roll an opening balance, then unlock each chamber.');
 }
-function receive(next){const previous=snapshot?.round;snapshot=next;if(overlay)audio.setVolume(next.audio?.volume);else{mixer.update(volumeTarget??next.audio?.volume);$('#control-name').textContent=next.widget.name;document.title=next.widget.name+' — Controls';if(previous&&!next.round)$('#viewer').value='';if(next.round)$('#viewer').value=next.round.viewer;}render();}
+function receive(next){const previous=snapshot?.round;snapshot=next;view.update(next,{preview:!overlay,show:!overlay||connected});if(overlay)audio.setVolume(next.audio?.volume);else{mixer.update(volumeTarget??next.audio?.volume);$('#control-name').textContent=next.widget.name;document.title=next.widget.name+' — Controls';if(previous&&!next.round)$('#viewer').value='';if(next.round)$('#viewer').value=next.round.viewer;}render();}
 async function changeVolume(value){volumeTarget=value;const version=++volumeVersion;$('#volume-status').textContent='';try{await session.setVolume(value);}catch(e){if(version===volumeVersion)$('#volume-status').textContent='Volume could not be saved. '+e.message;}finally{if(version===volumeVersion){volumeTarget=null;mixer.update(snapshot?.audio?.volume);}}}
 async function startGame(id){
  if(overlay||!connected||pending||snapshot?.round)return;if(gameRanges.dirty){error='Save the edited game names and ranges before starting.';render();return;}pending=true;error='';render();

@@ -329,3 +329,16 @@ test('late multiplier anticipation plays once, skips stale pickups and keeps its
  }
  assert.fail('sample should include a late boost');
 });
+
+test('late-boost finale replaces the second wind-up with one sparse connecting phrase',async()=>{
+ const {sampleVaultLatePayoff}=await import('../src/vault-payoff-preview.js');
+ const {DEFAULT_VAULT,advanceVault}=await import('../src/vault-game.js');
+ const {vaultTreasureBridge}=await import('../src/vault-treasure-handoff.js');
+ const r=sampleVaultLatePayoff(DEFAULT_VAULT,50000),s=r.flight,b=vaultTreasureBridge(r,s.finishAt-100),ctx=context(),a=createVaultAudio({createContext:()=>ctx});
+ a.setEnabled(true);a.sync(r,b.startAt);assert.equal(sources(ctx).length,1);
+ assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('finish-boost',{bridgeMs:b.bridgeMs}));
+ a.sync(structuredClone(r),b.startAt+50);assert.equal(sources(ctx).length,1);
+ advanceVault(r,s.finishAt);a.sync(r,s.finishAt);assert.equal(sources(ctx).length,2);
+ assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('linked-final',{tier:2}));
+ a.sync(r,s.finishAt+10);assert.equal(sources(ctx).length,2);
+});
