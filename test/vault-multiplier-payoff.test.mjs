@@ -22,7 +22,7 @@ test('the seal and final calculation survive the commit and public reconnection'
   if(time>=s.finishAt)assert.deepEqual(vaultMultiplierPayoff(done,time),vaultMultiplierPayoff(presentedVaultRound(r,time),time));
  }
  assert.equal(vaultStory(r,s.finishAt-1).text,vaultStory(done,s.finishAt).text);
- assert.match(vaultStory(done,p.revealAt+299).text,/×2 = \$10,000/);
+ assert.ok(vaultStory(done,p.revealAt+299).text.endsWith('×'+s.bonus.value+' = $10,000'));
  assert.match(vaultStory(done,p.revealAt+300).text,/chambers opened/);
 });
 test('seal continues at the same position and scale, clears the money and respects quiet mode',()=>{

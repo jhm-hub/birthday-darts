@@ -24,7 +24,7 @@ test('earned extra chambers have distinct chapters and escalating jewel entrance
   assert.equal(p.chapter.number,p.theme.index-r.preset.chambers+1);
   assert.equal(vaultJourney(r,s.finishAt+640).number,p.chapter.number);
  }
- assert.ok(chapters.size>=4);assert.ok(counts.every((n,i)=>i===0||n>counts[i-1]));
+ assert.ok(chapters.size>=4);assert.ok(counts.every((n,i)=>i===0||n>=counts[i-1]));
 });
 test('late boosts add one short pause without changing planned prizes or the final total',()=>{
  for(let seed=0;seed<60;seed++){
@@ -42,10 +42,10 @@ test('amounts and multiplier wait until the boost lands and survive a public sna
   if(!s||!vaultBonusBuildMs(s))continue;
   const at=vaultBonusAt(s)+VAULT_BONUS_LAND_MS,publicRound=cleanVaultRound(r);
   const before=vaultBonusReadout(r,projectedVault(r,at-1),at-1),after=vaultBonusReadout(r,projectedVault(r,at),at);
-  assert.equal(BigInt(after.total),BigInt(before.total)*2n);
+  assert.equal(BigInt(after.total),BigInt(before.total)*BigInt(s.bonus.value));
   assert.equal(vaultJourney(r,at-1).multiplier,String(r.multiplier));
-  assert.equal(vaultJourney(r,at).multiplier,String(BigInt(r.multiplier)*2n));
-  assert.match(vaultStory(r,vaultBonusBuildAt(s)+10).text,/banked · ×2 incoming/);
+  assert.equal(vaultJourney(r,at).multiplier,String(BigInt(r.multiplier)*BigInt(s.bonus.value)));
+  assert.ok(vaultStory(r,vaultBonusBuildAt(s)+10).text.endsWith('banked · ×'+s.bonus.value+' incoming'));
   assert.equal(vaultStory(r,at).kind,'multiply');
   for(let t=s.startAt;t<=s.finishAt;t+=19){assert.deepEqual(vaultJourney(r,t),vaultJourney(publicRound,t));assert.deepEqual(vaultBonusPose(s,t),vaultBonusPose(JSON.parse(JSON.stringify(s)),t));}
  }

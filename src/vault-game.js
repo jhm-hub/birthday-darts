@@ -56,11 +56,16 @@ export function startVaultRound(widget,viewer='',now=Date.now(),draw=randomInt){
 export function unlockVault(r,now=Date.now(),{draw=randomInt,forcedCash=null,forcedBonus=undefined}={}){
  if(!r||r.completedAt!==null||r.remaining<1)throw Error('Start a new vault round.');
  if(r.flight||now<r.readyAt)throw Error('Wait for the vault to finish opening.');
+ let plannedMultiplier;
  if(r.privateExperience||r.privateViewerRange||r.prizePlan){
   const planned=r.prizePlan?.[r.opened.length];
   if(!planned)throw Error('This preset round is missing its next prize. Reload the controls.');
   if(forcedCash!==null||forcedBonus!==undefined)throw Error('Preset rounds use their planned prizes to keep the final total in range.');
   forcedCash=planned.cashIndex;forcedBonus=planned.bonus;
+  if(planned.multiplier!==undefined){
+   if(planned.bonus!=='multiply'||![2,4,6].includes(planned.multiplier))throw Error('This planned multiplier is invalid. No chamber was opened.');
+   plannedMultiplier=planned.multiplier;
+  }
  }
  const p=r.preset,prizes=vaultCashPrizes(r),index=forcedCash===null?chooseOutcome(prizes,draw):forcedCash;
  if(!Number.isInteger(index)||!prizes[index]||prizes[index].weight<=0)throw Error('That cash prize is unavailable.');
@@ -68,7 +73,7 @@ export function unlockVault(r,now=Date.now(),{draw=randomInt,forcedCash=null,for
  let bonus=null;
  if(forcedBonus!==undefined){
   if(forcedBonus===null&&due)throw Error('A bonus is guaranteed in this chamber.');
-  if(forcedBonus!==null){const b=bonuses.find(b=>b.kind===forcedBonus&&b.weight>0);if(!b||p.bonusChance===0)throw Error('That bonus is unavailable.');bonus={kind:b.kind,value:b.value};}
+  if(forcedBonus!==null){const b=bonuses.find(b=>b.kind===forcedBonus&&b.weight>0);if(!b||p.bonusChance===0)throw Error('That bonus is unavailable.');bonus={kind:b.kind,value:plannedMultiplier??b.value};}
  }else if(available&&(due||draw(10000)<Math.round(p.bonusChance*100))){const b=bonuses[chooseOutcome(bonuses,draw)];bonus={kind:b.kind,value:b.value};}
  r.flight={id:randomUUID(),index:r.opened.length,cashCents:Math.round(prizes[index].value*100),bonus,startAt:now,revealAt:now+VAULT_REVEAL_MS,finishAt:now+VAULT_UNLOCK_MS};
  // A short final-act pause belongs to the actual earned multiplier, never

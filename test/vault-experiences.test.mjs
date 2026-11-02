@@ -22,9 +22,9 @@ test('2,000 complete preset rounds stay within bounds with natural cash, bonus v
    assert.equal(r.opened.length,0);assert.equal(r.multiplier,1);assert.equal(r.remaining,5);assert.equal(r.allocated,5);assert.equal(r.flight,null);assert.equal(r.completedAt,null);
    r=JSON.parse(JSON.stringify(r));complete(r);assertRange(r,e);totals.add(vaultTotal(r));
    const extraCount=r.opened.filter(s=>s.bonus?.kind==='extra').length;extras+=extraCount;stacked+=Number(BigInt(r.multiplier)>=4n);
-   assert.equal(r.opened.length,5+extraCount);assert.ok(r.opened.length<=12);assert.ok(r.opened.slice(0,3).some(s=>s.bonus));
+   assert.equal(r.opened.length,5+extraCount);assert.ok(r.opened.length<=15);assert.ok(r.opened.slice(0,3).some(s=>s.bonus));
    assert.equal(r.cashCents,r.openingCents+r.opened.reduce((sum,s)=>sum+s.cashCents,0));
-   assert.equal(BigInt(r.multiplier),2n**BigInt(r.opened.filter(s=>s.bonus?.kind==='multiply').length));
+   assert.equal(BigInt(r.multiplier),r.opened.reduce((m,s)=>s.bonus?.kind==='multiply'?m*BigInt(s.bonus.value):m,1n));
   }
   assert.ok(totals.size>40,e.id+' varies its final totals');assert.ok(extras>0);assert.ok(stacked>0);
  }

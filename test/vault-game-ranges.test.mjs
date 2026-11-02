@@ -21,7 +21,7 @@ test('1,600 edited-range rounds include all awards within the bounds, including 
   for(let seed=1;seed<=200;seed++){
    const id=DEFAULT_VAULT_GAME_RANGES[seed%4].id,gameRanges=DEFAULT_VAULT_GAME_RANGES.map(r=>r.id===id?{id,min,max}:r);
    const r=startVaultExperience({...DEFAULT_VAULT,gameRanges},id,'Demo viewer',0,rng(seed*97));
-   assert.equal(r.remaining,5);assert.deepEqual(r.privateExperience,{id,version:2,min,max});assert.equal(r.privateViewerRange,undefined);
+   assert.equal(r.remaining,5);assert.deepEqual(r.privateExperience,{id,version:id==='low'?2:3,min,max});assert.equal(r.privateViewerRange,undefined);
    const before=structuredClone(r.prizePlan);finish(r);assert.deepEqual(r.prizePlan,before);
    const total=BigInt(vaultTotal(r));assert.ok(total>=BigInt(min*100)&&total<=BigInt(max*100));assert.ok(r.opened.every(s=>s.cashCents>0));
    assert.ok(r.opened.slice(0,3).some(s=>s.bonus));assert.equal(r.opened.length,5+r.opened.filter(s=>s.bonus?.kind==='extra').length);

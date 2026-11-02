@@ -28,6 +28,6 @@ export function startVaultExperience(widget,id='custom',viewer='',now=Date.now()
  const preset=vaultExperiencePreset(widget,id),experience=vaultExperienceInfo(id,widget.gameRanges);
  if(!experience)return startVaultRound(preset,viewer,now,draw);
  const round=startVaultTotalRange(preset,experience,viewer,now,draw);
- round.privateExperience={id,version:2,min:experience.min,max:experience.max};
+ round.privateExperience={id,version:id==='low'?2:3,min:experience.min,max:experience.max};
  return round;
 }

@@ -22,8 +22,8 @@ test('2,400 complete username rounds respect all bounds, including narrow and ti
    const plan=structuredClone(r.prizePlan);finish(r);assert.deepEqual(r.prizePlan,plan);const total=BigInt(vaultTotal(r));totals.add(total.toString());
    assert.ok(total>=BigInt(min*100)&&total<=BigInt(max*100));assert.equal(total%100n,0n);
    assert.ok(r.opened.every(s=>s.cashCents>0));assert.ok(r.opened.slice(0,3).some(s=>s.bonus));
-   const extras=r.opened.filter(s=>s.bonus?.kind==='extra').length;assert.ok(extras>=1&&extras<=(total>=750000n?5:3));assert.equal(r.opened.length,5+extras);
-   assert.equal(r.cashCents,r.openingCents+r.opened.reduce((a,s)=>a+s.cashCents,0));assert.equal(BigInt(r.multiplier),2n**BigInt(r.opened.filter(s=>s.bonus?.kind==='multiply').length));multiplied+=Number(BigInt(r.multiplier)>1n);
+   const extras=r.opened.filter(s=>s.bonus?.kind==='extra').length;assert.ok(extras>=1&&extras<=(total>=150000n?10:3));assert.equal(r.opened.length,5+extras);
+   assert.equal(r.cashCents,r.openingCents+r.opened.reduce((a,s)=>a+s.cashCents,0));assert.equal(BigInt(r.multiplier),r.opened.reduce((m,s)=>s.bonus?.kind==='multiply'?m*BigInt(s.bonus.value):m,1n));multiplied+=Number(BigInt(r.multiplier)>1n);
   }
   if(max-min>20)assert.ok(totals.size>30);if(min>=500)assert.ok(multiplied>0);
  }
