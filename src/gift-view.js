@@ -6,6 +6,7 @@ import {giftUnwrapMotion,applyGiftUnwrap} from './gift-unwrap-motion.js';
 import {giftPrizeMotion,giftPrizeSpark,applyGiftPrize,PRIZE_COLORS} from './gift-prize-motion.js';
 import {giftAnnouncement,giftRewardCopy} from './gift-announcement.js';
 import {giftPrizeEmblem} from './gift-prize-art.js';
+import {giftBarCopy,giftBarReveal,applyGiftBarReveal} from './gift-bar-reveal.js';
 import {presentedGiftRound,giftFinishMotion,giftFinishSpark} from './gift-finish-motion.js';
 import {giftIntroMotion,giftIntroCell,giftIntroLight,GIFT_INTRO_LIGHTS} from './gift-intro-motion.js';
 import {isGiftOpeningPick,giftPickFocus} from './gift-opening-handoff.js';
@@ -24,7 +25,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
  $('.gift-final-frame').innerHTML=giftFinalFrame();$('.gift-final-star').innerHTML=giftFinalCrown();
  const gleams=document.createElementNS('http://www.w3.org/2000/svg','svg');gleams.setAttribute('class','gift-final-gleams');gleams.setAttribute('viewBox','0 0 364 228');gleams.setAttribute('aria-hidden','true');
  gleams.innerHTML=[[20,24],[336,196],[338,24],[18,196],[44,8],[310,214]].map(([x,y])=>`<path d="M${x} ${y}h2v3h3v2h-3v3h-2v-3h-3v-2h3Z"/>`).join('');$('.gift-finale').append(gleams);
- const toast=$('.gift-toast');toast.innerHTML='<i class="gift-prize-emblem" aria-hidden="true"></i><strong></strong><span class="gift-toast-detail"></span><i class="gift-title-spark" aria-hidden="true"></i>';
+ const toast=$('.gift-toast');toast.innerHTML='<i class="gift-prize-emblem" aria-hidden="true"></i><strong></strong><span class="gift-toast-detail"></span><i class="gift-bar-spark gift-bar-spark-a" aria-hidden="true"></i><i class="gift-bar-spark gift-bar-spark-b" aria-hidden="true"></i>';
  let snapshotRound=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null,oldPrizeKind=null,oldFinalLevel=null;
  const presence=createGiftPresence(),nameMeasure=document.createElement('canvas').getContext('2d');let fittedViewer=null;
  stage.style.setProperty('--gift-board-top',GIFT_BOARD_TOP+'px');
@@ -98,16 +99,18 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
     const p=giftPrizeSpark(i,prize.age,{reduced:reduced.matches});star.style.left=p.x+'%';star.style.top=p.y+'%';star.style.opacity=p.opacity;
    });
   }
-  const announcement=giftAnnouncement(round,time),reveal=!!announcement,prizeMotion=giftPrizeMotion(announcement?.shot,time,{reduced:reduced.matches,announceUntil:announcement?.until}),kind=announcement?.shot.prize.kind??'';
-  $('.gift-hud').classList.toggle('gift-hud-announcing',!!reveal&&prizeMotion.announce*finish.toast>.05);
+  const announcement=giftAnnouncement(round,time),reveal=!!announcement,kind=announcement?.shot.prize.kind??'';
+  const barMotion=giftBarReveal(announcement,time,{reduced:reduced.matches,until:finish.active?Math.min(announcement?.until??time,finish.at-120):announcement?.until});
   toast.classList.toggle('show',!!reveal);toast.setAttribute('aria-hidden',String(!reveal));toast.dataset.kind=kind;
+  $('.gift-hud').dataset.reward=kind;
   stage.style.setProperty('--reveal-color',PRIZE_COLORS[kind]??PRIZE_COLORS.cash);
-  for(const [key,value,unit]of [['announce-opacity',prizeMotion.announce,''],['title-y',prizeMotion.titleY,'px'],['title-scale',prizeMotion.titleScale,''],['reveal-flare',prizeMotion.flare,'']])stage.style.setProperty('--'+key,value+unit);
   if(kind!==oldPrizeKind){toast.querySelector('.gift-prize-emblem').innerHTML=kind?giftPrizeEmblem(kind):'';oldPrizeKind=kind;}
+  applyGiftBarReveal($('.gift-hud'),toast,barMotion);
   if(reveal){
+   const copy=giftBarCopy(announcement,shown);
    const title=toast.querySelector('strong'),detail=toast.querySelector('.gift-toast-detail');
-   title.textContent=announcement.copy.title;title.style.fontSize=Math.min(26,184/(title.textContent.length*.58))+'px';
-   detail.textContent=announcement.copy.detail;detail.style.fontSize=Math.min(13,184/(detail.textContent.length*.54))+'px';
+   title.textContent=copy.title;title.style.fontSize=Math.min(26,184/(title.textContent.length*.58))+'px';
+   detail.textContent=copy.detail;detail.style.fontSize=Math.min(13,184/(detail.textContent.length*.54))+'px';
   }
   $('.gift-multiplier').hidden=BigInt(shown?.multiplier??1)<=1n;
   $('.gift-multiplier strong').textContent='×'+(shown?.multiplier??1);

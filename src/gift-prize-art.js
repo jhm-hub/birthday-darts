@@ -8,7 +8,7 @@ export function giftPrizeEmblem(kind){
   art='<path d="M2 1H18V3H20V18H18V20H2V18H0V3H2Z" fill="#4d344d"/>';
   for(let row=0;row<3;row++)for(let col=0;col<3;col++){
    const added=kind==='row'?row===2:kind==='column'?col===2:row===2||col===2,x=2+col*6,y=2+row*6;
-   art+=`<path d="M${x} ${y}h4v4h-4Z" fill="${added?accent:'#80687d'}"/><path d="M${x} ${y}h4v1h-3v2h-1Z" fill="${added?'#fff6dc':'#b39bb3'}"/>`;
+   art+=`<g data-emblem-cell="${row*3+col}"><path d="M${x} ${y}h4v4h-4Z" fill="${added?accent:'#80687d'}"/><path d="M${x} ${y}h4v1h-3v2h-1Z" fill="${added?'#fff6dc':'#b39bb3'}"/></g>`;
   }
  }
  // Crisp lower facets give every emblem the same upper-left lighting.

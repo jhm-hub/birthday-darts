@@ -176,7 +176,7 @@
 .gift-hud{position:absolute;left:12px;right:12px;bottom:12px;height:80px;display:grid;grid-template-columns:minmax(0,1fr) 136px;gap:12px;align-items:center;padding:9px 13px;border:1px solid #f3a7cb80;border-radius:10px;background:linear-gradient(110deg,#351c30ed,#211525ed);box-shadow:inset 0 1px #ffe4ef28,0 2px 6px #160d2440;opacity:var(--hud-opacity,1);text-shadow:0 1px 1px #180e23;z-index:8}
 .gift-hud::before{content:'';position:absolute;left:16px;right:16px;top:-1px;height:1px;background:linear-gradient(90deg,transparent,#ffd2e8aa,transparent);pointer-events:none}
 .gift-hud-left{min-width:0}.gift-hud-copy{position:relative;height:42px;overflow:hidden}
-.gift-hud-identity{height:100%;display:flex;flex-direction:column;justify-content:center;gap:2px;transition:opacity .12s ease-out}
+.gift-hud-identity{height:100%;display:flex;flex-direction:column;justify-content:center;gap:2px;opacity:var(--bar-identity,1)}
 .gift-hud-label,.gift-running small{display:block;color:#f9c6e1;font-size:10px;font-weight:500;line-height:12px;letter-spacing:1px;white-space:nowrap}
 .gift-viewer{display:block;min-width:0;max-width:100%;font-size:20px;font-weight:500;line-height:24px;color:#fff0f8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gift-hud-long-name .gift-hud-label{display:none}.gift-hud-long-name .gift-viewer{white-space:normal;overflow-wrap:anywhere;line-height:18px;max-height:36px;text-overflow:clip}
@@ -188,9 +188,18 @@
 .gift-running{height:54px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;border-left:1px solid #f5c1dc2e;padding-left:10px;overflow:hidden;text-align:right}
 .gift-running small{font-size:11px;letter-spacing:1px;line-height:14px}.gift-running strong{display:block;font-weight:600;line-height:38px;color:#fff1bd;white-space:nowrap;font-variant-numeric:tabular-nums}
 .gift-toast{position:absolute;inset:0;padding:0 0 0 27px;background:none;border:0;box-shadow:none;clip-path:none;opacity:0;pointer-events:none;text-align:left;overflow:hidden}
-.gift-toast.show{opacity:calc(var(--announce-opacity,1) * var(--finish-toast,1))}
-.gift-toast strong{display:block;height:28px;line-height:28px;font-size:26px;font-weight:600;white-space:nowrap;color:var(--birthday-reward,var(--birthday-pink));transform:translateY(var(--title-y,0px));text-shadow:0 1px #170c22}
+.gift-toast.show{opacity:var(--bar-reveal,0)}
+.gift-toast strong{display:block;height:28px;line-height:28px;font-size:26px;font-weight:600;white-space:nowrap;color:var(--birthday-reward,var(--birthday-pink));transform:translateY(var(--bar-title-y,0px));text-shadow:0 1px #170c22}
 .gift-toast-detail{display:block;font-size:13px;font-weight:400;line-height:14px;letter-spacing:0;color:#ffe7f7;white-space:nowrap}
-.gift-prize-emblem{position:absolute;left:0;top:8px;width:21px;height:21px;image-rendering:pixelated}
-.gift-title-spark{display:none}.gift-hud-announcing .gift-hud-identity{opacity:0}
+.gift-prize-emblem{position:absolute;left:0;top:9px;width:20px;height:20px;image-rendering:pixelated;transform:translateY(var(--bar-icon-y,0px));filter:brightness(calc(1 + var(--bar-icon-light,0)))}
 @media(prefers-reduced-motion:reduce){.gift-hud-identity{transition:none}}
+
+/* Small, clock-driven reward accents stay inside the one existing bar. */
+.gift-hud::after{content:'';position:absolute;left:15px;right:156px;top:1px;height:1px;background:var(--reveal-color);opacity:var(--bar-glow,0);pointer-events:none}
+.gift-hud-copy::before{content:'';position:absolute;left:0;top:4px;width:23px;height:30px;background:var(--reveal-color);opacity:calc(var(--bar-glow,0) * .13);clip-path:polygon(5px 0,18px 0,18px 4px,23px 4px,23px 24px,18px 24px,18px 30px,5px 30px,5px 26px,0 26px,0 4px,5px 4px);pointer-events:none}
+.gift-toast[data-kind="cash"]{--birthday-reward:var(--birthday-vanilla)}
+.gift-toast-detail{transform:none;opacity:var(--bar-detail,1)}.gift-prize-emblem [data-emblem-cell]{transition:none}
+.gift-bar-spark{position:absolute;width:5px;height:5px;background:#fff1bd;pointer-events:none;clip-path:polygon(40% 0,60% 0,60% 40%,100% 40%,100% 60%,60% 60%,60% 100%,40% 100%,40% 60%,0 60%,0 40%,40% 40%)}
+.gift-bar-spark-a{left:0;top:2px;opacity:var(--bar-spark-a,0)}.gift-bar-spark-b{left:19px;top:32px;background:var(--reveal-color);opacity:var(--bar-spark-b,0)}
+.gift-running{position:relative}.gift-running::after{content:'';position:absolute;left:10px;right:0;bottom:0;height:1px;background:#fff1bd;opacity:var(--bar-total-glow,0);pointer-events:none}
+.gift-running strong{filter:brightness(calc(1 + var(--bar-total-glow,0) * .12))}.gift-multiplier strong{filter:brightness(calc(1 + var(--bar-gem-glow,0) * .25))}
