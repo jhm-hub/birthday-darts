@@ -21,6 +21,16 @@ Collection uses the committed reveal clock and derives both amounts from the sna
 
 Review files: `/Volumes/jhm's drive/Clips/Editing Workspace/Gift Pile Total Flow 2026-11-01/`. Preview: `Gift-Pile-Total-Flow.mp4`.
 
+## Prize-frame cleanup — November 1, 2026
+
+Removed the nested prize plaque, inset edge lines and rectangular shine. A single selection frame now backs each cash or bonus label. The empty parcel stays hidden throughout the reveal and fade, so its edges cannot cross the text.
+
+Previously opened prizes stayed visible because their idle presentation treated `opened` as permanent visibility. Each label now uses its saved reveal timestamp: hold for 850 ms, fade for 200 ms, then restore the dim empty parcel over 100 ms. This follows the cash/multiplier landing and clears before the next pick. The bottom bar keeps its existing reading time. Prize history, disabled opened cells and exact totals remain intact. Reduced motion clears on the same deadline without the fade.
+
+Validation: 162 Gift tests passed; production build succeeded. Browser checks sampled 143 cash/bonus, expanded-board, large/cents/zero and finale states, including reduced motion. Verified expired labels remain hidden, text has no nested frame, parcel art cannot overlap it, and running totals retain their collection timing. Inspected dark/light backgrounds, 6 × 6 layout, fade/cleared states and a 252 × 276 mobile sample. Audio is unchanged.
+
+Review files: `/Volumes/jhm's drive/Clips/Editing Workspace/Gift Pile Prize Cleanup 2026-11-01/`.
+
 ## Release workspace recovery
 
 The APFS workspace became unmounted during final verification and could not be remounted, including read-only. The preserved review bundle was used to restore these edits in `/Volumes/jhm's drive/Clips/Editing Workspace/Gift Pile Total Flow Release`. The restored browser code, normalized through the same bundler, is byte-identical to the tested build (SHA256 `c34d4c279e8b17f9ed0879fb11117e682dd814e3f6b8594079bb9fc28bc953a5`). All Gift tests passed again there. The original workspace image was not repaired or reformatted; its mount issue remains separate from this release.

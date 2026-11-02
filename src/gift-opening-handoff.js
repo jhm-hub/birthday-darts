@@ -1,5 +1,6 @@
 import {GIFT_INTRO_MS} from './gift-intro-motion.js';
 import {giftAnnouncement} from './gift-announcement.js';
+import {giftPrizeClearAt,GIFT_PRIZE_FADE_MS} from './gift-prize-motion.js';
 const clamp=x=>Math.max(0,Math.min(1,x)),smooth=x=>{x=clamp(x);return x*x*(3-2*x);};
 export const FIRST_BOW_RELEASE_MS=260;
 // Applies only where the opening and first pick actually overlap. Sample finales
@@ -15,12 +16,12 @@ export function giftPickFocus(round,time,reduced=false){
  if(!round||round.completedAt!=null)return idle;
  const announcement=giftAnnouncement(round,time),shot=round.flight??announcement?.shot;
  if(!shot||time<shot.startAt)return idle;
- const until=announcement?.until??shot.finishAt;
+ const until=giftPrizeClearAt(shot);
  if(time>=until)return idle;
  const age=time-shot.startAt;
  if(reduced)return {cell:shot.cell,opacity:1,inset:2,shade:time<shot.revealAt ? .2 : 0};
  return {cell:shot.cell,
-  opacity:(.55+.45*smooth(age/100))*(1-smooth((time-(until-220))/220)),
+  opacity:(.55+.45*smooth(age/100))*(1-smooth((time-(until-GIFT_PRIZE_FADE_MS))/GIFT_PRIZE_FADE_MS)),
   inset:Math.round(5-3*smooth(age/160)),
   // Restore the board as the prize lands, so incoming bonus gifts shine too.
   shade:.32*smooth(age/120)*(1-smooth((time-shot.revealAt)/320))};

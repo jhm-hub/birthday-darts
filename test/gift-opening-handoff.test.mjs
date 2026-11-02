@@ -5,6 +5,7 @@ import {isGiftOpeningPick,giftPickFocus,FIRST_BOW_RELEASE_MS} from '../src/gift-
 import {giftUnwrapMotion,FIRST_BOW_POSE_MS,CANDY_LID_POP_MS} from '../src/gift-unwrap-motion.js';
 import {giftUnwrapCues} from '../src/gift-unwrap-audio.js';
 import {giftIntroScore} from '../src/gift-audio.js';
+import {giftPrizeClearAt,giftPrizeMotion} from '../src/gift-prize-motion.js';
 const first=()=>{const r=startGiftRound(DEFAULT_GIFTS,'Demo',1000);unwrapGift(r,1000,{cell:'1:1',forcedIndex:1});return r;};
 
 test('only a first pick overlapping the welcome uses the selection-to-ribbon handoff',()=>{
@@ -35,13 +36,16 @@ test('first unwrap rejoins the existing lid arc and prize clock without a pose j
 });
 test('every pick stays marked through the reveal and reading beat, then clears',()=>{
  const r=first(),before=structuredClone(r);
- for(const age of [0,100,260,520,849,850,1200,1999]){
+ for(const age of [0,100,260,520,849,850,1200,1700]){
   const p=giftPickFocus(r,1000+age);assert.equal(p.cell,'1:1');assert.ok(p.opacity>=.55&&p.opacity<=1);
  }
  assert.deepEqual(r,before);assert.equal(giftPickFocus(r,999).cell,null);
+ const clear=giftPrizeClearAt(r.flight);
+ for(let time=clear-200;time<=clear;time++)assert.equal(giftPickFocus(r,time).opacity,giftPrizeMotion(r.flight,time).opacity);
+ assert.equal(giftPickFocus(r,clear).cell,null);
  const beforeCommit=giftPickFocus(r,3000);advanceGiftRound(r,3000);
- assert.deepEqual(giftPickFocus(r,3000),beforeCommit);assert.equal(giftPickFocus(r,3350).opacity,1);
- assert.ok(giftPickFocus(r,3500).opacity>0);assert.equal(giftPickFocus(r,3600).cell,null);
+ assert.deepEqual(giftPickFocus(r,3000),beforeCommit);assert.equal(giftPickFocus(r,3350).opacity,0);
+ assert.equal(giftPickFocus(r,3500).cell,null);
  unwrapGift(r,3100,{cell:'0:0',forcedIndex:0});assert.equal(isGiftOpeningPick(r),false);
  assert.equal(giftPickFocus(r,3100).cell,'0:0');assert.equal(giftPickFocus(r,3500).cell,'0:0');
 });

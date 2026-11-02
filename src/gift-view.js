@@ -93,7 +93,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
     const shake=active&&age<650&&!reduced.matches?Math.sin(age/28)*Math.sin(Math.PI*age/650)*3:0,lift=active?ease((age-400)/450):shot?1:0;
     b.style.setProperty('--shake',shake+'deg');b.style.setProperty('--lid-y',(-34*lift)+'px');b.style.setProperty('--lid-turn',(-14*lift)+'deg');b.style.setProperty('--lid-opacity',String(1-ease((age-900)/300)*(active?1:0)));b.style.setProperty('--open',String(lift));
    }
-   const prize=giftPrizeMotion(active?flight:null,time,{opened:!!shot,reduced:reduced.matches});
+   const prize=giftPrizeMotion(active?flight:shot,time,{reduced:reduced.matches});
    applyGiftPrize(b,prize);b.style.setProperty('--prize-color',PRIZE_COLORS[shot?.prize.kind??flight?.prize.kind]??PRIZE_COLORS.cash);
    b.style.setProperty('--spark-size',Math.min(6,arrival.height*.1)+'px');
    const glints=b.querySelector('.gift-glints');glints.style.display=active&&prize.visible&&!reduced.matches?'':'none';
