@@ -7,6 +7,8 @@ import {giftCelebrationLevel,ROYAL_REVEAL_MS,BIG_RESOLVE_MS,STANDARD_RESOLVE_MS}
 
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
+// A tiny held attack gives sparse reward notes body without raising their peak.
+const rewardNote=(...args)=>({...note(...args),hold:.022});
 
 // A restrained game-show welcome: one bell per diagonal, then a soft major
 // landing. Its release passes smoothly into the ribbon, ending before the lid pop.
@@ -62,50 +64,52 @@ const voices={
  coin:[[1,1,1,'sine'],[2,.22,.35,'sine'],[3,.045,.18,'sine']],
  mallet:[[1,1,1,'sine'],[3,.11,.22,'sine']],
  round:[[1,1,1,'triangle'],[2,.08,.32,'sine']],
- bloom:[[1,1,1,'sine'],[2,.12,.5,'sine'],[.5,.18,.75,'sine']]
+ bloom:[[1,1,1,'sine'],[2,.12,.5,'sine'],[.5,.18,.75,'sine']],
+ // Short metallic coin and clean jewel voices for the compact reward bar.
+ // Quiet, quickly decaying upper partials keep the attack clear under speech.
+ token:[[1,1,1,'sine'],[2.76,.13,.3,'sine'],[4.07,.025,.16,'sine']],
+ jewel:[[1,1,1,'sine'],[2,.14,.42,'sine'],[3,.035,.22,'sine']]
 };
 
-// Seconds relative to the committed reveal. Cash lands at its 140 ms animation
-// peak; bonus signatures bloom at 180 ms, then follow each arrival wave. Growth
-// sounds both edges together so a larger board never doubles the volume.
+// One phrase for the present and its bottom-bar label, not separate stacked
+// cues. The name clears before the first note. Expansion sounds only the first
+// and last arrival waves, leaving the reading hold quiet even on a 6 × 6 board.
 export function giftRevealScore(prize){
  if(isGiftExpansion(prize.kind)){
-  const count=giftArrivalCount(prize.kind,prize.nextRows??prize.nextSide,prize.nextCols??prize.nextSide);
+  const count=giftArrivalCount(prize.kind,prize.nextRows??prize.nextSide??3,prize.nextCols??prize.nextSide??3);
   const palette={
-   row:{voice:'mallet',pitches:[79,81,84,86,88,91],gain:.038,length:.25,
-    intro:[note(0,72,.14,.029,'mallet'),note(.18,79,.22,.034,'mallet')]},
-   column:{voice:'round',pitches:[72,76,79,81,84,88],gain:.043,length:.29,
-    intro:[note(0,67,.16,.038,'round'),note(.18,76,.24,.041,'round')]},
-   extra:{voice:'bloom',pitches:[79,81,84,86,88,91],gain:.033,length:.28,
-    intro:[note(0,60,.18,.028,'soft'),note(.18,72,.24,.026,'bloom'),note(.18,76,.22,.018,'bloom'),note(.18,79,.2,.015,'bloom')]}
-  }[prize.kind],score=[...palette.intro];
-  for(let rank=0;rank<count;rank++){
+   row:{voice:'mallet',pitches:[79,84],intro:[rewardNote(.18,76,.14,.037,'mallet')]},
+   column:{voice:'round',pitches:[76,79],intro:[rewardNote(.18,72,.14,.033,'round')]},
+   extra:{voice:'jewel',pitches:[79,88],intro:[rewardNote(.18,72,.15,.033,'jewel'),rewardNote(.18,60,.12,.011,'soft')]}
+  }[prize.kind],score=palette.intro.map(n=>({...n,beat:'bar'}));
+  const ranks=count>1?[0,count-1]:[0];
+  for(const [i,rank]of ranks.entries()){
    const at=(giftArrivalDelay(rank,count)+GIFT_ARRIVAL_MS*.44)/1000;
-   score.push({...note(at,palette.pitches[Math.round(rank*5/Math.max(1,count-1))],palette.length,palette.gain,palette.voice),beat:'arrival'});
+   score.push({...rewardNote(at,palette.pitches[i],i?.18:.12,i?.025:.022,palette.voice),beat:'arrival',rank});
   }
   return score;
  }
  if(prize.kind==='multiply')return [
-  ...[60,67,72].map((pitch,i)=>note(i*.06,pitch,.15,.031,'pluck')),
-  note(.18,72,.45,.034),note(.18,76,.4,.023),note(.18,79,.36,.019),
-  note(.29,84,.29,.021)
+  {...rewardNote(.205,72,.15,.039,'jewel'),beat:'bar'},
+  {...rewardNote(.41,84,.2,.031,'jewel'),beat:'spark'}
  ];
- // Extra ornament, never extra loudness, for higher cash amounts. These are sound
- // tiers only: arbitrary custom values and exact scoring remain unchanged.
+ // A coin landing and a quieter answer. Higher prizes change the interval;
+ // the largest gets one tiny extra coin, never a louder or longer fanfare.
  const tier=Number.isFinite(prize.value)?prize.value>=100?2:prize.value>=25?1:0:0;
- const score=[76,79,84].map((pitch,i)=>note(i*.07,pitch,.27,[.041,.039,.037][tier],'coin'));
- if(tier>0)score.push(note(.25,88,.2,.022,'coin'));
- if(tier>1)score.push(note(.32,91,.17,.016,'coin'));
+ const score=[{...rewardNote(.15,79,.14,.039,'token'),beat:'bar'},
+  {...rewardNote(.315,tier?88:84,.13,.029,'token'),beat:'answer'}];
+ if(tier>1)score.push({...rewardNote(.43,91,.105,.016,'token'),beat:'answer'});
  return score;
 }
 
 // Shared by live playback and the offline listening preview. No audio downloads.
 export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{},destination=ctx.destination){
- function tone(frequency,at,length,gain,type){
+ function tone(frequency,at,length,gain,type,hold=0){
   const oscillator=ctx.createOscillator(),envelope=ctx.createGain();
   oscillator.type=type;oscillator.frequency.value=frequency;
   envelope.gain.setValueAtTime(0,at);
   envelope.gain.linearRampToValueAtTime(gain,at+.006);
+  if(hold>0)envelope.gain.setValueAtTime(gain,at+Math.min(.006+hold,length-.006));
   envelope.gain.exponentialRampToValueAtTime(.0001,at+length);
   envelope.gain.linearRampToValueAtTime(0,at+length+.012);
   oscillator.connect(envelope).connect(destination);
@@ -117,7 +121,7 @@ export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{},destina
   if(n.at<elapsed-.035)continue;
   const at=start+Math.max(0,n.at-elapsed);
   for(const [ratio,level,decay,type]of voices[n.voice]??voices.soft)
-   tone(n.frequency*ratio,at,n.length*decay,n.gain*level,type);
+   tone(n.frequency*ratio,at,n.length*decay,n.gain*level,type,(n.hold??0)*decay);
  }
 }
 
