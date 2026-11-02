@@ -11,7 +11,7 @@ import {vaultTreasureDecor,vaultTreasureSprite} from './vault-treasure-art.js';
 import {vaultSpecialScene,vaultSpecialTheme,vaultSpecialDoors,vaultRewardPoint,VAULT_SPECIAL_POINT} from './vault-special.js';
 import {doorFinish,rimSparkle,finalePose,vaultParticle} from './vault-effects.js';
 import {presentedVaultRound,vaultHandoff,vaultLastShot,vaultFinaleGather} from './vault-finish-motion.js';
-import {vaultExit,vaultResetAt,vaultIdleOpacity} from './vault-exit-motion.js';
+import {vaultExit,vaultResetAt,vaultIdleOpacity,vaultReceiptExit} from './vault-exit-motion.js';
 import {vaultIntro} from './vault-intro-motion.js';
 import {vaultOpeningHandoff,vaultOpeningTrail} from './vault-opening-handoff.js';
 import {vaultChamberHandoff,vaultChamberTrail,vaultOtherAwardOpacity,vaultChamberGuideGlyph} from './vault-chamber-handoff.js';
@@ -75,6 +75,7 @@ export function createVaultView(root,{audio}={}){
   els.count.style.transform=`scale(${bonusPose.countScale})`;
   const shot=r?.flight,age=shot?time-shot.startAt:0,finalAge=finished?time-r.completedAt:0,level=finished?vaultLevel(r):vaultLastShot(r)?vaultLevel(now):0;
   const coda=vaultTreasureCoda(r,time,quiet),bridge=vaultTreasureBridge(r,time,quiet),ornament=coda.enabled?{visible:coda.visible,kind:'final',level:coda.style,age:coda.age}:bridge.linked?{visible:bridge.active,kind:'final',level:bridge.style,age:bridge.age}:vaultTreasurePose(r,time,quiet),ornamentLead=bridge.linked?bridge.lead:0;
+  stage.dataset.finishPhase=coda.enabled?coda.phase:'';
   const richness=vaultTreasurePose(r,time,quiet);treasureRim.style.opacity=richness.ring;treasure.style.opacity=exit.stage;
   const treasureFinal=finished?richness.level:0;if(treasureStyle!==treasureFinal){treasureStyle=treasureFinal;treasurePieces.forEach((el,i)=>el.innerHTML=treasureFinal?vaultTreasureSprite(i,treasureFinal):vaultFinalePiece(i%3===0?2:i));particles.forEach((el,i)=>el.innerHTML=treasureFinal?vaultTreasureSprite(i,treasureFinal):vaultFinalePiece(i));}
   laurelLeaves.forEach(el=>{const i=Number(el.dataset.step),tail=vaultTreasureRestOrnament(coda,i,'leaf'),o=vaultTreasureOrnament(ornament,i,'leaf',ornamentLead,tail.opacity),scale=o.scale*tail.scale;el.style.opacity=o.opacity;el.setAttribute('transform',`translate(${el.dataset.x} ${Number(el.dataset.y)+o.y+tail.y}) scale(${Number(el.dataset.side)*1.25*scale} ${1.25*scale})`);});
@@ -193,6 +194,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   if(cashPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,235,173,${.5+.5*cashPose.gleam}),inset 0 -2px #a57968`;
   if(collection.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,239,181,${.55+.45*collection.gleam}),inset 0 -2px #bc8f68`;
   if(bonusPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(241,210,255,${.65+.35*bonusPose.gleam}),inset 0 -2px #a567a7`;
+  if(coda.bankGleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,245,205,${.6+coda.bankGleam}),inset 0 -2px #a56788`;
   const story=vaultStory(r,time,quiet);
   els.calc.textContent=story.text;els.calc.dataset.kind=story.kind;
   els.calc.style.marginTop=handoff.linked?handoff.gap+'px':'';
@@ -210,13 +212,13 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   storyFlight.querySelector('b').textContent=storyToken.label;storyFlight.dataset.kind=storyToken.kind;
   storyFlight.style.opacity=finished&&!payoff.linked?0:storyToken.opacity;storyFlight.style.transform=`translate(${storyToken.x}px,${storyToken.y}px) scale(${storyToken.scale})`;
   if(storyToken.kind==='extra'&&storyToken.catch)els.count.style.transform=`scale(${1+.08*storyToken.catch})`;
-  receipt.style.opacity=exit.labels;receipt.setAttribute('aria-hidden',String(!story.receipt.length));
-  [...receipt.children].forEach((el,i)=>{const item=story.receipt[i];el.style.opacity=item?.opacity??0;el.style.transform=`translateY(${item?.y??0}px) scale(${item?.scale??1})`;el.dataset.kind=item?.kind??'';el.querySelector('small').textContent=item?.label??'';fit(el.querySelector('strong'),item?.value??'',21,105);});
+  receipt.setAttribute('aria-hidden',String(!story.receipt.length));
+  [...receipt.children].forEach((el,i)=>{const item=story.receipt[i];el.style.opacity=(item?.opacity??0)*vaultReceiptExit(r,time,i,quiet);el.style.transform=`translateY(${item?.y??0}px) scale(${item?.scale??1})`;el.dataset.kind=item?.kind??'';el.querySelector('small').textContent=item?.label??'';fit(el.querySelector('strong'),item?.value??'',21,105);});
   trails.forEach((el,i)=>{const openingGuide=vaultOpeningTrail(r,i,time,quiet,dock),guide=openingGuide.visible?openingGuide:vaultChamberTrail(between,i,time,quiet,dock,between.linked&&vaultSpecialTheme(r,between.link.index)?VAULT_SPECIAL_POINT:null),t=guide;el.dataset.guide=String(guide.visible);el.dataset.relay=String(!openingGuide.visible&&guide.visible);el.style.opacity=t.visible&&!finished?t.opacity:0;el.style.transform=`translate(${t.x}px,${t.y}px)`;});
   coins.forEach((el,i)=>{const coin=vaultCollectionCoin(shot,i,time,dock,quiet,point);el.style.opacity=finished?0:coin.opacity;el.style.transform=`translate(${coin.x}px,${coin.y}px) scale(${coin.flip},${coin.squash})`;});
   welcomePieces.forEach((el,i)=>{const spark=vaultWelcomeParticle(welcome,i,dock);el.style.opacity=spark.opacity;el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});
   const bankCatch=Math.max(collection.catch,welcome.catch);
-  catchStars.forEach((el,i)=>{el.style.opacity=finished?0:bankCatch;el.style.left=(i?dock.right:dock.left)-els.bankWrap.offsetLeft+'px';el.style.top=(dock.y-els.bankWrap.offsetTop)+'px';el.style.transform=`scale(${.6+bankCatch*.4})`;});
+  catchStars.forEach((el,i)=>{const light=finished?coda.catches?.[i]??0:bankCatch;el.style.opacity=light;el.style.left=(i?dock.right:dock.left)-els.bankWrap.offsetLeft+'px';el.style.top=(dock.y-els.bankWrap.offsetTop)+'px';el.style.transform=`scale(${.6+light*.4})`;});
   const nextGatherStyle=bridge.linked?bridge.style:0;if(gatherStyle!==nextGatherStyle){gatherStyle=nextGatherStyle;gathers.forEach((el,i)=>el.innerHTML=gatherStyle?vaultTreasureSprite(i,gatherStyle):vaultFinalePiece(2));}
   gathers.forEach((el,i)=>{const g=bridge.linked?vaultTreasureBridgeParticle(bridge,i,time,dock):vaultFinaleGather(r,i,time,level,quiet,dock);el.style.opacity=g.opacity;el.style.transform=`translate(${g.x}px,${g.y}px)`;});
   const burstAge=finished?finalAge-build:shot?time-shot.revealAt:10000;

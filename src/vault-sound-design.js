@@ -87,12 +87,13 @@ export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888,bon
   if(richness<2)return [foley(.33,'coin',.045,.014,1153)];
   return [foley(VAULT_TREASURE_CORONATION_MS/1000,'seat',.09,.016,1171),foley(VAULT_TREASURE_ENCORE_MS/1000,'coin',.045,.014,1181)];
  }
- case 'rest-gold':return [note(0,86,.08,.008,'slot'),foley(.14,'coin',.05,.010,1237)];
- case 'rest-jewel':return [foley(0,'reel',.16,.009,1249),note(.12,81,.08,.008,'slot')];
+ case 'rest-gold':return [foley(0,'coin',.045,.016,1237),note(.10,86,.10,.015,'slot')];
+ case 'rest-jewel':return [foley(0,'coin',.045,.016,1249),foley(.09,'coin',.04,.012,1259),note(.18,86,.12,.020,'bell')];
  case 'clear-gold':case 'clear-jewel':{
-  const jewel=name==='clear-jewel',lead=VAULT_TREASURE_FAREWELL_MS[jewel?2:1]/1000,seat=lead+VAULT_DOORS_SEATED_MS/1000;
-  const mechanism=vaultSoundScore('clear').filter(c=>['hinge','click','seat'].includes(c.voice)).map(c=>({...c,at:c.at+lead-VAULT_FAREWELL_LEAD_MS/1000,gain:c.gain*trims.clear}));
-  return [note(0,jewel?81:74,.08,.006,'slot'),...mechanism,note(seat,62,.10,.008,'punch')];
+  const jewel=name==='clear-jewel',lead=VAULT_TREASURE_FAREWELL_MS[jewel?2:1]/1000,seat=lead+VAULT_DOORS_SEATED_MS/1000,close=lead+VAULT_DOOR_CLOSE_START_MS/1000;
+  // One departing credit, a short key turn and a seated cabinet latch. No
+  // sustained hinge/reel or new melody underneath the held winning amount.
+  return [foley(0,'coin',.045,.010,jewel?1277:1279),foley(close,'key',.14,.022,jewel?1283:1289),foley(seat,'click',.035,.018,1291),foley(seat,'seat',.10,.024,1297)];
  }
  case 'rest':return [foley(0,'reel',.13,.009,601),note(.10,74,.08,.007,'slot')];
  case 'clear':{const close=(VAULT_FAREWELL_LEAD_MS+VAULT_DOOR_CLOSE_START_MS)/1000,seat=(VAULT_FAREWELL_LEAD_MS+VAULT_DOORS_SEATED_MS)/1000;return [note(0,74,.07,.005,'slot'),foley(.12,'reel',.12,.009,601),note(.30,69,.08,.006,'slot'),foley(close,'hinge',.34,.022,603),foley(seat,'click',.045,.016,607),foley(seat,'seat',.12,.018,613)];}

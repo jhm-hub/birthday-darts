@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {vaultExit,vaultResetAt,vaultIdleOpacity,VAULT_FAREWELL_LEAD_MS,VAULT_IDLE_FADE_MS,VAULT_DOORS_SEATED_MS} from '../src/vault-exit-motion.js';
+import {vaultExit,vaultReceiptExit,vaultResetAt,vaultIdleOpacity,VAULT_FAREWELL_LEAD_MS,VAULT_IDLE_FADE_MS,VAULT_DOORS_SEATED_MS} from '../src/vault-exit-motion.js';
 import {sampleVaultReset,vaultResetSampleRound} from '../src/vault-reset-preview.js';
 import {VAULT_CLEAR_MS,vaultTotal,vaultLevel} from '../src/vault-game.js';
 import {renderVaultSound,renderVaultSequence,vaultSoundScore} from '../src/vault-sound-design.js';
@@ -88,4 +88,17 @@ test('farewell resolves with the closing doors and its tail finishes before rese
   const mix=renderVaultSequence([{at:1-VAULT_FAREWELL_LEAD_MS/1000,sound:'clear'},{at:1.9,sound:'intro'}],rate);
   assert.ok(mix.every(Number.isFinite));assert.ok(mix.slice(Math.round(1.45*rate),Math.round(1.9*rate)).every(x=>x===0),'empty stream stays silent');
  }
+});
+
+test('the receipt fades in reading order without changing its values or moving the held total',()=>{
+ const {outgoing:r,clearAt}=sampleVaultReset(2),before=JSON.stringify(r);let previous=[1,1,1];
+ for(let t=r.hideAt-1000;t<=clearAt;t+=5){
+  const cols=[0,1,2].map(i=>vaultReceiptExit(r,t,i));
+  cols.forEach((v,i)=>{assert.ok(v>=0&&v<=previous[i]);assert.equal(vaultReceiptExit(r,t,i,true),1);});
+  assert.ok(cols[0]<=cols[1]&&cols[1]<=cols[2]);
+  assert.equal(vaultExit(r,t).lift,0);previous=cols;
+ }
+ assert.deepEqual(previous,[0,0,0]);assert.equal(JSON.stringify(r),before);
+ assert.equal(vaultReceiptExit(null,clearAt,0),1);
+ assert.ok(vaultExit(r,r.hideAt+160).stage>.99,'the amount is still readable as the last receipt column clears');
 });

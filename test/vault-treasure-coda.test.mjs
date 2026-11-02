@@ -6,6 +6,7 @@ import {sampleVaultTreasureHandoff} from '../src/vault-treasure-handoff.js';
 import {presentedVaultRound} from '../src/vault-finish-motion.js';
 import {vaultExit} from '../src/vault-exit-motion.js';
 import {advanceVault,cleanVaultRound,vaultTotal} from '../src/vault-game.js';
+import {vaultSoundScore} from '../src/vault-sound-design.js';
 
 test('the coda follows revealed totals and ignores private selections and future plans',()=>{
  const r=sampleVaultTreasureReset().outgoing;r.multiplier=1;
@@ -60,5 +61,28 @@ test('reduced motion removes decoration while preserving its audio clock and the
   assert.equal(vaultResetSampleRound(s,s.clearAt),null);assert.equal(vaultResetSampleRound(s,s.nextAt-1),null);
   const next=vaultResetSampleRound(s,s.nextAt);assert.notEqual(next.id,r.id);assert.equal(next.viewer,'Next viewer');assert.equal(next.remaining,5);assert.equal(next.multiplier,1);assert.equal(vaultTotal(next),'20000');assert.equal(vaultTreasureCoda(next,s.nextAt).enabled,false);
   assert.equal(s.startAt+s.duration,s.next.readyAt+400);
+ }
+});
+
+test('the jackpot resolves before a single quiet confirmation, followed by an unbroken reading hold',()=>{
+ for(const style of [1,2]){
+  const {outgoing:r}=sampleVaultTreasureReset(style),c=vaultTreasureCoda(r,r.completedAt);
+  const finale=vaultSoundScore(style===1?'final-ovation':'final-coronation');
+  const end=Math.max(...finale.map(n=>n.at+n.length))*1000;
+  assert.ok(c.settleAt-r.completedAt>end+200,'confirmation leaves space after the jackpot');
+  assert.equal(vaultTreasureCoda(r,c.settleAt-1).phase,'celebrating');
+  assert.equal(vaultTreasureCoda(r,c.settleAt).phase,'settling');
+  assert.ok(c.farewellAt-c.settleAt-1100>=1500,'at least 1.5 seconds of quiet hold');
+  let active=[0,0],wasLit=[false,false];
+  for(let t=c.settleAt-10;t<=r.hideAt+450;t+=10){
+   const p=vaultTreasureCoda(r,t),q=vaultTreasureCoda(r,t,true);
+   p.catches.forEach((v,i)=>{assert.ok(v>=0&&v<=.55);if(v>0&&!wasLit[i])active[i]++;wasLit[i]=v>0;});
+   assert.ok(p.bankGleam>=0&&p.bankGleam<=.38);
+   assert.deepEqual(q.catches,[0,0]);assert.equal(q.bankGleam,0);
+   if(t>=c.settleAt+1100&&t<c.farewellAt){assert.equal(p.phase,'holding');assert.deepEqual(p.catches,[0,0]);assert.equal(p.bankGleam,0);}
+  }
+  assert.deepEqual(active,[1,1],'each edge catches the light only once');
+  assert.equal(vaultTreasureCoda(r,c.farewellAt).phase,'closing');
+  assert.equal(vaultTreasureCoda(r,r.hideAt).phase,'clearing');
  }
 });

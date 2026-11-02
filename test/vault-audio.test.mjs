@@ -1,4 +1,4 @@
-import {vaultTreasureCoda} from '../src/vault-treasure-coda.js';
+import {vaultTreasureCoda,VAULT_TREASURE_SETTLE_MS,VAULT_TREASURE_FAREWELL_MS} from '../src/vault-treasure-coda.js';
 import {vaultTreasureBridge,sampleVaultTreasureHandoff} from '../src/vault-treasure-handoff.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -293,9 +293,19 @@ test('new farewells match the existing closing mechanism, finish before clear an
 });
 test('the late celebration mix remains balanced for all configured tiers',()=>{
  for(const richness of [1,2])for(const [tier,name]of ['standard','big','royal'].entries()){
-  const suffix=richness===1?'gold':'jewel',build=finalePose(0,tier).build/1000,settle=build+(richness===1?1.1:1.18),farewell=6.5-(richness===1?.82:.98);
+  const suffix=richness===1?'gold':'jewel',build=finalePose(0,tier).build/1000,settle=build+VAULT_TREASURE_SETTLE_MS[richness]/1000,farewell=6.5-VAULT_TREASURE_FAREWELL_MS[richness]/1000;
   const mix=renderVaultSequence([{at:0,sound:name},{at:build,sound:'rich-final',options:{richness}},{at:settle,sound:'rest-'+suffix},{at:farewell,sound:'clear-'+suffix}]);
   assert.ok(peak(mix)<.2);assert.ok(mix.length/48000<6.95);
+ }
+});
+
+test('jackpot farewells use short physical contacts with no new melodic or motor bed',()=>{
+ for(const name of ['clear-gold','clear-jewel']){
+  const score=vaultSoundScore(name);
+  assert.deepEqual(score.map(c=>c.voice),['coin','key','click','seat']);
+  assert.ok(score.every(c=>c.frequency===undefined&&c.length<=.14));
+  const key=score.find(c=>c.voice==='key'),seat=score.find(c=>c.voice==='seat');
+  assert.ok(key.at+key.length<seat.at,'the key finishes before the final latch');
  }
 });
 
