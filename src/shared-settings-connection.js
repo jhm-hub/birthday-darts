@@ -1,7 +1,9 @@
-export const SHARED_API='https://faith-shared-game-settings.filthynormie.chatgpt.site';
+export const SHARED_API=typeof location!=='undefined'&&['127.0.0.1','localhost'].includes(location.hostname)?location.origin+'/shared':'https://faith-shared-game-settings.filthynormie.chatgpt.site';
 const CONNECTION_KEY='faith-shared-edit-link-v1';
 export function readSharedConnection(storage=globalThis.localStorage,href=globalThis.location?.href){
- if(!storage||!href||new URL(href).pathname.includes('display.html'))return null;
+ if(!storage||!href)return null;
+ const page=new URL(href);
+ if(page.pathname.includes('display.html')||page.pathname.endsWith('browser-wheel.html')||page.searchParams.get('view')==='stream'||page.searchParams.get('stream')==='1')return null;
  const params=new URL(href).hash.slice(1),fragment=new URLSearchParams(params);
  const workspace=fragment.get('shared'),key=fragment.get('edit');
  if(workspace||key){

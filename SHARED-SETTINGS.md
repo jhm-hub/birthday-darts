@@ -1,10 +1,25 @@
 # Shared settings with one lasting private link
 
-The private editing link connects Presents, Darts, Crown Vault, Piñata Party and Brokie Wheel to shared settings. Both people open that same full link once in their browser. Use **Save changes** to update the existing game; ordinary saves keep its ID and do not create another widget. The two separate Scam Wheel projects are not connected to this service.
+The private editing link opens `desk.html`, one control room for Presents, Darts, Crown Vault, Piñata Party, Brokie Wheel, Birthday Scam Wheel and the original Scam Wheel. Both people open that same full link once in their browser. Use **Save changes** to update the existing game; ordinary saves keep its ID and do not create another widget.
 
 Open the link first in the browser containing the settings you want to share. The first time each game is opened, its existing settings become the shared starting point. If the browser has no settings, that game starts with its normal defaults. Original local libraries remain untouched as a backup. The service only initializes a game once; opening it on another computer then loads the shared copy.
 
 Share the private editing link directly with Faith. Anyone holding it can read and change settings, including configured username ranges. It requires no account. Never put this editing link in OBS or on stream; use the separate **Permanent display link** from Faith’s controls. Close older control tabs when switching to the shared link.
+
+## Faith’s everyday controls
+
+1. Open the complete private desk link and choose a game on the left.
+2. Use **Play** for the viewer name and game buttons. **Settings** opens that game’s saved values and practice preview.
+3. Click **Save changes** and wait for **Saved to your private link**. Both computers use the same link.
+4. Return to **Play**. Ranges stay private; OBS keeps showing only the game. The two Scam Wheels use **Use saved version** between viewers to apply a new saved setup.
+
+The desk keeps each opened control page alive when switching games or settings. Keep this desk open during the stream and close older duplicate control tabs. Sound, saved setups and stream setup are expandable. Existing OBS addresses are unchanged; use Faith’s usual browser so its saved pairing is available.
+
+### Longer Presents games
+
+Game 1 keeps its existing pace and settings. Games 2, 3 and 4 run for 10, 12 and 14 total picks, including earned bonus picks. Each uses a 3 × 3 starting board, bonus row and column, a grow-board bonus, and stacked ×2, ×4 and ×6 total multipliers. Cash gifts are capped at $25 before multipliers by default; **Largest cash gift in Games 2–4** changes the cap. A bonus is guaranteed by the third pick.
+
+The final result still stays within the selected saved range, with roughly 75% of totals in its lower half. Cash and bonuses are prepared together, and the displayed cash and multipliers calculate the final total without a hidden adjustment. Very narrow custom ranges can be incompatible with the cash cap and integer multipliers; in that case the game explains the issue before starting a round. Widen that range or raise the cap.
 
 ## Saving and playing
 

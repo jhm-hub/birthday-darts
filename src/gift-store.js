@@ -30,7 +30,7 @@ export function createGiftStore(storage,locks,sharedOptions={}){
  function write(s){storage.setItem(GIFT_STORE_KEY,JSON.stringify(s));shared.notify(()=>{for(const fn of listeners)fn();});}
  function find(s,id){const w=s.widgets.find(w=>w.id===id);if(!w)throw Error('This gift game was not found.');return w;}
  function settle(s,now){let changed=false;for(const w of s.widgets){if(advanceGiftRound(w.round,now)){changed=true;if(w.round.completedAt!==null)w.lastResult={viewer:w.round.viewer,totalCents:giftTotal(w.round),opened:w.round.opened.length,completedAt:w.round.completedAt};}if(w.round?.hideAt&&now>=w.round.hideAt+GIFT_CLEAR_MS){w.round=null;changed=true;}if(upgradeStarter(w))changed=true;}return changed;}
- function snapshot(id,now=Date.now()){const w=find(read(),id),{outcomes,gameRanges,...widget}=validateGiftWidget(w);return {kind:'faith-gifts',serverNow:now,widget,audio:{volume:giftVolume(w.audioVolume)},round:cleanGiftRound(w.round),lastResult:w.lastResult??null};}
+ function snapshot(id,now=Date.now()){const w=find(read(),id),{outcomes,gameRanges,rangeCashMax,...widget}=validateGiftWidget(w);return {kind:'faith-gifts',serverNow:now,widget,audio:{volume:giftVolume(w.audioVolume)},round:cleanGiftRound(w.round),lastResult:w.lastResult??null};}
  return {
   ...permanentDisplayStore({read,write,lock}),
   async init(){return lock(()=>{let s=read()??{schema:1,widgets:[{...structuredClone(DEFAULT_GIFTS),round:null,lastResult:null,room:randomKey()}]};for(const w of s.widgets)if(!validKey(w.room))w.room=randomKey();ensurePermanentDisplay(s);settle(s,Date.now());write(s);});},

@@ -1,3 +1,4 @@
+import {startLongGiftRange} from './gift-long-range.js';
 import {startGiftRound,eligibleGiftOutcomes,unwrapGift,advanceGiftRound,availableGiftCells,giftTotal} from './gift-game.js';
 import {validateGiftRanges} from './gift-ranges.js';
 import {chooseOutcome} from './game.js';
@@ -11,6 +12,7 @@ export function startGiftRange(widget,rangeId,viewer='',now=Date.now(),draw=rand
  const range=validateGiftRanges(widget.gameRanges).find(r=>r.id===rangeId);
  if(!range||range.min===null)throw Error('Set and save this game’s minimum and maximum first.');
  const pick=n=>{const v=draw(n);if(!Number.isInteger(v)||v<0||v>=n)throw Error('Invalid range draw.');return v;};
+ if(range.id!=='range1')return startLongGiftRange(widget,range,viewer,now,pick);
  const min=range.min*100,max=range.max*100,round=startGiftRound(widget,viewer,now),trial=structuredClone(round),plan=[];
  let cashCount=0,time=now;
  while(trial.remaining){

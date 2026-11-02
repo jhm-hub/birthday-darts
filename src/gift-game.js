@@ -4,7 +4,7 @@ import {DEFAULT_GIFT_CELEBRATION,validateGiftCelebration} from './gift-celebrati
 import {validateGiftRanges} from './gift-ranges.js';
 
 export const UNWRAP_MS=2000, REVEAL_MS=850, GIFT_HOLD_MS=5500, GIFT_CLEAR_MS=400;
-export const DEFAULT_GIFTS={id:'gift-pile',name:'Faith’s gift pile',side:3,picks:3,maxSide:5,maxPicks:12,celebration:{...DEFAULT_GIFT_CELEBRATION},outcomes:[
+export const DEFAULT_GIFTS={id:'gift-pile',name:'Faith’s gift pile',side:3,picks:3,maxSide:5,maxPicks:12,rangeCashMax:25,celebration:{...DEFAULT_GIFT_CELEBRATION},outcomes:[
  {kind:'cash',value:10,weight:27.74},{kind:'cash',value:25,weight:21.40},{kind:'cash',value:50,weight:11.89},
  {kind:'cash',value:100,weight:3.97},{kind:'multiply',value:2,weight:8.75},{kind:'extra',value:3,weight:8.75},
  {kind:'row',value:1,weight:8.75},{kind:'column',value:1,weight:8.75}
@@ -36,8 +36,10 @@ export function validateGiftWidget(input){
   return {kind:o.kind,value:o.value,weight:o.weight};
  });
  if(!outcomes.some(o=>o.kind==='cash'&&o.weight>0))throw Error('Include at least one money prize with odds above zero.');
+ const rangeCashMax=input.rangeCashMax??25;
+ if(!Number.isInteger(rangeCashMax)||rangeCashMax<1||rangeCashMax>1000)throw Error('Use a higher-range cash cap from $1 to $1,000.');
  const id=input.id??randomUUID();if(!/^[\w-]{1,80}$/.test(id))throw Error('Invalid game identifier.');
- return {id,name:input.name.trim(),side:input.side,picks:input.picks,maxSide:input.maxSide,maxPicks:input.maxPicks,celebration:validateGiftCelebration(input.celebration),outcomes,...(input.gameRanges===undefined?{}:{gameRanges:validateGiftRanges(input.gameRanges)})};
+ return {id,name:input.name.trim(),side:input.side,picks:input.picks,maxSide:input.maxSide,maxPicks:input.maxPicks,rangeCashMax,celebration:validateGiftCelebration(input.celebration),outcomes,...(input.gameRanges===undefined?{}:{gameRanges:validateGiftRanges(input.gameRanges)})};
 }
 export const giftTotal=r=>r?(BigInt(r.cashCents)*BigInt(r.multiplier)).toString():'0';
 export function startGiftRound(widget,viewer='',now=Date.now()){
@@ -88,7 +90,7 @@ export function advanceGiftRound(round,now=Date.now()){
  const shot=round.flight;award(round,shot);round.flight=null;
  if(round.remaining===0){round.completedAt=shot.finishAt;round.hideAt=shot.finishAt+GIFT_HOLD_MS;}return true;
 }
-export function cleanGiftRound(round){if(!round)return null;const copy=structuredClone(round);delete copy.prizePlan;delete copy.privateRange;delete copy.preset.gameRanges;copy.preset.outcomes=copy.preset.outcomes.map(({kind,value})=>({kind,value}));return copy;}
+export function cleanGiftRound(round){if(!round)return null;const copy=structuredClone(round);delete copy.prizePlan;delete copy.privateRange;delete copy.preset.gameRanges;delete copy.preset.rangeCashMax;copy.preset.outcomes=copy.preset.outcomes.map(({kind,value})=>({kind,value}));return copy;}
 export function sampleGiftFinale(widget,now=Date.now(),draw=randomInt){
  const r=startGiftRound(widget,'Demo viewer',now-120000);let cursor=now-120000;
  while(r.remaining){unwrapGift(r,cursor,{draw});cursor+=UNWRAP_MS;advanceGiftRound(r,cursor);}

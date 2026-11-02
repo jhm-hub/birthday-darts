@@ -9,8 +9,8 @@ export function createSharedSettings({storage,locks,key,game,validate,shape='wid
  const actualKey=sharedStorageKey(key,connection),metaKey=actualKey+':revision';
  let stage=null,notifications=[],initialized=false,revision=0,polling=false,disposed=false,dirty=false,notify=()=>{},signature='',timer,statusState='';
  const parse=text=>text?JSON.parse(text):null;
- const rows=s=>shape==='wheels'?s?.wheels:s?.widgets;
- const config=w=>validate(shape==='wheels'?w.config:w);
+ const rows=s=>shape==='versions'?s?.versions:shape==='wheels'?s?.wheels:s?.widgets;
+ const config=w=>validate(shape==='versions'?{id:w.id,name:w.name,settings:w.config}:shape==='wheels'?w.config:w);
  const extract=s=>({schema:1,widgets:rows(s).map(w=>({config:config(w)}))});
  const emit=(message,state='ready')=>{statusState=state;const detail={game,message,state};if(browser){browser.__faithSharedSettingsStatus=detail;browser.dispatchEvent(new CustomEvent('shared-settings-status',{detail}));}};
  const canUpdate=()=>!browser||browser.dispatchEvent(new CustomEvent('shared-settings-before-update',{cancelable:true}));
@@ -20,11 +20,11 @@ export function createSharedSettings({storage,locks,key,game,validate,shape='wid
   const seen=new Set(),old=rows(s),next=payload.widgets.map(entry=>{
    const p=validate(entry.config);if(seen.has(p.id))throw Error('Duplicate shared game.');seen.add(p.id);
    const existing=old.find(w=>(shape==='wheels'?w.config.id:w.id)===p.id);
-   return shape==='wheels'?{...existing,config:p,room:existing?.room??randomKey(),round:existing?.round??null}:{...existing,...p,room:existing?.room??randomKey(),round:existing?.round??null,lastResult:existing?.lastResult??null};
+   return shape==='versions'?{id:p.id,name:p.name,config:p.settings}:shape==='wheels'?{...existing,config:p,room:existing?.room??randomKey(),round:existing?.round??null}:{...existing,...p,room:existing?.room??randomKey(),round:existing?.round??null,lastResult:existing?.lastResult??null};
   });
   // An old viewer must finish, even if a saved setup was removed elsewhere.
   for(const w of old)if(w.round&&!seen.has(shape==='wheels'?w.config.id:w.id))next.push(w);
-  if(shape==='wheels')s.wheels=next;else s.widgets=next;
+  if(shape==='versions'){s.versions=next;if(!next.some(w=>w.id===s.selected))s.selected=next[0].id;}else if(shape==='wheels')s.wheels=next;else s.widgets=next;
   if(s.stream&&!next.some(w=>(shape==='wheels'?w.config.id:w.id)===s.stream.activeId))s.stream.activeId=shape==='wheels'?next[0].config.id:next[0].id;
   if(s.rooms)for(const w of next)if(!s.rooms[w.id])s.rooms[w.id]=randomKey();
   return s;
@@ -65,7 +65,7 @@ export function createSharedSettings({storage,locks,key,game,validate,shape='wid
   try{
    const remote=await request('GET');
    if(!remote.settings)throw Error('These shared settings are missing. Your local game is unchanged.');
-   if(remote.revision===revision&&!force){if(statusState==='error')emit('Shared settings are up to date.');return;}
+   if(remote.revision===revision&&!force){if(statusState==='error'&&!dirty)emit('Shared settings are up to date.');return;}
    if((dirty||!canUpdate())&&!force){emit('Newer settings are available. Load latest before saving your edits.','conflict');return;}
    await locks.request('faith-shared-refresh:'+game+':'+connection.workspace,async()=>{
     // Serialize against local writes through the same store lock below.
@@ -80,7 +80,7 @@ export function createSharedSettings({storage,locks,key,game,validate,shape='wid
  }
  let lockName='';
  const sharedLocks={request(name,fn){lockName=name;return transaction(name,fn);}};
- const editable='form#gift-settings,form#vault-settings,form#pinata-settings,form#settings,.game-range-form,.viewer-range-form,#game-ranges form';
+ const editable='form#gift-settings,form#vault-settings,form#pinata-settings,form#settings,.settings-form,.saved-versions,#settings,.game-range-form,.viewer-range-form,#game-ranges form';
  if(browser){
   browser.document.addEventListener('input',e=>{if(e.target.closest(editable))dirty=true;});
   browser.addEventListener('shared-settings-dirty',()=>{dirty=true;});
