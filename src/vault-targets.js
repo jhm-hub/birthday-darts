@@ -1,4 +1,5 @@
 import {randomInt} from './random.js';
+import {lowerWeightedRange} from './range-weighting.js';
 import {startVaultRound,vaultTotal,unlockVault,advanceVault} from './vault-game.js';
 
 export const normalizeVaultUsername=value=>typeof value==='string'?value.trim().replace(/^@/,'').toLowerCase():'';
@@ -53,7 +54,7 @@ function luckBonuses(extras,multiplier,pick){
 export function startVaultTotalRange(widget,input,viewer='',now=Date.now(),draw=randomInt){
  const rule=validateVaultTotalRange(input);
  const pick=bound=>{const value=draw(bound);if(!Number.isInteger(value)||value<0||value>=bound)throw Error('Invalid total-range draw.');return value;};
- const target=rule.min+pick(rule.max-rule.min+1),luck=target>=1500,longRun=target>=7500;
+ const target=lowerWeightedRange(rule.min,rule.max,pick),luck=target>=1500,longRun=target>=7500;
  const extras=longRun?4+pick(2):luck?2+pick(2):1+pick(3),count=5+extras;
  const powers=[1,2,4,8].filter(m=>target%m===0&&target/m>=count);
  // Every whole-dollar target supports ×4 to the cent, including odd totals.

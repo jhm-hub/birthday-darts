@@ -1,4 +1,4 @@
-import {validateVault,startVaultRound,unlockVault,advanceVault,vaultTotal,vaultCashPrizes} from './vault-game.js';
+import {validateVault,startVaultRound} from './vault-game.js';
 import {validateVaultGameRanges} from './vault-game-ranges.js';
 import {startVaultTotalRange} from './vault-targets.js';
 import {randomInt} from './random.js';
@@ -22,41 +22,12 @@ export function vaultExperiencePreset(widget,id='custom'){
   outcomes:experience.cash.map((value,i)=>({value,weight:weights[i]})),specialOutcomes:experience.special.map((value,i)=>({value,weight:weights[i]}))});
 }
 export const vaultExperienceRange=(id,ranges)=>{const e=vaultExperienceInfo(id,ranges);return e?'$'+e.min.toLocaleString('en-US')+'–$'+e.max.toLocaleString('en-US'):'Custom settings';};
-const inside=(round,e)=>{const total=BigInt(vaultTotal(round));return total>=BigInt(e.min*100)&&total<=BigInt(e.max*100);};
-
-// High/Extreme and edited ranges use the bounded cash-and-bonus planner.
-// Default Low/Medium condition ordinary weighted rounds on the final total.
-// Every displayed award uses real cash and full boosts, with no final clamp.
+// Every named range uses the same lower-weighted bounded planner, including
+// the original Low/Medium buttons. Custom cash-pool rounds retain their odds.
 export function startVaultExperience(widget,id='custom',viewer='',now=Date.now(),draw=randomInt){
  const preset=vaultExperiencePreset(widget,id),experience=vaultExperienceInfo(id,widget.gameRanges);
  if(!experience)return startVaultRound(preset,viewer,now,draw);
- const original=vaultExperienceInfo(id);
- if(id==='high'||id==='extreme'||experience.min!==original.min||experience.max!==original.max){
-  const round=startVaultTotalRange(preset,experience,viewer,now,draw);
-  round.privateExperience={id,version:2,min:experience.min,max:experience.max};
-  return round;
- }
- function planRound(fallback=false){
-  const openingDraw=fallback?()=>Math.floor((preset.openingMax-preset.openingMin)/2):draw;
-  const round=startVaultRound(preset,viewer,now,openingDraw),plan=[];let time=round.readyAt;
-  while(round.remaining){
-   const prizes=vaultCashPrizes(round),shot=unlockVault(round,time,fallback?{forcedCash:experience.fallbackIndex,forcedBonus:plan.length===2?'multiply':null}:{draw});
-   plan.push({cashIndex:prizes.findIndex(p=>p.weight>0&&Math.round(p.value*100)===shot.cashCents),bonus:shot.bonus?.kind??null});
-   time=shot.finishAt;advanceVault(round,time);
-  }
-  return {round,plan};
- }
- let accepted;
- for(let attempt=0;attempt<128;attempt++){
-  const candidate=planRound();if(inside(candidate.round,experience)){accepted=candidate;break;}
- }
- // Bounded work even for pathological RNG streams. This ordinary five-room
- // sequence is checked against the same range and never bypasses game rules.
- accepted??=planRound(true);
- if(!inside(accepted.round,experience))throw Error('This experience could not make a valid round. No game was started.');
- const {round,plan}=accepted;
- const fresh=startVaultRound(preset,viewer,now,()=>round.openingCents/100-preset.openingMin);
- fresh.privateExperience={id,version:1,min:experience.min,max:experience.max};
- fresh.prizePlan=plan;
- return fresh;
+ const round=startVaultTotalRange(preset,experience,viewer,now,draw);
+ round.privateExperience={id,version:2,min:experience.min,max:experience.max};
+ return round;
 }

@@ -1,4 +1,5 @@
 import {randomInt} from './random.js';
+import {lowerWeightedRange} from './range-weighting.js';
 import {chooseOutcome} from './game.js';
 import {balloonDeck,hasDartBonuses,dartsScore,eligibleDartPrizes,drawDartPrize,goldAmount} from './darts-bonuses.js';
 import {remainingBalloonSlots} from './balloon-slots.js';
@@ -99,7 +100,7 @@ export function prepareDartsTotalRound(input,range,draw=randomInt){
  delete round.preset.viewerRanges;
  delete round.preset.gameRanges;
  if(round.preset.theme!=='balloons'){
-  const target=(rule.min+pick(rule.max-rule.min+1))*100,n=round.preset.darts,base=Math.floor(target/n),remainder=target%n;
+  const target=lowerWeightedRange(rule.min,rule.max,pick)*100,n=round.preset.darts,base=Math.floor(target/n),remainder=target%n;
   round.preset.outcomes=[{amountCents:base,weight:1},...(remainder?[{amountCents:base+1,weight:1}]:[])];
   round.prizePlan=Array.from({length:n},(_,i)=>({outcomeIndex:i<remainder?1:0}));
   for(let i=n-1;i>0;i--){const j=pick(i+1);[round.prizePlan[i],round.prizePlan[j]]=[round.prizePlan[j],round.prizePlan[i]];}
@@ -110,7 +111,7 @@ export function prepareDartsTotalRound(input,range,draw=randomInt){
    const path=makePath(round,pick,attempt===24),cash=path.filter(s=>s.kind==='cash'),score=dartsScore(round.preset,path);
    if(!cash.length)continue;
    const lo=Math.ceil(rule.min*100/score.multiplier),hi=Math.floor(rule.max*100/score.multiplier);if(lo>hi)continue;
-   const sampled=(rule.min+pick(rule.max-rule.min+1))*100/score.multiplier;
+   const sampled=lowerWeightedRange(rule.min,rule.max,pick)*100/score.multiplier;
    const desired=Math.max(lo,Math.min(hi,Math.round(sampled)));
    let bases,budget;
    for(const candidate of [...new Set([desired,desired-1,desired+1,lo,hi])]){

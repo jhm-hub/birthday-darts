@@ -2,6 +2,7 @@ import {startGiftRound,eligibleGiftOutcomes,unwrapGift,advanceGiftRound,availabl
 import {validateGiftRanges} from './gift-ranges.js';
 import {chooseOutcome} from './game.js';
 import {randomInt} from './random.js';
+import {lowerWeightedRange} from './range-weighting.js';
 
 // Plan the complete sequence before it is shown. Cash is divided across real
 // cash picks; board bonuses and stacked multipliers run through the usual engine.
@@ -36,7 +37,7 @@ export function startGiftRange(widget,rangeId,viewer='',now=Date.now(),draw=rand
  const unit=dollarLow<=dollarHigh?100:1;
  const low=Math.max(cashCount,Math.ceil(min/multiplier/unit)),high=Math.floor(max/multiplier/unit);
  if(low>high)throw Error('This range cannot fit the configured bonuses. Widen it or lower the multiplier.');
- const budget=low+pick(high-low+1),weights=Array.from({length:cashCount},()=>80+pick(81)),sum=weights.reduce((a,b)=>a+b,0);
+ const budget=lowerWeightedRange(low,high,pick),weights=Array.from({length:cashCount},()=>80+pick(81)),sum=weights.reduce((a,b)=>a+b,0);
  const amounts=weights.map(w=>1+Math.floor((budget-cashCount)*w/sum));
  let remaining=budget-amounts.reduce((a,b)=>a+b,0),cursor=pick(cashCount);
  while(remaining-->0)amounts[cursor++%cashCount]++;

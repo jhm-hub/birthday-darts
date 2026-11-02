@@ -1,4 +1,5 @@
 import {randomInt} from './random.js';
+import {lowerWeightedRange} from './range-weighting.js';
 import {chooseOutcome} from './game.js';
 import {startPinata,swingPinata,advancePinata,pinataTotal} from './pinata-game.js';
 
@@ -28,7 +29,7 @@ export const pinataViewerRangeText=r=>'$'+r.min.toLocaleString('en-US')+'–$'+r
 export function startPinataTotalRange(widget,input,viewer='',now=Date.now(),draw=randomInt){
  const rule=validatePinataTotalRange(input);
  const pick=bound=>{const n=draw(bound);if(!Number.isInteger(n)||n<0||n>=bound)throw Error('Invalid prize-range draw.');return n;};
- const fresh=startPinata(widget,viewer.trim().replace(/^@/,''),now),target=(rule.min+pick(rule.max-rule.min+1))*100;
+ const fresh=startPinata(widget,viewer.trim().replace(/^@/,''),now),target=lowerWeightedRange(rule.min,rule.max,pick)*100;
  let plan,multiplier;
  for(let attempt=0;attempt<48&&!plan;attempt++){
   const candidate=[];let left=fresh.remaining,allocated=fresh.allocated,m=1;
