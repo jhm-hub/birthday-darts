@@ -38,7 +38,9 @@ function luckBonuses(extras,multiplier,pick){
  bonuses[lastBoost]='multiply';
  bonuses[1+pick(2)]='extra';
  bonuses[3+pick(2)]='extra';
- if(extras===3)bonuses[5]='extra';
+ // Special vaults can earn the next key, keeping the longer run unfolding
+ // one chamber at a time instead of granting all the extra rooms up front.
+ for(let i=2;i<extras;i++)bonuses[3+i]='extra';
  for(let i=1;i<Math.log2(multiplier);i++){
   const slots=bonuses.map((b,j)=>b===null&&j>0?j:-1).filter(j=>j>=0);
   const early=i===1?slots.filter(j=>j<5):slots,choices=early.length?early:slots;
@@ -51,14 +53,15 @@ function luckBonuses(extras,multiplier,pick){
 export function startVaultTotalRange(widget,input,viewer='',now=Date.now(),draw=randomInt){
  const rule=validateVaultTotalRange(input);
  const pick=bound=>{const value=draw(bound);if(!Number.isInteger(value)||value<0||value>=bound)throw Error('Invalid total-range draw.');return value;};
- const target=rule.min+pick(rule.max-rule.min+1),luck=target>=1500,extras=luck?2+pick(2):1+pick(3),count=5+extras;
+ const target=rule.min+pick(rule.max-rule.min+1),luck=target>=1500,longRun=target>=7500;
+ const extras=longRun?4+pick(2):luck?2+pick(2):1+pick(3),count=5+extras;
  const powers=[1,2,4,8].filter(m=>target%m===0&&target/m>=count);
  // Every whole-dollar target supports ×4 to the cent, including odd totals.
  // ×8 adds a third boost where exact-cent arithmetic permits it.
  const multiplier=luck?(target>=5000&&target*100%8===0?8:4):powers.length?powers[pick(powers.length)]:1,baseCents=target*100/multiplier;
  const openingUnit=luck&&baseCents>=50000?25:1;
  const opening=luck?Math.max(1,Math.floor(baseCents/100*(.08+pick(5)/100)/openingUnit)*openingUnit):Math.floor(baseCents/100*(.18+pick(15)/100));
- const cashBudget=baseCents-opening*100,unit=luck?(baseCents>=100000?2500:500):cashBudget>=count*100?100:1,units=Math.floor(cashBudget/unit);
+ const cashBudget=baseCents-opening*100,unit=luck?(baseCents>=(longRun?150000:100000)?2500:500):cashBudget>=count*100?100:1,units=Math.floor(cashBudget/unit);
  const weights=Array.from({length:count},(_,i)=>luck?(i<5?60+pick(41):240+pick(121)):(i<5?80+pick(81):180+pick(141))),sum=weights.reduce((a,b)=>a+b,0);
  const cash=weights.map(w=>1+Math.floor((units-count)*w/sum));let remainder=units-cash.reduce((a,b)=>a+b,0),cursor=pick(count);
  while(remainder-->0){cash[cursor%count]++;cursor++;}
@@ -75,7 +78,7 @@ export function startVaultTotalRange(widget,input,viewer='',now=Date.now(),draw=
  const amounts=cash.map(n=>n*unit);
  amounts[count-1]+=cashBudget-units*unit;
  const outcomes=makePool(amounts.slice(0,5)),specialOutcomes=makePool(amounts.slice(5));
- const preset={...widget,openingMin:opening,openingMax:opening,chambers:5,maxChambers:8,bonusChance:35,multiplyValue:2,multiplyWeight:1,extraWeight:1,guarantee:true,outcomes,specialOutcomes};
+ const preset={...widget,openingMin:opening,openingMax:opening,chambers:5,maxChambers:longRun?10:8,bonusChance:35,multiplyValue:2,multiplyWeight:1,extraWeight:1,guarantee:true,outcomes,specialOutcomes};
  const fresh=startVaultRound(preset,viewer.trim().replace(/^@/,''),now,()=>0);
  fresh.prizePlan=amounts.map((cents,index)=>({cashIndex:(index<5?outcomes:specialOutcomes).findIndex(p=>Math.round(p.value*100)===cents),bonus:bonuses[index]}));
  // Validate the actual engine path, including extra-chamber eligibility and

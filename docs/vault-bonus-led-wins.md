@@ -4,6 +4,8 @@ High and Extreme use the same bounded planner as edited ranges and username
 overrides. In that planner, targets of $1,500 or more build through:
 
 - Five initial chambers and two or three earned special vaults (7–8 clicks).
+  At $7,500+, four or five special vaults extend the journey to 9–10 clicks.
+  Some bonus vaults award the next key, so the extra rooms unfold during play.
 - Two ×2 boosts (×4 total), or three (×8 total) for targets of $5,000+ that
   support exact-cent ×8 arithmetic. Odd whole-dollar totals use ×4.
 - A modest opening balance, cash in every chamber, richer special-vault cash,

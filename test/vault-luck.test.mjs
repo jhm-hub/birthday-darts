@@ -7,7 +7,8 @@ const rng=seed=>{let n=seed>>>0;return b=>{n=(Math.imul(n,1664525)+1013904223)>>
 function finish(round){while(round.remaining){const shot=unlockVault(round,round.opened.at(-1)?.finishAt??round.readyAt);advanceVault(round,shot.finishAt);}return round;}
 function journey(round){
  const r=finish(round),keys=r.opened.filter(s=>s.bonus?.kind==='extra'),boosts=r.opened.filter(s=>s.bonus?.kind==='multiply');
- assert.ok(keys.length>=2&&keys.length<=3);assert.equal(r.opened.length,5+keys.length);assert.ok(r.opened.length<=8);
+ const longRun=BigInt(vaultTotal(r))>=750000n;
+ assert.ok(keys.length>=(longRun?4:2)&&keys.length<=(longRun?5:3));assert.equal(r.opened.length,5+keys.length);assert.ok(r.opened.length<=(longRun?10:8));
  assert.ok(boosts.length>=2);assert.ok(boosts.some(s=>s.index>=r.opened.length-2&&s.index>=5));
  assert.ok(r.opened.slice(0,3).some(s=>s.bonus));assert.equal(r.opened[0].bonus,null);
  assert.equal(BigInt(r.multiplier),2n**BigInt(boosts.length));
@@ -17,7 +18,7 @@ function journey(round){
  assert.ok(r.openingCents*8<=r.cashCents,'opening balance stays a small part of collected cash');
  return r;
 }
-test('$10,000 is earned through three ×2 hits and 2–3 special vaults, never a giant base award',()=>{
+test('$10,000 is earned through three ×2 hits and 4–5 special vaults, never a giant base award',()=>{
  const paths=new Set();
  for(let seed=1;seed<=300;seed++){
   const r=journey(startVaultTotalRange(DEFAULT_VAULT,{min:10000,max:10000},'Demo',0,rng(seed)));
@@ -35,9 +36,27 @@ test('High, Extreme, edited ranges and username overrides all build higher wins 
  }
 });
 test('odd and exact totals retain real cent arithmetic, and edge draws cannot strand a bonus chamber',()=>{
- for(const target of [1500,1501,1999,2000,4001,5000,5001,9999,10000,10001,999999,1000000])for(const draw of [()=>0,b=>b-1,rng(target)]){
+ for(const target of [1500,1501,1999,2000,4001,5000,5001,7499,7500,7501,7999,8000,11999,12000,9999,10000,10001,999999,1000000])for(const draw of [()=>0,b=>b-1,rng(target)]){
   const r=journey(startVaultTotalRange(DEFAULT_VAULT,{min:target,max:target},'Demo',0,draw));assert.equal(vaultTotal(r),String(target*100));
   if(target%2)assert.equal(r.multiplier,'4');
+ }
+});
+test('9–10 chamber rounds earn their keys before use and retain a late special-vault boost',()=>{
+ for(const target of [7499,7500,10000]){
+  const lengths=new Set();
+  for(let seed=1;seed<=100;seed++){
+   const r=startVaultTotalRange(DEFAULT_VAULT,{min:target,max:target},'Demo',0,rng(seed));
+   let unlocked=5;
+   while(r.remaining){
+    assert.ok(r.opened.length<unlocked,'every opened chamber must already be earned');
+    const shot=unlockVault(r,r.opened.at(-1)?.finishAt??r.readyAt);
+    if(shot.bonus?.kind==='extra')unlocked++;
+    advanceVault(r,shot.finishAt);
+   }
+   lengths.add(r.opened.length);assert.equal(r.opened.length,unlocked);
+   if(target>=7500){assert.ok(r.opened.slice(5).filter(s=>s.bonus?.kind==='extra').length>=2);assert.ok(r.opened.slice(-2).some(s=>s.bonus?.kind==='multiply'));}
+  }
+  assert.deepEqual([...lengths].sort((a,b)=>a-b),target>=7500?[9,10]:[7,8]);
  }
 });
 test('new planning leaves an already saved round intact and keeps unrevealed prizes private',()=>{

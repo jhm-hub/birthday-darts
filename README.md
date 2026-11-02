@@ -411,8 +411,9 @@ Under Birthday bonuses, change **Extra-dart balloons** (1–3) or toggle **+1 da
 
 **Configure and demo:** https://jhm-hub.github.io/birthday-darts/vault.html
 
-High/Extreme now build larger wins through stacked ×2 boosts and 2–3 richer
-bonus vaults. Their saved final-total ranges remain guaranteed. Use **Watch
+High/Extreme build larger wins through stacked ×2 boosts and richer bonus
+vaults: 2–3 extras normally, or 4–5 for $7,500+ totals (9–10 chambers overall).
+Their saved final-total ranges remain guaranteed. Use **Watch
 $10,000 bonus run** in the Vault editor for a full sample that leaves settings
 and live rounds untouched. See [bonus-led wins](docs/vault-bonus-led-wins.md).
 
