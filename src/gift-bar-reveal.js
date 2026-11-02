@@ -4,11 +4,12 @@ const clamp=x=>Math.max(0,Math.min(1,x));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x);};
 const pulse=(age,start,length)=>age<=start||age>=start+length?0:Math.sin(Math.PI*(age-start)/length)**2;
 
-export function giftBarCopy(announcement,shown){
+export function giftBarCopy(announcement,shown,{pending=false}={}){
  if(!announcement)return null;
  const {prize}=announcement.shot,multiplier=BigInt(shown?.multiplier??1);
- const detail=prize.kind==='cash'?(multiplier>1n?money(BigInt(Math.round(prize.value*100))*multiplier)+' added with ×'+multiplier:'Added to total'):
-  prize.kind==='multiply'?'Now ×'+multiplier+' on all cash':
+ const contribution=prize.kind==='cash'?BigInt(Math.round(prize.value*100))*multiplier:0n;
+ const detail=prize.kind==='cash'?(contribution===0n?'Total unchanged':multiplier>1n?(pending?'Adding ':'')+money(contribution)+(pending?' with ×':' added with ×')+multiplier:pending?'Into your total':'Added to total'):
+  prize.kind==='multiply'?(pending?'Boosting to ×'+multiplier:'Now ×'+multiplier+' on all cash'):
   ({row:'New row of presents',column:'New column of presents',extra:'Bigger board unlocked'})[prize.kind];
  return {title:announcement.copy.title,detail};
 }
@@ -35,7 +36,8 @@ export function giftBarReveal(announcement,time,{reduced=false,until=announcemen
  });
  return {identity,opacity,detail:smooth((age-120)/100),titleY:Math.round(3*(1-smooth((age-65)/155))),iconY:bounce,
   iconLight:(first*.45+second*.3)*opacity,glow:(first*.7+second*.35)*opacity,
-  totalGlow:cash?pulse(age,150,330)*opacity:0,gemGlow:multiply?(first+second)*opacity:0,
+  // The collection handoff owns the total and multiplier-badge landing accents.
+  totalGlow:0,gemGlow:0,
   sparkA:pulse(age,cash?130:110,210)*opacity,sparkB:pulse(age,multiply?300:210,200)*opacity,tiles};
 }
 

@@ -69,7 +69,7 @@ test('distinct cash and bonus signatures begin after the bar name clears, with a
 test('cash ornaments are bounded for custom amounts and do not increase note levels',()=>{
  const cash=value=>giftRevealScore({kind:'cash',value});
  assert.notDeepEqual(cash(10),cash(25));assert.notDeepEqual(cash(25),cash(100));
- assert.deepEqual(cash(100),cash(1000000));assert.deepEqual(cash(0),cash(.01));
+ assert.deepEqual(cash(100),cash(1000000));assert.equal(cash(0).length,1);assert.ok(cash(.01).some(n=>n.beat==='bank'));
  for(const value of [0,.01,10,24.99,25,99.99,100,1000000]){
   const score=cash(value);assert.ok(score.every(n=>n.gain<=.041));
   assert.ok(score.length<=3);assert.ok(score.every(n=>n.frequency<=1600));

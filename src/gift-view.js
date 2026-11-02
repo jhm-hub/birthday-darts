@@ -7,6 +7,7 @@ import {giftPrizeMotion,giftPrizeSpark,applyGiftPrize,PRIZE_COLORS} from './gift
 import {giftAnnouncement,giftRewardCopy} from './gift-announcement.js';
 import {giftPrizeEmblem} from './gift-prize-art.js';
 import {giftBarCopy,giftBarReveal,applyGiftBarReveal} from './gift-bar-reveal.js';
+import {giftTotalFlow,giftTotalFlowArt,applyGiftTotalFlow} from './gift-total-flow.js';
 import {presentedGiftRound,giftFinishMotion,giftFinishSpark} from './gift-finish-motion.js';
 import {giftIntroMotion,giftIntroCell,giftIntroLight,GIFT_INTRO_LIGHTS} from './gift-intro-motion.js';
 import {isGiftOpeningPick,giftPickFocus} from './gift-opening-handoff.js';
@@ -26,6 +27,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
  const gleams=document.createElementNS('http://www.w3.org/2000/svg','svg');gleams.setAttribute('class','gift-final-gleams');gleams.setAttribute('viewBox','0 0 364 228');gleams.setAttribute('aria-hidden','true');
  gleams.innerHTML=[[20,24],[336,196],[338,24],[18,196],[44,8],[310,214]].map(([x,y])=>`<path d="M${x} ${y}h2v3h3v2h-3v3h-2v-3h-3v-2h3Z"/>`).join('');$('.gift-finale').append(gleams);
  const toast=$('.gift-toast');toast.innerHTML='<i class="gift-prize-emblem" aria-hidden="true"></i><strong></strong><span class="gift-toast-detail"></span><i class="gift-bar-spark gift-bar-spark-a" aria-hidden="true"></i><i class="gift-bar-spark gift-bar-spark-b" aria-hidden="true"></i>';
+ $('.gift-hud').insertAdjacentHTML('beforeend',giftTotalFlowArt());const bankArt=$('.gift-total-flow');
  let snapshotRound=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null,oldPrizeKind=null,oldFinalLevel=null;
  const presence=createGiftPresence(),nameMeasure=document.createElement('canvas').getContext('2d');let fittedViewer=null;
  stage.style.setProperty('--gift-board-top',GIFT_BOARD_TOP+'px');
@@ -101,21 +103,24 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   }
   const announcement=giftAnnouncement(round,time),reveal=!!announcement,kind=announcement?.shot.prize.kind??'';
   const barMotion=giftBarReveal(announcement,time,{reduced:reduced.matches,until:finish.active?Math.min(announcement?.until??time,finish.at-120):announcement?.until});
+  const bank=giftTotalFlow(round,time,{reduced:reduced.matches});
+  barMotion.totalGlow=bank.impact;barMotion.gemGlow=bank.kind==='multiply'?bank.impact:0;
   toast.classList.toggle('show',!!reveal);toast.setAttribute('aria-hidden',String(!reveal));toast.dataset.kind=kind;
   $('.gift-hud').dataset.reward=kind;
   stage.style.setProperty('--reveal-color',PRIZE_COLORS[kind]??PRIZE_COLORS.cash);
   if(kind!==oldPrizeKind){toast.querySelector('.gift-prize-emblem').innerHTML=kind?giftPrizeEmblem(kind):'';oldPrizeKind=kind;}
   applyGiftBarReveal($('.gift-hud'),toast,barMotion);
+  applyGiftTotalFlow(bankArt,bank);
   if(reveal){
-   const copy=giftBarCopy(announcement,shown);
+   const copy=giftBarCopy(announcement,shown,{pending:bank.pending});
    const title=toast.querySelector('strong'),detail=toast.querySelector('.gift-toast-detail');
    title.textContent=copy.title;title.style.fontSize=Math.min(26,184/(title.textContent.length*.58))+'px';
    detail.textContent=copy.detail;detail.style.fontSize=Math.min(13,184/(detail.textContent.length*.54))+'px';
   }
-  $('.gift-multiplier').hidden=BigInt(shown?.multiplier??1)<=1n;
-  $('.gift-multiplier strong').textContent='×'+(shown?.multiplier??1);
-  $('.gift-running strong').textContent=money(giftTotal(shown));
-  const total=$('.gift-running strong');total.style.fontSize=Math.min(36,132/(total.textContent.length*.56))+'px';
+  $('.gift-multiplier').hidden=BigInt(bank.multiplier)<=1n;
+  $('.gift-multiplier strong').textContent='×'+bank.multiplier;
+  $('.gift-running strong').textContent=money(bank.total);
+  const total=$('.gift-running strong');total.style.fontSize=Math.min(36,132/(money(bank.fitTotal).length*.56))+'px';
   const multiplier=$('.gift-multiplier strong');multiplier.style.fontSize=Math.min(16,90/(multiplier.textContent.length*.56))+'px';
   $('.gift-finale').hidden=!finished;
   const finale=giftFinaleMotion(round,time,reduced.matches);
@@ -141,6 +146,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   if(finished){const value=money(giftTotal(round));$('.gift-finale>small').textContent=round.viewer?round.viewer+'’s total':'ROUND TOTAL';$('.gift-finale>strong').textContent=value;$('.gift-finale>strong').style.fontSize=Math.min(68,480/value.length)+'px';const calculation=$('.gift-finale>p');calculation.textContent=money(round.cashCents)+' collected × '+round.multiplier;calculation.style.fontSize=Math.min(13,308/(calculation.textContent.length*.61))+'px';$('.gift-final-count').textContent=round.celebrationPreview?'Sample total · celebration preview':round.opened.length+' presents opened';}
   if(audio){audio.intro(round,time);audio.unwrap(flight,time,{candy:buttons.get(flight?.cell)?.classList.contains('candy-unwrap')??true,opening:openingPick});audio.sync(flight,time);audio.finale(round,time);}
   root.dataset.rows=rows;root.dataset.cols=cols;root.dataset.side=Math.max(rows,cols);root.dataset.picks=remaining;root.dataset.total=giftTotal(shown);root.dataset.phase=finished?'total':flight?'unwrapping':'ready';
+  root.dataset.displayedTotal=bank.total;root.dataset.totalFlow=bank.pending?'collecting':bank.active?'settling':'idle';
   root.dataset.presentation=!visible?'hidden':exit.exiting?'exiting':display.entering?'entering':finished?'total':round?'playing':'ready';
   if(round||display.entering)raf=requestAnimationFrame(render);
  }

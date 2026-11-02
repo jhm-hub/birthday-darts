@@ -5,6 +5,8 @@ import {scheduleGiftUnwrap} from './gift-unwrap-audio.js';
 import {giftVolume,DEFAULT_GIFT_VOLUME} from './gift-volume.js';
 import {giftCelebrationLevel,ROYAL_REVEAL_MS,BIG_RESOLVE_MS,STANDARD_RESOLVE_MS} from './gift-celebration.js';
 
+import {GIFT_CASH_BANK_MS,GIFT_MULTIPLIER_BANK_MS} from './gift-total-flow.js';
+
 const midi=n=>440*2**((n-69)/12);
 const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
 // A tiny held attack gives sparse reward notes body without raising their peak.
@@ -91,14 +93,15 @@ export function giftRevealScore(prize){
  }
  if(prize.kind==='multiply')return [
   {...rewardNote(.205,72,.15,.039,'jewel'),beat:'bar'},
-  {...rewardNote(.41,84,.2,.031,'jewel'),beat:'spark'}
+  {...rewardNote(GIFT_MULTIPLIER_BANK_MS/1000,84,.18,.031,'jewel'),beat:'bank'}
  ];
  // A coin landing and a quieter answer. Higher prizes change the interval;
  // the largest gets one tiny extra coin, never a louder or longer fanfare.
  const tier=Number.isFinite(prize.value)?prize.value>=100?2:prize.value>=25?1:0:0;
  const score=[{...rewardNote(.15,79,.14,.039,'token'),beat:'bar'},
-  {...rewardNote(.315,tier?88:84,.13,.029,'token'),beat:'answer'}];
- if(tier>1)score.push({...rewardNote(.43,91,.105,.016,'token'),beat:'answer'});
+  {...rewardNote(GIFT_CASH_BANK_MS/1000,tier?88:84,.13,.029,'token'),beat:'bank'}];
+ if(tier>1)score.push({...rewardNote(GIFT_CASH_BANK_MS/1000+.07,91,.105,.016,'token'),beat:'answer'});
+ if(prize.value===0)return score.slice(0,1);
  return score;
 }
 

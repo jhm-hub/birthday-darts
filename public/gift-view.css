@@ -203,3 +203,9 @@
 .gift-bar-spark-a{left:0;top:2px;opacity:var(--bar-spark-a,0)}.gift-bar-spark-b{left:19px;top:32px;background:var(--reveal-color);opacity:var(--bar-spark-b,0)}
 .gift-running{position:relative}.gift-running::after{content:'';position:absolute;left:10px;right:0;bottom:0;height:1px;background:#fff1bd;opacity:var(--bar-total-glow,0);pointer-events:none}
 .gift-running strong{filter:brightness(calc(1 + var(--bar-total-glow,0) * .12))}.gift-multiplier strong{filter:brightness(calc(1 + var(--bar-gem-glow,0) * .25))}
+
+/* A narrow collection path above the text. No token crosses the prize or total. */
+.gift-total-flow{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;pointer-events:none;fill:#ffe3a5}
+.gift-total-flow[data-kind="multiply"]{fill:#e3b0f7}
+.gift-total-flow .gift-bank-gem,.gift-total-flow[data-kind="multiply"] .gift-bank-coin{display:none}
+.gift-total-flow[data-kind="multiply"] .gift-bank-gem{display:inline}

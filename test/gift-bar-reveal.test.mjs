@@ -36,7 +36,7 @@ test('actual awarded cash and capped bonuses remain exact in the compact copy',(
 test('cash, multipliers and directional expansion icons have distinct beats that settle',()=>{
  const announcements=[1,4,5,6,7].map(i=>giftAnnouncement(reveal(i),1850));
  const cash=giftBarReveal(announcements[0],2020),gem=giftBarReveal(announcements[1],2020);
- assert.ok(cash.totalGlow>0);assert.equal(gem.totalGlow,0);assert.ok(gem.gemGlow>0);assert.notEqual(cash.iconY,gem.iconY);
+ assert.equal(cash.totalGlow,0);assert.equal(gem.totalGlow,0);assert.equal(gem.gemGlow,0);assert.ok(cash.iconLight>0&&gem.iconLight>0);assert.notEqual(cash.iconY,gem.iconY);
  const row=giftBarReveal(announcements[3],2100),col=giftBarReveal(announcements[4],2100);
  assert.ok(row.tiles[6]>row.tiles[7]&&row.tiles[7]>row.tiles[8]);assert.ok(col.tiles[2]>col.tiles[5]&&col.tiles[5]>col.tiles[8]);
  for(const a of announcements){const m=giftBarReveal(a,2500);assert.ok(m.tiles.every(n=>n===1));for(const key of ['glow','totalGlow','gemGlow','sparkA','sparkB','iconLight'])assert.equal(m[key],0);}
