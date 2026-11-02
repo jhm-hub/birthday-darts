@@ -49,9 +49,13 @@ The site does not accept payments, send chat messages or connect to a Twitch acc
 
 ## Saved games and privacy
 
-Settings, pairing keys and the current round stay in this browser's local storage. They are not uploaded to a database or committed to GitHub. Refreshing controls recovers the chosen prize and round. Clearing browser data, changing browser/profile, or using another computer does not transfer those games.
+Without a private editing link, settings stay in this browser's local storage.
+With Faith’s private editing link, Save updates the shared settings, which load
+in another browser using that same link. Pairing keys and current rounds stay
+browser-local in both modes; refreshing controls recovers the active round.
+Settings are never committed to GitHub. See [shared settings](SHARED-SETTINGS.md).
 
-Use **Download settings backup** before switching computers. **Import backup** creates independent saved versions on the same permanent display for that game type; it does not overwrite existing games. Moving to another browser/computer still requires its local display link. Backups omit pairing keys, viewer names and rounds. The initial amounts and odds are examples that can be edited.
+Use **Download settings backup** for an extra copy. **Import backup** creates independent saved versions on the same permanent display for that game type; it does not overwrite existing games. Moving to another browser/computer still requires its local display link. Backups omit pairing keys and active rounds; configured username rules are included where supported. The initial amounts and odds are examples that can be edited.
 
 Keep complete display links private. A 256-bit pairing key is stored in the URL fragment, with nonce/HMAC authentication between the controls and display. The display receives game state without configured odds and has no control commands. Pairing uses PeerJS's public signaling service and encrypted WebRTC data channels, so an internet connection and a network that permits WebRTC are required. This is browser-local configuration, not an account/login system.
 
@@ -69,6 +73,13 @@ npm run dev
 The local server prints its address. `dist/` is a static site with relative asset paths, suitable for a GitHub Pages project subdirectory. The included workflow tests, builds and deploys on pushes to `main`; set the repository's Pages source to **GitHub Actions**.
 
 Automated checks cover weighted draws, exact-cent totals, birthday prize removal, animation timing, independent widgets, round persistence, simultaneous throws, settings import/export and pairing proofs. Browser checks cover controls/display pairing and recovery. Physical OBS/Streamlabs audio routing must be tested in the actual streaming setup.
+
+With Playwright and Chromium available, `npm run test:vault-settings` checks the
+built Vault editor, real reloads, saved-version switching, backups, live controls,
+and shared saves across isolated browsers. It includes failed and conflicting
+saves against a local API fixture; no production settings are changed. Optional
+`PLAYWRIGHT_MODULE` and `BROWSER_EXECUTABLE` select an existing runtime/browser.
+`VAULT_QA_OUTPUT` chooses where screenshots and the JSON report are saved.
 
 ## Animation art and review
 
@@ -411,11 +422,11 @@ Under Birthday bonuses, change **Extra-dart balloons** (1–3) or toggle **+1 da
 
 **Configure and demo:** https://jhm-hub.github.io/birthday-darts/vault.html
 
-High/Extreme build larger wins through stacked ×2 boosts and richer bonus
-vaults: 2–3 extras normally, or 4–5 for $7,500+ totals (9–10 chambers overall).
-Their saved final-total ranges remain guaranteed. Use **Watch
-$10,000 bonus run** in the Vault editor for a full sample that leaves settings
-and live rounds untouched. See [bonus-led wins](docs/vault-bonus-led-wins.md).
+Games 2–4 build larger wins through small cash prizes, extra vaults and stacked
+multipliers, ending with ×2, ×4 or ×6 on the whole total. The biggest rounds can
+reach 15 openings while staying inside their saved range. **More preview
+options** includes the full $10,000 sample and separate final-boost previews.
+See [bonus-led wins](docs/vault-bonus-led-wins.md).
 
 Faith rolls a fresh opening balance, then clicks once per chamber. The default
 is five chambers. Every chamber adds a weighted cash prize; a separate bonus draw
@@ -445,18 +456,30 @@ are sample settings, editable alongside all cash values and odds.
 
 ### Faith’s quick Vault setup
 
-1. Open **vault.html**, adjust the sample settings, and **Save vault**. Use
-   **Roll opening balance** or **Watch a sample round** to test the preview.
-2. Choose **Open controls**. Enter a viewer name, roll their opening balance,
-   then press **Unlock chamber** for each reveal. Space also works outside inputs.
-3. Copy the **private display link** into an OBS/Streamlabs **Browser Source**,
-   **420 × 460**. Keep the controls page open. Only this display goes on stream;
-   it has a transparent background and hides between viewers.
-4. Enable Browser Source audio in the streaming software. Set **Stream volume**
+1. Open **Crown Vault → Settings** in Faith’s game desk, or **vault.html**.
+   Choose a **Saved setup**, edit the four game names and ranges, and click
+   **Save settings**. The same button also saves the setup name and optional
+   celebration/custom settings. Reloading restores the selected saved setup.
+2. Click a game button under **Try a game** to preview the settings you’re
+   editing. This does not save them or affect a live viewer. Advanced prize
+   tables, extra demos and sound auditions stay folded until needed.
+3. Choose **Open live controls** (or **Play** in the desk). Enter a viewer,
+   press a game’s Start button, then **Open vault** once per chamber.
+   Space also works outside inputs. Switch saved setups between viewers.
+4. Keep the existing permanent OBS source. For first-time setup, open **OBS
+   setup & settings backups**, copy the display link into a **420 × 460**
+   Browser Source and keep the controls open. Only the transparent display
+   belongs on stream; setup names, ranges and controls stay private.
+5. Enable Browser Source audio in the streaming software. Set **Stream volume**
    in Faith’s controls and keep **Preview sound off** to avoid duplicate audio.
    Check the voice/music balance in her actual scene before streaming.
-5. Download a settings backup before changing browser or computer. Settings live
-   in the browser where they were saved; importing creates fresh display links.
+6. With Faith’s private editing link, settings save to that shared link and
+   load in another browser using it. Without a shared link, settings stay in
+   the browser where they were saved. **OBS setup & settings backups** also
+   offers download/import; importing adds setups and keeps the existing
+   permanent OBS source. A failed shared save leaves the draft available to
+   retry. If another editor saved first, use **Load latest & discard my edits**
+   to deliberately replace the draft with the newest saved settings.
 
 Vault settings, rounds and display messages have their own namespace. Darts and
 Presents remain separate. No payment, chat-command or Twitch-account integration

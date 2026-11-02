@@ -28,3 +28,41 @@
 
 /* Private live station keeps the button with the visible vault. */
 .vault-control-page .control-shell{max-width:1200px}.vault-control-layout{display:grid;grid-template-columns:minmax(300px,1fr) minmax(300px,420px);gap:28px;align-items:start}.vault-play-station{position:sticky;top:16px;min-width:0}.vault-play-station .vault-screen{width:min(100%,420px,calc(91.3vh - 155px))}.vault-play-station .control-actions{margin:10px auto 0;max-width:420px}.vault-play-station .control-actions button{width:100%;min-height:48px}.vault-play-station>.hint{margin:8px auto;font-size:11px;max-width:420px}.vault-play-station #control-status{margin:8px auto;max-width:420px}.vault-private-setup{min-width:0}.vault-private-setup .experience-options,.vault-private-setup .game-range-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.experience-card strong{overflow-wrap:anywhere;text-align:center;line-height:1.2}.experience-card span{white-space:normal;text-align:center}.game-range-grid legend{font-size:12px}.vault-private-setup .game-viewer{margin-top:0}@media(max-width:820px){.vault-control-layout{display:flex;flex-direction:column;gap:18px}.vault-private-setup,.vault-play-station{width:100%}.vault-play-station{position:static}.vault-control-page .panel{padding:14px}.vault-private-setup .vault-experience-panel{margin-bottom:12px}}
+
+/* Everyday editor: four ranges and one save; optional tools stay folded. */
+.vault-editor-page .gift-shell{max-width:1220px;padding-top:24px}
+.vault-editor-page .page-head{margin-bottom:16px}.vault-editor-page .page-head h1{font-size:36px}
+.vault-editor-page .page-head>.link-button{font-size:13px;flex-shrink:0}
+.vault-editor-page .local-note{font-size:12px;margin-bottom:18px}
+.vault-editor-page .vault-layout{grid-template-columns:minmax(400px,1.2fr) minmax(340px,1fr)}
+.vault-editor-page .vault-saved-bar{gap:10px;align-items:end}
+.vault-editor-page .vault-saved-bar>div{display:block;overflow:visible}
+.vault-editor-page .vault-saved-bar label{margin-bottom:6px}
+.vault-editor-page .vault-saved-bar select{max-width:400px}
+.vault-form-fields{border:0;padding:0;margin:0;min-width:0}
+.vault-settings-save{position:sticky;top:0;z-index:2;background:#241a2c;padding:8px 0 12px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.vault-settings-save .panel-heading{margin-bottom:0}.vault-settings-save .eyebrow{margin-bottom:5px}
+.vault-settings-save #editor-status{margin:8px 0 0;min-height:19px;font-size:11px}
+.vault-editor-page .vault-range-settings{margin-top:24px}
+.vault-editor-page .game-range-grid{grid-template-columns:1fr;gap:10px;margin-bottom:12px}
+.vault-editor-page .game-range-grid fieldset{display:grid;grid-template-columns:minmax(110px,1.5fr) repeat(2,minmax(70px,1fr));gap:10px;padding:8px 12px 12px}
+.vault-editor-page .game-range-grid label{font-size:11px;margin:0;gap:5px}
+.vault-editor-page .game-range-grid legend{font-size:10px;letter-spacing:.08em;color:var(--pink)}
+.vault-editor-page .game-range-grid input{padding-inline:8px}
+.vault-editor-page .limit-settings{margin-top:14px;padding:14px 0;border-bottom:0}
+.vault-editor-page summary{font-size:13px;font-weight:600;line-height:1.6}
+.vault-editor-page .save-reminder{margin-bottom:0;font-size:11px}
+.vault-editor-page .preview-panel{padding:20px;position:static}
+.vault-editor-page .preview-panel .panel-heading{margin-bottom:12px}
+.vault-editor-page .experience-options{grid-template-columns:1fr 1fr;margin-bottom:16px}
+.vault-editor-page .experience-card{min-height:54px;padding:8px;gap:4px}
+.vault-editor-page .experience-card[aria-pressed=true]{padding:7px}
+.vault-editor-page .experience-card strong{font-size:13px}.vault-editor-page .experience-card span{font-size:11px}
+.vault-editor-page .vault-screen{max-width:340px}
+.vault-editor-page .gift-mixer{margin-top:12px;padding:12px}
+.vault-editor-page .demo-note{line-height:1.6}
+.vault-editor-page .vault-demo-tools>label{margin-top:16px}
+.vault-editor-page .vault-demo-tools>button{margin-top:10px;margin-right:6px}
+.vault-editor-page .vault-setup-details{padding:18px 24px}.vault-editor-page .vault-setup-details[open]>div:first-of-type{margin-top:22px}
+@media(max-width:950px){.vault-editor-page .vault-layout{grid-template-columns:1fr}.vault-editor-page .preview-panel{grid-row:auto}.vault-editor-page .gift-shell{max-width:650px}.vault-editor-page .page-head{align-items:start}.vault-editor-page .panel{padding:20px}}
+@media(max-width:520px){.vault-editor-page .page-head{flex-direction:column;gap:14px}.vault-editor-page .vault-saved-bar{flex-wrap:wrap}.vault-editor-page .vault-saved-bar>div{flex-basis:100%}.vault-editor-page .gift-shell{padding:18px 12px}.vault-editor-page .panel{padding:16px}.vault-editor-page .game-range-grid fieldset{gap:8px;padding:8px 10px 10px;grid-template-columns:1fr 1fr}.vault-editor-page .game-range-grid label:first-of-type{grid-column:1/-1}.vault-editor-page .panel-heading h2{font-size:23px}.vault-editor-page .vault-settings-save{top:0}.vault-editor-page .sample-actions{align-items:stretch;flex-direction:column}}

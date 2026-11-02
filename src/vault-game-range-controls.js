@@ -2,8 +2,8 @@ import {VAULT_EXPERIENCES} from './vault-experiences.js';
 import {validateVaultGameRanges} from './vault-game-ranges.js';
 
 // Both setup and live controls edit the same four saved game ranges.
-export function bindVaultGameRanges(root,{save}){
- const form=document.createElement('form');form.className='game-range-form';
+export function bindVaultGameRanges(root,{save,embedded=false,onChange=()=>{}}){
+ const form=document.createElement(embedded?'div':'form');form.className='game-range-form';
  const grid=document.createElement('div');grid.className='game-range-grid';
  for(const e of VAULT_EXPERIENCES){
   const box=document.createElement('fieldset'),title=document.createElement('legend');title.textContent='Game '+(VAULT_EXPERIENCES.indexOf(e)+1);box.append(title);
@@ -17,14 +17,16 @@ export function bindVaultGameRanges(root,{save}){
  }
  const button=document.createElement('button');button.type='submit';button.className='primary';button.textContent='Save four games';
  const status=document.createElement('p');status.className='hint';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
- form.append(grid,button,status);root.append(form);
+ form.append(grid);if(!embedded)form.append(button,status);root.append(form);
  let key='',enabled=false,busy=false,dirty=false;
  if(typeof window!=='undefined'){window.addEventListener('shared-settings-before-update',event=>{if(dirty)event.preventDefault();});window.addEventListener('shared-settings-discard',()=>{dirty=false;key='';});}
  const setDisabled=()=>{for(const input of form.querySelectorAll('input,button'))input.disabled=!enabled||busy;};
- form.addEventListener('input',()=>{dirty=true;status.textContent='Unsaved game settings. Save before starting.';});
- const read=()=>{
-  if(!form.reportValidity())throw Error('Finish the highlighted game ranges before saving.');
-  return validateVaultGameRanges(VAULT_EXPERIENCES.map(e=>({id:e.id,name:form.elements[e.id+'-name'].value,min:form.elements[e.id+'-min'].value,max:form.elements[e.id+'-max'].value})));
+ const field=name=>form.querySelector('[name="'+name+'"]');
+ form.addEventListener('input',()=>{dirty=true;status.textContent='Unsaved game settings. Save before starting.';onChange();});
+ const read=({report=true}={})=>{
+  const invalid=[...form.querySelectorAll('input')].find(input=>!input.validity.valid);
+  if(invalid){if(report)invalid.reportValidity();throw Error('Finish the highlighted game ranges before saving.');}
+  return validateVaultGameRanges(VAULT_EXPERIENCES.map(e=>({id:e.id,name:field(e.id+'-name').value,min:field(e.id+'-min').value,max:field(e.id+'-max').value})));
  };
  form.onsubmit=async event=>{
   event.preventDefault();if(!enabled||busy)return;
@@ -35,9 +37,9 @@ export function bindVaultGameRanges(root,{save}){
   }catch(e){status.textContent=e.message;}finally{busy=false;setDisabled();}
  };
  return {
-  update(ranges,available,scope=''){
+  update(ranges,available,scope='',{reset=false}={}){
    const values=validateVaultGameRanges(ranges),next=JSON.stringify([scope,values]);
-   if(next!==key){key=next;dirty=false;for(const r of values){form.elements[r.id+'-name'].value=r.name;form.elements[r.id+'-min'].value=r.min;form.elements[r.id+'-max'].value=r.max;}status.textContent='';}
+   if(reset||next!==key){key=next;dirty=false;for(const r of values){field(r.id+'-name').value=r.name;field(r.id+'-min').value=r.min;field(r.id+'-max').value=r.max;}status.textContent='';}
    enabled=available;setDisabled();
   },read,get dirty(){return dirty;}
  };

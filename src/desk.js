@@ -23,10 +23,9 @@ function embed(frame,item,mode){
   if(item.id==='scam'){const note=doc.querySelector('.control-room>header .notice');if(note){note.classList.add('desk-notice');doc.querySelector('.control-room>.play').before(note);}for(const s of doc.querySelectorAll('.control-room>section.panel')){if(s.querySelector('select[aria-label="Saved version"]')){s.classList.add('desk-wheel-settings');advanced('.desk-wheel-settings','Saved settings & demos');}else if(s.querySelector('h2')?.textContent==='Twitch commands'){s.classList.add('desk-chat');advanced('.desk-chat','Twitch commands');}}}
  }else{
   advanced('#viewer-ranges','Viewer rules');
-  advanced('.setup-panel','Stream setup');
+  if(item.id!=='vault')advanced('.setup-panel','Stream setup');
   if(item.id==='gifts')advanced('#gift-settings>details','More prize settings');
   if(item.id==='darts')advanced('#bonus-settings','Bonuses & custom settings');
-  if(item.id==='vault')advanced('#vault-settings>details','More vault settings');
   if(item.id==='pinata')advanced('.celebration-settings','Celebration levels');
  }
  const frameKey=item.id+':'+mode;

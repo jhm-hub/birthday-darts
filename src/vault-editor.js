@@ -12,22 +12,27 @@ import {bindGiftVolume} from './gift-mixer.js';
 const $=s=>document.querySelector(s),audio=createVaultAudio(),view=createVaultView($('#vault-preview'),{audio});
 bindGiftVolume($('#vault-mixer'),audio,()=>{});
 let savedGameRanges=validateVaultGameRanges();
-let widgets=[],selected=null,draft=null,draftError='',dirty=false,demo=null,demoExample=false,auto=false,nextAuto=0,timer,demoCashKey='';
+let widgets=[],selected=null,draft=null,draftError='',dirty=false,saving=false,demo=null,demoExample=false,auto=false,nextAuto=0,timer,demoCashKey='';
 for(const e of VAULT_EXPERIENCES)$('#demo-experience').add(new Option(e.name+' · '+vaultExperienceRange(e.id),e.id));
-const gameRanges=bindVaultGameRanges($('#game-ranges'),{save:async ranges=>{
- if(!selected)throw Error('Create this vault first, then save its four ranges.');
- await vaultStore.setGameRanges(selected,ranges);savedGameRanges=ranges;widgets=vaultStore.list();
- if(draft)draft={...draft,gameRanges:ranges};resetDemo();renderRangeChoices();
-}});
+const gameRanges=bindVaultGameRanges($('#game-ranges'),{embedded:true,onChange:changed});
+const rangeButtons=VAULT_EXPERIENCES.map(e=>{
+ const b=document.createElement('button');b.type='button';b.className='experience-card';b.dataset.experience=e.id;b.innerHTML='<strong></strong><span></span>';
+ b.onclick=()=>{if(draftError||!draft)return;resetDemo(false);$('#demo-experience').value=e.id;pick();};$('#demo-ranges').append(b);return b;
+});
 function renderRangeChoices(){
- for(const e of VAULT_EXPERIENCES){const option=[...$('#demo-experience').options].find(o=>o.value===e.id);option.textContent=vaultExperienceInfo(e.id,savedGameRanges).name+' · '+vaultExperienceRange(e.id,savedGameRanges);}
- gameRanges.update(savedGameRanges,!!selected,selected??'new');
+ const ranges=draft?.gameRanges??savedGameRanges;
+ for(const e of VAULT_EXPERIENCES){const option=[...$('#demo-experience').options].find(o=>o.value===e.id);option.textContent=vaultExperienceInfo(e.id,ranges).name+' · '+vaultExperienceRange(e.id,ranges);}
+ for(const b of rangeButtons){const name=vaultExperienceInfo(b.dataset.experience,ranges).name,range=vaultExperienceRange(b.dataset.experience,ranges);
+  if(b.firstElementChild.textContent!==name)b.firstElementChild.textContent=name;
+  if(b.lastElementChild.textContent!==range)b.lastElementChild.textContent=range;
+  b.setAttribute('aria-pressed',String($('#demo-experience').value===b.dataset.experience));b.disabled=!!draftError||!draft||saving;
+ }
 }
 const fields={'opening-min':'openingMin','opening-max':'openingMax',chambers:'chambers','max-chambers':'maxChambers','bonus-chance':'bonusChance','multiply-value':'multiplyValue','multiply-weight':'multiplyWeight','extra-weight':'extraWeight'};
 function message(text,error=false){$('#editor-status').textContent=text;$('#editor-status').classList.toggle('error',error);}
 function readDraft(){
  if([...$('#vault-settings').querySelectorAll('input')].some(x=>!x.validity.valid))throw Error('Finish the highlighted settings before playing the demo.');
- return {...validateVault({...(selected?{id:selected}:{}),name:$('#game-name').value,...Object.fromEntries(Object.entries(fields).map(([id,key])=>[key,Number($('#'+id).value)])),guarantee:$('#guarantee').checked,celebration:{big:Number($('#celebration-big').value),royal:Number($('#celebration-royal').value)},...Object.fromEntries([['outcomes','cash'],['specialOutcomes','special-cash']].map(([key,pool])=>[key,[...$('#'+pool+'-rows').children].map(r=>({value:Number(r.querySelector('.cash-value').value),weight:Number(r.querySelector('.cash-weight').value)}))]))}),gameRanges:gameRanges.dirty?gameRanges.read():savedGameRanges};
+ return {...validateVault({...(selected?{id:selected}:{}),name:$('#game-name').value,...Object.fromEntries(Object.entries(fields).map(([id,key])=>[key,Number($('#'+id).value)])),guarantee:$('#guarantee').checked,celebration:{big:Number($('#celebration-big').value),royal:Number($('#celebration-royal').value)},...Object.fromEntries([['outcomes','cash'],['specialOutcomes','special-cash']].map(([key,pool])=>[key,[...$('#'+pool+'-rows').children].map(r=>({value:Number(r.querySelector('.cash-value').value),weight:Number(r.querySelector('.cash-weight').value)}))]))}),gameRanges:gameRanges.read({report:false})};
 }
 function cashRow(o={value:25,weight:10},pool='cash'){
  const container=$('#'+pool+'-rows');
@@ -35,16 +40,17 @@ function cashRow(o={value:25,weight:10},pool='cash'){
  if(pool==='special-cash')row.querySelectorAll('[aria-label]').forEach(el=>el.setAttribute('aria-label','Special vault '+el.getAttribute('aria-label').toLowerCase()));
  row.querySelector('.cash-value').value=o.value;row.querySelector('.cash-weight').value=o.weight;row.querySelectorAll('input').forEach(x=>x.addEventListener('input',changed));row.querySelector('button').onclick=()=>{if(container.children.length===1)return message('Keep at least one cash amount.',true);row.remove();changed();};container.append(row);
 }
-function links(){const open=$('#open-controls'),shortcut=$('#tier-controls'),input=$('#vault-display-url');if(!selected){shortcut.removeAttribute('href');shortcut.textContent='Save this vault first';open.removeAttribute('href');open.textContent='Save this vault first';input.value='Save this vault to create its display link.';$('#copy-display').disabled=true;return;}const url=new URL('./vault-display.html',location.href);url.hash='room='+vaultStore.displayKey();input.value=url.href;open.href='./vault-play.html?id='+encodeURIComponent(selected);open.textContent='Open controls ↗';shortcut.href=open.href;shortcut.textContent='Open game buttons ↗';$('#copy-display').disabled=false;}
-function list(){const el=$('#vault-list');el.replaceChildren();widgets.forEach(w=>{const b=document.createElement('button');b.type='button';b.className='saved-game';b.textContent=w.name;b.setAttribute('aria-current',String(selected===w.id));b.onclick=()=>{if((dirty||gameRanges.dirty)&&!confirm('Discard the unsaved vault changes?'))return;edit(w);};el.append(b);});}
-function edit(w){window.dispatchEvent(new CustomEvent('shared-settings-clean'));if(w.id){const link=new URL(location.href);link.searchParams.set('id',w.id);history.replaceState(null,'',link);}selected=w.id??null;savedGameRanges=validateVaultGameRanges(w.gameRanges);renderRangeChoices();dirty=false;$('#demo-experience').value=w.experience??'custom';$('#game-name').value=w.name;for(const[id,key]of Object.entries(fields))$('#'+id).value=w[key];$('#guarantee').checked=w.guarantee;$('#celebration-big').value=w.celebration.big;$('#celebration-royal').value=w.celebration.royal;for(const[key,pool]of [['outcomes','cash'],['specialOutcomes','special-cash']]){$('#'+pool+'-rows').replaceChildren();w[key].forEach(o=>cashRow(o,pool));}$('#duplicate').disabled=!selected;$('#save-game').textContent=selected?'Save vault':'Create vault';message('');refresh();list();links();}
+function links(){const open=$('#open-controls'),shortcut=$('#tier-controls'),input=$('#vault-display-url');if(!selected){shortcut.removeAttribute('href');shortcut.textContent='Save this vault first';open.removeAttribute('href');open.textContent='Save this vault first';input.value='Save this vault to create its display link.';$('#copy-display').disabled=true;return;}const url=new URL('./vault-display.html',location.href);url.hash='room='+vaultStore.displayKey();input.value=url.href;open.href='./vault-play.html?id='+encodeURIComponent(selected);open.textContent='Open controls ↗';shortcut.href=open.href;shortcut.textContent='Open live controls ↗';$('#copy-display').disabled=false;}
+function list(){const el=$('#vault-list');el.replaceChildren(...widgets.map(w=>new Option(w.name,w.id)));if(!selected)el.add(new Option('New setup · not saved',''));el.value=selected??'';}
+$('#vault-list').onchange=()=>{const w=widgets.find(w=>w.id===$('#vault-list').value);if(!w)return;if((dirty||gameRanges.dirty)&&!confirm('Discard the unsaved vault changes?')){$('#vault-list').value=selected??'';return;}edit(w);};
+function edit(w){window.dispatchEvent(new CustomEvent('shared-settings-clean'));if(w.id){const link=new URL(location.href);link.searchParams.set('id',w.id);history.replaceState(null,'',link);}selected=w.id??null;savedGameRanges=validateVaultGameRanges(w.gameRanges);gameRanges.update(savedGameRanges,true,selected??'new',{reset:true});dirty=false;$('#demo-experience').value=w.experience&&w.experience!=='custom'?w.experience:'low';$('#game-name').value=w.name;for(const[id,key]of Object.entries(fields))$('#'+id).value=w[key];$('#guarantee').checked=w.guarantee;$('#celebration-big').value=w.celebration.big;$('#celebration-royal').value=w.celebration.royal;for(const[key,pool]of [['outcomes','cash'],['specialOutcomes','special-cash']]){$('#'+pool+'-rows').replaceChildren();w[key].forEach(o=>cashRow(o,pool));}$('#duplicate').disabled=!selected;$('#save-game').textContent=selected?'Save settings':'Create setup';message(selected?'Saved settings loaded.':'New setup · save when you’re ready.');refresh();list();links();}
 function refresh(){
  clearTimeout(timer);resetDemo(false);try{draft=readDraft();draftError='';}catch(e){draftError=e.message;}
  for(const pool of ['cash','special-cash']){const rows=[...$('#'+pool+'-rows').children],sum=rows.reduce((n,r)=>n+Number(r.querySelector('.cash-weight').value),0);rows.forEach(r=>r.querySelector('output').textContent=sum>0?(Number(r.querySelector('.cash-weight').value)/sum*100).toFixed(1)+'%':'—');$('#add-'+pool).disabled=rows.length>=10;}
  if(draftError)$('#bonus-rule').textContent=draftError;else{const p=draft,eligible=p.multiplyWeight+(p.maxChambers>p.chambers?p.extraWeight:0),share=eligible?p.multiplyWeight/eligible*100:0;$('#bonus-rule').textContent=p.bonusChance===0?'Bonuses are off. Every chamber still adds cash.':eligible===0?'No bonus is eligible at this chamber limit. Every chamber still adds cash.':`${p.bonusChance}% normal bonus chance. Of available bonuses: ${share.toFixed(0)}% multiplier / ${(100-share).toFixed(0)}% +1 unlock at the start. `+(p.guarantee&&p.chambers>=3&&eligible>0?'If no bonus lands in the first two chambers, chamber 3 guarantees one. ':'')+'At the chamber limit, +1 is removed from the draw.'+(p.guarantee&&p.chambers>=3?' The guarantee makes the overall bonus frequency higher than the normal chance.':'');}
  $('#vault-preview').style.opacity=draftError?'.45':'1';render();
 }
-function changed(){window.dispatchEvent(new CustomEvent('shared-settings-dirty'));dirty=true;$('#save-game').textContent=selected?'Save changes':'Create vault';clearTimeout(timer);timer=setTimeout(refresh,120);}
+function changed(){if(saving)return;window.dispatchEvent(new CustomEvent('shared-settings-dirty'));dirty=true;$('#save-game').textContent=selected?'Save settings':'Create setup';message('Unsaved changes. Save to use them in live controls.');clearTimeout(timer);timer=setTimeout(refresh,120);}
 function resetDemo(paint=true){auto=false;demo=null;demoExample=false;audio.reset();if(paint)render();}
 function showPreview(){$('#vault-preview').scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
 function renderDemoCash(){
@@ -57,10 +63,10 @@ function renderDemoCash(){
 }
 function demoRule(){return demoExample?null:demo?(demo.privateViewerRange??null):findVaultViewerRange(vaultStore.list().find(w=>w.id===selected)?.viewerRanges,$('#demo-viewer').value);}
 function render(){
- renderDemoCash();
+ renderRangeChoices();renderDemoCash();
  const experience=$('#demo-experience').value,rule=demoRule(),presetMode=demoExample||!!rule||experience!=='custom';
  $('#demo-viewer-rule').textContent=rule?'@'+rule.username+' · '+vaultViewerRangeText(rule)+' final total. This username range takes priority.':'Try a saved username to preview their range. Manage names in Faith’s controls.';
- $('#demo-experience-note').textContent=demoExample?'$10,000 example · modest cash, stacked ×2 boosts and bonus vaults. This sample does not change your saved ranges.':rule?'This sample uses the saved username range, including all bonuses.':presetMode?vaultExperienceRange(experience,demo?.privateExperience?savedGameRanges.map(r=>r.id===experience?{...r,min:demo.privateExperience.min,max:demo.privateExperience.max}:r):savedGameRanges)+' final total, including bonuses. Five starting chambers; this demo uses the saved game range. Higher totals build through stacked multipliers and bonus vaults.':'Uses the cash amounts and odds in this editor.';
+ $('#demo-experience-note').textContent=demoExample?'Sample round · small cash prizes, multipliers and bonus vaults. Your saved settings stay the same.':rule?'This sample uses the saved username range, including all bonuses.':presetMode?vaultExperienceRange(experience,demo?.privateExperience?(draft?.gameRanges??savedGameRanges).map(r=>r.id===experience?{...r,min:demo.privateExperience.min,max:demo.privateExperience.max}:r):(draft?.gameRanges??savedGameRanges))+' final total, including bonuses. This preview uses the settings you’re editing.':'Uses the cash amounts and odds in this editor.';
  $('#demo-luck-run').disabled=$('#demo-payoff').disabled=!!draftError||!draft;
  $('#demo-cash').disabled=$('#demo-bonus').disabled=$('#demo-finale').disabled=presetMode;
  if(draft)view.update({widget:vaultExperiencePreset(draft,experience),round:demo},{preview:true});
@@ -73,6 +79,7 @@ function render(){
 }
 function pick(){if(!draft||draftError||demo?.flight||demo&&demo.completedAt!==null||demo&&Date.now()<demo.readyAt)return;try{if(audio.enabled)audio.unlock();if(!demo){const rule=demoRule(),viewer=$('#demo-viewer').value||'Demo viewer';demo=rule?startVaultViewerRange(draft,rule,viewer):startVaultExperience(draft,$('#demo-experience').value,viewer);}else unlockVault(demo,Date.now(),demo.prizePlan?{}:{forcedCash:$('#demo-cash').value===''?null:Number($('#demo-cash').value),forcedBonus:$('#demo-bonus').value||undefined});nextAuto=Date.now()+2400;render();}catch(e){auto=false;$('#demo-status').textContent=e.message;}}
 $('#demo-experience').onchange=()=>resetDemo();
+$('#demo-custom').onclick=()=>{resetDemo(false);$('#demo-experience').value='custom';pick();};
 $('#demo-viewer').oninput=()=>resetDemo();
 $('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-reset').onclick=()=>resetDemo();
 $('#demo-auto').onclick=()=>{if(auto){auto=false;render();return;}resetDemo(false);auto=true;pick();nextAuto=Date.now()+1550;render();showPreview();};
@@ -92,17 +99,28 @@ $('#stop-cue').onclick=()=>{audio.reset();$('#sound-status').textContent='Sound 
 document.querySelectorAll('[data-background]').forEach(b=>b.onclick=()=>{$('#vault-preview').dataset.background=b.dataset.background;document.querySelectorAll('button[data-background]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
 for(const id of ['game-name',...Object.keys(fields),'guarantee','celebration-big','celebration-royal'])$('#'+id).addEventListener('input',changed);
 for(const pool of ['cash','special-cash'])$('#add-'+pool).onclick=()=>{cashRow({value:pool==='cash'?25:100,weight:10},pool);changed();};
-$('#vault-settings').onsubmit=async e=>{e.preventDefault();try{const input=readDraft();if(selected&&!gameRanges.dirty)delete input.gameRanges;const w=await vaultStore.save(input);widgets=vaultStore.list();edit(w);message('Saved. Ready for the next viewer.');}catch(e){message(e.message,true);}};
+// A single transaction saves the name, four ranges and advanced settings.
+// Disable editing while an asynchronous shared save is pending.
+$('#vault-settings').addEventListener('invalid',e=>{for(let p=e.target.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;message('Check the highlighted setting before saving.',true);},true);
+$('#vault-settings').onsubmit=async e=>{
+ e.preventDefault();if(saving)return;
+ try{const input=readDraft();if(selected&&!gameRanges.dirty)delete input.gameRanges;saving=true;
+  $('#save-game').disabled=$('#vault-list').disabled=$('#duplicate').disabled=$('#new-game').disabled=true;$('#vault-form-fields').disabled=true;$('#save-game').textContent='Saving…';message('Saving settings…');
+  const w=await vaultStore.save(input);widgets=vaultStore.list();edit(w);message('Saved. Ready for the next viewer.');
+ }catch(e){message(e.message,true);}finally{saving=false;$('#save-game').disabled=$('#vault-list').disabled=$('#new-game').disabled=false;$('#duplicate').disabled=!selected;$('#vault-form-fields').disabled=false;$('#save-game').textContent=selected?'Save settings':'Create setup';render();}
+};
 $('#new-game').onclick=()=>{if((dirty||gameRanges.dirty)&&!confirm('Discard the unsaved vault changes?'))return;edit({...structuredClone(DEFAULT_VAULT),id:undefined,name:'Another little fortune'});};
-$('#duplicate').onclick=async()=>{try{const w=await vaultStore.save({...readDraft(),experience:vaultStore.list().find(w=>w.id===selected)?.experience??'custom',viewerRanges:vaultStore.list().find(w=>w.id===selected)?.viewerRanges??[],id:undefined,name:$('#game-name').value.slice(0,34)+' copy'});widgets=vaultStore.list();edit(w);message('Created a separate vault.');}catch(e){message(e.message,true);}};
+$('#duplicate').onclick=async()=>{try{const w=await vaultStore.save({...readDraft(),experience:vaultStore.list().find(w=>w.id===selected)?.experience??'custom',viewerRanges:vaultStore.list().find(w=>w.id===selected)?.viewerRanges??[],id:undefined,name:$('#game-name').value.slice(0,34)+' copy'});widgets=vaultStore.list();edit(w);message('Copy saved. Both setups use the same OBS source.');}catch(e){message(e.message,true);}};
 $('#copy-display').onclick=async()=>{try{await navigator.clipboard.writeText($('#vault-display-url').value);message('Display link copied.');}catch{$('#vault-display-url').select();message('Select and copy the display link.');}};
 $('#export-vaults').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(exportVaultSettings(vaultStore.list()),null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='faith-vault-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 $('#import-vaults').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>1000000)throw Error('This settings file is too large.');await vaultStore.import(importVaultSettings(JSON.parse(await file.text())));widgets=vaultStore.list();list();message('Imported vaults. Existing games were kept.');}catch(e){message(e.message,true);}finally{e.target.value='';}};
 let wasIntro=false;const pulse=setInterval(()=>{if(!demo)return;const opening=Date.now()<demo.readyAt;if(advanceVault(demo)||wasIntro!==opening)render();wasIntro=opening;if(demo.hideAt&&Date.now()>=demo.hideAt+VAULT_CLEAR_MS){resetDemo();return;}if(auto&&!demo.flight&&demo.completedAt===null&&Date.now()>=nextAuto)pick();},50);
 const unsubscribeRanges=vaultStore.subscribe(()=>{
  if(!selected)return;const latest=vaultStore.list(),w=latest.find(w=>w.id===selected);if(!w)return;
+ if(saving)return;
  if(JSON.stringify(w.gameRanges)!==JSON.stringify(savedGameRanges)){
-  savedGameRanges=w.gameRanges;widgets=latest;if(draft)draft={...draft,gameRanges:savedGameRanges};renderRangeChoices();if(!demo)render();
+  if(dirty||gameRanges.dirty){message('Settings changed in another window. Your unsaved edits are still here.',true);return;}
+  savedGameRanges=w.gameRanges;gameRanges.update(savedGameRanges,true,selected);widgets=latest;if(draft)draft={...draft,gameRanges:savedGameRanges};renderRangeChoices();if(!demo)render();
  }
 });
 window.addEventListener('pagehide',()=>{unsubscribeRanges();clearInterval(pulse);clearTimeout(timer);view.dispose();audio.dispose();},{once:true});window.addEventListener('beforeunload',e=>{if(dirty||gameRanges.dirty){e.preventDefault();e.returnValue='';}});
