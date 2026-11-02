@@ -1,6 +1,6 @@
 import {money,vaultTotal} from './vault-game.js';
 import {ease,clamp} from './vault-motion.js';
-import {vaultBonusAt} from './vault-timing.js';
+import {vaultBonusAt,vaultBonusBuildAt,vaultBonusBuildMs} from './vault-timing.js';
 import {VAULT_BONUS_LAND_MS} from './vault-bonus-motion.js';
 
 // A receipt of revealed awards only. Private names, ranges and future plans
@@ -29,8 +29,11 @@ export function vaultStory(round,time,quiet=false){
  const beforeCash=afterCash-BigInt(shot.cashCents),cashTotal=afterCash*oldMultiplier;
  let kind='cash',text=money(beforeCash*oldMultiplier)+' + '+money(BigInt(shot.cashCents)*oldMultiplier)+' = '+money(cashTotal);
  if(oldMultiplier>1n)text=money(shot.cashCents)+' ×'+oldMultiplier+' → +'+money(BigInt(shot.cashCents)*oldMultiplier);
+ if(!hasBonus&&vaultBonusBuildMs(shot)&&time>=vaultBonusBuildAt(shot)){
+  kind='building';text=money(cashTotal)+' banked · ×'+shot.bonus.value+' incoming';
+ }
  if(hasBonus&&shot.bonus.kind==='multiply'){kind='multiply';text=money(cashTotal)+' ×'+shot.bonus.value+' = '+money(cashTotal*BigInt(shot.bonus.value));}
- if(hasBonus&&shot.bonus.kind==='extra'){kind='extra';text='+1 unlock earned · another vault to explore';}
+ if(hasBonus&&shot.bonus.kind==='extra'){kind='extra';text=shot.index>=round.preset.chambers?'+1 unlock earned · the vault goes deeper':'+1 unlock earned · another vault to explore';}
  const at=kind==='cash'?shot.revealAt:vaultBonusAt(shot)+VAULT_BONUS_LAND_MS;
  return {...off,shot,kind,text,pulse:quiet?0:Math.sin(clamp((time-at)/420)*Math.PI)};
 }

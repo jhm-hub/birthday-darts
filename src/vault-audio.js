@@ -9,6 +9,8 @@ import {vaultTreasureLevel} from './vault-treasure.js';
 import {finalePose} from './vault-effects.js';
 import {giftVolume} from './gift-volume.js';
 import {vaultBonusAt} from './vault-bonus-motion.js';
+import {vaultBonusBuildAt,vaultBonusBuildMs} from './vault-timing.js';
+import {vaultChapter} from './vault-journey.js';
 import {vaultLevel,projectedVault,vaultTotal} from './vault-game.js';
 import {renderVaultSound} from './vault-sound-design.js';
 import {presentedVaultRound,vaultLastShot,VAULT_SETTLE_LEAD_MS} from './vault-finish-motion.js';
@@ -36,7 +38,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
   }
  }
  function play(sound,options={},elapsed=0){
-  const key=sound+':'+(options.index??0)%5+':'+(options.tier??0)+':'+(options.richness??1)+':'+(options.bridgeMs??888)+':'+!!options.bonus;
+  const key=sound+':'+(options.index??0)%5+':'+(options.tier??0)+':'+(options.richness??1)+':'+(options.depth??1)+':'+(options.bridgeMs??888)+':'+!!options.bonus;
   let buffer=buffers.get(key);
   if(!buffer){const data=renderVaultSound(sound,options,ctx.sampleRate);buffer=ctx.createBuffer(1,data.length,ctx.sampleRate);buffer.getChannelData(0).set(data);buffers.set(key,buffer);}
   if(elapsed>=buffer.length/ctx.sampleRate)return;
@@ -76,14 +78,16 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
     // flourishes without stacking another sound over the same event.
     cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'linked-unlock',{index:shot.index});
     cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:vaultCashLevel(shot.cashCents)});
+    if(vaultBonusBuildMs(shot))cue(shot.id+':bonus-build',vaultBonusBuildAt(shot),time,'multiply-build');
     if(shot.bonus)cue(shot.id+':bonus',vaultBonusAt(shot),time,shot.bonus.kind==='multiply'?'multiply':'extra');
     cue(shot.id+':collect',vaultCollectAt(shot),time,'collect',{tier:vaultCashLevel(shot.cashCents),bonus:!!shot.bonus});
    }
    for(const link of vaultChamberLinks(r,time)){
     const special=vaultSpecialTheme(r,link.index);
     if(special){
-     cue(link.from.id+':special-prepare',link.from.finishAt-VAULT_SPECIAL_PREPARE_MS,time,'special-prepare',{index:special.theme});
-     cue(link.from.id+':special',link.from.finishAt-VAULT_WING_LEAD_MS,time,'special-arrive',{index:special.theme});
+     const depth=vaultChapter(r,link.index).level;
+     cue(link.from.id+':special-prepare',link.from.finishAt-VAULT_SPECIAL_PREPARE_MS,time,'special-prepare',{index:special.theme,depth});
+     cue(link.from.id+':special',link.from.finishAt-VAULT_WING_LEAD_MS,time,'special-arrive',{index:special.theme,depth});
     }else{
      cue(link.from.id+':next',link.from.finishAt-VAULT_CHAMBER_GUIDE_LEAD_MS,time,'next',{index:link.index});
      if(link.wing)cue(link.from.id+':wing',link.from.finishAt-VAULT_WING_LEAD_MS,time,'wing');

@@ -1,4 +1,5 @@
 import {vaultStory,vaultStoryFlight,vaultStoryGlyph} from './vault-story.js';
+import {vaultJourney} from './vault-journey.js';
 import {vaultWelcomeFlow,vaultWelcomeParticle} from './vault-welcome-flow.js';
 import {vaultTreasureCoda,vaultTreasureRestOrnament} from './vault-treasure-coda.js';
 import {vaultTreasureBridge,vaultTreasureBridgeParticle} from './vault-treasure-handoff.js';
@@ -34,6 +35,8 @@ export function createVaultView(root,{audio}={}){
  const rim=[...root.querySelectorAll('.rim-glint')].map(el=>({el,origin:el.getAttribute('transform')}));
  const chambers=[...root.querySelectorAll('.vault-chamber')].map((el,i)=>({el,i,slot:CHAMBER_SLOTS[i%5],left:el.querySelector('.chamber-leaf-left'),leftEdge:el.querySelector('.chamber-edge-left'),rightEdge:el.querySelector('.chamber-edge-right'),shades:[...el.querySelectorAll('.door-shade')],sheens:[...el.querySelectorAll('.door-sheen')],lock:el.querySelector('.chamber-lock-glint'),attention:el.querySelector('.chamber-attention'),right:el.querySelector('.chamber-leaf-right'),loot:el.querySelector('.chamber-loot'),glow:el.querySelector('.chamber-radiance'),focus:el.querySelector('.chamber-focus'),spark:el.querySelector('.chamber-spark'),award:el.querySelector('.chamber-award'),bonus:el.querySelector('.chamber-bonus-mark'),number:el.querySelector('.chamber-number'),dormant:el.querySelector('.chamber-dormant')}));
  const heading=$('.vault-heading'),topline=$('.vault-topline');
+ const journeyLayer=document.createElement('div');journeyLayer.className='vault-journey';journeyLayer.innerHTML='<div class="journey-depth"><small>BONUS VAULT</small><strong></strong><span>'+Array.from({length:5},()=>'<i>'+vaultSpecialJewel()+'</i>').join('')+'</span></div><div class="journey-multiplier"><small>TOTAL BOOST</small><strong></strong></div>';stage.append(journeyLayer);
+ const depthLabel=journeyLayer.querySelector('.journey-depth strong'),boostLabel=journeyLayer.querySelector('.journey-multiplier strong'),journeyGems=[...journeyLayer.querySelectorAll('i')];
  const openingPips=document.createElement('span');openingPips.className='vault-opening-pips';openingPips.setAttribute('aria-hidden','true');openingPips.innerHTML='<i></i><i></i><i></i>';els.bankWrap.append(openingPips);
  const catches=document.createElement('span');catches.className='vault-collection-catches';catches.setAttribute('aria-hidden','true');catches.innerHTML='<i></i><i></i>';els.bankWrap.append(catches);
  const gathers=[...root.querySelectorAll('.vault-final-gather i')];let gatherStyle=-1;
@@ -81,9 +84,15 @@ export function createVaultView(root,{audio}={}){
   rim.forEach(({el,origin},i)=>{const sparkle=rimSparkle(i,time,quiet);el.style.opacity=sparkle.opacity*(shot?.45:1)*exit.heading;el.setAttribute('transform',origin+` scale(${sparkle.scale})`);});
   const bankPose=between.linked?between.bank:vaultBankPose(r,time,quiet),births=chamberBirths(r),point=vaultRewardPoint(r,shot?.index??r?.opened.at(-1)?.index??0);
   const special=vaultSpecialScene(r,time,quiet),arrival=vaultSpecialArrival(r,time,quiet),arriving=arrival.active&&special.current?.index===arrival.theme.index;
+  const journey=vaultJourney(r,time);
+  journeyLayer.style.opacity=journey.visible?exit.heading:0;journeyLayer.setAttribute('aria-hidden',String(!journey.visible));
+  journeyLayer.dataset.building=String(journey.building);journeyLayer.style.setProperty('--special-light',special.current?.light??'#ffd2e8');
+  depthLabel.textContent=String(journey.number);boostLabel.textContent='×'+journey.multiplier;
+  journeyGems.forEach((el,i)=>{el.style.display=i<journey.level?'':'none';});
   const incoming=arriving?arrival.incoming:special.blend,outgoing=arriving?arrival.outgoing:1-special.blend;
   arrivalLayer.style.display=arrival.active?'':'none';arrivalLayer.style.setProperty('--special-light',arrival.theme?.light??'#ffd2e8');
   arrivalSeal.style.opacity=arrival.seal;arrivalTitle.style.opacity=arrival.title;arrivalTitle.style.transform=`translate(-50%,${arrival.titleY}px)`;
+  arrivalTitle.textContent=arrival.chapter?'BONUS '+arrival.chapter.number+' · '+arrival.chapter.title:'BONUS VAULT';
   arrivalParticles.forEach((el,i)=>{const particle=vaultSpecialParticle(arrival,i,quiet);el.style.opacity=particle.opacity;el.style.transform=`translate(${particle.x}px,${particle.y}px) scale(${particle.scale})`;});
   original.style.opacity=special.current?(special.previous?0:outgoing):1;
   original.style.display=special.current&&special.blend===1?'none':'';
@@ -99,11 +108,11 @@ export function createVaultView(root,{audio}={}){
    s.left.setAttribute('transform',doors.left);s.right.setAttribute('transform',doors.right);s.left.style.opacity=s.right.style.opacity=edge;
    s.shades.forEach(el=>el.style.opacity=finish.shade);
    const ready=current&&!activeShot,prepared=current&&between.linked&&between.link.index===special.current.index;
-   s.focus.style.opacity=finished?0:Math.max(prepared?between.focuses[special.current.index]*.5:ready?.15:finish.focus*.5,current&&arriving?arrival.rim*.32:0);
+   s.focus.style.opacity=finished?0:Math.max(prepared?between.focuses[special.current.index]*.5:ready?.15:finish.focus*.5,current&&arriving?arrival.rim*(.28+.035*arrival.chapter.level):0);
    s.lock.style.opacity=quiet?0:Math.max(finish.lock*.8,prepared?between.lock:0);
   });
   if(bankPose.bank>0&&bankPose.blend>0&&!finished&&!special.current)els.count.textContent='WING '+(bankPose.bank+1)+' · '+(r?readout.remaining:allocated)+' LEFT';
-  if(special.current&&!finished)els.count.textContent=special.current.name+' · '+readout.remaining+' LEFT';
+  if(special.current&&!finished)els.count.textContent=readout.remaining+' UNLOCK'+(readout.remaining===1?'':'S')+' LEFT';
   stage.dataset.vault=special.current?.key??'crown';
   banks.forEach((bank,i)=>{const current=i===bankPose.bank,previous=i===bankPose.previous;bank.style.display=current||previous?'':'none';bank.style.opacity=current?bankPose.blend:previous?1-bankPose.blend:0;});
   chambers.forEach(c=>{
@@ -147,7 +156,8 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   cashSparks.forEach((el,i)=>{const spark=vaultCashSpark(i,cashPose,shot,time,quiet);el.style.opacity=spark.opacity;el.style.width=spark.width+'px';el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});
   const kind=reward?.bonus?.kind??'';
   els.bonusShell.style.display=kind?'':'none';els.bonusShell.dataset.kind=kind;
-  els.bonusText.textContent=kind?(kind==='multiply'?'×'+reward.bonus.value+' TOTAL':'+1 UNLOCK'):'';
+  els.bonusText.textContent=kind?(kind==='multiply'?'×'+reward.bonus.value+(bonusPose.building?' INCOMING':' TOTAL'):'+1 UNLOCK'):'';
+  els.bonusShell.dataset.building=String(bonusPose.building);
   els.bonus.dataset.kind=kind;els.bonusShell.style.opacity=bonusPose.opacity;
   els.bonusShell.setAttribute('aria-hidden',String(!bonusPose.visible));
   els.bonusShell.style.transform=`translateY(${bonusPose.y}px) scale(${bonusPose.scale})`;

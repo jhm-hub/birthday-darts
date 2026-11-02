@@ -24,8 +24,27 @@ the selected game's range. Reset returns to the normal demo selection.
 Default Low/Medium and manually configured Custom rounds retain their previous
 rules. Current saved rounds keep their original frozen plans. New High/Extreme,
 edited ranges and username rounds retain existing privacy, exact totals,
-permanent OBS links, manual clicks, art, audio and timing.
+permanent OBS links and manual clicks.
 
 Verification covers the actual engine path across exact, odd, narrow, tiny and
 large ranges; bonus counts; late boosts; richer special cash; serialization;
 range guarantees; public snapshot privacy; and preserving existing settings.
+
+## The bonus-vault story
+
+Each earned special vault gets a numbered chapter entrance: First Find,
+Deeper Inside, Treasure Trail, Crown Reserve, then Inner Treasury. The jewel
+burst grows with depth, while two small floating markers show the current
+bonus vault and the multiplier already earned. They occupy the clear shoulders
+of the existing 420 × 460 sprite. No target or private game name is displayed.
+
+In later special chambers, a multiplier with an existing boost and at most two
+unlocks remaining gets a 480 ms anticipation beat. Its badge gathers pixel
+sparks, a short casino reel pickup leads into the existing multiplier sound,
+and the calculation shows the banked amount before the boost lands. Coins,
+commit, next chamber and finale all follow the same saved finish clock.
+Ordinary chambers retain their pace. Old saved shots retain their old timing.
+
+Special entrances rise subtly in register as the journey deepens, using the
+same number of sound layers. The cash, anticipation, multiplier and coin
+sounds stay separated; the total remains exact and readable throughout.

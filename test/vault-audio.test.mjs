@@ -304,3 +304,28 @@ test('prepared doors add no pickup melodies and rich locks add only a low body',
  for(let index=0;index<5;index++)assert.deepEqual(vaultSoundScore('linked-unlock',{index}),vaultSoundScore('unlock',{index}));
  for(const richness of [1,2]){const score=vaultSoundScore('rich-lock',{richness});assert.equal(score.length,1);assert.equal(score[0].voice,'punch');assert.equal(score[0].at,0);}
 });
+
+test('late multiplier anticipation plays once, skips stale pickups and keeps its delayed payout clock',async()=>{
+ const {startVaultTotalRange}=await import('../src/vault-targets.js');
+ const {DEFAULT_VAULT,unlockVault,advanceVault}=await import('../src/vault-game.js');
+ const {vaultBonusBuildAt}=await import('../src/vault-timing.js');
+ const r=startVaultTotalRange(DEFAULT_VAULT,{min:10000,max:10000},'Demo',10000,()=>0);
+ while(r.remaining){
+  const shot=unlockVault(r,r.opened.at(-1)?.finishAt??r.readyAt);
+  if(shot.bonusBuildMs){
+   const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
+   const build=vaultBonusBuildAt(shot),at=vaultBonusAt(shot);
+   a.sync(r,build);assert.equal(sources(ctx).length,1);
+   assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('multiply-build'));
+   a.sync(structuredClone(r),build+25);assert.equal(sources(ctx).length,1);
+   a.sync(r,at);assert.equal(sources(ctx).length,2);
+   assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('multiply'));
+   a.sync(r,vaultCollectAt(shot));assert.equal(sources(ctx).length,3);
+   const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,at);
+   assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].buffer.getChannelData(0),renderVaultSound('multiply'));
+   return;
+  }
+  advanceVault(r,shot.finishAt);
+ }
+ assert.fail('sample should include a late boost');
+});

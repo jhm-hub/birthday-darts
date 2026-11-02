@@ -3,7 +3,7 @@ import {chooseOutcome} from './game.js';
 import {money} from './gift-game.js';
 import {validateGiftCelebration,giftCelebrationLevel} from './gift-celebration.js';
 export {money};
-import {VAULT_REVEAL_MS,VAULT_UNLOCK_MS} from './vault-timing.js';
+import {VAULT_REVEAL_MS,VAULT_UNLOCK_MS,VAULT_LATE_BOOST_MS} from './vault-timing.js';
 export {VAULT_REVEAL_MS,VAULT_UNLOCK_MS};
 export const VAULT_INTRO_MS=1200,VAULT_HOLD_MS=6500,VAULT_CLEAR_MS=450;
 export const DEFAULT_VAULT={id:'birthday-vault',name:'Faith’s Birthday Vault',openingMin:100,openingMax:300,chambers:5,maxChambers:12,bonusChance:35,multiplyValue:2,multiplyWeight:1,extraWeight:1,guarantee:true,celebration:{big:500,royal:1500},outcomes:[{value:10,weight:35},{value:25,weight:27},{value:50,weight:15},{value:100,weight:5}],specialOutcomes:[{value:25,weight:35},{value:50,weight:27},{value:100,weight:15},{value:250,weight:5}]};
@@ -71,6 +71,11 @@ export function unlockVault(r,now=Date.now(),{draw=randomInt,forcedCash=null,for
   if(forcedBonus!==null){const b=bonuses.find(b=>b.kind===forcedBonus&&b.weight>0);if(!b||p.bonusChance===0)throw Error('That bonus is unavailable.');bonus={kind:b.kind,value:b.value};}
  }else if(available&&(due||draw(10000)<Math.round(p.bonusChance*100))){const b=bonuses[chooseOutcome(bonuses,draw)];bonus={kind:b.kind,value:b.value};}
  r.flight={id:randomUUID(),index:r.opened.length,cashCents:Math.round(prizes[index].value*100),bonus,startAt:now,revealAt:now+VAULT_REVEAL_MS,finishAt:now+VAULT_UNLOCK_MS};
+ // A short final-act pause belongs to the actual earned multiplier, never
+ // to a private range or a future prize. All following beats share its clock.
+ if(bonus?.kind==='multiply'&&r.opened.length>=Math.max(6,p.chambers)&&r.remaining<=2&&BigInt(r.multiplier)>1n){
+  r.flight.bonusBuildMs=VAULT_LATE_BOOST_MS;r.flight.finishAt+=VAULT_LATE_BOOST_MS;
+ }
  return r.flight;
 }
 function award(r,shot){

@@ -126,3 +126,16 @@
 .vault-calculation[data-kind=multiply]{color:#edcaff}.vault-calculation[data-kind=extra]{color:#bdffe7}.vault-calculation[data-kind=cash]{color:#ffe4b3}
 .vault-story-flight{position:absolute;left:-12px;top:-13px;width:24px;height:26px;z-index:7;opacity:0;pointer-events:none;transform-origin:center}.vault-story-flight span,.vault-story-flight svg{display:block;width:24px;height:26px;image-rendering:pixelated}.vault-story-flight b{position:absolute;left:50%;top:20px;transform:translateX(-50%);font-size:13px;line-height:16px;white-space:nowrap;color:#fff1c5;-webkit-text-stroke:2.6px #35203d;paint-order:stroke fill}.vault-story-flight[data-kind=multiply] b{color:#f0d3ff}
 .vault-story-receipt{position:absolute;left:28px;right:28px;top:401px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;z-index:5;text-align:center;pointer-events:none}.vault-story-receipt>div{min-width:0;opacity:0;transform-origin:center bottom}.vault-story-receipt small{display:block;font-size:10px;line-height:15px;letter-spacing:.5px;font-weight:600;color:#ffefd1;-webkit-text-stroke:2.5px #362139;paint-order:stroke fill}.vault-story-receipt strong{display:inline-block;max-width:112px;padding:2px 6px 4px;line-height:1.1;color:#ffe5b2;background:#2c193de0;font-weight:600;white-space:nowrap;box-shadow:inset 0 2px #d3a766,inset 0 -2px #765063;clip-path:polygon(4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),0 calc(100% - 2px),0 2px,4px 2px);-webkit-text-stroke:2px #362139;paint-order:stroke fill}.vault-story-receipt [data-kind=cash] strong{color:#c1ffe3}.vault-story-receipt [data-kind=multiply] strong{color:#e9c5ff}
+
+/* Two small floating markers occupy the vault's clear shoulders, never the
+   door, prize or bank. They record earned progress without showing a target. */
+.vault-journey{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0}
+.vault-journey>div{position:absolute;top:57px;width:86px;text-align:center;color:#ffe7b5;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill}
+.journey-depth{left:15px}.journey-multiplier{right:15px}
+.vault-journey small{display:block;font-size:10px;line-height:14px;font-weight:600;letter-spacing:.4px}
+.vault-journey strong{display:inline-block;font-size:23px;line-height:25px;font-weight:600;color:var(--special-light);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
+.journey-depth>span{display:flex;justify-content:center;gap:2px;height:12px;margin-top:2px}
+.journey-depth i{display:block;width:9px;height:11px}.journey-depth svg{display:block;width:100%;height:100%;image-rendering:pixelated}
+.vault-journey[data-building=true] .journey-multiplier strong{color:#fff3c7}
+.vault-calculation[data-kind=building]{color:#ffe5b2}
+.vault-bonus-shell[data-building=true] .vault-bonus{color:#ffe8bb}
