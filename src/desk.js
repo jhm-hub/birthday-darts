@@ -20,7 +20,7 @@ function embed(frame,item,mode){
   advanced('#gift-mixer,#vault-mixer,.mixer','Sound & volume');
   if(item.id==='pinata')advanced('#game-ranges,#viewer-ranges','Ranges & viewer rules');
   if(item.id==='darts'){advanced('#viewer-ranges','Viewer rules');advanced('.stream-setup','Stream setup');}
-  if(item.id==='scam'){for(const s of doc.querySelectorAll('.control-room>section.panel'))if(s.querySelector('select[aria-label="Saved version"]')){s.classList.add('desk-wheel-settings');advanced('.desk-wheel-settings','Saved settings & demos');}}
+  if(item.id==='scam'){const note=doc.querySelector('.control-room>header .notice');if(note){note.classList.add('desk-notice');doc.querySelector('.control-room>.play').before(note);}for(const s of doc.querySelectorAll('.control-room>section.panel')){if(s.querySelector('select[aria-label="Saved version"]')){s.classList.add('desk-wheel-settings');advanced('.desk-wheel-settings','Saved settings & demos');}else if(s.querySelector('h2')?.textContent==='Twitch commands'){s.classList.add('desk-chat');advanced('.desk-chat','Twitch commands');}}}
  }else{
   advanced('#viewer-ranges','Viewer rules');
   advanced('.setup-panel','Stream setup');
