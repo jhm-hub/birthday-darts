@@ -352,3 +352,45 @@ test('late-boost finale replaces the second wind-up with one sparse connecting p
  assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('linked-final',{tier:2}));
  a.sync(r,s.finishAt+10);assert.equal(sources(ctx).length,2);
 });
+
+function soundWorker(){
+ return {requests:[],terminated:false,postMessage(request){this.requests.push(request);},terminate(){this.terminated=true;},reply(request=this.requests.at(-1)){this.onmessage({data:{key:request.key,samples:renderVaultSound(request.sound,request.options,request.sampleRate)}});}};
+}
+test('worker preloads one buffer per cue, then plays at the current offset without blocking the animation',()=>{
+ const ctx=context(),worker=soundWorker(),a=createVaultAudio({createContext:()=>ctx,createWorker:()=>worker}),r=round();a.setEnabled(true);
+ a.sync(r,1990);a.sync(r,1999);
+ const lock=worker.requests.filter(x=>x.sound==='first-unlock');assert.equal(lock.length,1);assert.equal(sources(ctx).length,0);
+ a.sync(r,2000);assert.equal(sources(ctx).length,0,'no synchronous PCM fallback while a worker is pending');
+ worker.reply(lock[0]);a.sync(r,2040);assert.deepEqual(sources(ctx)[0].started,[10,.04]);
+ a.sync(structuredClone(r),2050);assert.equal(sources(ctx).length,1,'snapshot cannot restart a cue');
+ a.dispose();assert.ok(worker.terminated);
+});
+test('late worker completions never replay stale or muted cues',()=>{
+ for(const mute of [false,true]){
+  const ctx=context(),worker=soundWorker(),a=createVaultAudio({createContext:()=>ctx,createWorker:()=>worker}),r=round();a.setEnabled(true);a.sync(r,2000);
+  const lock=worker.requests.find(x=>x.sound==='first-unlock');
+  if(mute){a.setEnabled(false);a.sync(r,2010);}
+  worker.reply(lock);if(mute)a.setEnabled(true);a.sync(r,mute?2020:2201);
+  assert.equal(sources(ctx).length,0);a.dispose();
+ }
+});
+test('pending auditions cannot play after mute, reset or dispose; worker failures settle safely',async()=>{
+ for(const action of ['mute','reset','dispose','error','invalid']){
+  const ctx=context(),worker=soundWorker(),a=createVaultAudio({createContext:()=>ctx,createWorker:()=>worker});
+  const result=a.preview('royal');await Promise.resolve();assert.equal(worker.requests.length,1);
+  if(action==='mute')a.setEnabled(false);if(action==='reset')a.reset();if(action==='dispose')a.dispose();
+  if(action==='error')worker.onerror();else if(action==='invalid')worker.onmessage({data:{key:worker.requests[0].key,error:true}});else worker.reply();
+  assert.equal(await result,false,action);assert.equal(sources(ctx).length,0,action);a.dispose();
+ }
+});
+test('worker startup failure leaves the game silent and responsive instead of retrying each frame',async()=>{
+ let attempts=0;const ctx=context(),a=createVaultAudio({createContext:()=>ctx,createWorker:()=>{attempts++;throw Error('worker unavailable');}});
+ a.setEnabled(true);for(let t=2000;t<2200;t+=16)a.sync(round(),t);
+ assert.equal(await a.preview('royal'),false);assert.equal(attempts,1);assert.equal(sources(ctx).length,0);a.dispose();
+});
+test('an unresponsive sound worker times out instead of leaving an audition pending',async t=>{
+ t.mock.timers.enable({apis:['setTimeout']});
+ const ctx=context(),worker=soundWorker(),a=createVaultAudio({createContext:()=>ctx,createWorker:()=>worker});
+ const result=a.preview('royal');await Promise.resolve();t.mock.timers.tick(5000);
+ assert.equal(await result,false);assert.ok(worker.terminated);assert.equal(sources(ctx).length,0);a.dispose();
+});

@@ -8,7 +8,7 @@ import {bindVaultGameRanges} from './vault-game-range-controls.js';
 import {bindVaultViewerRanges} from './vault-target-controls.js';
 import {findVaultViewerRange,vaultViewerRangeText} from './vault-targets.js';
 import {money,vaultTotal,vaultBonusDue} from './vault-game.js';
-const $=s=>document.querySelector(s),overlay=document.documentElement.classList.contains('vault-overlay'),audio=createVaultAudio(),view=createVaultView($('#vault-control-preview'),{audio});
+const $=s=>document.querySelector(s),overlay=document.documentElement.classList.contains('vault-overlay'),audio=createVaultAudio(),view=createVaultView($('#vault-control-preview'),{audio,preview:!overlay});
 let versionPicker,session,snapshot,connected=false,pending=false,error='',readiness='Connecting…',volumeTarget=null,volumeVersion=0;
 const gameRanges=overlay?null:bindVaultGameRanges($('#game-ranges'),{save:async value=>{const next=await session.setGameRanges(value);error='';receive(next);}});
 const ranges=overlay?null:bindVaultViewerRanges($('#viewer-ranges'),{save:async value=>receive(await session.setViewerRange(value)),remove:async username=>receive(await session.removeViewerRange(username))});
