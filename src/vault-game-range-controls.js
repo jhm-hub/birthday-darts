@@ -22,10 +22,14 @@ export function bindVaultGameRanges(root,{save}){
  if(typeof window!=='undefined'){window.addEventListener('shared-settings-before-update',event=>{if(dirty)event.preventDefault();});window.addEventListener('shared-settings-discard',()=>{dirty=false;key='';});}
  const setDisabled=()=>{for(const input of form.querySelectorAll('input,button'))input.disabled=!enabled||busy;};
  form.addEventListener('input',()=>{dirty=true;status.textContent='Unsaved game settings. Save before starting.';});
+ const read=()=>{
+  if(!form.reportValidity())throw Error('Finish the highlighted game ranges before saving.');
+  return validateVaultGameRanges(VAULT_EXPERIENCES.map(e=>({id:e.id,name:form.elements[e.id+'-name'].value,min:form.elements[e.id+'-min'].value,max:form.elements[e.id+'-max'].value})));
+ };
  form.onsubmit=async event=>{
   event.preventDefault();if(!enabled||busy)return;
   try{
-   const ranges=validateVaultGameRanges(VAULT_EXPERIENCES.map(e=>({id:e.id,name:form.elements[e.id+'-name'].value,min:form.elements[e.id+'-min'].value,max:form.elements[e.id+'-max'].value})));
+   const ranges=read();
    busy=true;setDisabled();status.textContent='Saving…';await save(ranges);dirty=false;
    status.textContent='Four games saved. Each Start button keeps its own name and range.';
   }catch(e){status.textContent=e.message;}finally{busy=false;setDisabled();}
@@ -35,6 +39,6 @@ export function bindVaultGameRanges(root,{save}){
    const values=validateVaultGameRanges(ranges),next=JSON.stringify([scope,values]);
    if(next!==key){key=next;dirty=false;for(const r of values){form.elements[r.id+'-name'].value=r.name;form.elements[r.id+'-min'].value=r.min;form.elements[r.id+'-max'].value=r.max;}status.textContent='';}
    enabled=available;setDisabled();
-  },get dirty(){return dirty;}
+  },read,get dirty(){return dirty;}
  };
 }

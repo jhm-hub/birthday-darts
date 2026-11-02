@@ -8,7 +8,7 @@ Share the private editing link directly with Faith. Anyone holding it can read a
 
 ## Saving and playing
 
-- Save changes in the editor, then use the same private link next time.
+- Save changes in the editor, then use the same private link next time. Crown Vault’s main Save button also saves edited game ranges; the separate Save four games button remains available for range-only changes.
 - Other open pages check for changes about every five seconds. Settings are applied to future rounds; the current round keeps its existing prize plan.
 - If someone saves newer settings while you are editing, your draft stays in place. **Load latest & discard my edits** fetches the saved version. A stale save cannot silently overwrite it.
 - Failed network saves show an error. Do not treat an unsaved draft as shared.
