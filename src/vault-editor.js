@@ -76,7 +76,7 @@ $('#demo-experience').onchange=()=>resetDemo();
 $('#demo-viewer').oninput=()=>resetDemo();
 $('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-reset').onclick=()=>resetDemo();
 $('#demo-auto').onclick=()=>{if(auto){auto=false;render();return;}resetDemo(false);auto=true;pick();nextAuto=Date.now()+1550;render();showPreview();};
-$('#demo-payoff').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=sampleVaultLatePayoff(draft);demoExample=true;render();showPreview();}catch(e){$('#demo-status').textContent=e.message;}};
+$('#demo-payoff').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=sampleVaultLatePayoff(draft,Date.now(),Number($('#demo-boost').value));demoExample=true;render();showPreview();}catch(e){$('#demo-status').textContent=e.message;}};
 $('#demo-luck-run').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=startVaultTotalRange(draft,{min:10000,max:10000},'Demo viewer');demoExample=true;auto=true;nextAuto=demo.readyAt;render();showPreview();}catch(e){resetDemo(false);$('#demo-status').textContent=e.message;}};
 $('#preview-finale').onclick=()=>{if(draftError||!draft)return;resetDemo(false);demo=sampleVaultFinale(draft,Number($('#demo-finale').value));render();showPreview();};
 $('#demo-sound').onclick=()=>{audio.setEnabled(!audio.enabled);$('#demo-sound').textContent=audio.enabled?'Sound on':'Sound off';$('#demo-sound').setAttribute('aria-pressed',String(audio.enabled));};

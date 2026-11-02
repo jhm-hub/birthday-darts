@@ -63,9 +63,21 @@ The connecting casino phrase replaces the second wind-up, using two spaced
 pickup notes before the established jackpot. Wide totals route the seal above
 the plaque so the digits remain clear. Reduced motion disables the seal travel.
 
-The editor's **Preview last boost + finale** button skips to the last chamber
-of a disposable, mathematically complete $10,000 example. It changes no settings
-or live round.
+The editor's **Final boost preview** selector lets Faith compare ×2, ×4 and ×6.
+Click **Preview last boost + finale**, with preview sound enabled, to skip to
+the last chamber of a disposable, mathematically complete example. ×2 and ×4
+finish at $10,000; ×6 finishes at $9,996 ($1,666 ×6). This changes no saved
+settings, connected round or permanent OBS link.
+
+Final ×4 uses gold coin art, four paired jewels and two reel-stop contacts.
+Final ×6 uses a jeweled crown, six paired jewels, a larger local pixel burst
+and three reel stops resolving into one fuller cabinet hit. These replace the
+normal multiplier cue. Both resolve on the existing whole-total award beat,
+leave a quiet gap before the deposit coins and use the existing finale handoff.
+×2 and earlier multipliers retain their original treatment. The ornaments stay
+beside a fixed-size badge, clear of the total; reduced motion shows static art.
+Audio buffers are still prepared in the worker, with separate cache keys for
+each treatment, and the existing stream volume slider controls all of them.
 
 Display fix: UI refreshes previously reapplied an old server timestamp as a new
 clock offset. During the opening this could repeatedly rewind the animation;

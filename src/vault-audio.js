@@ -10,6 +10,7 @@ import {finalePose} from './vault-effects.js';
 import {giftVolume} from './gift-volume.js';
 import {vaultBonusAt} from './vault-bonus-motion.js';
 import {vaultBonusBuildAt,vaultBonusBuildMs} from './vault-timing.js';
+import {vaultFinalBoost,vaultFinalBoostCue} from './vault-final-boost.js';
 import {vaultChapter} from './vault-journey.js';
 import {vaultLevel,projectedVault,vaultTotal} from './vault-game.js';
 import {renderVaultSound} from './vault-sound-design.js';
@@ -110,8 +111,9 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
     // flourishes without stacking another sound over the same event.
     cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'linked-unlock',{index:shot.index});
     cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:vaultCashLevel(shot.cashCents)});
-    if(vaultBonusBuildMs(shot))cue(shot.id+':bonus-build',vaultBonusBuildAt(shot),time,'multiply-build');
-    if(shot.bonus)cue(shot.id+':bonus',vaultBonusAt(shot),time,shot.bonus.kind==='multiply'?'multiply':'extra');
+    const boost=vaultFinalBoost(r);
+    if(vaultBonusBuildMs(shot))cue(shot.id+':bonus-build',vaultBonusBuildAt(shot),time,vaultFinalBoostCue(boost,'build'));
+    if(shot.bonus)cue(shot.id+':bonus',vaultBonusAt(shot),time,shot.bonus.kind==='multiply'?vaultFinalBoostCue(boost,'reveal'):'extra');
     cue(shot.id+':collect',vaultCollectAt(shot),time,'collect',{tier:vaultCashLevel(shot.cashCents),bonus:!!shot.bonus});
    }
    for(const link of vaultChamberLinks(r,time)){

@@ -1,3 +1,4 @@
+import {vaultFinalBoost,vaultFinalBoostCue} from '../src/vault-final-boost.js';
 import {vaultTreasureCoda,VAULT_TREASURE_SETTLE_MS,VAULT_TREASURE_FAREWELL_MS} from '../src/vault-treasure-coda.js';
 import {vaultTreasureBridge,sampleVaultTreasureHandoff} from '../src/vault-treasure-handoff.js';
 import test from 'node:test';
@@ -326,13 +327,13 @@ test('late multiplier anticipation plays once, skips stale pickups and keeps its
    const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
    const build=vaultBonusBuildAt(shot),at=vaultBonusAt(shot);
    a.sync(r,build);assert.equal(sources(ctx).length,1);
-   assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('multiply-build'));
+   assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound(vaultFinalBoostCue(vaultFinalBoost(r),'build')));
    a.sync(structuredClone(r),build+25);assert.equal(sources(ctx).length,1);
    a.sync(r,at);assert.equal(sources(ctx).length,2);
-   assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('multiply'));
+   assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound(vaultFinalBoostCue(vaultFinalBoost(r),'reveal')));
    a.sync(r,vaultCollectAt(shot));assert.equal(sources(ctx).length,3);
    const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,at);
-   assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].buffer.getChannelData(0),renderVaultSound('multiply'));
+   assert.equal(sources(late).length,1);assert.deepEqual(sources(late)[0].buffer.getChannelData(0),renderVaultSound(vaultFinalBoostCue(vaultFinalBoost(r),'reveal')));
    return;
   }
   advanceVault(r,shot.finishAt);
@@ -356,6 +357,24 @@ test('late-boost finale replaces the second wind-up with one sparse connecting p
 function soundWorker(){
  return {requests:[],terminated:false,postMessage(request){this.requests.push(request);},terminate(){this.terminated=true;},reply(request=this.requests.at(-1)){this.onmessage({data:{key:request.key,samples:renderVaultSound(request.sound,request.options,request.sampleRate)}});}};
 }
+test('final ×4 and ×6 prewarm separate worker buffers, play once and join at the correct offset',async()=>{
+ const {sampleVaultLatePayoff}=await import('../src/vault-payoff-preview.js');
+ const ctx=context(),worker=soundWorker(),a=createVaultAudio({createContext:()=>ctx,createWorker:()=>worker});a.setEnabled(true);
+ for(const factor of [4,6,2]){
+  const r=sampleVaultLatePayoff(DEFAULT_VAULT,50000,factor),s=r.flight,at=vaultBonusAt(s),before=sources(ctx).length;
+  a.sync(r,at-50);
+  const cue=vaultFinalBoostCue(vaultFinalBoost(r),'reveal'),request=worker.requests.find(q=>q.sound===cue);
+  assert.ok(request,cue+' prewarmed');worker.reply(request);
+  a.sync(r,at+40);assert.equal(sources(ctx).length,before+1);
+  assert.deepEqual(sources(ctx).at(-1).started,[10,.04]);
+  assert.deepEqual(sources(ctx).at(-1).buffer.getChannelData(0),renderVaultSound(cue));
+  a.sync(structuredClone(r),at+80);assert.equal(sources(ctx).length,before+1);
+  a.setEnabled(false);a.sync(r,at+100);a.setEnabled(true);a.sync(r,at+110);assert.equal(sources(ctx).length,before+1);
+  a.reset();
+ }
+ assert.equal(new Set(worker.requests.filter(q=>['boost-4-reveal','boost-6-reveal','multiply'].includes(q.sound)).map(q=>q.key)).size,3);
+ a.dispose();
+});
 test('worker preloads one buffer per cue, then plays at the current offset without blocking the animation',()=>{
  const ctx=context(),worker=soundWorker(),a=createVaultAudio({createContext:()=>ctx,createWorker:()=>worker}),r=round();a.setEnabled(true);
  a.sync(r,1990);a.sync(r,1999);

@@ -18,7 +18,8 @@ const midi=p=>440*2**((p-69)/12);
 const note=(at,pitch,length,gain=.04,voice='bell')=>({at,frequency:midi(pitch),length,gain,voice});
 const foley=(at,voice,length,gain,seed=41)=>({at,voice,length,gain,seed});
 export const VAULT_SOUND_LABELS={welcome:'Next viewer entrance',intro:'Opening balance',ready:'First chamber invitation',next:'Next lock ready','deposit-next':'Coins → next lock','linked-unlock':'Prepared chamber unlock','first-unlock':'First chamber unlock',unlock:'Key turn & vault latch',cash:'Cash treasure',multiply:'Total multiplier',extra:'Extra unlock','multiply-build':'Late multiplier anticipation','multiply-payout':'Multiplier → coin payout','extra-payout':'+1 unlock → coin payout',collect:'Coins collected',wing:'Next crown wing',special:'Special vault entrance',settle:'Last treasure settles','finish-boost':'Multiplier into jackpot','finish-gold':'Gold finale build-up','finish-jewel':'Jewel finale build-up',standard:'Standard win',big:'Big win',royal:'Royal win','final-ovation':'Gilded ovation finale','final-coronation':'Crown coronation finale','rest-gold':'Gold celebration settles','rest-jewel':'Jewel celebration settles','clear-gold':'Gold vault farewell','clear-jewel':'Jewel vault farewell',rest:'Celebration settles',clear:'Soft vault farewell'};
-const trims={'finish-boost':1,'multiply-build':1,'deposit-next':1,'multiply-payout':1,'extra-payout':1,welcome:1,'rest-gold':1,'rest-jewel':1,'clear-gold':1,'clear-jewel':1,'finish-gold':1,'finish-jewel':1,'linked-final':1,'final-ovation':1,'final-coronation':1,'rich-lock':1,'rich-cash':1,'rich-final':1,intro:1.2,'intro-arrive':1.2,'intro-balance':1.2,ready:2.4,next:2,'linked-unlock':1.35,'first-unlock':1.35,unlock:1.35,cash:1.6,multiply:1,extra:1.85,collect:1.6,wing:1.1,special:1.2,'special-prepare':1.2,'special-arrive':1.2,settle:1,standard:1.05,big:1.2,royal:1,rest:1.4,clear:1.45};
+Object.assign(VAULT_SOUND_LABELS,{'boost-4-build':'Final ×4 · gold reel stops','boost-4-reveal':'Final ×4 · gold payout','boost-6-build':'Final ×6 · crown reel stops','boost-6-reveal':'Final ×6 · crown payout'});
+const trims={'boost-4-build':1,'boost-6-build':1,'boost-4-reveal':1,'boost-6-reveal':1,'finish-boost':1,'multiply-build':1,'deposit-next':1,'multiply-payout':1,'extra-payout':1,welcome:1,'rest-gold':1,'rest-jewel':1,'clear-gold':1,'clear-jewel':1,'finish-gold':1,'finish-jewel':1,'linked-final':1,'final-ovation':1,'final-coronation':1,'rich-lock':1,'rich-cash':1,'rich-final':1,intro:1.2,'intro-arrive':1.2,'intro-balance':1.2,ready:2.4,next:2,'linked-unlock':1.35,'first-unlock':1.35,unlock:1.35,cash:1.6,multiply:1,extra:1.85,collect:1.6,wing:1.1,special:1.2,'special-prepare':1.2,'special-arrive':1.2,settle:1,standard:1.05,big:1.2,royal:1,rest:1.4,clear:1.45};
 export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888,bonus=false,depth=1}={}){
  const bonusLand=VAULT_BONUS_LAND_MS/1000,room=((index%5)+5)%5;
  switch(name){
@@ -44,6 +45,13 @@ export function vaultSoundScore(name,{index=0,tier=0,richness=1,bridgeMs=888,bon
  // credit confirmation. Both use the established voices, with no extra bed.
  case 'multiply-build':return [foley(.025,'reel',.23,.026,1433),foley(.33,'click',.05,.020,1439)];
  case 'multiply':return [note(0,74,.070,.040,'slot'),note(.09,86,.060,.034,'slot'),note(bonusLand,86,.150,.065,'jackpot'),note(bonusLand,98,.130,.025,'bell')];
+ // Final boosts replace the ordinary cue. Two gold reel stops for ×4;
+ // three jeweled stops for ×6, then one rounded cabinet hit on the award.
+ // All tails clear before the first deposit coin. More shape, not volume.
+ case 'boost-4-build':return [foley(.025,'reel',.14,.022,1451),foley(.025,'click',.045,.026,1453),foley(.275,'click',.045,.032,1459)];
+ case 'boost-6-build':return [foley(.025,'reel',.25,.020,1471),foley(.025,'click',.045,.024,1481),foley(.175,'click',.045,.027,1483),foley(.33,'click',.045,.032,1487)];
+ case 'boost-4-reveal':return [note(0,81,.07,.030,'slot'),note(.09,86,.065,.032,'slot'),note(bonusLand,81,.19,.069,'jackpot'),note(bonusLand,98,.16,.026,'bell')];
+ case 'boost-6-reveal':return [note(0,74,.075,.029,'slot'),note(.09,93,.065,.030,'slot'),note(bonusLand,86,.23,.070,'jackpot'),note(bonusLand,50,.11,.025,'punch'),note(bonusLand,98,.19,.024,'bell')];
  case 'extra':return [foley(.015,'key',.110,.055,301),foley(bonusLand,'click',.040,.030,313),note(bonusLand,81,.070,.033,'slot'),note(bonusLand+.10,86,.065,.040,'slot')];
  case 'collect':{const land=VAULT_COLLECT_TRAVEL_MS/1000;return vaultCollectionTicks(tier,bonus).map(i=>foley(land+i*VAULT_COLLECT_STAGGER_MS/1000,'coin',.035,.027-i*.0015,401+i*13));}
  // Complete auditions use the same cue gains and deposit clock as live play.

@@ -63,6 +63,19 @@
 .vault-bonus-sheen{position:absolute;top:0;bottom:0;width:13px;background:#fff6d2;opacity:0;pointer-events:none;clip-path:polygon(6px 0,13px 0,13px 10px,10px 10px,10px 23px,6px 23px,6px 100%,0 100%,0 23px,3px 23px,3px 10px,6px 10px)}
 .vault-bonus-spark{position:absolute;top:18px;width:6px;height:6px;opacity:0;background:var(--bonus-light);box-shadow:inset 2px 2px #fff4d1,inset -2px -2px var(--bonus-dark);pointer-events:none;clip-path:polygon(2px 0,4px 0,4px 2px,6px 2px,6px 4px,4px 4px,4px 6px,2px 6px,2px 4px,0 4px,0 2px,2px 2px)}
 .vault-bonus-spark[data-side="left"]{left:0}.vault-bonus-spark[data-side="right"]{left:100%}
+.vault-boost-art{position:absolute;inset:-8px 0 auto;height:60px;pointer-events:none;opacity:0;--boost-gem:#f4c57e}
+.vault-boost-art svg{display:block;width:220px;height:60px;image-rendering:pixelated;overflow:visible}
+.vault-boost-art i{position:absolute;top:30px;width:4px;height:4px;background:var(--bonus-light);box-shadow:inset 1px 1px #fff6d7;opacity:0}
+.vault-boost-art i[data-side=left]{left:11px}.vault-boost-art i[data-side=right]{right:11px}
+.vault-bonus-shell[data-final-boost="0"] .vault-boost-art{display:none}
+.vault-bonus-shell[data-final-boost="4"],.vault-bonus-shell[data-final-boost="6"]{width:220px}
+.vault-bonus-shell[data-final-boost="4"] .vault-bonus,.vault-bonus-shell[data-final-boost="6"] .vault-bonus{width:172px;max-width:172px;box-sizing:border-box;justify-content:center;margin:auto;padding:2px 5px;background:#30203d;box-shadow:inset 0 2px var(--bonus-light),inset 0 -3px var(--bonus-dark)}
+.vault-bonus-shell[data-final-boost="4"]{--bonus-light:#ffe2a1;--bonus-dark:#b47b4e}
+.vault-bonus-shell[data-final-boost="6"]{--bonus-light:#f6cfff;--bonus-dark:#b37dba}
+.vault-bonus-shell[data-final-boost="6"] .vault-boost-art{--boost-gem:#abf2e4}
+.vault-bonus-shell[data-final-boost="4"] .boost-royal,.vault-bonus-shell[data-final-boost="6"] .boost-gold{display:none}
+.vault-bonus-shell[data-final-boost="4"] .boost-seat[data-seat="1"]{transform:translateY(20px)}
+.vault-bonus-shell[data-final-boost="4"] .boost-seat[data-seat="2"]{display:none}
 
 /* Coins frame the prize instead of crossing its digits or the running total. */
 .vault-cash-shell{position:relative;display:flex;align-items:center;justify-content:center;gap:3px;width:max-content;max-width:214px;margin:0 auto;transform-origin:center;--cash-color:#ffbfe3;--cash-edge:#b37592}

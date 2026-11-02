@@ -1,3 +1,4 @@
+import {vaultFinalBoost,vaultFinalBoostPose,vaultFinalBoostSpark,vaultFinalBoostArt,vaultFinalBoostGlyph} from './vault-final-boost.js';
 import {vaultStory,vaultStoryFlight,vaultStoryGlyph} from './vault-story.js';
 import {vaultJourney} from './vault-journey.js';
 import {createVaultClock} from './vault-clock.js';
@@ -53,6 +54,9 @@ export function createVaultView(root,{audio,preview=true}={}){
  const storyFlight=document.createElement('div');storyFlight.className='vault-story-flight';storyFlight.setAttribute('aria-hidden','true');storyFlight.innerHTML='<span></span><b></b>';stage.append(storyFlight);let storyKind='';
  const receipt=document.createElement('div');receipt.className='vault-story-receipt';receipt.setAttribute('aria-label','How the total grew');receipt.innerHTML=Array.from({length:3},()=>'<div><small></small><strong></strong></div>').join('');stage.append(receipt);
  const coins=[...root.querySelectorAll('.vault-collection i')],catchStars=[...catches.children];let dockKey='',dock={left:130,right:290,y:386};
+ const boostArt=document.createElement('span');boostArt.className='vault-boost-art';boostArt.setAttribute('aria-hidden','true');boostArt.innerHTML=vaultFinalBoostArt()+Array.from({length:12},(_,i)=>'<i data-side="'+(i%2?'right':'left')+'"></i>').join('');els.bonusShell.prepend(boostArt);
+ const boostFlare=boostArt.querySelector('.boost-flare');
+ const boostWings=[...boostArt.querySelectorAll('.boost-wing')],boostSeats=[...boostArt.querySelectorAll('.boost-seat')],boostBits=[...boostArt.querySelectorAll('i')];
  const pips=[...openingPips.children],bonusSparks=[...root.querySelectorAll('.vault-bonus-spark')],cashSparks=[...root.querySelectorAll('.vault-cash-spark')];
  let bonusKind='',cashLevel=-1;
  // OBS starts transparent until it receives a round, even before the first
@@ -166,17 +170,22 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   if(cashLevel!==cashPose.level){els.cashIcon.innerHTML=vaultCashGlyph(cashPose.level);cashLevel=cashPose.level;}
   els.cashSheen.style.opacity=cashPose.shine;els.cashSheen.style.left=(cashPose.sweep*110-10)+'%';
   cashSparks.forEach((el,i)=>{const spark=vaultCashSpark(i,cashPose,shot,time,quiet);el.style.opacity=spark.opacity;el.style.width=spark.width+'px';el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});
-  const kind=reward?.bonus?.kind??'';
+  const kind=reward?.bonus?.kind??'',boost=reward?vaultFinalBoost(r):0,boostPose=vaultFinalBoostPose(boost,shot,time,quiet);
+  els.bonusShell.dataset.finalBoost=String(boost);
+  boostArt.style.opacity=boostPose.opacity;boostFlare.style.opacity=boostPose.burst;
+  boostWings.forEach(el=>{el.style.transform=`translateY(${Math.round(4*(1-boostPose.wing))}px)`;});
+  boostSeats.forEach(el=>{el.style.opacity=boostPose.gems[Number(el.dataset.seat)];});
+  boostBits.forEach((el,i)=>{const p=vaultFinalBoostSpark(i,boost,boostPose);el.style.opacity=p.opacity;el.style.transform=`translate(${p.x}px,${p.y}px)`;});
   els.bonusShell.style.display=kind?'':'none';els.bonusShell.dataset.kind=kind;
-  text(els.bonusText,kind?(kind==='multiply'?'×'+reward.bonus.value+(bonusPose.building?' INCOMING':' TOTAL'):'+1 UNLOCK'):'');
+  text(els.bonusText,kind?(kind==='multiply'?'×'+reward.bonus.value+(bonusPose.building?(boost?' BOOST':' INCOMING'):' TOTAL'):'+1 UNLOCK'):'');
   els.bonusShell.dataset.building=String(bonusPose.building);
   els.bonus.dataset.kind=kind;els.bonusShell.style.opacity=bonusPose.opacity;
   els.bonusShell.setAttribute('aria-hidden',String(!bonusPose.visible));
-  els.bonusShell.style.transform=`translateY(${bonusPose.y}px) scale(${bonusPose.scale})`;
-  if(kind!==bonusKind){els.bonusIcon.innerHTML=vaultBonusGlyph(kind);bonusKind=kind;}
+  els.bonusShell.style.transform=`translateY(${boost?0:bonusPose.y}px) scale(${boost?1:bonusPose.scale})`;
+  if(kind+boost!==bonusKind){els.bonusIcon.innerHTML=boost?vaultFinalBoostGlyph(boost):vaultBonusGlyph(kind);bonusKind=kind+boost;}
   els.bonusIcon.querySelectorAll('.bonus-gem').forEach(g=>g.setAttribute('transform',`translate(${Number(g.dataset.x)+Number(g.dataset.side)*bonusPose.iconOffset} 0)`));
   els.bonusSheen.style.opacity=bonusPose.shine;els.bonusSheen.style.left=(bonusPose.sweep*110-10)+'%';
-  bonusSparks.forEach((el,i)=>{const spark=vaultBonusSpark(i,bonusPose,shot,time,quiet);el.style.opacity=spark.opacity;el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});
+  bonusSparks.forEach((el,i)=>{const spark=vaultBonusSpark(i,bonusPose,shot,time,quiet);el.style.opacity=boost?0:spark.opacity;el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});
   if(finished&&level!==tier){els.crest.innerHTML=[giftFinalBadge,giftFinalBow,crownVaultCrest][level]();const width=[84,100,116][level],height=[68,80,92][level];els.crest.style.width=width+'px';els.crest.style.height=height+'px';els.crest.style.left=(210-width/2)+'px';els.crest.style.top=(242-height)+'px';tier=level;}
   const finale=finalePose(finalAge,level,quiet),build=finale.build,handoff=vaultHandoff(r,time,level,quiet);
   const dim=handoff.linked?handoff.dim:finished?finale.dim:0;
