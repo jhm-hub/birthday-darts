@@ -4,16 +4,7 @@
 .gift-stage{position:absolute;left:50%;top:50%;width:420px;height:460px;transform-origin:center;opacity:0;color:#ffedd0;font-family:Fredoka,Arial,sans-serif}
 .gift-stage.stage-visible{opacity:var(--presence-opacity,1)}
 .gift-stage *{box-sizing:border-box}
-.gift-head{position:absolute;left:12px;right:12px;top:8px;display:flex;justify-content:space-between;align-items:center;gap:6px;text-shadow:0 2px #25172e}
-.gift-head>span:first-child{padding:7px 9px;background:#25172ff2;border:1px solid #765768;border-radius:7px;font-size:17px;font-weight:600;letter-spacing:.6px;white-space:nowrap}
-.gift-head b{color:#ffb6d4;font-weight:600}
-.gift-head i{font-style:normal;color:#f0cb8c;margin-left:8px}
-.gift-count{background:#25172ff2;border:1px solid #9f7f59;border-radius:7px;padding:9px 10px;font-size:11px;letter-spacing:.6px;white-space:nowrap}
-.gift-caption{position:absolute;left:12px;right:12px;top:51px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:1px}
-.gift-caption>span,.gift-caption>small{padding:4px 7px;background:#25172fe8;border-radius:4px;text-shadow:0 1px #211429}
-.gift-viewer{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gift-board-size{font-size:11px;color:#ddc5df;white-space:nowrap}
-.gift-board{position:absolute;left:12px;top:79px;width:396px;height:314px;opacity:var(--finish-board,1)}
+.gift-board{position:absolute;left:12px;top:var(--gift-board-top,44px);width:396px;height:314px;opacity:var(--finish-board,1)}
 .gift-cell{position:absolute;padding:4px 6px 11px;border:0!important;border-radius:0;background:none!important;min-height:0!important;cursor:pointer;transform-origin:50% 70%;outline-offset:-5px!important;opacity:var(--arrival-opacity,1)!important;filter:none!important}
 .gift-cell svg{display:block;height:100%;width:100%;overflow:visible;image-rendering:pixelated;transform:rotate(var(--shake,0deg));filter:drop-shadow(0 3px 0 #160d2440)}
 .gift-cell:hover:not(:disabled) svg{filter:drop-shadow(0 0 5px #ffdc9a) brightness(1.1);transform:translateY(-3px)}
@@ -43,13 +34,11 @@
 .candy-unwrap .parcel-body{transform:scale(var(--body-x,1),var(--body-y,1));transform-origin:28px 59px}
 .candy-unwrap .parcel-band{transform:translateY(var(--band-y,0px));opacity:var(--band-opacity,1)}
 .candy-unwrap .parcel-lid-band{opacity:var(--band-opacity,1)}
-.gift-cell-number{position:absolute;bottom:6px;left:50%;min-width:18px;padding:1px 3px;border-radius:3px;background:#21142ae8;transform:translateX(-50%);color:#e5cbe9;font:11px/1 Fredoka,sans-serif;text-shadow:0 1px 2px #160d22}
 .gift-cell-prize{display:none;position:absolute;left:5%;right:5%;top:48%;transform:translateY(calc(-50% + var(--prize-y,0px))) scale(var(--prize-scale,1));opacity:var(--prize-opacity,1);padding:5px 2px;border:1px solid var(--prize-color,#ffe3a5);background:linear-gradient(#493044 0 18%,#281a31 18% 82%,#1b1025 82%);color:var(--prize-color,#ffe3a5);font:600 var(--prize-size,24px)/1.05 Fredoka,sans-serif;white-space:nowrap;text-align:center;overflow:hidden;clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 2px,100% 2px,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 2px),0 calc(100% - 2px),0 3px,3px 3px);box-shadow:inset 0 1px #fff1,inset 0 -2px #100a1b}
 .gift-cell-main,.gift-cell-detail{position:relative;z-index:1;text-shadow:0 2px #160d22}
 .gift-cell-prize::before{content:'';position:absolute;inset:2px;border-top:1px solid #ffefd54d;border-bottom:1px solid #b993aa44;pointer-events:none}
 .gift-cell-prize::after{content:'';position:absolute;left:var(--prize-shine-x,-50%);top:0;width:28%;height:100%;background:#ffeecb;opacity:var(--prize-shine,0);clip-path:polygon(40% 0,100% 0,100% 30%,80% 30%,80% 65%,50% 65%,50% 100%,0 100%,0 65%,20% 65%,20% 30%,40% 30%);pointer-events:none}
 .gift-opened .gift-cell-prize{display:block}
-.gift-opened .gift-cell-number{display:none}
 .gift-opened svg{opacity:.3}
 .gift-opened .parcel-lid{display:none}
 .gift-opening{z-index:5}
@@ -58,27 +47,17 @@
 .gift-glints{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .gift-glints i{position:absolute;width:var(--spark-size,6px);height:var(--spark-size,6px);background:var(--prize-color,#ffe3a5);transform:translate(-50%,-50%);clip-path:polygon(33% 0,66% 0,66% 33%,100% 33%,100% 66%,66% 66%,66% 100%,33% 100%,33% 66%,0 66%,0 33%,33% 33%)}
 .gift-glints i:nth-child(even){background:#fff6d0;width:3px;height:3px;clip-path:none}
-.gift-bonus-bands{position:absolute;left:12px;top:79px;width:396px;height:314px;pointer-events:none;overflow:hidden;shape-rendering:crispEdges}
+.gift-bonus-bands{position:absolute;left:12px;top:var(--gift-board-top,44px);width:396px;height:314px;pointer-events:none;overflow:hidden;shape-rendering:crispEdges}
 .gift-bonus-bands path{stroke:var(--bonus-color);stroke-width:2;fill:var(--bonus-color);fill-opacity:.08}
 .gift-spawn-glints{position:absolute;left:50%;top:42%;pointer-events:none;opacity:var(--spawn-opacity,0)}
 .gift-spawn-glints i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;background:var(--bonus-color);clip-path:polygon(25% 0,75% 0,75% 25%,100% 25%,100% 75%,75% 75%,75% 100%,25% 100%,25% 75%,0 75%,0 25%,25% 25%);transform:rotate(var(--angle)) translateY(var(--spawn-radius)) rotate(calc(-1 * var(--angle)))}
 .gift-spawn-glints i:nth-child(even){background:#ffe8ad;width:4px;height:4px;left:-2px;top:-2px;clip-path:none}
-/* The reveal replaces the header briefly, leaving every present visible. */
-.gift-toast{position:absolute;top:8px;left:12px;width:396px;height:65px;z-index:7;text-align:center;padding:5px 46px 7px;border:2px solid var(--reveal-color,#ffe3a5);background:linear-gradient(#463046 0 20%,#2c1c34 20% 86%,#1b1126 86%);box-shadow:inset 0 2px #725366,inset 0 -2px #160d24;opacity:0;pointer-events:none;overflow:hidden;clip-path:polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,100% 3px,100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),0 calc(100% - 3px),0 6px,3px 6px,3px 3px,6px 3px)}
-.gift-toast.show{opacity:calc(var(--announce-opacity,1) * var(--finish-toast,1));transform:translateY(var(--finish-toast-y,0px))}
-.gift-toast::before{content:'';position:absolute;inset:3px;border:1px solid var(--reveal-color);opacity:calc(.12 + var(--reveal-flare,0)*.4);pointer-events:none}
-.gift-toast strong{display:block;height:36px;font-size:36px;line-height:36px;color:var(--reveal-color);white-space:nowrap;text-shadow:0 2px #170c22;transform:translateY(var(--title-y,0px)) scale(var(--title-scale,1));transform-origin:center}
-.gift-toast-detail{display:block;line-height:12px;letter-spacing:.45px;font-weight:500;color:#f4dfef;white-space:nowrap}
-.gift-prize-emblem{position:absolute;left:13px;top:18px;width:28px;height:28px;transform:scale(calc(1 + var(--reveal-flare,0)*.12));image-rendering:pixelated}
+/* Prize announcements share the single information bar below the board. */
 .gift-prize-emblem svg{display:block;width:100%;height:100%}
-.gift-title-spark{position:absolute;right:19px;top:25px;width:10px;height:10px;background:var(--reveal-color);opacity:calc(.35 + var(--reveal-flare,0)*.65);transform:scale(calc(.7 + var(--reveal-flare,0)*.4));clip-path:polygon(30% 0,70% 0,70% 30%,100% 30%,100% 70%,70% 70%,70% 100%,30% 100%,30% 70%,0 70%,0 30%,30% 30%)}
-.gift-footer{position:absolute;left:12px;right:12px;bottom:8px;height:52px;display:grid;grid-template-columns:minmax(0,1fr) 72px minmax(0,1.5fr);gap:10px;align-items:center;padding:7px 12px;background:#21162bf5;border:1px solid #8b6d5b;border-radius:8px;box-shadow:inset 0 0 0 2px #160e20}
-.gift-footer small{display:block;font-size:9px;letter-spacing:.6px;color:#ceb5ce;white-space:nowrap}
-.gift-footer strong{display:block;font-size:22px;font-weight:600;line-height:1.1;white-space:nowrap}
 .gift-multiplier strong{color:#d5b0ee}
 .gift-running{text-align:right;min-width:0;overflow:hidden}
 .gift-running strong{font-size:27px}
-.gift-final-confetti{position:absolute;inset:0;width:420px;height:460px;overflow:hidden;clip-path:inset(76px 0 64px);pointer-events:none;shape-rendering:crispEdges;z-index:9}
+.gift-final-confetti{position:absolute;inset:0;width:420px;height:460px;overflow:hidden;clip-path:inset(28px 0 94px);pointer-events:none;shape-rendering:crispEdges;z-index:9}
 .gift-finale{position:absolute;left:28px;top:128px;width:364px;height:228px;padding:13px 26px 16px;text-align:center;color:#ffe5b5;z-index:10;transform-origin:50% 60%;filter:drop-shadow(0 5px 0 #140b21);isolation:isolate}
 .gift-finale[hidden]{display:none}
 .gift-final-frame{position:absolute;inset:0;z-index:-2;display:block;filter:brightness(calc(1 + var(--final-glow,0)*.12))}
@@ -92,8 +71,6 @@
 .gift-finale>p{font-size:13px;line-height:18px;height:18px;margin:6px 0 12px;color:#e5c8dc;white-space:nowrap}
 .gift-final-count{display:block;font-size:11px;line-height:13px;color:#c7abc9;letter-spacing:.3px}
 .gift-final-gleams{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;shape-rendering:crispEdges;fill:#fff3cc}
-.gift-head,.gift-caption{opacity:var(--finish-header,1)}
-.gift-footer{opacity:var(--finish-footer,1)}
 .gift-finale{opacity:var(--finish-plaque,1)}
 .gift-finale>:not(.gift-final-frame){opacity:var(--finish-content,1)}
 .gift-overlay,.gift-overlay body{margin:0;background:transparent!important;width:100%;height:100%;overflow:hidden}
@@ -127,10 +104,7 @@
 .gift-finale[data-phase="build"]>strong,.gift-finale[data-phase="build"]>p,.gift-finale[data-phase="build"] .gift-final-count{visibility:hidden}
 
 
-/* Matching stepped trims keep the small HUD, prizes and finale in one art style. */
-.gift-head>span:first-child,.gift-count,.gift-footer{border-radius:0;clip-path:polygon(5px 0,calc(100% - 5px) 0,calc(100% - 5px) 2px,100% 2px,100% calc(100% - 5px),calc(100% - 2px) calc(100% - 5px),calc(100% - 2px) calc(100% - 2px),calc(100% - 5px) calc(100% - 2px),calc(100% - 5px) 100%,5px 100%,5px calc(100% - 2px),2px calc(100% - 2px),2px 5px,0 5px,0 2px,5px 2px)}
-.gift-head>span:first-child,.gift-count{box-shadow:inset 0 1px #c99bb32e,inset 0 -2px #160e20}
-.gift-footer{box-shadow:inset 0 1px #d0a88742,inset 0 -2px #160e20,inset 2px 0 #160e20}
+/* Present highlights and finale details retain the established pixel art. */
 .gift-cell:not(:disabled) svg{transition:transform .12s ease-out,filter .12s ease-out}
 .gift-cell:hover:not(:disabled) svg{filter:drop-shadow(0 2px 0 #ffe4b55c) brightness(1.06);transform:translateY(-2px)}
 .gift-cell-prize{box-shadow:inset 0 1px #ffe7c733,inset 0 -2px #100a1b}
@@ -144,10 +118,10 @@
 .gift-finale[data-tier="standard"] .gift-final-star{transform:translateY(var(--crown-y,0px)) rotate(var(--crest-turn,0deg)) scale(var(--crown-scale,1))}
 
 /* The final gift hands off inside the existing board clip, behind the total. */
-.gift-finish-trail{position:absolute;inset:0;width:420px;height:460px;overflow:hidden;clip-path:inset(76px 0 64px);pointer-events:none;shape-rendering:crispEdges;z-index:9}
+.gift-finish-trail{position:absolute;inset:0;width:420px;height:460px;overflow:hidden;clip-path:inset(28px 0 94px);pointer-events:none;shape-rendering:crispEdges;z-index:9}
 
 /* Opening flourish: small, shaded marquee pixels inside the same board. */
-.gift-intro-lights{position:absolute;left:12px;top:79px;width:396px;height:314px;overflow:hidden;pointer-events:none;shape-rendering:crispEdges}
+.gift-intro-lights{position:absolute;left:12px;top:var(--gift-board-top,44px);width:396px;height:314px;overflow:hidden;pointer-events:none;shape-rendering:crispEdges}
 .gift-intro-cell .gift-spawn-glints i{width:4px;height:4px;left:-2px;top:-2px;background:var(--intro-color);box-shadow:inset 1px 1px #fff3d5}
 .gift-intro-cell .gift-spawn-glints i:nth-child(even){width:2px;height:2px;left:-1px;top:-1px;background:#fff3d5}
 @media(prefers-reduced-motion:reduce){.gift-intro-lights{display:none!important}}
@@ -155,7 +129,7 @@
 /* A shaded pixel spotlight follows every pick, inside its existing cell. */
 .gift-cell{isolation:isolate;filter:brightness(var(--pick-brightness,1))!important}
 .gift-cell>svg{position:relative;z-index:1}
-.gift-cell-prize{z-index:3}.gift-cell-number{z-index:2}
+.gift-cell-prize{z-index:3}
 .gift-glints,.gift-spawn-glints{z-index:4}
 .gift-selected{z-index:6}
 .gift-pick-focus{position:absolute;inset:var(--focus-inset,2px);opacity:var(--focus-opacity,0);pointer-events:none;color:#ffe4a2;z-index:0}
@@ -165,12 +139,8 @@
 .gift-pick-focus i:nth-child(3){right:0;bottom:0;transform:rotate(180deg)}.gift-pick-focus i:nth-child(4){left:0;bottom:0;transform:rotate(270deg);color:#ffbfdb}
 
 /* Stream-size reading: reward first, with a clear second line inside the same frame. */
-.gift-toast{padding:4px 46px}
-.gift-toast strong{font-weight:600}
-.gift-toast-detail{line-height:17px;letter-spacing:.25px;font-weight:500}
 .gift-cell-detail{display:block;font:500 var(--detail-size,12px)/1.1 Fredoka,sans-serif;letter-spacing:.2px;margin-top:2px}
 .gift-cell-detail:empty{display:none}
-.gift-count{font-size:14px;letter-spacing:.25px;padding:7px 9px}
 
 /* Opened gifts become small, high-contrast prize plaques. The full value stays
    exact; only the currency sign is reduced to leave room for larger numerals. */
@@ -185,12 +155,6 @@
 
 /* Birthday icing: bright candy lettering on the existing shaded pixel plaques. */
 .gift-stage{--birthday-pink:#ffabe1;--birthday-peach:#ffd0a3;--birthday-mint:#a8ffe2;--birthday-lilac:#ddb5ff;--birthday-sky:#acebff;--birthday-vanilla:#fff2ac;--birthday-icing:#ffe7f7;color:var(--birthday-icing)}
-.gift-head>span:first-child{color:var(--birthday-peach)}
-.gift-head b{color:var(--birthday-pink);text-shadow:0 1px #9b4173,0 2px #24132f}
-.gift-head i{color:var(--birthday-vanilla)}
-.gift-count{color:var(--birthday-mint)}
-.gift-viewer{color:var(--birthday-icing)}
-.gift-board-size,.gift-cell-number{color:var(--birthday-lilac)}
 .gift-cell[data-kind="multiply"],.gift-toast[data-kind="multiply"]{--birthday-reward:var(--birthday-lilac)}
 .gift-cell[data-kind="extra"],.gift-toast[data-kind="extra"]{--birthday-reward:var(--birthday-mint)}
 .gift-cell[data-kind="row"],.gift-toast[data-kind="row"]{--birthday-reward:var(--birthday-sky)}
@@ -198,8 +162,6 @@
 .gift-cell-main,.gift-special .gift-cell-main,.gift-toast strong{color:var(--birthday-reward,var(--birthday-pink))}
 .gift-cell-currency{color:var(--birthday-vanilla)}
 .gift-cell-detail,.gift-toast-detail{color:var(--birthday-icing)}
-.gift-footer small{color:#f5cceb}
-.gift-subtotal{color:var(--birthday-peach)}
 .gift-multiplier strong{color:var(--birthday-lilac)}
 .gift-running strong{color:var(--birthday-mint)}
 .gift-finale>small,.gift-finale>p,.gift-final-count{color:var(--birthday-icing)}
@@ -209,3 +171,26 @@
 .gift-final-rank{color:var(--birthday-pink)}
 .gift-finale[data-tier="royal"] .gift-final-rank{color:var(--birthday-vanilla)}
 .gift-royal-build{color:var(--birthday-pink)}
+
+/* One quiet strip anchors the floating gifts. Keep every other part transparent. */
+.gift-hud{position:absolute;left:12px;right:12px;bottom:12px;height:80px;display:grid;grid-template-columns:minmax(0,1fr) 136px;gap:12px;align-items:center;padding:9px 13px;border:1px solid #f3a7cb80;border-radius:10px;background:linear-gradient(110deg,#351c30ed,#211525ed);box-shadow:inset 0 1px #ffe4ef28,0 2px 6px #160d2440;opacity:var(--hud-opacity,1);text-shadow:0 1px 1px #180e23;z-index:8}
+.gift-hud::before{content:'';position:absolute;left:16px;right:16px;top:-1px;height:1px;background:linear-gradient(90deg,transparent,#ffd2e8aa,transparent);pointer-events:none}
+.gift-hud-left{min-width:0}.gift-hud-copy{position:relative;height:42px;overflow:hidden}
+.gift-hud-identity{height:100%;display:flex;flex-direction:column;justify-content:center;gap:2px;transition:opacity .12s ease-out}
+.gift-hud-label,.gift-running small{display:block;color:#f9c6e1;font-size:10px;font-weight:500;line-height:12px;letter-spacing:1px;white-space:nowrap}
+.gift-viewer{display:block;min-width:0;max-width:100%;font-size:20px;font-weight:500;line-height:24px;color:#fff0f8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gift-hud-long-name .gift-hud-label{display:none}.gift-hud-long-name .gift-viewer{white-space:normal;overflow-wrap:anywhere;line-height:18px;max-height:36px;text-overflow:clip}
+.gift-hud-meta{display:flex;align-items:center;gap:12px;height:18px;margin-top:1px;white-space:nowrap}
+.gift-count{font-size:16px;font-weight:500;line-height:18px;color:#baffdf;letter-spacing:0;background:none;border:0;padding:0;clip-path:none;box-shadow:none}
+.gift-multiplier{display:inline-flex;align-items:baseline;gap:3px;color:#f8b5db;font-size:12px;line-height:18px}
+.gift-multiplier::before{content:'·';margin-right:6px;color:#bb8ea8}.gift-multiplier[hidden]{display:none}
+.gift-multiplier strong{font-size:16px;font-weight:600;color:#ffc7e8}
+.gift-running{height:54px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;border-left:1px solid #f5c1dc2e;padding-left:10px;overflow:hidden;text-align:right}
+.gift-running small{font-size:11px;letter-spacing:1px;line-height:14px}.gift-running strong{display:block;font-weight:600;line-height:38px;color:#fff1bd;white-space:nowrap;font-variant-numeric:tabular-nums}
+.gift-toast{position:absolute;inset:0;padding:0 0 0 27px;background:none;border:0;box-shadow:none;clip-path:none;opacity:0;pointer-events:none;text-align:left;overflow:hidden}
+.gift-toast.show{opacity:calc(var(--announce-opacity,1) * var(--finish-toast,1))}
+.gift-toast strong{display:block;height:28px;line-height:28px;font-size:26px;font-weight:600;white-space:nowrap;color:var(--birthday-reward,var(--birthday-pink));transform:translateY(var(--title-y,0px));text-shadow:0 1px #170c22}
+.gift-toast-detail{display:block;font-size:13px;font-weight:400;line-height:14px;letter-spacing:0;color:#ffe7f7;white-space:nowrap}
+.gift-prize-emblem{position:absolute;left:0;top:8px;width:21px;height:21px;image-rendering:pixelated}
+.gift-title-spark{display:none}.gift-hud-announcing .gift-hud-identity{opacity:0}
+@media(prefers-reduced-motion:reduce){.gift-hud-identity{transition:none}}

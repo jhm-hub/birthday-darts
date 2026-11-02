@@ -49,6 +49,6 @@ test('quiet mode and direct previews do not invent a trail or replay an old hand
 test('handoff sparkles stay within compact boards for every possible final cell',()=>{
  for(let rows=2;rows<=6;rows++)for(let cols=2;cols<=6;cols++)for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
   const r=lastPick();r.rows=rows;r.cols=cols;r.flight.cell=row+':'+col;
-  for(let t=5680;t<=6200;t+=25){const shown=presentedGiftRound(r,t),m=giftFinishMotion(shown,t);for(let i=0;i<3;i++){const p=giftFinishSpark(m,i,shown,t);if(p){assert.ok(p.x>=0&&p.x<=420);assert.ok(p.y>=76&&p.y<=396);assert.ok(p.opacity>=0&&p.opacity<=1);assert.deepEqual(p,giftFinishSpark(m,i,shown,t));}}}
+  for(let t=5680;t<=6200;t+=25){const shown=presentedGiftRound(r,t),m=giftFinishMotion(shown,t);for(let i=0;i<3;i++){const p=giftFinishSpark(m,i,shown,t);if(p){assert.ok(p.x>=0&&p.x<=420);assert.ok(p.y>=44&&p.y<=358);assert.ok(p.opacity>=0&&p.opacity<=1);assert.deepEqual(p,giftFinishSpark(m,i,shown,t));}}}
  }
 });

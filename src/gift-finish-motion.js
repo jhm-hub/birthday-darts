@@ -1,4 +1,5 @@
 import {advanceGiftRound,giftDimensions,isGiftExpansion,projectedGiftRound} from './gift-game.js';
+import {GIFT_BOARD_TOP} from './gift-bonus-motion.js';
 import {giftCelebrationLevel,ROYAL_REVEAL_MS} from './gift-celebration.js';
 
 const clamp=x=>Math.max(0,Math.min(1,x)),smooth=x=>{x=clamp(x);return x*x*(3-2*x);};
@@ -41,7 +42,7 @@ export function giftFinishSpark(finish,index,round,time,reduced=false){
  if(t<=0||t>=1)return null;
  const [row,col]=finish.shot.cell.split(':').map(Number),{rows,cols}=giftDimensions(round);
  if(!Number.isInteger(row)||!Number.isInteger(col)||row<0||col<0||row>=rows||col>=cols)return null;
- const u=smooth(t),x0=12+(col+.5)*396/cols,y0=79+(row+.48)*314/rows;
+ const u=smooth(t),x0=12+(col+.5)*396/cols,y0=GIFT_BOARD_TOP+(row+.48)*314/rows;
  return {x:Math.round(x0+(210-x0)*u),y:Math.round(y0+(160-y0)*u-18*Math.sin(Math.PI*t)),
   opacity:smooth(t/.15)*(1-smooth((t-.7)/.3)),size:index===0?6:4};
 }

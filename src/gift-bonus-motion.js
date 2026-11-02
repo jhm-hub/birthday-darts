@@ -2,6 +2,7 @@ import {isGiftExpansion} from './gift-game.js';
 
 // Sample the committed reveal clock, not DOM insertion time. Reconnecting displays
 // join the same beat, and every landing finishes before the next pick unlocks.
+export const GIFT_BOARD_TOP=44;
 export const BONUS_MOTION_MS=1000;
 export const GIFT_ARRIVAL_MS=430;
 export const giftArrivalCount=(kind,rows,cols)=>kind==='row'?cols:kind==='column'?rows:Math.max(rows,cols);
