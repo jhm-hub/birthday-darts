@@ -52,8 +52,10 @@ export function createVaultView(root,{audio}={}){
  let bonusKind='',cashLevel=-1;
  let snapshot=null,options={preview:true,show:true},raf,disposed=false,progressKey='',tier=-1,idleAt=null;
  const clock=createVaultClock();
- const resize=()=>{stage.style.transform=`translate(-50%,-50%) scale(${Math.min(root.clientWidth/420,root.clientHeight/460)})`;};
- const observer=new ResizeObserver(()=>{dockKey='';resize();});observer.observe(root);observer.observe(els.bank);resize();
+ const resize=()=>{const next=`translate(-50%,-50%) scale(${Math.min(root.clientWidth/420,root.clientHeight/460)})`;if(stage.style.transform!==next)stage.style.transform=next;};
+ // A changing prize must not resize/re-composite the entire OBS source.
+ const observer=new ResizeObserver(entries=>{dockKey='';if(entries.some(e=>e.target===root))resize();});observer.observe(root);observer.observe(els.bank);resize();
+ const text=(el,value)=>{if(el.textContent!==value)el.textContent=value;};
  function fit(el,text,max,width){if(el.textContent!==text)el.textContent=text;el.style.fontSize=Math.min(max,width/(Math.max(1,text.length)*.61))+'px';}
  function render(){
   if(disposed)return;raf=requestAnimationFrame(render);
@@ -64,14 +66,13 @@ export function createVaultView(root,{audio}={}){
   stage.setAttribute('aria-hidden',String(!visible||exit.done));
   if(!visible){if(!r)audio?.sync(null,time);return;}
   heading.style.opacity=topline.style.opacity=exit.heading*entrance.heading;
-  els.machine.style.opacity=exit.machine*entrance.frame;
   seal.style.opacity=entrance.seal;
   els.machine.style.transform=`translateY(${entrance.machineY}px)`;
   pips.forEach((el,i)=>{el.style.opacity=entrance.pips[i];el.style.transform=`translateY(${entrance.pipY[i]}px)`;});
   stage.classList.toggle('is-finished',finished);stage.classList.toggle('is-opening',!!r?.flight);stage.classList.toggle('is-idle',!r);
   const allocated=now?.allocated??p.chambers,opened=finished?allocated:now?.opened.length??0,key=allocated+':'+opened+':'+(r?.flight?.index??'');
   if(key!==progressKey){els.progress.innerHTML=Array.from({length:allocated},(_,i)=>`<span class="vault-step ${i<opened?'done':i===opened&&r?.flight?'active':''}" aria-label="Chamber ${i+1}${i<opened?', unlocked':''}">${vaultLock(i<opened)}<b>${i+1}</b></span>`).join('');progressKey=key;}
-  els.progress.style.setProperty('--steps',allocated);els.viewer.textContent=r?.viewer||'A LITTLE LUCK. A LOT OF GOLD.';els.count.textContent=finished?'VAULT CLEARED':r?readout.pendingExtra&&readout.remaining===0?'BONUS INCOMING':readout.remaining+' UNLOCK'+(readout.remaining===1?'':'S')+' LEFT':allocated+' CHAMBERS';
+  els.progress.style.setProperty('--steps',allocated);text(els.viewer,r?.viewer||'A LITTLE LUCK. A LOT OF GOLD.');text(els.count,finished?'VAULT CLEARED':r?readout.pendingExtra&&readout.remaining===0?'BONUS INCOMING':readout.remaining+' UNLOCK'+(readout.remaining===1?'':'S')+' LEFT':allocated+' CHAMBERS');
   els.count.style.transform=`scale(${bonusPose.countScale})`;
   const shot=r?.flight,age=shot?time-shot.startAt:0,finalAge=finished?time-r.completedAt:0,level=finished?vaultLevel(r):vaultLastShot(r)?vaultLevel(now):0;
   const coda=vaultTreasureCoda(r,time,quiet),bridge=vaultTreasureBridge(r,time,quiet),ornament=coda.enabled?{visible:coda.visible,kind:'final',level:coda.style,age:coda.age}:bridge.linked?{visible:bridge.active,kind:'final',level:bridge.style,age:bridge.age}:vaultTreasurePose(r,time,quiet),ornamentLead=bridge.linked?bridge.lead:0;
@@ -91,12 +92,12 @@ export function createVaultView(root,{audio}={}){
   const journey=vaultJourney(r,time);
   journeyLayer.style.opacity=journey.visible?exit.heading:0;journeyLayer.setAttribute('aria-hidden',String(!journey.visible));
   journeyLayer.dataset.building=String(journey.building);journeyLayer.style.setProperty('--special-light',special.current?.light??'#ffd2e8');
-  depthLabel.textContent=String(journey.number);boostLabel.textContent='×'+journey.multiplier;
+  text(depthLabel,String(journey.number));text(boostLabel,'×'+journey.multiplier);
   journeyGems.forEach((el,i)=>{el.style.display=i<journey.level?'':'none';});
   const incoming=arriving?arrival.incoming:special.blend,outgoing=arriving?arrival.outgoing:1-special.blend;
   arrivalLayer.style.display=arrival.active?'':'none';arrivalLayer.style.setProperty('--special-light',arrival.theme?.light??'#ffd2e8');
   arrivalSeal.style.opacity=arrival.seal;arrivalTitle.style.opacity=arrival.title;arrivalTitle.style.transform=`translate(-50%,${arrival.titleY}px)`;
-  arrivalTitle.textContent=arrival.chapter?'BONUS '+arrival.chapter.number+' · '+arrival.chapter.title:'BONUS VAULT';
+  text(arrivalTitle,arrival.chapter?'BONUS '+arrival.chapter.number+' · '+arrival.chapter.title:'BONUS VAULT');
   arrivalParticles.forEach((el,i)=>{const particle=vaultSpecialParticle(arrival,i,quiet);el.style.opacity=particle.opacity;el.style.transform=`translate(${particle.x}px,${particle.y}px) scale(${particle.scale})`;});
   original.style.opacity=special.current?(special.previous?0:outgoing):1;
   original.style.display=special.current&&special.blend===1?'none':'';
@@ -150,7 +151,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.reveal.setAttribute('aria-hidden',String(!reward||finished));
   els.reveal.style.left=(reward?Math.max(8,Math.min(192,point.x-110)):100)+'px';els.reveal.style.right='auto';els.reveal.style.width='220px';els.reveal.style.top=(reward?Math.max(112,Math.min(255,point.y-39)):170)+'px';
   els.reveal.classList.toggle('has-bonus',!!reward?.bonus);
-  els.small.textContent=reward?(reward.index+1)+' · '+(vaultSpecialTheme(r,reward.index)?.name??chamberTheme(reward.index).name):'OPENING BALANCE';
+  text(els.small,reward?(reward.index+1)+' · '+(vaultSpecialTheme(r,reward.index)?.name??chamberTheme(reward.index).name):'OPENING BALANCE');
   const cashText=reward?'+'+money(reward.cashCents):money(r?.openingCents??0),showCashIcon=cashText.length<=7;
   fit(els.cashText,cashText,cashPose.fontSize,showCashIcon?158:184);
   els.cashShell.dataset.level=cashPose.level;els.cashShell.style.transform=`translateY(${cashPose.y}px) scale(${cashPose.scale})`;
@@ -160,7 +161,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   cashSparks.forEach((el,i)=>{const spark=vaultCashSpark(i,cashPose,shot,time,quiet);el.style.opacity=spark.opacity;el.style.width=spark.width+'px';el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});
   const kind=reward?.bonus?.kind??'';
   els.bonusShell.style.display=kind?'':'none';els.bonusShell.dataset.kind=kind;
-  els.bonusText.textContent=kind?(kind==='multiply'?'×'+reward.bonus.value+(bonusPose.building?' INCOMING':' TOTAL'):'+1 UNLOCK'):'';
+  text(els.bonusText,kind?(kind==='multiply'?'×'+reward.bonus.value+(bonusPose.building?' INCOMING':' TOTAL'):'+1 UNLOCK'):'');
   els.bonusShell.dataset.building=String(bonusPose.building);
   els.bonus.dataset.kind=kind;els.bonusShell.style.opacity=bonusPose.opacity;
   els.bonusShell.setAttribute('aria-hidden',String(!bonusPose.visible));
@@ -172,14 +173,16 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   if(finished&&level!==tier){els.crest.innerHTML=[giftFinalBadge,giftFinalBow,crownVaultCrest][level]();const width=[84,100,116][level],height=[68,80,92][level];els.crest.style.width=width+'px';els.crest.style.height=height+'px';els.crest.style.left=(210-width/2)+'px';els.crest.style.top=(242-height)+'px';tier=level;}
   const finale=finalePose(finalAge,level,quiet),build=finale.build,handoff=vaultHandoff(r,time,level,quiet);
   const dim=handoff.linked?handoff.dim:finished?finale.dim:0;
-  els.machine.style.filter=dim?`brightness(${1-dim*.42}) saturate(${1-dim*.14})`:entrance.active?`brightness(${entrance.brightness})`:'none';
+  // Composite one opacity layer instead of re-filtering the large pixel-art
+  // SVG on every opening/finale frame in OBS's embedded browser.
+  els.machine.style.opacity=exit.machine*entrance.frame*(1-dim*.2);
   els.bankWrap.style.transition='none';els.bankWrap.style.bottom=(handoff.linked?handoff.bottom:finished?9+63*(quiet?1:ease(finalAge/400)):9)+'px';
   els.bankWrap.style.transform=`translateY(${-exit.lift}px)`;
   els.halo.style.opacity=finished?finale.halo*exit.halo*(coda.enabled?coda.haloGain:1):0;
   els.halo.style.transform=`translateY(${finale.rise}px)`;
   els.crest.style.opacity=finished?finale.crest*exit.crest:0;els.crest.style.transform=`translateY(${finale.crestY+exit.crestY}px) scale(${finale.crestScale})`;
   els.rays.style.opacity=finished?finale.flare*exit.halo:0;els.rays.style.transform=`scale(${finale.flareScale})`;
-  els.bankLabel.textContent=finished&&(!handoff.linked||handoff.showTitle)?['VAULT TOTAL','BIG WIN','ROYAL WIN'][level]:entrance.active&&!entrance.bankTitle?'OPENING BALANCE':'BANKROLL';
+  text(els.bankLabel,finished&&(!handoff.linked||handoff.showTitle)?['VAULT TOTAL','BIG WIN','ROYAL WIN'][level]:entrance.active&&!entrance.bankTitle?'OPENING BALANCE':'BANKROLL');
   els.bankLabel.style.opacity=handoff.linked?handoff.titleOpacity:entrance.title;
   const total=readout.total;
   fit(els.bank,entrance.pending?'···':r?money(total):'$ —',handoff.linked?handoff.fontSize:finished?50+18*(quiet?1:ease(finalAge/440)):50,340);
@@ -196,7 +199,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   if(bonusPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(241,210,255,${.65+.35*bonusPose.gleam}),inset 0 -2px #a567a7`;
   if(coda.bankGleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,245,205,${.6+coda.bankGleam}),inset 0 -2px #a56788`;
   const story=vaultStory(r,time,quiet);
-  els.calc.textContent=story.text;els.calc.dataset.kind=story.kind;
+  text(els.calc,story.text);els.calc.dataset.kind=story.kind;
   els.calc.style.marginTop=handoff.linked?handoff.gap+'px':'';
   els.calc.style.opacity=exit.labels*entrance.calc;
   els.calc.setAttribute('aria-hidden',String(entrance.calc===0));
@@ -209,11 +212,11 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   const anchor=payoff.linked?vaultStoryFlight({shot:payoff.boost},payoff.catchAt,vaultRewardPoint(r,payoff.boost.index),tokenDock,quiet):undefined;
   const storyToken=vaultPayoffFlight(payoff,vaultStoryFlight(story,time,point,tokenDock,quiet),time,tokenDock,quiet,anchor);
   if(storyKind!==storyToken.kind){storyKind=storyToken.kind;storyFlight.querySelector('span').innerHTML=vaultStoryGlyph(storyKind);}
-  storyFlight.querySelector('b').textContent=storyToken.label;storyFlight.dataset.kind=storyToken.kind;
+  text(storyFlight.querySelector('b'),storyToken.label);storyFlight.dataset.kind=storyToken.kind;
   storyFlight.style.opacity=finished&&!payoff.linked?0:storyToken.opacity;storyFlight.style.transform=`translate(${storyToken.x}px,${storyToken.y}px) scale(${storyToken.scale})`;
   if(storyToken.kind==='extra'&&storyToken.catch)els.count.style.transform=`scale(${1+.08*storyToken.catch})`;
   receipt.setAttribute('aria-hidden',String(!story.receipt.length));
-  [...receipt.children].forEach((el,i)=>{const item=story.receipt[i];el.style.opacity=(item?.opacity??0)*vaultReceiptExit(r,time,i,quiet);el.style.transform=`translateY(${item?.y??0}px) scale(${item?.scale??1})`;el.dataset.kind=item?.kind??'';el.querySelector('small').textContent=item?.label??'';fit(el.querySelector('strong'),item?.value??'',21,105);});
+  [...receipt.children].forEach((el,i)=>{const item=story.receipt[i];el.style.opacity=(item?.opacity??0)*vaultReceiptExit(r,time,i,quiet);el.style.transform=`translateY(${item?.y??0}px) scale(${item?.scale??1})`;el.dataset.kind=item?.kind??'';text(el.querySelector('small'),item?.label??'');fit(el.querySelector('strong'),item?.value??'',21,105);});
   trails.forEach((el,i)=>{const openingGuide=vaultOpeningTrail(r,i,time,quiet,dock),guide=openingGuide.visible?openingGuide:vaultChamberTrail(between,i,time,quiet,dock,between.linked&&vaultSpecialTheme(r,between.link.index)?VAULT_SPECIAL_POINT:null),t=guide;el.dataset.guide=String(guide.visible);el.dataset.relay=String(!openingGuide.visible&&guide.visible);el.style.opacity=t.visible&&!finished?t.opacity:0;el.style.transform=`translate(${t.x}px,${t.y}px)`;});
   coins.forEach((el,i)=>{const coin=vaultCollectionCoin(shot,i,time,dock,quiet,point);el.style.opacity=finished?0:coin.opacity;el.style.transform=`translate(${coin.x}px,${coin.y}px) scale(${coin.flip},${coin.squash})`;});
   welcomePieces.forEach((el,i)=>{const spark=vaultWelcomeParticle(welcome,i,dock);el.style.opacity=spark.opacity;el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});

@@ -23,6 +23,16 @@ export async function connectVaultControl(id,onSnapshot,onStatus){
 }
 export function connectVaultDisplay(onSnapshot,onConnection){
  const key=new URLSearchParams(location.hash.slice(1)).get('room');if(!validKey(key))throw Error('Use the private display link from Birthday Vault’s controls.');
- let last=0,link,timer;
- return {start(){link=connectRoom({role:'viewer',key,status(s){onConnection(s==='connected');},message(raw){if(raw?.type!=='vault-state'||raw.snapshot?.kind!=='faith-vault'||!Number.isFinite(raw.snapshot.serverNow))return;last=Date.now();onConnection(true);onSnapshot(raw.snapshot);}});timer=setInterval(()=>{if(last&&Date.now()-last>6000)onConnection(false);},1000);},dispose(){clearInterval(timer);link?.dispose();}};
+ let last=null,lastServer=-Infinity,visible=null,link,timer,disposed=false;
+ // Signaling can reconnect while the established data channel still works.
+ // Judge display health by actual snapshots; never blink on a transport event.
+ function health(){
+  if(disposed)return;
+  const fresh=last!==null&&performance.now()-last<=6000;
+  if(fresh!==visible){visible=fresh;onConnection(fresh);}
+ }
+ return {start(){link=connectRoom({role:'viewer',key,status:health,message(raw){
+  if(disposed||raw?.type!=='vault-state'||raw.snapshot?.kind!=='faith-vault'||!Number.isFinite(raw.snapshot.serverNow)||raw.snapshot.serverNow<lastServer)return;
+  lastServer=raw.snapshot.serverNow;last=performance.now();health();onSnapshot(raw.snapshot);
+ }});timer=setInterval(health,1000);},dispose(){disposed=true;clearInterval(timer);link?.dispose();}};
 }
