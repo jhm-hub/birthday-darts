@@ -127,6 +127,13 @@ The approved Faith sprite, balloon art, party props and original synthesized pop
 **Configure and demo:** https://jhm-hub.github.io/birthday-darts/gifts.html
 
 Gift Pile is a compact, presents-only overlay with a transparent background.
+
+In the private desk, select **Presents → Play live**. The older Presents editor
+also has **Open live game** above its settings/demo. The demo stays off stream.
+Use **Copy OBS display link** at the top of live controls for a **420 × 460**
+Browser Source; keep an existing source if it already uses that same address.
+Enter a viewer and choose a game to make the transparent display appear. It is
+intentionally blank between rounds. Keep the desk open while playing.
 The gifts match the birthday game’s pixel style: stepped outlines, pastel wrappers,
 satin ribbon highlights, separate lids and paper rustle / celesta sounds.
 The grid and final-total plaque share one 420 × 460 frame, including expanded

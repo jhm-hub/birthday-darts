@@ -41,7 +41,8 @@ async function init(){
  else{
   session=await connectGiftControl(new URLSearchParams(location.search).get('id'),receive,(value,text)=>{connected=value;readiness=text;$('#connection-status').textContent=text;render();});
   versionPicker=bindVersionPicker($('#saved-version-controls'),session,{editor:'gifts.html',onSwitch(){error='';render();}});$('#live-display-url').value=session.displayURL;$('#open-display').href=session.displayURL;
-  $('#copy-live').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(session.displayURL);$('#copy-live').textContent='Copied';}catch{$('#live-display-url').select();}});
+  $('#copy-live').disabled=false;
+  $('#copy-live').addEventListener('click',async()=>{const notice=$('#stream-copy-status');notice.hidden=false;try{await navigator.clipboard.writeText(session.displayURL);notice.textContent='Display link copied. Paste it into an OBS Browser Source at 420 × 460.';}catch{$('#stream-link-details').open=true;$('#live-display-url').focus();$('#live-display-url').select();notice.textContent='Select and copy the display address below, then paste it into OBS.'}});
  }
  session.start();
 }
