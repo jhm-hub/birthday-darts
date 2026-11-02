@@ -36,6 +36,12 @@ function planBonuses(count,boosts,pick){
  for(let i=bag.length-1;i>0;i--){const j=pick(i+1);[bag[i],bag[j]]=[bag[j],bag[i]];}
  const plan=[{bonus:null},...bag,{bonus:'multiply',multiplier:boosts.at(-1)}];
  if(!plan.slice(0,3).some(p=>p.bonus)){const from=plan.findIndex(p=>p.bonus==='extra'),to=1+pick(2);[plan[from],plan[to]]=[plan[to],plan[from]];}
+ // Establish the multiplier story in the starting vault, then reserve the
+ // finale for its next leap. Keep slot four free for a key-reachability repair.
+ if(!plan.slice(1,4).some(p=>p.bonus==='multiply')){
+  const from=plan.findIndex((p,i)=>i>3&&i<count-1&&p.bonus==='multiply'),to=1+pick(3);
+  [plan[from],plan[to]]=[plan[to],plan[from]];
+ }
  // Move a later key forward if the viewer would otherwise run out of rooms.
  // The last chamber remains the final whole-bank multiplier.
  let allocated=5;

@@ -13,6 +13,7 @@ function journey(round){
  const r=finish(round),keys=r.opened.filter(s=>s.bonus?.kind==='extra'),boosts=r.opened.filter(s=>s.bonus?.kind==='multiply');
  assert.ok(keys.length>=3&&keys.length<=10);assert.equal(r.opened.length,5+keys.length);assert.ok(r.opened.length<=15);
  assert.ok(boosts.length>=2&&boosts.length<=4);assert.equal(r.opened.at(-1).bonus.kind,'multiply');assert.ok(vaultBonusBuildMs(r.opened.at(-1))>0);
+ assert.ok(boosts[0].index<=3,'the first multiplier lands within four openings');
  assert.ok(r.opened.slice(0,3).some(s=>s.bonus));assert.equal(r.opened[0].bonus,null);
  assert.ok(boosts.every(s=>[2,4,6].includes(s.bonus.value)));
  assert.equal(BigInt(r.multiplier),boosts.reduce((m,s)=>m*BigInt(s.bonus.value),1n));
