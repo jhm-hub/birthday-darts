@@ -10,13 +10,13 @@ export const VAULT_TREASURE_FAREWELL_MS=[0,820,980];
 // and future prize plans never enter this clock or the public presentation.
 export function vaultTreasureCoda(round,time,quiet=false){
  const off={enabled:false,visible:false};
- if(round?.completedAt==null||!Number.isFinite(round.hideAt))return off;
+ if(round?.completedAt==null||!round.holdFinal&&!Number.isFinite(round.hideAt))return off;
  const style=vaultTreasureLevel(vaultTotal(round),'final');if(!style)return off;
  const revealAt=round.completedAt+finalePose(0,vaultLevel(round)).build;
- const settleAt=revealAt+VAULT_TREASURE_SETTLE_MS[style],farewellAt=round.hideAt-VAULT_TREASURE_FAREWELL_MS[style];
+ const settleAt=revealAt+VAULT_TREASURE_SETTLE_MS[style],farewellAt=round.holdFinal?Infinity:round.hideAt-VAULT_TREASURE_FAREWELL_MS[style];
  const settledAge=time-settleAt,pulse=(delay,span)=>{const t=(settledAge-delay)/span;return quiet||t<=0||t>=1?0:Math.sin(t*Math.PI)**2;};
- return {enabled:true,visible:!quiet&&time>=round.completedAt&&time<round.hideAt,style,
-  age:time-revealAt,settleAge:time-settleAt,exitAge:time-farewellAt,settleAt,farewellAt,
+ return {enabled:true,visible:!quiet&&time>=round.completedAt&&(round.holdFinal||time<round.hideAt),style,
+  age:time-revealAt,settleAge:time-settleAt,exitAge:round.holdFinal?-1000000:time-farewellAt,settleAt,farewellAt,
   phase:time<settleAt?'celebrating':time<settleAt+1100?'settling':time<farewellAt?'holding':time<round.hideAt?'closing':'clearing',
   catches:[pulse(0,240)*.55,pulse(style===2?90:0,240)*.55],bankGleam:pulse(style===2?180:100,360)*.38,
   haloGain:quiet?1:1-ease((time-settleAt)/900)*(style===1?.12:.2)};

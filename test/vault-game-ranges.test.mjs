@@ -50,7 +50,7 @@ test('one button atomically selects and starts; rapid competing starts cannot re
  let now=before.readyAt;while(f.raw().round.remaining){await f.store.action(id,'',now);now=f.raw().round.flight.finishAt;await f.store.advance(now);}
  const done=f.raw().round;assert.ok(BigInt(vaultTotal(done))>=60000n&&BigInt(vaultTotal(done))<=90000n);
  await assert.rejects(f.store.startExperience(id,'high','',now+1),/Finish/);
- await f.store.startExperience(id,'high','Next',done.hideAt+VAULT_CLEAR_MS+1);assert.equal(f.raw().round.privateExperience.id,'high');assert.equal(f.raw().round.viewer,'Next');
+ await f.store.reset(id);await f.store.startExperience(id,'high','Next',done.completedAt+10000);assert.equal(f.raw().round.privateExperience.id,'high');assert.equal(f.raw().round.viewer,'Next');
 });
 test('invalid start writes nothing and existing username overrides still take priority for all four buttons',async()=>{
  const f=fixture();await f.store.init();const id=DEFAULT_VAULT.id;const before=f.data.get(VAULT_STORE_KEY);

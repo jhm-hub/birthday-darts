@@ -1,5 +1,6 @@
+import {prepareVaultPlay} from './vault-playback.js';
 import {vaultStore,exportVaultSettings,importVaultSettings} from './vault-store.js';
-import {DEFAULT_VAULT,validateVault,unlockVault,advanceVault,vaultTotal,vaultBonuses,vaultBonusDue,vaultCashPrizes,money,sampleVaultFinale,VAULT_CLEAR_MS} from './vault-game.js';
+import {DEFAULT_VAULT,validateVault,unlockVault,advanceVault,vaultTotal,vaultBonuses,vaultBonusDue,vaultCashPrizes,money,sampleVaultFinale} from './vault-game.js';
 import {VAULT_EXPERIENCES,vaultExperienceInfo,vaultExperienceRange,vaultExperiencePreset,startVaultExperience} from './vault-experiences.js';
 import {validateVaultGameRanges} from './vault-game-ranges.js';
 import {bindVaultGameRanges} from './vault-game-range-controls.js';
@@ -69,22 +70,23 @@ function render(){
  $('#demo-experience-note').textContent=demoExample?'Sample round · small cash prizes, multipliers and bonus vaults. Your saved settings stay the same.':rule?'This sample uses the saved username range, including all bonuses.':presetMode?vaultExperienceRange(experience,demo?.privateExperience?(draft?.gameRanges??savedGameRanges).map(r=>r.id===experience?{...r,min:demo.privateExperience.min,max:demo.privateExperience.max}:r):(draft?.gameRanges??savedGameRanges))+' final total, including bonuses. This preview uses the settings you’re editing.':'Uses the cash amounts and odds in this editor.';
  $('#demo-luck-run').disabled=$('#demo-payoff').disabled=!!draftError||!draft;
  $('#demo-cash').disabled=$('#demo-bonus').disabled=$('#demo-finale').disabled=presetMode;
+ if(demo){demo.holdFinal=true;demo.hideAt=null;}
  if(draft)view.update({widget:vaultExperiencePreset(draft,experience),round:demo},{preview:true});
  const opening=demo&&Date.now()<demo.readyAt,busy=!!demo?.flight,finished=!!demo&&demo.completedAt!==null;
  $('#demo-unlock').disabled=!!draftError||!draft||busy||finished||opening||auto;$('#preview-finale').disabled=!!draftError||!draft||presetMode;$('#demo-auto').disabled=!!draftError||!draft;$('#demo-auto').textContent=auto?'Stop autoplay':'Watch a sample round';
  $('#demo-unlock').textContent=opening?'Rolling opening balance…':busy?'Unlocking…':finished?'Vault cleared':demo?'Unlock chamber '+(demo.opened.length+1):'Roll opening balance';
- $('#demo-status').textContent=draftError||(!demo?'Roll a starting balance, then unlock one chamber at a time.':opening?'Revealing the opening balance…':busy?'Turning the lock. Cash and possible bonus incoming…':finished?money(vaultTotal(demo))+' final bankroll. Clearing for the next viewer…':`${money(vaultTotal(demo))} banked · ${demo.remaining} unlock${demo.remaining===1?'':'s'} left.`+(vaultBonusDue(demo)?' A bonus is guaranteed in this chamber.':''));
+ $('#demo-status').textContent=draftError||(!demo?'Roll a starting balance, then unlock one chamber at a time.':opening?'Revealing the opening balance…':busy?'Turning the lock. Cash and possible bonus incoming…':finished?money(vaultTotal(demo))+' final total. Press Reset when you’re ready to clear it.':`${money(vaultTotal(demo))} banked · ${demo.remaining} unlock${demo.remaining===1?'':'s'} left.`+(vaultBonusDue(demo)?' A bonus is guaranteed in this chamber.':''));
  $('#demo-status').classList.toggle('error',!!draftError);
  const bonuses=draft?vaultBonuses(demo??{preset:draft,allocated:draft.chambers}):[];for(const option of $('#demo-bonus').options)if(option.value)option.disabled=!draft||draft.bonusChance===0||!bonuses.some(b=>b.kind===option.value&&b.weight>0);if($('#demo-bonus').selectedOptions[0]?.disabled)$('#demo-bonus').value='';
 }
-function pick(){if(!draft||draftError||demo?.flight||demo&&demo.completedAt!==null||demo&&Date.now()<demo.readyAt)return;try{if(audio.enabled)audio.unlock();if(!demo){const rule=demoRule(),viewer=$('#demo-viewer').value||'Demo viewer';demo=rule?startVaultViewerRange(draft,rule,viewer):startVaultExperience(draft,$('#demo-experience').value,viewer);}else unlockVault(demo,Date.now(),demo.prizePlan?{}:{forcedCash:$('#demo-cash').value===''?null:Number($('#demo-cash').value),forcedBonus:$('#demo-bonus').value||undefined});nextAuto=Date.now()+2400;render();}catch(e){auto=false;$('#demo-status').textContent=e.message;}}
+function pick(){if(!draft||draftError||demo?.flight||demo&&demo.completedAt!==null||demo&&Date.now()<demo.readyAt)return;try{if(audio.enabled)audio.unlock();if(!demo){const rule=demoRule(),viewer=$('#demo-viewer').value||'Demo viewer';demo=prepareVaultPlay(rule?startVaultViewerRange(draft,rule,viewer):startVaultExperience(draft,$('#demo-experience').value,viewer));}else unlockVault(demo,Date.now(),demo.prizePlan?{}:{forcedCash:$('#demo-cash').value===''?null:Number($('#demo-cash').value),forcedBonus:$('#demo-bonus').value||undefined});nextAuto=Date.now()+2400;render();}catch(e){auto=false;$('#demo-status').textContent=e.message;}}
 $('#demo-experience').onchange=()=>resetDemo();
 $('#demo-custom').onclick=()=>{resetDemo(false);$('#demo-experience').value='custom';pick();};
 $('#demo-viewer').oninput=()=>resetDemo();
 $('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-reset').onclick=()=>resetDemo();
 $('#demo-auto').onclick=()=>{if(auto){auto=false;render();return;}resetDemo(false);auto=true;pick();nextAuto=Date.now()+1550;render();showPreview();};
 $('#demo-payoff').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=sampleVaultLatePayoff(draft,Date.now(),Number($('#demo-boost').value));demoExample=true;render();showPreview();}catch(e){$('#demo-status').textContent=e.message;}};
-$('#demo-luck-run').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=startVaultTotalRange(draft,{min:10000,max:10000},'Demo viewer');demoExample=true;auto=true;nextAuto=demo.readyAt;render();showPreview();}catch(e){resetDemo(false);$('#demo-status').textContent=e.message;}};
+$('#demo-luck-run').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=prepareVaultPlay(startVaultTotalRange(draft,{min:10000,max:10000},'Demo viewer'));demoExample=true;auto=true;nextAuto=demo.readyAt;render();showPreview();}catch(e){resetDemo(false);$('#demo-status').textContent=e.message;}};
 $('#preview-finale').onclick=()=>{if(draftError||!draft)return;resetDemo(false);demo=sampleVaultFinale(draft,Number($('#demo-finale').value));render();showPreview();};
 $('#demo-sound').onclick=()=>{audio.setEnabled(!audio.enabled);$('#demo-sound').textContent=audio.enabled?'Sound on':'Sound off';$('#demo-sound').setAttribute('aria-pressed',String(audio.enabled));};
 for(const [value,label] of Object.entries(VAULT_SOUND_LABELS))$('#sound-cue').add(new Option(label,value));
@@ -114,7 +116,7 @@ $('#duplicate').onclick=async()=>{try{const w=await vaultStore.save({...readDraf
 $('#copy-display').onclick=async()=>{try{await navigator.clipboard.writeText($('#vault-display-url').value);message('Display link copied.');}catch{$('#vault-display-url').select();message('Select and copy the display link.');}};
 $('#export-vaults').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(exportVaultSettings(vaultStore.list()),null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='faith-vault-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 $('#import-vaults').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>1000000)throw Error('This settings file is too large.');await vaultStore.import(importVaultSettings(JSON.parse(await file.text())));widgets=vaultStore.list();list();message('Imported vaults. Existing games were kept.');}catch(e){message(e.message,true);}finally{e.target.value='';}};
-let wasIntro=false;const pulse=setInterval(()=>{if(!demo)return;const opening=Date.now()<demo.readyAt;if(advanceVault(demo)||wasIntro!==opening)render();wasIntro=opening;if(demo.hideAt&&Date.now()>=demo.hideAt+VAULT_CLEAR_MS){resetDemo();return;}if(auto&&!demo.flight&&demo.completedAt===null&&Date.now()>=nextAuto)pick();},50);
+let wasIntro=false;const pulse=setInterval(()=>{if(!demo)return;const opening=Date.now()<demo.readyAt;if(advanceVault(demo)||wasIntro!==opening)render();wasIntro=opening;if(auto&&!demo.flight&&demo.completedAt===null&&Date.now()>=nextAuto)pick();},50);
 const unsubscribeRanges=vaultStore.subscribe(()=>{
  if(!selected)return;const latest=vaultStore.list(),w=latest.find(w=>w.id===selected);if(!w)return;
  if(saving)return;

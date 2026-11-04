@@ -33,3 +33,9 @@ test('heartbeat updates stay current, malformed and older packets cannot keep a 
 test('disposing a display ignores late transport callbacks',()=>{
  const f=fixture();f.wire.message(packet(10000));f.session.dispose();f.time=20000;f.wire.status('offline');f.wire.message(packet(11000));f.tick();assert.equal(f.disposed,true);assert.equal(f.states.length,1);assert.deepEqual(f.connections,[true]);
 });
+
+test('a finished held total survives a control outage until an explicit clear snapshot',()=>{
+ const f=fixture();f.wire.message(packet(10000,{id:'held',holdFinal:true,completedAt:9000,hideAt:null}));f.time=86400000;f.tick();f.wire.status('offline');assert.deepEqual(f.connections,[true]);assert.equal(f.states.at(-1).round.id,'held');
+ f.wire.message(packet(10001,null));assert.equal(f.states.at(-1).round,null);f.time+=6001;f.tick();assert.equal(f.connections.at(-1),false);
+ f.wire.message(packet(10002,{id:'next',holdFinal:true,completedAt:null}));assert.equal(f.connections.at(-1),true);f.time+=6001;f.tick();assert.equal(f.connections.at(-1),false);
+});

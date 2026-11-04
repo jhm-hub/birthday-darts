@@ -54,7 +54,7 @@ test('experience choice is private, persists per widget, and locks for the entir
  const resumed=createVaultStore(f.storage,f.locks);assert.equal(resumed.controlSnapshot(id).control.experience,'extreme');
  let time=before.readyAt;while(resumed.snapshot(id,time).round.remaining){await resumed.action(id,'',time);const shot=resumed.snapshot(id,time).round.flight;await resumed.advance(shot.finishAt);time=shot.finishAt;}
  const done=resumed.snapshot(id,time).round;assertRange(done,VAULT_EXPERIENCES[3]);await assert.rejects(resumed.setExperience(id,'low',time+1),/before starting/);
- await resumed.advance(done.hideAt+VAULT_CLEAR_MS);await resumed.setExperience(id,'low',done.hideAt+VAULT_CLEAR_MS+1);assert.equal(resumed.controlSnapshot(id).control.experience,'low');
+ await resumed.advance(done.completedAt+86400000);assert.ok(resumed.snapshot(id).round);await resumed.reset(id);await resumed.setExperience(id,'low',done.completedAt+86400001);assert.equal(resumed.controlSnapshot(id).control.experience,'low');
 });
 test('mode selection and start serialize; editing custom amounts does not rewrite active plans or the selected mode',async()=>{
  const f=fixture();await f.store.init();const id=DEFAULT_VAULT.id;

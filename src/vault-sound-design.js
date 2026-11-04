@@ -1,3 +1,4 @@
+import {VAULT_PLAYBACK_SCALE} from './vault-playback.js';
 import {VAULT_UNLOCK_MS,VAULT_COLLECT_START_MS,VAULT_REVEAL_MS,VAULT_BONUS_DELAY_MS} from './vault-timing.js';
 import {VAULT_OPENING_GUIDE_MS} from './vault-opening-handoff.js';
 import {VAULT_WELCOME_START_MS} from './vault-welcome-flow.js';
@@ -173,7 +174,9 @@ function renderVoice(cue,sampleRate){
  return data;
 }
 export function renderVaultSound(name,options={},sampleRate=48000){
- const score=vaultSoundScore(name,options),duration=Math.max(...score.map(c=>c.at+c.length))+.025;
+ const pace=options.pace===VAULT_PLAYBACK_SCALE?VAULT_PLAYBACK_SCALE:1;
+ // Space the original strikes to match the artwork; retain their pitch and decay.
+ const score=vaultSoundScore(name,options).map(c=>({...c,at:c.at*pace})),duration=Math.max(...score.map(c=>c.at+c.length))+.025;
  const data=new Float32Array(Math.ceil(duration*sampleRate));
  for(const cue of score){const part=renderVoice(cue,sampleRate),offset=Math.round(cue.at*sampleRate);for(let i=0;i<part.length;i++)data[offset+i]+=part[i]*trims[name];}
  return data;

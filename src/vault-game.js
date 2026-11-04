@@ -1,3 +1,4 @@
+import {vaultPlaybackScale} from './vault-playback.js';
 import {randomInt,randomUUID} from './random.js';
 import {chooseOutcome} from './game.js';
 import {money} from './gift-game.js';
@@ -75,11 +76,12 @@ export function unlockVault(r,now=Date.now(),{draw=randomInt,forcedCash=null,for
   if(forcedBonus===null&&due)throw Error('A bonus is guaranteed in this chamber.');
   if(forcedBonus!==null){const b=bonuses.find(b=>b.kind===forcedBonus&&b.weight>0);if(!b||p.bonusChance===0)throw Error('That bonus is unavailable.');bonus={kind:b.kind,value:plannedMultiplier??b.value};}
  }else if(available&&(due||draw(10000)<Math.round(p.bonusChance*100))){const b=bonuses[chooseOutcome(bonuses,draw)];bonus={kind:b.kind,value:b.value};}
- r.flight={id:randomUUID(),index:r.opened.length,cashCents:Math.round(prizes[index].value*100),bonus,startAt:now,revealAt:now+VAULT_REVEAL_MS,finishAt:now+VAULT_UNLOCK_MS};
+ const pace=vaultPlaybackScale(r);
+ r.flight={id:randomUUID(),index:r.opened.length,cashCents:Math.round(prizes[index].value*100),bonus,startAt:now,revealAt:now+VAULT_REVEAL_MS*pace,finishAt:now+VAULT_UNLOCK_MS*pace};
  // A short final-act pause belongs to the actual earned multiplier, never
  // to a private range or a future prize. All following beats share its clock.
  if(bonus?.kind==='multiply'&&r.opened.length>=Math.max(6,p.chambers)&&r.remaining<=2&&BigInt(r.multiplier)>1n){
-  r.flight.bonusBuildMs=VAULT_LATE_BOOST_MS;r.flight.finishAt+=VAULT_LATE_BOOST_MS;
+  r.flight.bonusBuildMs=VAULT_LATE_BOOST_MS*pace;r.flight.finishAt+=VAULT_LATE_BOOST_MS*pace;
  }
  return r.flight;
 }
@@ -93,7 +95,7 @@ export function projectedVault(r,now){if(!r?.flight||now<r.flight.revealAt)retur
 export function advanceVault(r,now=Date.now()){
  if(!r?.flight||now<r.flight.finishAt)return false;
  const shot=r.flight;award(r,shot);r.flight=null;
- if(!r.remaining){r.completedAt=shot.finishAt;r.hideAt=shot.finishAt+VAULT_HOLD_MS;}return true;
+ if(!r.remaining){r.completedAt=shot.finishAt;r.hideAt=r.holdFinal?null:shot.finishAt+VAULT_HOLD_MS;}return true;
 }
 export function cleanVaultRound(r){
  if(!r)return null;const copy=structuredClone(r),{outcomes,specialOutcomes,bonusChance,multiplyWeight,extraWeight,openingMin,openingMax,...preset}=copy.preset;

@@ -1,3 +1,4 @@
+import {prepareVaultPlay,vaultPresentation} from '../src/vault-playback.js';
 import {vaultFinalBoost,vaultFinalBoostCue} from '../src/vault-final-boost.js';
 import {vaultTreasureCoda,VAULT_TREASURE_SETTLE_MS,VAULT_TREASURE_FAREWELL_MS} from '../src/vault-treasure-coda.js';
 import {vaultTreasureBridge,sampleVaultTreasureHandoff} from '../src/vault-treasure-handoff.js';
@@ -412,4 +413,21 @@ test('an unresponsive sound worker times out instead of leaving an audition pend
  const ctx=context(),worker=soundWorker(),a=createVaultAudio({createContext:()=>ctx,createWorker:()=>worker});
  const result=a.preview('royal');await Promise.resolve();t.mock.timers.tick(5000);
  assert.equal(await result,false);assert.ok(worker.terminated);assert.equal(sources(ctx).length,0);a.dispose();
+});
+
+test('slower live bonuses use spaced casino strikes at the visual reveal and correct reconnect offset',()=>{
+ for(const kind of ['multiply','extra']){
+  const r=prepareVaultPlay(startVaultRound(DEFAULT_VAULT,'Paced',10000,()=>0));unlockVault(r,r.readyAt,{forcedCash:0,forcedBonus:kind});
+  const p=vaultPresentation(r,r.flight.revealAt),at=r.startedAt+(vaultBonusAt(p.round.flight)-r.startedAt)*1.5;
+  const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(r,at);a.sync(structuredClone(r),at+1);
+  assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound(kind,{pace:1.5}));
+  const late=context(),b=createVaultAudio({createContext:()=>late});b.setEnabled(true);b.sync(r,at+90);assert.ok(Math.abs(sources(late)[0].started[1]-.09)<1e-9);
+  a.sync(null,at+100);assert.equal(sources(ctx)[0].stops.at(-1),10.015);a.dispose();b.dispose();
+ }
+});
+test('held wins play the celebration once and never play an automatic farewell or repeat on long waits',()=>{
+ const r=sampleVaultFinale(DEFAULT_VAULT,2,10000);r.holdFinal=true;r.hideAt=null;
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(r,r.completedAt);const started=sources(ctx).length;assert.ok(started>0);
+ for(const age of [10000,60000,86400000])a.sync(structuredClone(r),r.completedAt+age);
+ assert.equal(sources(ctx).length,started);a.sync(null,r.completedAt+86400001);assert.ok(sources(ctx).every(s=>s.stops.length));a.dispose();
 });

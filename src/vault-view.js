@@ -1,3 +1,4 @@
+import {vaultPresentation} from './vault-playback.js';
 import {vaultFinalBoost,vaultFinalBoostPose,vaultFinalBoostSpark,vaultFinalBoostArt,vaultFinalBoostGlyph} from './vault-final-boost.js';
 import {vaultStory,vaultStoryFlight,vaultStoryGlyph} from './vault-story.js';
 import {vaultJourney} from './vault-journey.js';
@@ -71,7 +72,7 @@ export function createVaultView(root,{audio,preview=true}={}){
  function render(){
   if(disposed)return;raf=requestAnimationFrame(render);
   const quiet=options.quiet??reduced.matches;
-  const time=options.frozenAt??clock.now(),r=presentedVaultRound(snapshot?.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=vaultBonusReadout(r,now,time),bonusPose=vaultBonusPose(r?.flight,time,quiet),cashPose=vaultCashPose(r?.flight,time,quiet),collection=vaultCollectionBank(r?.flight,time,quiet);
+  const actualTime=options.frozenAt??clock.now(),presentation=vaultPresentation(snapshot?.round,actualTime),time=presentation.time,r=presentedVaultRound(presentation.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=vaultBonusReadout(r,now,time),bonusPose=vaultBonusPose(r?.flight,time,quiet),cashPose=vaultCashPose(r?.flight,time,quiet),collection=vaultCollectionBank(r?.flight,time,quiet);
   const visible=options.show!==false&&(options.preview||!!r),exit=vaultExit(r,time,quiet),entrance=vaultIntro(r,time,quiet),welcome=vaultWelcomeFlow(r,time,quiet),opening=vaultOpeningHandoff(r,time,quiet),between=vaultChamberHandoff(r,time,quiet);
   stage.style.opacity=visible?exit.stage*(r?entrance.stage:vaultIdleOpacity(idleAt,time)):0;
   stage.setAttribute('aria-hidden',String(!visible||exit.done));
@@ -242,7 +243,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   gathers.forEach((el,i)=>{const g=bridge.linked?vaultTreasureBridgeParticle(bridge,i,time,dock):vaultFinaleGather(r,i,time,level,quiet,dock);el.style.opacity=g.opacity;el.style.transform=`translate(${g.x}px,${g.y}px)`;});
   const burstAge=finished?finalAge-build:shot?time-shot.revealAt:10000;
   particles.forEach((el,i)=>{const particle=finished?vaultParticle(i,burstAge,{final:finished,level:finished?level:0,x:finished?210:point.x,y:finished?220:point.y,quiet}):{visible:false,opacity:0,x:0,y:0,rotation:0};el.style.opacity=particle.visible&&!(treasureFinal===1&&i>=52)?particle.opacity:0;el.style.transform=`translate(${particle.x}px,${particle.y}px) rotate(${particle.rotation}deg)`;});
-  audio?.sync(r,time);
+  audio?.sync(snapshot?.round,actualTime);
  }
  render();
  return {update(next,opts={}){

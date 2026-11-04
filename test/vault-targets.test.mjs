@@ -40,7 +40,7 @@ test('username range overrides selected preset, survives reload, and cannot chan
  assert.equal(resumed.controlSnapshot(id).control.experience,'low');assert.equal(resumed.controlSnapshot(id).control.activeViewerRange.username,'tester');
  await resumed.setViewerRange(id,{username:'tester',min:1,max:2});await resumed.removeViewerRange(id,'@TESTER');assert.deepEqual(raw(),before);
  let time=before.readyAt;while(raw().remaining){await resumed.action(id,'a different name',time);const shot=raw().flight;await resumed.advance(shot.finishAt);time=shot.finishAt;}
- assert.ok(BigInt(vaultTotal(raw()))>=2000000n&&BigInt(vaultTotal(raw()))<=3000000n);await resumed.advance(raw().hideAt+VAULT_CLEAR_MS);await resumed.action(id,'tester',time+10000);assert.equal(raw().privateExperience.id,'low');
+ assert.ok(BigInt(vaultTotal(raw()))>=2000000n&&BigInt(vaultTotal(raw()))<=3000000n);await resumed.reset(id);await resumed.action(id,'tester',time+10000);assert.equal(raw().privateExperience.id,'low');
 });
 test('rule updates serialize, stay per-vault and survive ordinary editor saves and backups',async()=>{
  const f=fixture();await f.store.init();const id=DEFAULT_VAULT.id;

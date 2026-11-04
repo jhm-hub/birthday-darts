@@ -81,7 +81,8 @@ saves against a local API fixture; no production settings are changed. Optional
 `PLAYWRIGHT_MODULE` and `BROWSER_EXECUTABLE` select an existing runtime/browser.
 `VAULT_QA_OUTPUT` chooses where screenshots and the JSON report are saved.
 `npm run test:vault-reset` checks emergency reset through the built controls
-and a separate display browser, including audio cancellation, pending starts,
+and a separate display browser, including held totals across waits and reloads,
+audio cancellation, pending starts,
 reloads, duplicate control tabs and the game desk. It uses the same runtime
 options and requires access to the normal PeerJS signaling service.
 
@@ -471,7 +472,9 @@ are sample settings, editable alongside all cash values and odds.
   select outcomes in a real round. Sample Big/Royal thresholds are $500 / $1,500.
 - Candy Confetti gifts, gold coins, a jeweled crown and a turning vault wheel use
   crisp pixel art. Sounds reuse the Presents mix with a new lock sequence and
-  extra-unlock chime. The final amount holds for 6.5 seconds, then fades and clears.
+  extra-unlock chime. The final amount stays on stream until Faith presses **End game & reset**.
+  New rounds run at a gentler pace: regular unlocks take 4.2 seconds, with
+  animation and casino strikes synchronized at their original sound pitch.
 
 ### Faith’s quick Vault setup
 
@@ -484,7 +487,9 @@ are sample settings, editable alongside all cash values and odds.
    tables, extra demos and sound auditions stay folded until needed.
 3. Choose **Open live controls** (or **Play** in the desk). Enter a viewer,
    press a game’s Start button, then **Open vault** once per chamber.
-   Space also works outside inputs. Switch saved setups between viewers.
+   Space also works outside inputs. The final total stays visible until you
+   press **End game & reset**, including after a controls/display reload.
+   Clear it when ready, then switch saved setups or start the next viewer.
    To stop early, click **End game & reset** directly below **Open vault**.
    It works during the opening, any chamber or bonus, and the celebration.
    It cancels unfinished play, stops the audio and clears the stream display;

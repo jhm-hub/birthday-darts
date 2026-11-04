@@ -1,3 +1,4 @@
+import {vaultPresentation,vaultPlaybackScale} from './vault-playback.js';
 import {vaultTreasureCoda} from './vault-treasure-coda.js';
 import {vaultTreasureBridge} from './vault-treasure-handoff.js';
 import {VAULT_SPECIAL_PREPARE_MS} from './vault-special-arrival.js';
@@ -21,7 +22,7 @@ import {VAULT_OPENING_GUIDE_MS} from './vault-opening-handoff.js';
 import {vaultChamberLinks,VAULT_CHAMBER_GUIDE_LEAD_MS,VAULT_WING_LEAD_MS} from './vault-chamber-handoff.js';
 
 export function createVaultAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)(),createWorker=()=>typeof Worker==='undefined'?null:new Worker(new URL('./vault-audio-worker.js',import.meta.url),{type:'module'})}={}){
- let ctx,master,enabled=false,volume=70,disposed=false,roundId=null,generation=0;
+ let ctx,master,enabled=false,volume=70,disposed=false,roundId=null,generation=0,pace=1;
  let worker,workerStarted=false,workerFailed=false;
  const seen=new Set(),playing=new Set(),buffers=new Map(),pending=new Map();
  function stopWorker(){workerFailed=true;worker?.terminate();worker=null;for(const job of pending.values()){clearTimeout(job.timeout);job.resolve(null);}pending.clear();}
@@ -39,7 +40,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
  }
  function bufferFor(sound,options={}){
   if(!ctx||disposed)return null;
-  const key=sound+':'+(options.index??0)%5+':'+(options.tier??0)+':'+(options.richness??1)+':'+(options.depth??1)+':'+(options.bridgeMs??888)+':'+!!options.bonus;
+  const key=sound+':'+(options.index??0)%5+':'+(options.tier??0)+':'+(options.richness??1)+':'+(options.depth??1)+':'+(options.bridgeMs??888)+':'+!!options.bonus+':'+(options.pace??1);
   if(buffers.has(key))return buffers.get(key);
   startWorker();if(workerFailed)return null;
   if(worker){
@@ -79,11 +80,12 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
   source.start(at,elapsed);return true;
  }
  function cue(id,at,time,sound,options){
+  options={...options,pace};
   if(enabled&&ctx&&time>=at-1200&&time<=at+200&&!seen.has(id)&&worker)bufferFor(sound,options);
   if(!Number.isFinite(at)||time<at||seen.has(id)||disposed)return;
-  if(!enabled||time>at+200){seen.add(id);return;}
+  if(!enabled||(time-at)*pace>200){seen.add(id);return;}
   if(!ctx||ctx.state!=='running')return;
-  if(play(sound,options,(time-at)/1000))seen.add(id);
+  if(play(sound,options,(time-at)*pace/1000))seen.add(id);
  }
  function reset(){generation++;seen.clear();stop();roundId=null;}
  return {get enabled(){return enabled;},get volume(){return volume;},unlock,
@@ -100,7 +102,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
   sync(r,time){
    if(disposed)return;
    if(!r){if(roundId!==null)reset();return;}
-   r=presentedVaultRound(r,time);
+   pace=vaultPlaybackScale(r);const presentation=vaultPresentation(r,time);time=presentation.time;r=presentedVaultRound(presentation.round,time);
    if(roundId!==r.id){reset();roundId=r.id;}
    cue(r.id+':intro',r.startedAt,time,'intro-arrive');
    cue(r.id+':balance',r.startedAt+VAULT_OPENING_REVEAL_MS,time,'intro-balance');
@@ -130,8 +132,8 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    const last=vaultLastShot(r),bridge=vaultTreasureBridge(r,time);
    if(last&&r.completedAt===null&&enabled&&ctx&&worker){
     const final=projectedVault(r,last.finishAt),tier=vaultLevel(final),richness=vaultTreasureLevel(vaultTotal(final),'final');
-    bufferFor(bridge.linked?'linked-final':['standard','big','royal'][tier],{tier});
-    if(richness)bufferFor('rich-final',{richness});
+    bufferFor(bridge.linked?'linked-final':['standard','big','royal'][tier],{tier,pace});
+    if(richness)bufferFor('rich-final',{richness,pace});
    }
    if(bridge.linked)cue(last.id+':treasure-bridge',bridge.startAt,time,bridge.payoff?'finish-boost':bridge.style===1?'finish-gold':'finish-jewel',{bridgeMs:bridge.bridgeMs});
    else if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle',{tier:vaultLevel(projectedVault(r,time))});
@@ -142,7 +144,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
     cue(r.id+':final',r.completedAt,time,bridge.linked?'linked-final':['standard','big','royal'][level],{tier:level});
     const coda=vaultTreasureCoda(r,time);
     cue(r.id+':rest',coda.enabled?coda.settleAt:r.completedAt+VAULT_REST_AT_MS[level],time,coda.enabled?(coda.style===1?'rest-gold':'rest-jewel'):'rest');
-    cue(r.id+':clear',coda.enabled?coda.farewellAt:r.hideAt-VAULT_FAREWELL_LEAD_MS,time,coda.enabled?(coda.style===1?'clear-gold':'clear-jewel'):'clear');
+    if(!r.holdFinal&&Number.isFinite(r.hideAt))cue(r.id+':clear',coda.enabled?coda.farewellAt:r.hideAt-VAULT_FAREWELL_LEAD_MS,time,coda.enabled?(coda.style===1?'clear-gold':'clear-jewel'):'clear');
    }
   },reset,dispose(){if(disposed)return;reset();disposed=true;enabled=false;stopWorker();buffers.clear();if(ctx)void ctx.close().catch(()=>{});}
  };

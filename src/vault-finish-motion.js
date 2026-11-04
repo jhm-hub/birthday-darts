@@ -10,7 +10,7 @@ export function presentedVaultRound(round,time){
  const projected=projectedVault(round,time);
  if(projected.remaining!==0)return round;
  projected.completedAt=round.flight.finishAt;
- projected.hideAt=projected.completedAt+VAULT_HOLD_MS;
+ projected.hideAt=round.holdFinal?null:projected.completedAt+VAULT_HOLD_MS;
  projected.flight=null;
  return projected;
 }
