@@ -1,4 +1,4 @@
-import {vaultOpeningTreasure,vaultOpeningCoin} from './vault-opening-treasure.js';
+import {vaultOpeningTreasure,vaultOpeningCoin,polishedOpeningTreasure} from './vault-opening-treasure.js';
 import {vaultOpeningChest} from './vault-opening-art.js';
 import {vaultPresentation} from './vault-playback.js';
 import {vaultFinalBoost,vaultFinalBoostPose,vaultFinalBoostSpark,vaultFinalBoostArt,vaultFinalBoostGlyph} from './vault-final-boost.js';
@@ -45,8 +45,8 @@ export function createVaultView(root,{audio,preview=true}={}){
  const rim=[...root.querySelectorAll('.rim-glint')].map(el=>({el,origin:el.getAttribute('transform')}));
  const chambers=[...root.querySelectorAll('.vault-chamber')].map((el,i)=>({el,i,slot:CHAMBER_SLOTS[i%5],left:el.querySelector('.chamber-leaf-left'),leftEdge:el.querySelector('.chamber-edge-left'),rightEdge:el.querySelector('.chamber-edge-right'),shades:[...el.querySelectorAll('.door-shade')],sheens:[...el.querySelectorAll('.door-sheen')],lock:el.querySelector('.chamber-lock-glint'),attention:el.querySelector('.chamber-attention'),right:el.querySelector('.chamber-leaf-right'),loot:el.querySelector('.chamber-loot'),glow:el.querySelector('.chamber-radiance'),focus:el.querySelector('.chamber-focus'),spark:el.querySelector('.chamber-spark'),award:el.querySelector('.chamber-award'),bonus:el.querySelector('.chamber-bonus-mark'),number:el.querySelector('.chamber-number'),dormant:el.querySelector('.chamber-dormant')}));
  const heading=$('.vault-heading'),topline=$('.vault-topline');
- const openingLayer=document.createElement('div');openingLayer.className='vault-opening-treasure';openingLayer.innerHTML='<small>YOUR STARTING TREASURE</small><strong class="opening-treasure-amount"></strong><div class="opening-treasure-chest">'+vaultOpeningChest()+'</div>';stage.append(openingLayer);
- const chestAmount=openingLayer.querySelector('strong'),chestLid=openingLayer.querySelector('.opening-chest-lid'),chestLock=openingLayer.querySelector('.opening-chest-lock'),chestPile=openingLayer.querySelector('.opening-chest-treasure'),chestHinges=openingLayer.querySelector('.opening-chest-hinges');
+ const openingLayer=document.createElement('div');openingLayer.className='vault-opening-treasure';openingLayer.innerHTML='<small>YOUR STARTING TREASURE</small><strong class="opening-treasure-amount"></strong><span class="opening-treasure-sparks" aria-hidden="true"><i></i><i></i><i></i><i></i></span><div class="opening-treasure-chest">'+vaultOpeningChest()+'</div>';stage.append(openingLayer);
+ const chestSparks=openingLayer.querySelector('.opening-treasure-sparks'),chestAmount=openingLayer.querySelector('strong'),chestLid=openingLayer.querySelector('.opening-chest-lid'),chestLock=openingLayer.querySelector('.opening-chest-lock'),chestPile=openingLayer.querySelector('.opening-chest-treasure'),chestHinges=openingLayer.querySelector('.opening-chest-hinges');
  const openingCoinLayer=document.createElement('div');openingCoinLayer.className='vault-opening-coins';openingCoinLayer.setAttribute('aria-hidden','true');openingCoinLayer.innerHTML=Array.from({length:5},()=>'<i>'+vaultCollectionGlyph()+'</i>').join('');stage.append(openingCoinLayer);const openingCoins=[...openingCoinLayer.children];
 
  const journeyLayer=document.createElement('div');journeyLayer.className='vault-journey';journeyLayer.innerHTML='<div class="journey-depth"><small>BONUS VAULT</small><strong></strong><span>'+Array.from({length:5},()=>'<i>'+vaultSpecialJewel()+'</i>').join('')+'</span></div><div class="journey-multiplier"><small>TOTAL BOOST</small><strong></strong></div>';stage.append(journeyLayer);
@@ -75,6 +75,15 @@ export function createVaultView(root,{audio,preview=true}={}){
  const observer=new ResizeObserver(entries=>{dockKey='';if(entries.some(e=>e.target===root))resize();});observer.observe(root);observer.observe(els.bank);resize();
  const text=(el,value)=>{if(el.textContent!==value)el.textContent=value;};
  function fit(el,text,max,width){if(el.textContent!==text)el.textContent=text;el.style.fontSize=Math.min(max,width/(Math.max(1,text.length)*.61))+'px';}
+ // Measure the final amount once, so counting digits cannot resize a plaque,
+ // change its font size, or move the coin landing points. No per-frame layout probe.
+ const moneyMetrics=new Map(),moneyMeasure=document.createElement('canvas').getContext('2d');
+ const clearMoneyMetrics=()=>moneyMetrics.clear();document.fonts?.ready.then(clearMoneyMetrics);document.fonts?.addEventListener('loadingdone',clearMoneyMetrics);
+ function stableMoney(el,value,target,max,width){
+  const size=Math.min(max,width/(Math.max(1,target.length)*.61)),key=size+':'+target;
+  if(!moneyMetrics.has(key)){moneyMeasure.font=`700 ${size}px Fredoka,Arial,sans-serif`;moneyMetrics.set(key,Math.min(width+20,Math.ceil(moneyMeasure.measureText(target).width)+20));}
+  text(el,value);el.style.fontSize=size+'px';el.style.width=moneyMetrics.get(key)+'px';
+ }
  function render(){
   if(disposed)return;raf=requestAnimationFrame(render);
   const quiet=options.quiet??reduced.matches;
@@ -85,7 +94,12 @@ export function createVaultView(root,{audio,preview=true}={}){
   stage.setAttribute('aria-hidden',String(!visible||exit.done));
   if(!visible){if(!r)audio?.sync(null,time);return;}
   openingLayer.style.display=startingTreasure.active?'block':'none';openingLayer.style.opacity=startingTreasure.opacity;openingLayer.setAttribute('aria-hidden',String(!startingTreasure.active));openingLayer.dataset.phase=startingTreasure.phase;
-  fit(chestAmount,r?money(r.openingCents):'',42,270);chestAmount.style.opacity=startingTreasure.prize;chestAmount.style.transform=`translate(-50%,${startingTreasure.prizeY}px)`;chestAmount.setAttribute('aria-hidden',String(!startingTreasure.prize));
+  const openingMoney=r?money(r.openingCents):'';
+  if(polishedOpeningTreasure(r))stableMoney(chestAmount,money(startingTreasure.cashCents??r.openingCents),openingMoney,42,270);
+  else{chestAmount.style.width='';fit(chestAmount,openingMoney,42,270);}
+  chestSparks.style.width=(parseFloat(chestAmount.style.width)||0)+24+'px';chestSparks.style.opacity=startingTreasure.cashGleam;
+  chestAmount.style.boxShadow=startingTreasure.cashGleam?`inset 0 2px rgba(255,245,210,${.6+.4*startingTreasure.cashGleam}),inset 0 -2px #c28a80`:'';
+  chestAmount.style.opacity=startingTreasure.prize;chestAmount.style.transform=`translate(-50%,${startingTreasure.prizeY}px)`;chestAmount.setAttribute('aria-hidden',String(!startingTreasure.prize));
   chestLid.setAttribute('transform',`translate(0 ${-22*startingTreasure.lid}) translate(53 55) scale(1 ${1-.18*startingTreasure.lid}) translate(-53 -55)`);
   chestLock.setAttribute('transform',`rotate(${startingTreasure.lock} 53 71)`);chestLock.style.opacity=startingTreasure.lockOpacity;chestHinges.style.opacity=startingTreasure.lid;chestPile.style.opacity=r?.openingCents>0?startingTreasure.lid:0;
   heading.style.opacity=topline.style.opacity=exit.heading*entrance.heading;
@@ -212,11 +226,12 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.rays.style.opacity=finished?finale.flare*exit.halo:0;els.rays.style.transform=`scale(${finale.flareScale})`;
   text(els.bankLabel,finished&&(!handoff.linked||handoff.showTitle)?['VAULT TOTAL','BIG WIN','ROYAL WIN'][level]:entrance.active&&!entrance.bankTitle?'OPENING BALANCE':'BANKROLL');
   els.bankLabel.style.opacity=handoff.linked?handoff.titleOpacity:entrance.title;
-  const total=startingTreasure.active&&!startingTreasure.deposit?'0':readout.total;
-  // Keep a stable landing edge while the visible bank changes from $0 to the
-  // exact chest award. No coin changes direction when the digits get wider.
-  els.bank.style.width=startingTreasure.active?Math.min(340,Math.max(110,money(r.openingCents).length*32+24))+'px':'';
-  fit(els.bank,entrance.pending?'···':r?money(total):'$ —',handoff.linked?handoff.fontSize:finished?50+18*(quiet?1:ease(finalAge/440)):50,340);
+  const total=startingTreasure.active?startingTreasure.bankCents:readout.total;
+  const openingBank=polishedOpeningTreasure(r)&&!r.opened.length&&(!r.flight||time<r.flight.revealAt);
+  if(openingBank)stableMoney(els.bank,money(total),openingMoney,50,340);
+  else{els.bank.style.width=startingTreasure.active?Math.min(340,Math.max(110,openingMoney.length*32+24))+'px':'';
+   fit(els.bank,entrance.pending?'···':r?money(total):'$ —',handoff.linked?handoff.fontSize:finished?50+18*(quiet?1:ease(finalAge/440)):50,340);
+  }
   els.bank.setAttribute('aria-hidden',String(entrance.pending));
   els.bank.style.opacity=handoff.linked?1:finished?finale.amount:entrance.amount;
   els.bank.style.transform=handoff.linked?`scale(${handoff.pulse+(finished?finale.scale-1:0)})`:finished?`translateY(${finale.rise}px) scale(${finale.scale})`:`translateY(${entrance.amountY}px) scale(${entrance.amountScale})`;
@@ -225,12 +240,13 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.bank.style.color=handoff.linked?handoff.color:'';
   els.bank.style.backgroundColor=handoff.linked?handoff.background:'';
   els.bank.style.boxShadow=handoff.linked?`inset 0 2px rgba(255,236,174,${.6+.4*handoff.gleam}),inset 0 -2px #a56788`:entrance.active?`inset 0 ${1+entrance.gleam}px rgb(${234+21*entrance.gleam} ${201+35*entrance.gleam} ${154+20*entrance.gleam}),inset 0 -2px #8a5d81`:'';
+  if(startingTreasure.bankGleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,239,181,${.6+.4*startingTreasure.bankGleam}),inset 0 -2px #bc8f68`;
   if(cashPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,235,173,${.5+.5*cashPose.gleam}),inset 0 -2px #a57968`;
   if(collection.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,239,181,${.55+.45*collection.gleam}),inset 0 -2px #bc8f68`;
   if(bonusPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(241,210,255,${.65+.35*bonusPose.gleam}),inset 0 -2px #a567a7`;
   if(coda.bankGleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,245,205,${.6+coda.bankGleam}),inset 0 -2px #a56788`;
   const story=vaultStory(r,time,quiet);
-  text(els.calc,startingTreasure.active?(startingTreasure.deposit?'Starting treasure added to bankroll':startingTreasure.phase==='deposit'?'Collecting your starting treasure…':startingTreasure.prize>0?'Treasure found · '+money(r.openingCents):'Unlocking your starting treasure…'):story.text);els.calc.dataset.kind=story.kind;
+  text(els.calc,startingTreasure.active?(startingTreasure.ready?'First chamber ready':startingTreasure.guiding?'Preparing the first chamber…':startingTreasure.deposit?(startingTreasure.settled?'Starting treasure added to bankroll':'Adding your starting treasure…'):startingTreasure.phase==='deposit'?'Collecting your starting treasure…':startingTreasure.prize>0?(startingTreasure.cashCents===r.openingCents?'Treasure found · '+openingMoney:'Revealing your starting treasure…'):'Unlocking your starting treasure…'):story.text);els.calc.dataset.kind=story.kind;
   els.calc.style.marginTop=handoff.linked?handoff.gap+'px':'';
   els.calc.style.opacity=exit.labels*entrance.calc;
   els.calc.setAttribute('aria-hidden',String(entrance.calc===0));
@@ -267,5 +283,5 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   if(snapshot?.round&&!next.round)idleAt=vaultResetAt(presentedVaultRound(snapshot.round,time),time);
   else if(next.round)idleAt=null;
   snapshot=next;options={preview,show:true,...opts};
- },hide(){options.show=false;},dispose(){disposed=true;cancelAnimationFrame(raf);observer.disconnect();}};
+ },hide(){options.show=false;},dispose(){disposed=true;cancelAnimationFrame(raf);observer.disconnect();document.fonts?.removeEventListener('loadingdone',clearMoneyMetrics);}};
 }

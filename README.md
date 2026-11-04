@@ -473,10 +473,15 @@ are sample settings, editable alongside all cash values and odds.
 - Candy Confetti gifts, gold coins, a jeweled crown and a turning vault wheel use
   crisp pixel art. Sounds reuse the Presents mix with a new lock sequence and
   extra-unlock chime. The final amount stays on stream until Faith presses **End game & reset**.
-  The starting chest uses a 4½-second sequence: key turn, lid opening, cash
-  reveal, then coin deposit. The bankroll stays at $0 until the first coins
-  arrive; this never consumes a chamber or changes the opening draw. Saved
-  clocks keep reloads and OBS aligned. Old active rounds retain their intro.
+  The starting chest uses a 5.1-second sequence: key turn, lid opening, a
+  brief cash count-up, then coin deposit. The bankroll stays at $0 until the
+  first coins arrive, counts to the exact amount by the last coin, and holds
+  steady while a gold trail catches the first lock. Fitted plaques and font
+  sizes remain fixed through the count and handoff; no number scaling or
+  screen shake. A short reel pickup, register catch and dry lock cue follow
+  these actions without a sound on every digit. This never consumes a chamber
+  or changes the opening draw. Saved clocks keep reloads and OBS aligned.
+  Old active rounds retain their intro; reduced motion shows exact amounts.
   New rounds run at a gentler pace: regular unlocks take 4.2 seconds, with
   animation and casino strikes synchronized at their original sound pitch.
 
@@ -491,7 +496,7 @@ are sample settings, editable alongside all cash values and odds.
    tables, extra demos and sound auditions stay folded until needed.
 3. Choose **Open live controls** (or **Play** in the desk). Enter a viewer,
    press a game’s Start button. A crowned chest unlocks, reveals the starting
-   cash and sends coins into the bankroll (about 4½ seconds). Then press
+   cash and sends coins into the bankroll (about five seconds). Then press
    **Open vault** once per chamber.
    Space also works outside inputs. The final total stays visible until you
    press **End game & reset**, including after a controls/display reload.

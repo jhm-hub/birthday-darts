@@ -161,3 +161,8 @@
 .opening-treasure-chest svg{display:block;width:100%;height:100%;overflow:visible;image-rendering:pixelated}
 .opening-treasure-amount{position:absolute;left:50%;top:86px;display:block;max-width:294px;padding:2px 10px 5px;white-space:nowrap;font-weight:700;line-height:1.06;text-align:center;color:#ffe9a9;background:#34213bef;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;box-shadow:inset 0 2px #ffe9bb,inset 0 -2px #ad7187;clip-path:polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),0 calc(100% - 3px),0 3px,6px 3px)}
 .vault-opening-coins{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}.vault-opening-coins>i{position:absolute;left:-7px;top:-7px;width:14px;height:14px;opacity:0}.vault-opening-coins svg{width:100%;height:100%;display:block;image-rendering:pixelated}
+
+/* Four tiny edge glints catch the counted award without covering the digits. */
+.opening-treasure-sparks{position:absolute;left:50%;top:86px;height:53px;transform:translateX(-50%);pointer-events:none;opacity:0}
+.opening-treasure-sparks i{position:absolute;width:7px;height:7px;background:#fff1b5;box-shadow:inset -2px -2px #d69a73;clip-path:polygon(2px 0,5px 0,5px 2px,7px 2px,7px 5px,5px 5px,5px 7px,2px 7px,2px 5px,0 5px,0 2px,2px 2px)}
+.opening-treasure-sparks i:nth-child(1){left:0;top:12px}.opening-treasure-sparks i:nth-child(2){right:0;top:12px}.opening-treasure-sparks i:nth-child(3){left:4px;top:34px;width:4px;height:4px;clip-path:none}.opening-treasure-sparks i:nth-child(4){right:4px;top:34px;width:4px;height:4px;clip-path:none}

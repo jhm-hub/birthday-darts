@@ -1,33 +1,33 @@
-import {vaultOpeningOffset} from './vault-opening-treasure.js';
+import {polishedOpeningTreasure,vaultOpeningGuideMs,vaultOpeningCatchMs,vaultOpeningIntroMs} from './vault-opening-treasure.js';
 import {DEFAULT_VAULT,startVaultRound,unlockVault,advanceVault} from './vault-game.js';
 import {ease} from './vault-motion.js';
 
 export const VAULT_OPENING_GUIDE_MS=940;
 export const VAULT_OPENING_CATCH_MS=1140;
-const prepare=age=>ease((age-VAULT_OPENING_GUIDE_MS)/260);
-const readyLock=age=>.14*ease((age-VAULT_OPENING_CATCH_MS)/60);
+const prepare=(age,round)=>ease((age-vaultOpeningGuideMs(round))/(vaultOpeningIntroMs(round)-vaultOpeningGuideMs(round)));
+const readyLock=(age,round)=>.14*ease((age-vaultOpeningCatchMs(round))/(vaultOpeningIntroMs(round)-vaultOpeningCatchMs(round)));
 // Preserve the prepared first-door pose across a real click, however long
 // Faith waits. All positions sample saved clocks; this never opens a door.
 export function vaultOpeningHandoff(round,time,quiet=false){
  const off={linked:false,focus:0,attention:0,lock:0};
  if(!round||round.completedAt!=null||round.flight?.index>0||round.opened.length>1)return off;
- const first=round.flight??round.opened[0],age=time-round.startedAt-vaultOpeningOffset(round);
+ const first=round.flight??round.opened[0],age=time-round.startedAt;
  if(first&&time>=first.finishAt)return off;
  if(quiet)return {linked:true,focus:time>=round.readyAt&&(!first||time<first.revealAt)?.22:0,attention:0,lock:0};
- const waiting=prepare(age),start=first?prepare(first.startAt-round.startedAt-vaultOpeningOffset(round)):waiting;
+ const waiting=prepare(age,round),start=first?prepare(first.startAt-round.startedAt,round):waiting;
  const clickAge=first?time-first.startAt:0,blend=first?ease(clickAge/220):0;
  const settle=first?1-ease((time-first.finishAt+420)/420):1;
  // The lock keeps the light caught from the balance. A click carries that
  // same pose into the mechanism, without restarting a flash or dimming first.
  return {linked:true,focus:(.3*start*(1-blend)+.85*blend)*settle,
   attention:(.06*start*(1-blend)+.18*blend)*(first?1-ease((time-first.finishAt+480)/480):1),
-  lock:(first?readyLock(first.startAt-round.startedAt-vaultOpeningOffset(round)):readyLock(age))*(1-blend)};
+  lock:(first?readyLock(first.startAt-round.startedAt,round):readyLock(age,round))*(1-blend)};
 }
 export function vaultOpeningTrail(round,index,time,quiet=false,dock={left:147,y:388}){
  const off={visible:false,x:0,y:0,opacity:0};
  if(quiet||!round||round.completedAt!=null||round.flight?.index>0||round.opened.length>1||index<0||index>=3)return off;
- const start=VAULT_OPENING_GUIDE_MS+index*24;
- const t=(time-round.startedAt-vaultOpeningOffset(round)-start)/(VAULT_OPENING_CATCH_MS-start);
+ const start=vaultOpeningGuideMs(round)+index*(polishedOpeningTreasure(round)?55:24);
+ const t=(time-round.startedAt-start)/(vaultOpeningCatchMs(round)-start);
  if(t<=0||t>=1)return off;
  // Follow the fitted plaque's outside edge, including wide opening amounts.
  // The three pixel glints arrive together before the earliest permitted click.

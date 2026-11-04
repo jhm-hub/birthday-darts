@@ -434,7 +434,7 @@ test('held wins play the celebration once and never play an automatic farewell o
 
 test('starting treasure plays one key, reveal and deposit cue in order without the old opening sounds',()=>{
  const r=prepareVaultPlay(startVaultRound({...DEFAULT_VAULT,openingMin:826,openingMax:826},'Treasure',10000,()=>0)),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
- const names=[[360,'opening-treasure-lock'],[1100,'opening-treasure-reveal'],[1900,'opening-treasure-deposit'],[2740,'ready']];let count=0;
+ const names=[[360,'opening-treasure-lock'],[1100,'opening-treasure-count'],[1900,'opening-treasure-deposit'],[2680,'opening-treasure-ready']];let count=0;
  a.sync(r,r.startedAt);assert.equal(sources(ctx).length,0);
  for(const [age,name]of names){const at=r.startedAt+age*1.5;a.sync(r,at-1);assert.equal(sources(ctx).length,count);a.sync(r,at);assert.equal(sources(ctx).length,++count);assert.deepEqual(sources(ctx).at(-1).buffer.getChannelData(0),renderVaultSound(name,{pace:1.5}));a.sync(structuredClone(r),at+5);assert.equal(sources(ctx).length,count);}
  a.sync(null,r.readyAt);assert.ok(sources(ctx).every(s=>s.stops.length===1));
@@ -448,4 +448,16 @@ test('treasure foley has space between actions and the three coin taps coincide 
 });
 test('zero starting cash still opens its chest but cannot play a nonexistent coin deposit',()=>{
  const r=prepareVaultPlay(startVaultRound({...DEFAULT_VAULT,openingMin:0,openingMax:0},'Zero',0,()=>0)),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(r,1900*1.5);assert.equal(sources(ctx).length,0);
+});
+
+test('count-up catch and first-lock latch land on their visual endpoints with space before the next action',()=>{
+ const count=vaultSoundScore('opening-treasure-count'),ready=vaultSoundScore('opening-treasure-ready');
+ assert.deepEqual(count.map(c=>c.at),[0,.42,.42]);assert.deepEqual(ready.map(c=>c.at),[0,.58]);
+ assert.ok(Math.max(...count.map(c=>(1100+c.at*1000)*1.5+c.length*1000))<1900*1.5);
+ assert.ok(Math.max(...ready.map(c=>(2680+c.at*1000)*1.5+c.length*1000))<3400*1.5);
+ for(const name of ['opening-treasure-count','opening-treasure-ready']){const data=renderVaultSound(name,{pace:1.5});assert.ok(peak(data)<.2);assert.ok(data.every(Number.isFinite));assert.equal(data[0],0);assert.equal(data.at(-1),0);}
+});
+test('v1 chest snapshots keep the previous reveal sound and do not pick up the new count or first-lock sound',()=>{
+ const r=prepareVaultPlay(startVaultRound(DEFAULT_VAULT,'Old chest',0,()=>0));r.introStyle='chest-v1';r.readyAt=4500;const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
+ a.sync(r,1100*1.5);assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('opening-treasure-reveal',{pace:1.5}));a.sync(r,2740*1.5);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('ready',{pace:1.5}));
 });
