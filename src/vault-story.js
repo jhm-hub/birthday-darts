@@ -1,3 +1,4 @@
+import {hasOpeningTreasure} from './vault-opening-treasure.js';
 import {money,vaultTotal} from './vault-game.js';
 import {ease,clamp} from './vault-motion.js';
 import {vaultBonusAt,vaultBonusBuildAt,vaultBonusBuildMs} from './vault-timing.js';
@@ -25,7 +26,7 @@ export function vaultStory(round,time,quiet=false){
   return {...off,kind:'final',text:math??shots.length+' chambers opened'+(extra?' · '+extra+' bonus vault'+(extra===1?'':'s'):''),
    receipt:entries.map((e,i)=>{const p=quiet?Number(age>=1000):ease((age-1000-i*130)/300);return {...e,opacity:p,y:quiet?0:Math.round(9*(1-p)),scale:quiet?1:1+.045*Math.sin(clamp((age-1000-i*130)/430)*Math.PI)};})};
  }
- if(!shot)return {...off,kind:'opening',text:'Opening balance · '+money(round.openingCents)};
+ if(!shot)return {...off,kind:'opening',text:(hasOpeningTreasure(round)?'Starting treasure · ':'Opening balance · ')+money(round.openingCents)};
  const settled=!flight,afterCash=BigInt(settled?round.cashCents:round.cashCents+shot.cashCents);
  const hasBonus=!!shot.bonus&&time>=vaultBonusAt(shot)+VAULT_BONUS_LAND_MS;
  const oldMultiplier=BigInt(round.multiplier)/(settled&&shot.bonus?.kind==='multiply'?BigInt(shot.bonus.value):1n);

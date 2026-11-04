@@ -1,3 +1,4 @@
+import {VAULT_TREASURE_STYLE,VAULT_TREASURE_INTRO_MS} from './vault-opening-treasure.js';
 // Saved wall-clock deadlines keep controls and OBS in agreement. The artwork
 // samples its original timeline at a gentler pace, without changing any prizes.
 export const VAULT_PLAYBACK_SCALE=1.5;
@@ -5,7 +6,8 @@ export const vaultPlaybackScale=round=>round?.playbackScale===VAULT_PLAYBACK_SCA
 export function prepareVaultPlay(round){
  if(vaultPlaybackScale(round)===VAULT_PLAYBACK_SCALE){round.holdFinal=true;return round;}
  round.playbackScale=VAULT_PLAYBACK_SCALE;
- round.readyAt=round.startedAt+(round.readyAt-round.startedAt)*VAULT_PLAYBACK_SCALE;
+ round.introStyle=VAULT_TREASURE_STYLE;
+ round.readyAt=round.startedAt+VAULT_TREASURE_INTRO_MS*VAULT_PLAYBACK_SCALE;
  round.holdFinal=true;
  return round;
 }

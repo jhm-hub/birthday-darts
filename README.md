@@ -448,7 +448,7 @@ reach 15 openings while staying inside their saved range. **More preview
 options** includes the full $10,000 sample and separate final-boost previews.
 See [bonus-led wins](docs/vault-bonus-led-wins.md).
 
-Faith rolls a fresh opening balance, then clicks once per chamber. The default
+Faith opens a crowned starting chest to reveal her fresh opening balance, then clicks once per chamber. The default
 is five chambers. Every chamber adds a weighted cash prize; a separate bonus draw
 can add a total multiplier or one more unlock. The opening balance is a uniform
 whole-dollar draw from an inclusive minimum/maximum range. Defaults of $100–$300
@@ -473,6 +473,10 @@ are sample settings, editable alongside all cash values and odds.
 - Candy Confetti gifts, gold coins, a jeweled crown and a turning vault wheel use
   crisp pixel art. Sounds reuse the Presents mix with a new lock sequence and
   extra-unlock chime. The final amount stays on stream until Faith presses **End game & reset**.
+  The starting chest uses a 4½-second sequence: key turn, lid opening, cash
+  reveal, then coin deposit. The bankroll stays at $0 until the first coins
+  arrive; this never consumes a chamber or changes the opening draw. Saved
+  clocks keep reloads and OBS aligned. Old active rounds retain their intro.
   New rounds run at a gentler pace: regular unlocks take 4.2 seconds, with
   animation and casino strikes synchronized at their original sound pitch.
 
@@ -486,7 +490,9 @@ are sample settings, editable alongside all cash values and odds.
    editing. This does not save them or affect a live viewer. Advanced prize
    tables, extra demos and sound auditions stay folded until needed.
 3. Choose **Open live controls** (or **Play** in the desk). Enter a viewer,
-   press a game’s Start button, then **Open vault** once per chamber.
+   press a game’s Start button. A crowned chest unlocks, reveals the starting
+   cash and sends coins into the bankroll (about 4½ seconds). Then press
+   **Open vault** once per chamber.
    Space also works outside inputs. The final total stays visible until you
    press **End game & reset**, including after a controls/display reload.
    Clear it when ready, then switch saved setups or start the next viewer.

@@ -1,3 +1,4 @@
+import {vaultOpeningTreasure} from './vault-opening-treasure.js';
 import {VAULT_INTRO_MS} from './vault-game.js';
 import {clamp,ease} from './vault-motion.js';
 
@@ -6,6 +7,8 @@ export const VAULT_OPENING_LOCK_MS=[180,260,340,420,500];
 // One saved clock drives the arrival, lock lights and exact balance reveal.
 // No presentation frame draws another balance or delays the first unlock.
 export function vaultIntro(round,time,quiet=false){
+ const treasure=vaultOpeningTreasure(round,time,quiet);
+ if(treasure.active)return {active:true,pending:false,stage:ease(treasure.age/240),heading:ease((treasure.age-100)/220),frame:1,seal:0,machineY:0,brightness:1,locks:[0,0,0,0,0],pips:[0,0,0],pipY:[0,0,0],amount:1,amountY:0,amountScale:1,calc:1,bankTitle:true,title:1,gleam:treasure.catch};
  const age=round?time-round.startedAt:VAULT_INTRO_MS;
  const active=!!round&&!round.flight&&!round.opened.length&&round.completedAt==null&&age<VAULT_INTRO_MS;
  const still={active:false,pending:false,stage:1,heading:1,frame:1,seal:0,machineY:0,brightness:1,locks:[0,0,0,0,0],pips:[0,0,0],pipY:[0,0,0],amount:1,amountY:0,amountScale:1,calc:1,bankTitle:true,title:1,gleam:0};

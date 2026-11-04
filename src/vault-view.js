@@ -1,3 +1,5 @@
+import {vaultOpeningTreasure,vaultOpeningCoin} from './vault-opening-treasure.js';
+import {vaultOpeningChest} from './vault-opening-art.js';
 import {vaultPresentation} from './vault-playback.js';
 import {vaultFinalBoost,vaultFinalBoostPose,vaultFinalBoostSpark,vaultFinalBoostArt,vaultFinalBoostGlyph} from './vault-final-boost.js';
 import {vaultStory,vaultStoryFlight,vaultStoryGlyph} from './vault-story.js';
@@ -43,6 +45,10 @@ export function createVaultView(root,{audio,preview=true}={}){
  const rim=[...root.querySelectorAll('.rim-glint')].map(el=>({el,origin:el.getAttribute('transform')}));
  const chambers=[...root.querySelectorAll('.vault-chamber')].map((el,i)=>({el,i,slot:CHAMBER_SLOTS[i%5],left:el.querySelector('.chamber-leaf-left'),leftEdge:el.querySelector('.chamber-edge-left'),rightEdge:el.querySelector('.chamber-edge-right'),shades:[...el.querySelectorAll('.door-shade')],sheens:[...el.querySelectorAll('.door-sheen')],lock:el.querySelector('.chamber-lock-glint'),attention:el.querySelector('.chamber-attention'),right:el.querySelector('.chamber-leaf-right'),loot:el.querySelector('.chamber-loot'),glow:el.querySelector('.chamber-radiance'),focus:el.querySelector('.chamber-focus'),spark:el.querySelector('.chamber-spark'),award:el.querySelector('.chamber-award'),bonus:el.querySelector('.chamber-bonus-mark'),number:el.querySelector('.chamber-number'),dormant:el.querySelector('.chamber-dormant')}));
  const heading=$('.vault-heading'),topline=$('.vault-topline');
+ const openingLayer=document.createElement('div');openingLayer.className='vault-opening-treasure';openingLayer.innerHTML='<small>YOUR STARTING TREASURE</small><strong class="opening-treasure-amount"></strong><div class="opening-treasure-chest">'+vaultOpeningChest()+'</div>';stage.append(openingLayer);
+ const chestAmount=openingLayer.querySelector('strong'),chestLid=openingLayer.querySelector('.opening-chest-lid'),chestLock=openingLayer.querySelector('.opening-chest-lock'),chestPile=openingLayer.querySelector('.opening-chest-treasure'),chestHinges=openingLayer.querySelector('.opening-chest-hinges');
+ const openingCoinLayer=document.createElement('div');openingCoinLayer.className='vault-opening-coins';openingCoinLayer.setAttribute('aria-hidden','true');openingCoinLayer.innerHTML=Array.from({length:5},()=>'<i>'+vaultCollectionGlyph()+'</i>').join('');stage.append(openingCoinLayer);const openingCoins=[...openingCoinLayer.children];
+
  const journeyLayer=document.createElement('div');journeyLayer.className='vault-journey';journeyLayer.innerHTML='<div class="journey-depth"><small>BONUS VAULT</small><strong></strong><span>'+Array.from({length:5},()=>'<i>'+vaultSpecialJewel()+'</i>').join('')+'</span></div><div class="journey-multiplier"><small>TOTAL BOOST</small><strong></strong></div>';stage.append(journeyLayer);
  const depthLabel=journeyLayer.querySelector('.journey-depth strong'),boostLabel=journeyLayer.querySelector('.journey-multiplier strong'),journeyGems=[...journeyLayer.querySelectorAll('i')];
  const openingPips=document.createElement('span');openingPips.className='vault-opening-pips';openingPips.setAttribute('aria-hidden','true');openingPips.innerHTML='<i></i><i></i><i></i>';els.bankWrap.append(openingPips);
@@ -73,10 +79,15 @@ export function createVaultView(root,{audio,preview=true}={}){
   if(disposed)return;raf=requestAnimationFrame(render);
   const quiet=options.quiet??reduced.matches;
   const actualTime=options.frozenAt??clock.now(),presentation=vaultPresentation(snapshot?.round,actualTime),time=presentation.time,r=presentedVaultRound(presentation.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=vaultBonusReadout(r,now,time),bonusPose=vaultBonusPose(r?.flight,time,quiet),cashPose=vaultCashPose(r?.flight,time,quiet),collection=vaultCollectionBank(r?.flight,time,quiet);
+  const startingTreasure=vaultOpeningTreasure(r,time,quiet);
   const visible=options.show!==false&&(options.preview||!!r),exit=vaultExit(r,time,quiet),entrance=vaultIntro(r,time,quiet),welcome=vaultWelcomeFlow(r,time,quiet),opening=vaultOpeningHandoff(r,time,quiet),between=vaultChamberHandoff(r,time,quiet);
   stage.style.opacity=visible?exit.stage*(r?entrance.stage:vaultIdleOpacity(idleAt,time)):0;
   stage.setAttribute('aria-hidden',String(!visible||exit.done));
   if(!visible){if(!r)audio?.sync(null,time);return;}
+  openingLayer.style.display=startingTreasure.active?'block':'none';openingLayer.style.opacity=startingTreasure.opacity;openingLayer.setAttribute('aria-hidden',String(!startingTreasure.active));openingLayer.dataset.phase=startingTreasure.phase;
+  fit(chestAmount,r?money(r.openingCents):'',42,270);chestAmount.style.opacity=startingTreasure.prize;chestAmount.style.transform=`translate(-50%,${startingTreasure.prizeY}px)`;chestAmount.setAttribute('aria-hidden',String(!startingTreasure.prize));
+  chestLid.setAttribute('transform',`translate(0 ${-22*startingTreasure.lid}) translate(53 55) scale(1 ${1-.18*startingTreasure.lid}) translate(-53 -55)`);
+  chestLock.setAttribute('transform',`rotate(${startingTreasure.lock} 53 71)`);chestLock.style.opacity=startingTreasure.lockOpacity;chestHinges.style.opacity=startingTreasure.lid;chestPile.style.opacity=r?.openingCents>0?startingTreasure.lid:0;
   heading.style.opacity=topline.style.opacity=exit.heading*entrance.heading;
   seal.style.opacity=entrance.seal;
   els.machine.style.transform=`translateY(${entrance.machineY}px)`;
@@ -192,7 +203,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   const dim=handoff.linked?handoff.dim:finished?finale.dim:0;
   // Composite one opacity layer instead of re-filtering the large pixel-art
   // SVG on every opening/finale frame in OBS's embedded browser.
-  els.machine.style.opacity=exit.machine*entrance.frame*(1-dim*.2);
+  els.machine.style.opacity=exit.machine*entrance.frame*(1-dim*.2)*(1-startingTreasure.dim);
   els.bankWrap.style.transition='none';els.bankWrap.style.bottom=(handoff.linked?handoff.bottom:finished?9+63*(quiet?1:ease(finalAge/400)):9)+'px';
   els.bankWrap.style.transform=`translateY(${-exit.lift}px)`;
   els.halo.style.opacity=finished?finale.halo*exit.halo*(coda.enabled?coda.haloGain:1):0;
@@ -201,7 +212,10 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.rays.style.opacity=finished?finale.flare*exit.halo:0;els.rays.style.transform=`scale(${finale.flareScale})`;
   text(els.bankLabel,finished&&(!handoff.linked||handoff.showTitle)?['VAULT TOTAL','BIG WIN','ROYAL WIN'][level]:entrance.active&&!entrance.bankTitle?'OPENING BALANCE':'BANKROLL');
   els.bankLabel.style.opacity=handoff.linked?handoff.titleOpacity:entrance.title;
-  const total=readout.total;
+  const total=startingTreasure.active&&!startingTreasure.deposit?'0':readout.total;
+  // Keep a stable landing edge while the visible bank changes from $0 to the
+  // exact chest award. No coin changes direction when the digits get wider.
+  els.bank.style.width=startingTreasure.active?Math.min(340,Math.max(110,money(r.openingCents).length*32+24))+'px':'';
   fit(els.bank,entrance.pending?'···':r?money(total):'$ —',handoff.linked?handoff.fontSize:finished?50+18*(quiet?1:ease(finalAge/440)):50,340);
   els.bank.setAttribute('aria-hidden',String(entrance.pending));
   els.bank.style.opacity=handoff.linked?1:finished?finale.amount:entrance.amount;
@@ -216,14 +230,14 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   if(bonusPose.gleam)els.bank.style.boxShadow=`inset 0 2px rgba(241,210,255,${.65+.35*bonusPose.gleam}),inset 0 -2px #a567a7`;
   if(coda.bankGleam)els.bank.style.boxShadow=`inset 0 2px rgba(255,245,205,${.6+coda.bankGleam}),inset 0 -2px #a56788`;
   const story=vaultStory(r,time,quiet);
-  text(els.calc,story.text);els.calc.dataset.kind=story.kind;
+  text(els.calc,startingTreasure.active?(startingTreasure.deposit?'Starting treasure added to bankroll':startingTreasure.phase==='deposit'?'Collecting your starting treasure…':startingTreasure.prize>0?'Treasure found · '+money(r.openingCents):'Unlocking your starting treasure…'):story.text);els.calc.dataset.kind=story.kind;
   els.calc.style.marginTop=handoff.linked?handoff.gap+'px':'';
   els.calc.style.opacity=exit.labels*entrance.calc;
   els.calc.setAttribute('aria-hidden',String(entrance.calc===0));
   els.calc.style.fontSize=Math.min(14,376/(els.calc.textContent.length*.56))+'px';
   // Measure when text, size or position changes. Dock outside the plaque so even
   // very large totals stay unobstructed; all positions remain in stage pixels.
-  const nextDockKey=els.bank.textContent+':'+els.bank.style.fontSize+':'+els.calc.style.fontSize+':'+els.bankWrap.style.bottom;
+  const nextDockKey=els.bank.textContent+':'+els.bank.style.fontSize+':'+els.calc.style.fontSize+':'+els.bankWrap.style.bottom+':'+els.bank.style.width;
   if(nextDockKey!==dockKey){dockKey=nextDockKey;dock={left:Math.max(14,els.bankWrap.offsetLeft+els.bank.offsetLeft-8),right:Math.min(406,els.bankWrap.offsetLeft+els.bank.offsetLeft+els.bank.offsetWidth+8),y:els.bankWrap.offsetTop+els.bank.offsetTop+12};}
   const payoff=vaultMultiplierPayoff(r,time),tokenDock=payoff.linked?vaultPayoffDock(dock):dock;
   const anchor=payoff.linked?vaultStoryFlight({shot:payoff.boost},payoff.catchAt,vaultRewardPoint(r,payoff.boost.index),tokenDock,quiet):undefined;
@@ -237,7 +251,8 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   trails.forEach((el,i)=>{const openingGuide=vaultOpeningTrail(r,i,time,quiet,dock),guide=openingGuide.visible?openingGuide:vaultChamberTrail(between,i,time,quiet,dock,between.linked&&vaultSpecialTheme(r,between.link.index)?VAULT_SPECIAL_POINT:null),t=guide;el.dataset.guide=String(guide.visible);el.dataset.relay=String(!openingGuide.visible&&guide.visible);el.style.opacity=t.visible&&!finished?t.opacity:0;el.style.transform=`translate(${t.x}px,${t.y}px)`;});
   coins.forEach((el,i)=>{const coin=vaultCollectionCoin(shot,i,time,dock,quiet,point);el.style.opacity=finished?0:coin.opacity;el.style.transform=`translate(${coin.x}px,${coin.y}px) scale(${coin.flip},${coin.squash})`;});
   welcomePieces.forEach((el,i)=>{const spark=vaultWelcomeParticle(welcome,i,dock);el.style.opacity=spark.opacity;el.style.transform=`translate(${spark.x}px,${spark.y}px)`;});
-  const bankCatch=Math.max(collection.catch,welcome.catch);
+  openingCoins.forEach((el,i)=>{const coin=vaultOpeningCoin(startingTreasure,i,dock,quiet||!r?.openingCents);el.style.opacity=coin.opacity;el.style.transform=`translate(${coin.x}px,${coin.y}px) scaleX(${coin.flip})`;});
+  const bankCatch=Math.max(collection.catch,welcome.catch,startingTreasure.catch);
   catchStars.forEach((el,i)=>{const light=finished?coda.catches?.[i]??0:bankCatch;el.style.opacity=light;el.style.left=(i?dock.right:dock.left)-els.bankWrap.offsetLeft+'px';el.style.top=(dock.y-els.bankWrap.offsetTop)+'px';el.style.transform=`scale(${.6+light*.4})`;});
   const nextGatherStyle=bridge.linked?bridge.style:0;if(gatherStyle!==nextGatherStyle){gatherStyle=nextGatherStyle;gathers.forEach((el,i)=>setPiece(el,gatherStyle?vaultTreasureSpriteIndex(i,gatherStyle):2));}
   gathers.forEach((el,i)=>{const g=bridge.linked?vaultTreasureBridgeParticle(bridge,i,time,dock):vaultFinaleGather(r,i,time,level,quiet,dock);el.style.opacity=g.opacity;el.style.transform=`translate(${g.x}px,${g.y}px)`;});

@@ -1,3 +1,4 @@
+import {hasOpeningTreasure} from './vault-opening-treasure.js';
 import {VAULT_OPENING_REVEAL_MS} from './vault-intro-motion.js';
 import {VAULT_OPENING_GUIDE_MS} from './vault-opening-handoff.js';
 import {ease} from './vault-motion.js';
@@ -7,7 +8,7 @@ export const VAULT_WELCOME_ECHO_MS=26;
 // viewer rule or opening amount is needed to decide its appearance or timing.
 export function vaultWelcomeFlow(round,time,quiet=false){
  const off={active:false,age:0,catch:0};
- if(quiet||!round||round.flight||round.opened.length||round.completedAt!=null)return off;
+ if(quiet||hasOpeningTreasure(round)||!round||round.flight||round.opened.length||round.completedAt!=null)return off;
  const age=time-round.startedAt;if(age<0||age>=VAULT_OPENING_GUIDE_MS)return off;
  const pulse=offset=>{const t=(age-VAULT_OPENING_REVEAL_MS-offset)/220;return t<=0||t>=1?0:Math.sin(Math.PI*t)**2;};
  return {active:true,age,catch:Math.min(1,pulse(0)*.65+pulse(VAULT_WELCOME_ECHO_MS)*.12+pulse(VAULT_WELCOME_ECHO_MS*2)*.08)};

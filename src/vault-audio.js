@@ -1,3 +1,4 @@
+import {hasOpeningTreasure,vaultOpeningOffset,VAULT_TREASURE_UNLOCK_MS,VAULT_TREASURE_REVEAL_MS,VAULT_TREASURE_COLLECT_MS} from './vault-opening-treasure.js';
 import {vaultPresentation,vaultPlaybackScale} from './vault-playback.js';
 import {vaultTreasureCoda} from './vault-treasure-coda.js';
 import {vaultTreasureBridge} from './vault-treasure-handoff.js';
@@ -104,9 +105,15 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    if(!r){if(roundId!==null)reset();return;}
    pace=vaultPlaybackScale(r);const presentation=vaultPresentation(r,time);time=presentation.time;r=presentedVaultRound(presentation.round,time);
    if(roundId!==r.id){reset();roundId=r.id;}
-   cue(r.id+':intro',r.startedAt,time,'intro-arrive');
-   cue(r.id+':balance',r.startedAt+VAULT_OPENING_REVEAL_MS,time,'intro-balance');
-   cue(r.id+':ready',r.startedAt+VAULT_OPENING_GUIDE_MS,time,'ready');
+   if(hasOpeningTreasure(r)){
+    cue(r.id+':treasure-lock',r.startedAt+VAULT_TREASURE_UNLOCK_MS,time,'opening-treasure-lock');
+    cue(r.id+':treasure-reveal',r.startedAt+VAULT_TREASURE_REVEAL_MS,time,'opening-treasure-reveal');
+    if(r.openingCents>0)cue(r.id+':treasure-collect',r.startedAt+VAULT_TREASURE_COLLECT_MS,time,'opening-treasure-deposit');
+   }else{
+    cue(r.id+':intro',r.startedAt,time,'intro-arrive');
+    cue(r.id+':balance',r.startedAt+VAULT_OPENING_REVEAL_MS,time,'intro-balance');
+   }
+   cue(r.id+':ready',r.startedAt+VAULT_OPENING_GUIDE_MS+vaultOpeningOffset(r),time,'ready');
    const shot=r.flight??r.opened.at(-1);
    if(shot){
     // One mechanism and one payout voice. Rich prizes keep their visual

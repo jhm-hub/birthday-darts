@@ -14,10 +14,10 @@ import {renderVaultSound,vaultSoundScore} from '../src/vault-sound-design.js';
 const id=DEFAULT_VAULT.id;
 function fixture(){const data=new Map(),storage={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)},locks={request:async(_,fn)=>fn()};return {data,storage,locks,store:createVaultStore(storage,locks)};}
 function finish(r){while(r.remaining){const s=unlockVault(r,r.opened.at(-1)?.finishAt??r.readyAt);advanceVault(r,s.finishAt);}return r;}
-test('live pacing gives 50% more time to the entire opening and each chamber while preserving original poses',()=>{
+test('live pacing reserves the treasure intro and gives chambers 50% more time without changing their poses',()=>{
  const original=startVaultRound(DEFAULT_VAULT,'Viewer',10000,()=>0),slow=prepareVaultPlay(structuredClone(original));
- assert.equal(slow.readyAt-slow.startedAt,1800);assert.throws(()=>unlockVault(slow,slow.readyAt-1),/Wait/);
- for(let age=0;age<=1200;age+=25){const p=vaultPresentation(slow,slow.startedAt+age*VAULT_PLAYBACK_SCALE);assert.deepEqual(vaultIntro(p.round,p.time),vaultIntro(original,original.startedAt+age));}
+ assert.equal(slow.readyAt-slow.startedAt,4500);assert.throws(()=>unlockVault(slow,slow.readyAt-1),/Wait/);
+ assert.equal(vaultIntro(vaultPresentation(slow,slow.startedAt+1800).round,slow.startedAt+1200).active,true);
  const a=unlockVault(original,original.readyAt,{forcedCash:0,forcedBonus:'multiply'}),b=unlockVault(slow,slow.readyAt,{forcedCash:0,forcedBonus:'multiply'});
  assert.equal(b.finishAt-b.startAt,4200);assert.equal(b.revealAt-b.startAt,1620);
  for(let age=0;age<=2800;age+=25){const p=vaultPresentation(slow,b.startAt+age*1.5);for(const fn of [chamberPose,vaultCashPose,vaultBonusPose,vaultCollectionBank])assert.deepEqual(fn(p.round.flight,p.time),fn(a,a.startAt+age));}
