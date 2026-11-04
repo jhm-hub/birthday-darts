@@ -1,3 +1,4 @@
+import {prepareGiftPlay,giftPlaybackScale} from './gift-playback.js';
 import {giftStore,exportGiftSettings,importGiftSettings} from './gift-store.js';
 import {GIFT_CLEAR_MS,GIFT_HOLD_MS,DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,eligibleGiftOutcomes,giftModifierDeadline,giftModifierDue,sampleGiftFinale,prizeLabel,giftTotal,money,isGiftExpansion} from './gift-game.js';
 import {createGiftView} from './gift-view.js';
@@ -63,9 +64,9 @@ function renderDemo(){
 }
 function pick(cell=null){
  if(!ready||draftError||demo?.flight||demo?.completedAt!==null&&demo||!demo&&configuredGiftRanges(draftValue).length)return;
- try{if(audio.enabled)audio.unlock();demo??=startGiftRound(draftValue,'Demo viewer');const forced=demo.privateRange?'':$('#demo-prize').value;unwrapGift(demo,Date.now(),{cell,forcedIndex:forced===''?null:Number(forced)});renderDemo();}catch(e){$('#demo-status').textContent=e.message;}
+ try{if(audio.enabled)audio.unlock();demo??=prepareGiftPlay(startGiftRound(draftValue,'Demo viewer'));const forced=demo.privateRange?'':$('#demo-prize').value;unwrapGift(demo,Date.now(),{cell,forcedIndex:forced===''?null:Number(forced)});renderDemo();}catch(e){$('#demo-status').textContent=e.message;}
 }
-function startDemoRange(id){if(!ready||draftError||demo)return;try{if(audio.enabled)audio.unlock();demo=startGiftRange(draftValue,id,'Demo viewer');renderDemo();}catch(e){$('#demo-status').textContent=e.message;}}
+function startDemoRange(id){if(!ready||draftError||demo)return;try{if(audio.enabled)audio.unlock();demo=prepareGiftPlay(startGiftRange(draftValue,id,'Demo viewer'));renderDemo();}catch(e){$('#demo-status').textContent=e.message;}}
 $('#demo-unwrap').addEventListener('click',()=>pick());
 $('#demo-reset').addEventListener('click',()=>{demo=null;audio.reset();renderDemo();});
 $('#demo-finale').addEventListener('click',()=>{
@@ -79,7 +80,7 @@ $('#demo-finale').addEventListener('click',()=>{
    while(demo.remaining){const shot=unwrapGift(demo,time);advanceGiftRound(demo,shot.finishAt);time=shot.finishAt;}
    demo.completedAt=Date.now();demo.hideAt=demo.completedAt+GIFT_HOLD_MS;
   }else demo=tier===''?sampleGiftFinale(draftValue):sampleGiftTierFinale(draftValue,Number(tier));
-  renderDemo();
+  prepareGiftPlay(demo);renderDemo();
  }catch(e){$('#demo-status').textContent=e.message;}
 });
 $('#demo-sound').addEventListener('click',()=>{audio.setEnabled(!audio.enabled);$('#demo-sound').textContent=audio.enabled?'Sound on':'Sound off';$('#demo-sound').setAttribute('aria-pressed',String(audio.enabled));});
@@ -91,7 +92,7 @@ $('#duplicate').addEventListener('click',async()=>{try{const w=await giftStore.s
 $('#copy-display').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('#gift-display-url').value);message('Display link copied.');}catch{$('#gift-display-url').select();message('Select and copy the display link.');}});
 $('#export-gifts').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(exportGiftSettings(giftStore.list()),null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='faith-gift-pile-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 $('#import-gifts').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>200000)throw Error('This settings file is too large.');await giftStore.import(importGiftSettings(JSON.parse(await file.text())));widgets=giftStore.list();list();message('Imported gift games. Existing games were kept.');}catch(e){message(e.message,true);}finally{e.target.value='';}});
-const timer=setInterval(()=>{if(!demo)return;if(advanceGiftRound(demo))renderDemo();if(demo?.hideAt&&Date.now()>=demo.hideAt+GIFT_CLEAR_MS){demo=null;renderDemo();}},50);
+const timer=setInterval(()=>{if(!demo)return;if(advanceGiftRound(demo))renderDemo();if(demo?.hideAt&&Date.now()>=demo.hideAt+GIFT_CLEAR_MS*giftPlaybackScale(demo)){demo=null;renderDemo();}},50);
 window.addEventListener('pagehide',()=>{clearInterval(timer);view.dispose();audio.dispose();},{once:true});
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 giftStore.init().then(()=>{widgets=giftStore.list();edit(widgets.find(w=>w.id===new URLSearchParams(location.search).get('id'))??widgets[0]);}).catch(e=>message(e.message,true));

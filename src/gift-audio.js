@@ -106,7 +106,7 @@ export function giftRevealScore(prize){
 }
 
 // Shared by live playback and the offline listening preview. No audio downloads.
-export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{},destination=ctx.destination){
+export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{},destination=ctx.destination,pace=1){
  function tone(frequency,at,length,gain,type,hold=0){
   const oscillator=ctx.createOscillator(),envelope=ctx.createGain();
   oscillator.type=type;oscillator.frequency.value=frequency;
@@ -121,8 +121,9 @@ export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{},destina
  }
  for(const n of score){
   // A slightly late display joins the current beat instead of bunching old notes.
-  if(n.at<elapsed-.035)continue;
-  const at=start+Math.max(0,n.at-elapsed);
+  const delay=(n.at-elapsed)*pace;
+  if(delay<-.035)continue;
+  const at=start+Math.max(0,delay);
   for(const [ratio,level,decay,type]of voices[n.voice]??voices.soft)
    tone(n.frequency*ratio,at,n.length*decay,n.gain*level,type,(n.hold??0)*decay);
  }
@@ -167,15 +168,15 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    gain.linearRampToValueAtTime(volume/100,time+.04);
   },
   setEnabled(value){if(disposed)return;enabled=!!value;if(enabled)unlock();else stop();},unlock,
-  intro(round,time){
+  intro(round,time,{pace=1}={}){
    if(!round||round.completedAt!=null||!Number.isFinite(round.startedAt)||time<round.startedAt||round.id===lastIntro||disposed)return;
    if(!enabled){lastIntro=round.id;return;}
    if(!ctx||ctx.state!=='running')return;
    lastIntro=round.id;
    if(time>=round.startedAt+GIFT_INTRO_MS)return;
-   scheduleGiftScore(ctx,giftIntroScore(round.preset.side),ctx.currentTime,(time-round.startedAt)/1000,track,master);
+   scheduleGiftScore(ctx,giftIntroScore(round.preset.side),ctx.currentTime,(time-round.startedAt)/1000,track,master,pace);
   },
-  unwrap(flight,time,{candy=true,opening=false}={}){
+  unwrap(flight,time,{candy=true,opening=false,pace=1}={}){
    if(!flight||!Number.isFinite(flight.startAt)||time<flight.startAt||flight.id===lastUnwrap||disposed)return;
    if(!enabled){lastUnwrap=flight.id;return;}
    // A user gesture may still be resuming the context. Join the remaining beats
@@ -183,19 +184,19 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    if(!ctx||ctx.state!=='running')return;
    lastUnwrap=flight.id;
    if(time>=flight.revealAt)return;
-   scheduleGiftUnwrap(ctx,candy,ctx.currentTime,(time-flight.startAt)/1000,track,master,opening);
+   scheduleGiftUnwrap(ctx,candy,ctx.currentTime,(time-flight.startAt)/1000,track,master,opening,pace);
   },
-  sync(flight,time){
+  sync(flight,time,{pace=1}={}){
    if(!flight||flight.id===last||time<flight.revealAt||disposed)return;
    last=flight.id;
-   if(!enabled||!ctx||ctx.state!=='running'||time>flight.revealAt+180)return;
-   scheduleGiftScore(ctx,giftRevealScore(flight.prize),ctx.currentTime,(time-flight.revealAt)/1000,track,master);
+   if(!enabled||!ctx||ctx.state!=='running'||(time-flight.revealAt)*pace>180)return;
+   scheduleGiftScore(ctx,giftRevealScore(flight.prize),ctx.currentTime,(time-flight.revealAt)/1000,track,master,pace);
   },
-  finale(round,time){
+  finale(round,time,{pace=1}={}){
    if(round?.completedAt==null||time<round.completedAt||round.id===lastFinale||disposed)return;
    lastFinale=round.id;
-   if(!enabled||!ctx||ctx.state!=='running'||time>round.completedAt+180)return;
-   scheduleGiftScore(ctx,giftFinaleScore(giftCelebrationLevel(round)),ctx.currentTime,(time-round.completedAt)/1000,track,master);
+   if(!enabled||!ctx||ctx.state!=='running'||(time-round.completedAt)*pace>180)return;
+   scheduleGiftScore(ctx,giftFinaleScore(giftCelebrationLevel(round)),ctx.currentTime,(time-round.completedAt)/1000,track,master,pace);
   },
   reset(){last='';lastUnwrap='';lastFinale='';lastIntro='';stop();},
   dispose(){stop();disposed=true;enabled=false;if(ctx&&ctx.state!=='closed')void ctx.close().catch(()=>{});}

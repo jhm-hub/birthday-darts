@@ -1,3 +1,4 @@
+import {giftPlaybackScale} from './gift-playback.js';
 import {randomUUID,randomInt} from './random.js';
 import {chooseOutcome} from './game.js';
 import {DEFAULT_GIFT_CELEBRATION,validateGiftCelebration} from './gift-celebration.js';
@@ -75,7 +76,8 @@ export function unwrapGift(round,now=Date.now(),{cell=null,draw=randomInt,forced
   prize.value=planned.cashCents/100;
  }
  if(isGiftExpansion(o.kind)){const {rows,cols}=giftDimensions(round);prize.nextRows=rows+(o.kind!=='column'?1:0);prize.nextCols=cols+(o.kind!=='row'?1:0);prize.granted=Math.min(o.value,round.preset.maxPicks-round.allocated,prize.nextRows*prize.nextCols-round.allocated);}
- round.flight={id:randomUUID(),cell,index:round.opened.length,prize,startAt:now,revealAt:now+REVEAL_MS,finishAt:now+UNWRAP_MS};return round.flight;
+ const pace=giftPlaybackScale(round);
+ round.flight={id:randomUUID(),cell,index:round.opened.length,prize,startAt:now,revealAt:now+REVEAL_MS*pace,finishAt:now+UNWRAP_MS*pace};return round.flight;
 }
 function award(round,shot){
  round.remaining--;
@@ -88,7 +90,7 @@ export function projectedGiftRound(round,time){if(!round?.flight||time<round.fli
 export function advanceGiftRound(round,now=Date.now()){
  if(!round?.flight||now<round.flight.finishAt)return false;
  const shot=round.flight;award(round,shot);round.flight=null;
- if(round.remaining===0){round.completedAt=shot.finishAt;round.hideAt=shot.finishAt+GIFT_HOLD_MS;}return true;
+ if(round.remaining===0){round.completedAt=shot.finishAt;round.hideAt=shot.finishAt+GIFT_HOLD_MS*giftPlaybackScale(round);}return true;
 }
 export function cleanGiftRound(round){if(!round)return null;const copy=structuredClone(round);delete copy.prizePlan;delete copy.privateRange;delete copy.preset.gameRanges;delete copy.preset.rangeCashMax;copy.preset.outcomes=copy.preset.outcomes.map(({kind,value})=>({kind,value}));return copy;}
 export function sampleGiftFinale(widget,now=Date.now(),draw=randomInt){

@@ -147,6 +147,10 @@ always starts a fresh round, including during an opening or celebration.
 prize. Repeated unwrap clicks cannot award the same present twice. Closing the
 broadcasting tab lets a remaining controller reconnect to the same OBS source.
 Refresh already-open control pages once when installing this update.
+New Presents rounds use a gentler pace: each pick takes 2.5 seconds, with the
+unwrap, bonus arrivals, running-total collection and sounds timed together.
+The final total stays for about 6.9 seconds before fading. Existing rounds keep
+their original timing until the next game; demo previews use the same new pace.
 The gifts match the birthday game’s pixel style: stepped outlines, pastel wrappers,
 satin ribbon highlights, separate lids and paper rustle / celesta sounds.
 The grid and final-total plaque share one 420 × 460 frame, including expanded

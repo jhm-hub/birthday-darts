@@ -1,3 +1,4 @@
+import {prepareGiftPlay,giftPlaybackScale} from './gift-playback.js';
 import {ACTIVE_GIFT_CONCEPT,GIFT_CONCEPTS,giftConceptSVG} from './gift-concept-art.js';
 import {createGiftView} from './gift-view.js';
 import {createGiftAudio} from './gift-audio.js';
@@ -23,15 +24,15 @@ function select(id){
  for(const card of $('#concepts').children){const active=card.dataset.concept===id;card.classList.toggle('selected',active);card.querySelector('button').setAttribute('aria-pressed',String(active));}
  view=createGiftView($('#concept-preview'),{art:i=>giftConceptSVG(selected,i),audio,onReady:render});render();
 }
-$('#unwrap').onclick=()=>{if(audio.enabled)audio.unlock();audio.reset();round=startGiftRound(DEFAULT_GIFTS,'Concept preview');unwrapGift(round,Date.now(),{cell:'1:1',forcedIndex:1});render();};
+$('#unwrap').onclick=()=>{if(audio.enabled)audio.unlock();audio.reset();round=prepareGiftPlay(startGiftRound(DEFAULT_GIFTS,'Concept preview'));unwrapGift(round,Date.now(),{cell:'1:1',forcedIndex:1});render();};
 $('#finale').onclick=()=>{
  audio.reset();const now=Date.now();round=startGiftRound(DEFAULT_GIFTS,'Demo viewer',now-6000);
  for(const [i,prize]of [1,2,4].entries()){unwrapGift(round,now-6000+i*2000,{cell:'1:'+i,forcedIndex:prize});advanceGiftRound(round,now-4000+i*2000);}
- render();
+ prepareGiftPlay(round);render();
 };
 $('#reset').onclick=reset;
 $('#sound').onclick=()=>{audio.setEnabled(!audio.enabled);$('#sound').textContent=audio.enabled?'Sound on':'Sound off';$('#sound').setAttribute('aria-pressed',String(audio.enabled));};
 $('#background').onchange=e=>$('#preview-backdrop').dataset.background=e.target.value;
-const timer=setInterval(()=>{if(!round)return;if(advanceGiftRound(round))render();if(round.hideAt&&Date.now()>=round.hideAt+GIFT_CLEAR_MS)reset();},50);
+const timer=setInterval(()=>{if(!round)return;if(advanceGiftRound(round))render();if(round.hideAt&&Date.now()>=round.hideAt+GIFT_CLEAR_MS*giftPlaybackScale(round))reset();},50);
 select(selected);
 window.addEventListener('pagehide',()=>{clearInterval(timer);view.dispose();audio.dispose();},{once:true});

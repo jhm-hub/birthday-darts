@@ -17,6 +17,26 @@ const shot=(id='one',kind='extra')=>({id,revealAt:1000,prize:{kind,nextRows:4,ne
 const unwrapShot=(id='unwrap')=>({...shot(id),startAt:1000,revealAt:1850});
 const oscillators=ctx=>ctx.nodes.filter(n=>n.kind==='oscillator');
 
+test('gentler pacing moves sound strikes with the art while preserving pitch, volume and decay',()=>{
+ for(const score of [giftIntroScore(),...['cash','multiply','row','column','extra'].map(kind=>giftRevealScore({kind,value:25,nextRows:4,nextCols:4})),...Array.from({length:3},(_,level)=>giftFinaleScore(level))]){
+  const normal=context(),slow=context();scheduleGiftScore(normal,score,10);scheduleGiftScore(slow,score,10,0,()=>{},slow.destination,1.25);
+  const a=oscillators(normal),b=oscillators(slow);assert.equal(a.length,b.length);
+  a.forEach((n,i)=>{assert.ok(Math.abs(b[i].started-(10+(n.started-10)*1.25))<1e-9);assert.equal(b[i].frequency.value,n.frequency.value);assert.ok(Math.abs((b[i].stops[0]-b[i].started)-(n.stops[0]-n.started))<1e-9);assert.equal(b[i].connectedTo.gain.calls[1][1],n.connectedTo.gain.calls[1][1]);});
+ }
+ for(const opening of [false,true]){
+  const normal=context(),slow=context();scheduleGiftUnwrap(normal,true,10,0,()=>{},normal.destination,opening);scheduleGiftUnwrap(slow,true,10,0,()=>{},slow.destination,opening,1.25);
+  const a=normal.nodes.filter(n=>n.kind==='buffer'),b=slow.nodes.filter(n=>n.kind==='buffer');
+  a.forEach((n,i)=>{assert.ok(Math.abs(b[i].started-(10+(n.started-10)*1.25))<1e-9);assert.deepEqual(b[i].buffer.getChannelData(0),n.buffer.getChannelData(0));});
+ }
+});
+test('slow live playback uses wall-clock lateness and cancels future slowed cues on reset',()=>{
+ const ctx=context(),audio=createGiftAudio({createContext:()=>ctx});audio.setEnabled(true);
+ audio.sync(shot('late'),1145,{pace:1.25});assert.equal(oscillators(ctx).length,0,'181 ms old on the stream clock stays silent');
+ audio.sync(shot('current'),1000,{pace:1.25});const expected=context();scheduleGiftScore(expected,giftRevealScore(shot().prize),10,0,()=>{},expected.destination,1.25);
+ assert.deepEqual(oscillators(ctx).map(n=>n.started),oscillators(expected).map(n=>n.started));
+ audio.unwrap(unwrapShot(),1000,{pace:1.25});audio.reset();assert.ok(ctx.nodes.filter(n=>n.kind!=='gain').every(n=>n.stops.at(-1)===10.015));
+});
+
 test('clock-completed display plays one finale when the controller snapshot arrives later',()=>{
  const r=startGiftRound(DEFAULT_GIFTS,'Preview',0);
  for(let i=0;i<2;i++){unwrapGift(r,i*2000,{cell:'0:'+i,forcedIndex:i});advanceGiftRound(r,(i+1)*2000);}

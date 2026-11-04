@@ -1,3 +1,4 @@
+import {giftPresentation,giftPlaybackScale} from './gift-playback.js';
 import {activeGiftSVG} from './gift-concept-art.js';
 import {money,giftTotal,prizeLabel,projectedGiftRound,giftDimensions} from './gift-game.js';
 import {GIFT_BOARD_TOP,giftBonusMotion,giftCellMotion,giftBonusBands,pixelBandPath} from './gift-bonus-motion.js';
@@ -37,7 +38,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
  // Inline gift art needs no character downloads. Defer readiness until callers initialize.
  void Promise.resolve().then(()=>{if(disposed)return;ready=true;onReady();render();}).catch(onError);
  function render(){
-  cancelAnimationFrame(raf);if(!preset)return;const time=Date.now()+offset,round=presentedGiftRound(snapshotRound,time),shown=projectedGiftRound(round,time),flight=round?.flight,age=flight?time-flight.startAt:0,finished=round?.completedAt!==null&&!!round;
+  cancelAnimationFrame(raf);if(!preset)return;const presentation=giftPresentation(snapshotRound,Date.now()+offset),time=presentation.time,pace=giftPlaybackScale(snapshotRound),round=presentedGiftRound(presentation.round,time),shown=projectedGiftRound(round,time),flight=round?.flight,age=flight?time-flight.startAt:0,finished=round?.completedAt!==null&&!!round;
   const display=presence(preset.id,round,time,{preview,show,reduced:reduced.matches}),exit=display.exit,visible=display.visible;
   stage.style.setProperty('--presence-opacity',String(display.opacity));
   stage.classList.toggle('stage-visible',visible);stage.classList.toggle('stage-finished',finished);stage.setAttribute('aria-hidden',String(!visible));
@@ -144,7 +145,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   confetti.style.display=finale?.particles?'':'none';
   if(finale?.particles)[...confetti.children].forEach((path,i)=>{const p=giftConfetti(round.id,i,finale.age,finale.level);path.setAttribute('d',p?pixelConfettiPath(p):'');if(p){path.setAttribute('opacity',String(p.opacity));path.setAttribute('fill',['#ffe4a2','#ffafd1','#c7b2ef','#afe4d0','#c3ddff'][p.color]);}});
   if(finished){const value=money(giftTotal(round));$('.gift-finale>small').textContent=round.viewer?round.viewer+'’s total':'ROUND TOTAL';$('.gift-finale>strong').textContent=value;$('.gift-finale>strong').style.fontSize=Math.min(68,480/value.length)+'px';const calculation=$('.gift-finale>p');calculation.textContent=money(round.cashCents)+' collected × '+round.multiplier;calculation.style.fontSize=Math.min(13,308/(calculation.textContent.length*.61))+'px';$('.gift-final-count').textContent=round.celebrationPreview?'Sample total · celebration preview':round.opened.length+' presents opened';}
-  if(audio){audio.intro(round,time);audio.unwrap(flight,time,{candy:buttons.get(flight?.cell)?.classList.contains('candy-unwrap')??true,opening:openingPick});audio.sync(flight,time);audio.finale(round,time);}
+  if(audio){audio.intro(round,time,{pace});audio.unwrap(flight,time,{candy:buttons.get(flight?.cell)?.classList.contains('candy-unwrap')??true,opening:openingPick,pace});audio.sync(flight,time,{pace});audio.finale(round,time,{pace});}
   root.dataset.rows=rows;root.dataset.cols=cols;root.dataset.side=Math.max(rows,cols);root.dataset.picks=remaining;root.dataset.total=giftTotal(shown);root.dataset.phase=finished?'total':flight?'unwrapping':'ready';
   root.dataset.displayedTotal=bank.total;root.dataset.totalFlow=bank.pending?'collecting':bank.active?'settling':'idle';
   root.dataset.presentation=!visible?'hidden':exit.exiting?'exiting':display.entering?'entering':finished?'total':round?'playing':'ready';

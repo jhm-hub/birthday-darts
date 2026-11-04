@@ -71,8 +71,9 @@ test('range starts are atomic; refresh, edits and bonus picks preserve the origi
  }
  assert.equal(restored.snapshot('gift-pile',time).lastResult.totalCents,'10100');assert.equal(restored.snapshot('gift-pile',time).round.viewer,'First');
  await assert.rejects(()=>restored.startRange('gift-pile','range2','Next',time),/Finish/);
- await restored.advance(time+6000);await assert.rejects(()=>restored.unwrap('gift-pile','Next',null,time+6001),/Choose one/);
- await restored.startRange('gift-pile','range1','Next',time+6001);assert.equal(restored.privateControls('gift-pile').activeRange.min,900);assert.equal(restored.roomKey('gift-pile'),room);
+ const clearedAt=restored.snapshot('gift-pile',time).round.hideAt+500;
+ await restored.advance(clearedAt);await assert.rejects(()=>restored.unwrap('gift-pile','Next',null,clearedAt+1),/Choose one/);
+ await restored.startRange('gift-pile','range1','Next',clearedAt+1);assert.equal(restored.privateControls('gift-pile').activeRange.min,900);assert.equal(restored.roomKey('gift-pile'),room);
  assert.equal(JSON.parse(data.get(GIFT_STORE_KEY)).widgets[0].round.privateRange.min,900);
 });
 
