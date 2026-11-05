@@ -12,6 +12,9 @@ const note=(at,pitch,length,gain=.045,voice='bell')=>({at,frequency:midi(pitch),
 // A tiny held attack gives sparse reward notes body without raising their peak.
 const rewardNote=(...args)=>({...note(...args),hold:.022});
 
+// A quiet downward answer to the cash cue, finished before the display clears.
+export function giftResetScore(){return [note(0,84,.13,.018,'token'),note(.1,79,.2,.014,'token')];}
+
 // A restrained game-show welcome: one bell per diagonal, then a soft major
 // landing. Its release passes smoothly into the ribbon, ending before the lid pop.
 export function giftIntroScore(side=3){
@@ -130,7 +133,7 @@ export function scheduleGiftScore(ctx,score,start,elapsed=0,track=()=>{},destina
 }
 
 export function createGiftAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)()}={}){
- let ctx,master,volume=DEFAULT_GIFT_VOLUME,rampFrom=1,rampStart=0,enabled=false,last='',lastUnwrap='',lastFinale='',lastIntro='',disposed=false;
+ let ctx,master,volume=DEFAULT_GIFT_VOLUME,rampFrom=1,rampStart=0,enabled=false,last='',lastUnwrap='',lastFinale='',lastIntro='',lastDismiss='',disposed=false;
  const playing=new Set();
  function track(source,envelope,nodes){
   const entry={source,envelope,nodes};playing.add(entry);
@@ -198,7 +201,13 @@ export function createGiftAudio({createContext=()=>new (window.AudioContext||win
    if(!enabled||!ctx||ctx.state!=='running'||(time-round.completedAt)*pace>180)return;
    scheduleGiftScore(ctx,giftFinaleScore(giftCelebrationLevel(round)),ctx.currentTime,(time-round.completedAt)/1000,track,master,pace);
   },
-  reset(){last='';lastUnwrap='';lastFinale='';lastIntro='';stop();},
+  dismiss(reset,time){
+   if(!reset||reset.id===lastDismiss||time<reset.at||disposed)return;
+   lastDismiss=reset.id;stop();
+   if(!enabled||!ctx||ctx.state!=='running'||time-reset.at>180)return;
+   scheduleGiftScore(ctx,giftResetScore(),ctx.currentTime,(time-reset.at)/1000,track,master);
+  },
+  reset(){lastDismiss='';last='';lastUnwrap='';lastFinale='';lastIntro='';stop();},
   dispose(){stop();disposed=true;enabled=false;if(ctx&&ctx.state!=='closed')void ctx.close().catch(()=>{});}
  };
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createGiftAudio,giftIntroScore,giftRevealScore,giftFinaleScore,scheduleGiftScore} from '../src/gift-audio.js';
+import {createGiftAudio,giftIntroScore,giftRevealScore,giftFinaleScore,giftResetScore,scheduleGiftScore} from '../src/gift-audio.js';
 import {giftBonusMotion,giftCellMotion} from '../src/gift-bonus-motion.js';
 import {giftUnwrapCues,synthesizeGiftFoley,scheduleGiftUnwrap} from '../src/gift-unwrap-audio.js';
 import {giftUnwrapMotion,CANDY_BOW_RELEASE_MS,CANDY_LID_POP_MS} from '../src/gift-unwrap-motion.js';
@@ -16,6 +16,23 @@ function context(state='running'){
 const shot=(id='one',kind='extra')=>({id,revealAt:1000,prize:{kind,nextRows:4,nextCols:4}});
 const unwrapShot=(id='unwrap')=>({...shot(id),startAt:1000,revealAt:1850});
 const oscillators=ctx=>ctx.nodes.filter(n=>n.kind==='oscillator');
+
+test('Reset has one quiet short cue, cancels outstanding rewards, and never replays on a heartbeat',()=>{
+ const score=giftResetScore();assert.equal(score.length,2);assert.ok(score.every(n=>n.gain<=.018&&n.at+n.length<.4));
+ const ctx=context(),audio=createGiftAudio({createContext:()=>ctx});audio.setVolume(35);audio.setEnabled(true);
+ audio.sync(shot(),1000);const old=oscillators(ctx);audio.dismiss({id:'reset',at:1050},1050);
+ assert.ok(old.every(n=>n.stops.at(-1)===10.015));const notes=oscillators(ctx).slice(old.length);assert.ok(notes.length>0);
+ assert.ok(notes.every(n=>n.connectedTo.connectedTo===ctx.nodes[0]));
+ for(const t of [1050,1100,1400,9000])audio.dismiss({id:'reset',at:1050},t);assert.equal(oscillators(ctx).length,old.length+notes.length);
+ audio.reset();assert.ok(notes.every(n=>n.stops.at(-1)===10.015));assert.equal(audio.volume,35);
+});
+test('muted and stale reset events stay silent when the display reconnects',()=>{
+ for(const mode of ['muted','stale']){
+  const ctx=context(),a=createGiftAudio({createContext:()=>ctx});if(mode==='stale')a.setEnabled(true);
+  a.dismiss({id:'one',at:1000},mode==='stale'?1200:1000);a.setEnabled(true);a.dismiss({id:'one',at:1000},1050);
+  assert.equal(oscillators(ctx).length,0);a.dismiss({id:'next',at:2000},2000);assert.ok(oscillators(ctx).length>0);
+ }
+});
 
 test('gentler pacing moves sound strikes with the art while preserving pitch, volume and decay',()=>{
  for(const score of [giftIntroScore(),...['cash','multiply','row','column','extra'].map(kind=>giftRevealScore({kind,value:25,nextRows:4,nextCols:4})),...Array.from({length:3},(_,level)=>giftFinaleScore(level))]){

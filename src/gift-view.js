@@ -1,3 +1,5 @@
+import {giftResetMotion} from './gift-reset.js';
+import {giftColorIndex} from './gift-colors.js';
 import {giftPresentation,giftPlaybackScale} from './gift-playback.js';
 import {activeGiftSVG} from './gift-concept-art.js';
 import {money,giftTotal,prizeLabel,projectedGiftRound,giftDimensions} from './gift-game.js';
@@ -29,7 +31,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
  gleams.innerHTML=[[20,24],[336,196],[338,24],[18,196],[44,8],[310,214]].map(([x,y])=>`<path d="M${x} ${y}h2v3h3v2h-3v3h-2v-3h-3v-2h3Z"/>`).join('');$('.gift-finale').append(gleams);
  const toast=$('.gift-toast');toast.innerHTML='<i class="gift-prize-emblem" aria-hidden="true"></i><strong></strong><span class="gift-toast-detail"></span><i class="gift-bar-spark gift-bar-spark-a" aria-hidden="true"></i><i class="gift-bar-spark gift-bar-spark-b" aria-hidden="true"></i>';
  $('.gift-hud').insertAdjacentHTML('beforeend',giftTotalFlowArt());const bankArt=$('.gift-total-flow');
- let snapshotRound=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null,oldPrizeKind=null,oldFinalLevel=null;
+ let snapshotRound=null,snapshotReset=null,lastServerNow=null,preset=null,offset=0,preview=false,canPick=false,show=true,raf=0,disposed=false,ready=false,oldRoundId=null,oldPrizeKind=null,oldFinalLevel=null;
  const presence=createGiftPresence(),nameMeasure=document.createElement('canvas').getContext('2d');let fittedViewer=null;
  stage.style.setProperty('--gift-board-top',GIFT_BOARD_TOP+'px');
  document.fonts.ready.then(()=>{if(!disposed){fittedViewer=null;render();}});
@@ -38,9 +40,12 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
  // Inline gift art needs no character downloads. Defer readiness until callers initialize.
  void Promise.resolve().then(()=>{if(disposed)return;ready=true;onReady();render();}).catch(onError);
  function render(){
-  cancelAnimationFrame(raf);if(!preset)return;const presentation=giftPresentation(snapshotRound,Date.now()+offset),time=presentation.time,pace=giftPlaybackScale(snapshotRound),round=presentedGiftRound(presentation.round,time),shown=projectedGiftRound(round,time),flight=round?.flight,age=flight?time-flight.startAt:0,finished=round?.completedAt!==null&&!!round;
+  cancelAnimationFrame(raf);if(!preset)return;
+  const wallTime=Date.now()+offset,reset=!snapshotRound?snapshotReset:null,fade=giftResetMotion(reset,wallTime,reduced.matches),fading=fade.active;
+  const source=snapshotRound??(fading?reset.round:null);
+  const presentation=giftPresentation(source,fading?reset.at:wallTime),time=presentation.time,pace=giftPlaybackScale(source),round=presentedGiftRound(presentation.round,time),shown=projectedGiftRound(round,time),flight=round?.flight,age=flight?time-flight.startAt:0,finished=round?.completedAt!==null&&!!round;
   const display=presence(preset.id,round,time,{preview,show,reduced:reduced.matches}),exit=display.exit,visible=display.visible;
-  stage.style.setProperty('--presence-opacity',String(display.opacity));
+  stage.style.setProperty('--presence-opacity',String(display.opacity*(fading?fade.opacity:1)));
   stage.classList.toggle('stage-visible',visible);stage.classList.toggle('stage-finished',finished);stage.setAttribute('aria-hidden',String(!visible));
   const finish=giftFinishMotion(round,time,reduced.matches);
   for(const [key,value,unit]of [['finish-board',finish.board*exit.back,''],['finish-footer',finish.footer*exit.back,''],['finish-header',finish.header*exit.back,''],['finish-toast',finish.toast,''],['finish-toast-y',finish.toastY,'px'],['finish-plaque',finish.plaque*exit.plaque,''],['finish-content',finish.content*exit.content,'']])stage.style.setProperty('--'+key,value+unit);
@@ -70,7 +75,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   const opened=new Map(shown?.opened.map(s=>[s.cell,s])??[]);
   for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
    const id=row+':'+col,shot=opened.get(id),active=flight?.cell===id;let b=buttons.get(id);
-   if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;b.innerHTML=art(row*3+col)+`<span class="gift-pick-focus" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="gift-glints" aria-hidden="true">${'<i></i>'.repeat(8)}</span><span class="gift-cell-prize"><span class="gift-cell-main"><span class="gift-cell-currency"></span><span class="gift-cell-value"></span></span><small class="gift-cell-detail"></small></span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
+   if(!b){b=document.createElement('button');b.type='button';b.className='gift-cell';b.dataset.cell=id;const color=giftColorIndex(round,row,col);b.dataset.color=String(color);b.innerHTML=art(color)+`<span class="gift-pick-focus" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="gift-glints" aria-hidden="true">${'<i></i>'.repeat(8)}</span><span class="gift-cell-prize"><span class="gift-cell-main"><span class="gift-cell-currency"></span><span class="gift-cell-value"></span></span><small class="gift-cell-detail"></small></span><span class="gift-spawn-glints" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--angle:${i*60}deg"></i>`).join('')}</span>`;b.addEventListener('click',()=>onPick(id));board.append(b);buttons.set(id,b);}
    b.classList.toggle('candy-unwrap',!!b.querySelector('svg[data-unwrap="candy"]'));
    const arrival=giftCellMotion(row,col,rows,cols,bonus),opening=giftIntroCell(row,col,intro);
    const selected=focus.cell===id&&focus.opacity>0;
@@ -85,7 +90,7 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
    const detailSize=Math.min(18,Math.max(14,Math.floor(arrival.height*.26))),units=Math.max(1,label.length-(cash ? .32 : 0));
    const prizeSize=Math.max(1,Math.min(42,(arrival.height-6)/1.065-6-(detail?detailSize+1:0),(arrival.width*.93-6)/1.065/(units*.6)));
    b.style.setProperty('--prize-size',prizeSize+'px');b.style.setProperty('--detail-size',detailSize+'px');b.dataset.kind=shot?.prize.kind??'';
-   b.disabled=!interactive||!ready||!canPick||!!snapshotRound?.flight||finished||!!shot;b.tabIndex=interactive?0:-1;
+   b.disabled=fading||!interactive||!ready||!canPick||!!snapshotRound?.flight||finished||!!shot;b.tabIndex=interactive?0:-1;
    b.setAttribute('aria-label',shot?'Opened present: '+prizeLabel(shot.prize):`Open present, row ${row+1}, column ${col+1}`);
    b.classList.toggle('gift-opened',!!shot);b.classList.toggle('gift-opening',active);b.classList.toggle('gift-special',!!shot&&shot.prize.kind!=='cash');
    b.querySelector('.gift-cell-currency').textContent=cash?'$':'';b.querySelector('.gift-cell-value').textContent=cash?label.slice(1):label;b.querySelector('.gift-cell-detail').textContent=detail;
@@ -145,11 +150,16 @@ export function createGiftView(root,{interactive=false,onPick=()=>{},onReady=()=
   confetti.style.display=finale?.particles?'':'none';
   if(finale?.particles)[...confetti.children].forEach((path,i)=>{const p=giftConfetti(round.id,i,finale.age,finale.level);path.setAttribute('d',p?pixelConfettiPath(p):'');if(p){path.setAttribute('opacity',String(p.opacity));path.setAttribute('fill',['#ffe4a2','#ffafd1','#c7b2ef','#afe4d0','#c3ddff'][p.color]);}});
   if(finished){const value=money(giftTotal(round));$('.gift-finale>small').textContent=round.viewer?round.viewer+'’s total':'ROUND TOTAL';$('.gift-finale>strong').textContent=value;$('.gift-finale>strong').style.fontSize=Math.min(68,480/value.length)+'px';const calculation=$('.gift-finale>p');calculation.textContent=money(round.cashCents)+' collected × '+round.multiplier;calculation.style.fontSize=Math.min(13,308/(calculation.textContent.length*.61))+'px';$('.gift-final-count').textContent=round.celebrationPreview?'Sample total · celebration preview':round.opened.length+' presents opened';}
-  if(audio){audio.intro(round,time,{pace});audio.unwrap(flight,time,{candy:buttons.get(flight?.cell)?.classList.contains('candy-unwrap')??true,opening:openingPick,pace});audio.sync(flight,time,{pace});audio.finale(round,time,{pace});}
+  if(audio&&reset)audio.dismiss(reset,wallTime);
+  if(audio&&!reset){audio.intro(round,time,{pace});audio.unwrap(flight,time,{candy:buttons.get(flight?.cell)?.classList.contains('candy-unwrap')??true,opening:openingPick,pace});audio.sync(flight,time,{pace});audio.finale(round,time,{pace});}
   root.dataset.rows=rows;root.dataset.cols=cols;root.dataset.side=Math.max(rows,cols);root.dataset.picks=remaining;root.dataset.total=giftTotal(shown);root.dataset.phase=finished?'total':flight?'unwrapping':'ready';
   root.dataset.displayedTotal=bank.total;root.dataset.totalFlow=bank.pending?'collecting':bank.active?'settling':'idle';
-  root.dataset.presentation=!visible?'hidden':exit.exiting?'exiting':display.entering?'entering':finished?'total':round?'playing':'ready';
-  if(round||display.entering)raf=requestAnimationFrame(render);
+  root.dataset.presentation=!visible?'hidden':fading?'resetting':exit.exiting?'exiting':display.entering?'entering':finished?'total':round?'playing':'ready';
+  if(round||fading||display.entering)raf=requestAnimationFrame(render);
  }
- return {get ready(){return ready;},update({widget,round:r,serverNow=Date.now()},options={}){preset=widget;snapshotRound=r;offset=serverNow-Date.now();preview=!!options.preview;canPick=options.canPick??true;show=options.show??true;render();},setInteractive(value){interactive=value;render();},hide(){show=false;render();},dispose(){disposed=true;cancelAnimationFrame(raf);observer.disconnect();}};
+ return {get ready(){return ready;},update({widget,round:r,reset=null,serverNow=Date.now()},options={}){
+  if((r?.id??null)!==(snapshotRound?.id??null)&&!reset)audio?.reset();
+  preset=widget;snapshotRound=r;snapshotReset=reset;
+  // Re-rendering the same snapshot (e.g. connection status) must not rewind time.
+  if(serverNow!==lastServerNow){offset=serverNow-Date.now();lastServerNow=serverNow;}preview=!!options.preview;canPick=options.canPick??true;show=options.show??true;render();},setInteractive(value){interactive=value;render();},hide(){show=false;render();},dispose(){disposed=true;cancelAnimationFrame(raf);observer.disconnect();}};
 }

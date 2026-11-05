@@ -3,7 +3,7 @@
 export const GIFT_PLAYBACK_SCALE=1.25;
 export const giftPlaybackScale=round=>round?.playbackScale===GIFT_PLAYBACK_SCALE?GIFT_PLAYBACK_SCALE:1;
 export function prepareGiftPlay(round){
- round.holdFinal=true;round.hideAt=null;
+ round.holdFinal=true;round.hideAt=null;round.colorSeed??=round.id;
  if(giftPlaybackScale(round)===GIFT_PLAYBACK_SCALE)return round;
  const anchor=round.completedAt??round.startedAt,stamp=value=>Number.isFinite(value)?anchor+(value-anchor)*GIFT_PLAYBACK_SCALE:value;
  const shot=s=>s?{...s,startAt:stamp(s.startAt),revealAt:stamp(s.revealAt),finishAt:stamp(s.finishAt)}:null;

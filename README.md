@@ -143,8 +143,9 @@ intentionally blank between rounds. Keep the desk open while playing.
 Presents supports multiple live control tabs in the same browser/profile. Only
 one tab sends to OBS, while every tab can control the shared round. **Game 1–4**
 always starts a fresh round, including during an opening or celebration.
-**Reset** immediately clears the display without awarding an unfinished
-prize. Repeated unwrap clicks cannot award the same present twice. Closing the
+**Reset** immediately ends the round and fades the display out over 0.6 seconds
+with a quiet two-note cue, without awarding an unfinished prize. A new game can
+start during the fade; it never waits for the animation. Repeated unwrap clicks cannot award the same present twice. Closing the
 broadcasting tab lets a remaining controller reconnect to the same OBS source.
 Refresh already-open control pages once when installing this update.
 New Presents rounds use a gentler pace: each pick takes 2.5 seconds, with the
@@ -154,6 +155,9 @@ game. The celebration and sound play once, then the amount holds still. A brief
 connection loss keeps an already-revealed total visible. Reloading resumes the
 held total. Existing rounds keep their original unwrap timing until the next
 game; demo previews use the same new pace and manual reset.
+Each new round shuffles the five existing Candy Confetti wrapper colors, including
+the pink presents. Colors stay fixed through picks, bonus expansions and reloads;
+the controller and OBS display always use the same layout. Colors do not affect prizes.
 The gifts match the birthday game’s pixel style: stepped outlines, pastel wrappers,
 satin ribbon highlights, separate lids and paper rustle / celesta sounds.
 The grid and final-total plaque share one 420 × 460 frame, including expanded

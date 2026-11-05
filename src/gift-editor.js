@@ -1,3 +1,4 @@
+import {createGiftReset} from './gift-reset.js';
 import {prepareGiftPlay,giftPlaybackScale} from './gift-playback.js';
 import {giftStore,exportGiftSettings,importGiftSettings} from './gift-store.js';
 import {GIFT_CLEAR_MS,GIFT_HOLD_MS,DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,eligibleGiftOutcomes,giftModifierDeadline,giftModifierDue,sampleGiftFinale,prizeLabel,giftTotal,money,isGiftExpansion} from './gift-game.js';
@@ -12,7 +13,7 @@ import {sampleGiftTierFinale} from './gift-finale-preview.js';
 const $=s=>document.querySelector(s),audio=createGiftAudio();
 bindGiftPreviewVolume($('#gift-mixer'),audio);
 const rangeFields=bindGiftRangeFields($('#gift-range-fields'),changed);
-let widgets=[],selected=null,dirty=false,draftValue=null,draftError='',demo=null,ready=false,refreshTimer;
+let widgets=[],selected=null,dirty=false,draftValue=null,draftError='',demo=null,demoReset=null,ready=false,refreshTimer;
 const view=createGiftView($('#gift-preview'),{interactive:true,onPick:pick,onReady(){ready=true;renderDemo();},onError(e){$('#demo-status').textContent=e.message;},audio});
 function message(text,error=false){$('#editor-status').textContent=text;$('#editor-status').classList.toggle('error',error);}
 function readDraft(){if([...$('#gift-settings').querySelectorAll('input')].some(i=>!i.validity.valid))throw Error('Finish the highlighted settings before playing the demo.');return validateGiftWidget({...(selected?{id:selected}:{}),name:$('#game-name').value,gameRanges:rangeFields.read(),rangeCashMax:Number($('#range-cash-max').value),side:Number($('#board-size').value),picks:Number($('#pick-count').value),maxSide:Number($('#max-board').value),maxPicks:Number($('#max-picks').value),celebration:{big:Number($('#celebration-big').value),royal:Number($('#celebration-royal').value)},outcomes:[...$('#prize-rows').children].map(r=>({kind:r.querySelector('select').value,value:Number(r.querySelector('.prize-value').value),weight:Number(r.querySelector('.prize-weight').value)}))});}
@@ -25,7 +26,7 @@ function row(prize={kind:'cash',value:25,weight:10}){
  r.querySelector('button').addEventListener('click',()=>{if($('#prize-rows').children.length===1)return message('Keep at least one money prize.',true);r.remove();changed();});$('#prize-rows').append(r);
 }
 function refresh(){
- clearTimeout(refreshTimer);demo=null;audio.reset();
+ clearTimeout(refreshTimer);demo=null;demoReset=null;audio.reset();
  const bonusAllowed=Number($('#max-board').value)>Number($('#board-size').value)&&Number($('#max-picks').value)>Number($('#pick-count').value);
  const startWeight=r=>isGiftExpansion(r.querySelector('select').value)&&!bonusAllowed?0:Number(r.querySelector('.prize-weight').value);
  const total=[...$('#prize-rows').children].reduce((s,r)=>s+startWeight(r),0);
@@ -52,7 +53,7 @@ function renderDemo(){
  const needsRange=!demo&&configuredGiftRanges(draftValue).length>0;
  renderGiftRangeButtons($('#demo-ranges'),draftValue.gameRanges,{disabled:!ready||!!draftError||!!demo,activeId:demo?.privateRange?.id,onStart:startDemoRange});
  $('#manual-demo-prize').hidden=configuredGiftRanges(draftValue).length>0;
- if(draftValue)view.update({widget:draftValue,round:demo},{preview:true,canPick:!draftError&&ready&&!needsRange});
+ if(draftValue)view.update({widget:draftValue,round:demo,reset:demoReset},{preview:true,canPick:!draftError&&ready&&!needsRange});
  const busy=!!demo?.flight||demo?.completedAt!==null&&!!demo;
  $('#demo-unwrap').disabled=!ready||!!draftError||busy||needsRange;$('#demo-reset').disabled=!ready;$('#demo-finale').disabled=!ready||!!draftError;
  $('#demo-unwrap').textContent=demo?.flight?'Unwrapping…':demo?.completedAt!==null&&demo?'Total revealed':'Unwrap for me';
@@ -64,14 +65,14 @@ function renderDemo(){
 }
 function pick(cell=null){
  if(!ready||draftError||demo?.flight||demo?.completedAt!==null&&demo||!demo&&configuredGiftRanges(draftValue).length)return;
- try{if(audio.enabled)audio.unlock();demo??=prepareGiftPlay(startGiftRound(draftValue,'Demo viewer'));const forced=demo.privateRange?'':$('#demo-prize').value;unwrapGift(demo,Date.now(),{cell,forcedIndex:forced===''?null:Number(forced)});renderDemo();}catch(e){$('#demo-status').textContent=e.message;}
+ try{if(audio.enabled)audio.unlock();demoReset=null;demo??=prepareGiftPlay(startGiftRound(draftValue,'Demo viewer'));const forced=demo.privateRange?'':$('#demo-prize').value;unwrapGift(demo,Date.now(),{cell,forcedIndex:forced===''?null:Number(forced)});renderDemo();}catch(e){$('#demo-status').textContent=e.message;}
 }
-function startDemoRange(id){if(!ready||draftError||demo)return;try{if(audio.enabled)audio.unlock();demo=prepareGiftPlay(startGiftRange(draftValue,id,'Demo viewer'));renderDemo();}catch(e){$('#demo-status').textContent=e.message;}}
+function startDemoRange(id){if(!ready||draftError||demo)return;try{if(audio.enabled)audio.unlock();demoReset=null;demo=prepareGiftPlay(startGiftRange(draftValue,id,'Demo viewer'));renderDemo();}catch(e){$('#demo-status').textContent=e.message;}}
 $('#demo-unwrap').addEventListener('click',()=>pick());
-$('#demo-reset').addEventListener('click',()=>{demo=null;audio.reset();renderDemo();});
+$('#demo-reset').addEventListener('click',()=>{if(audio.enabled)audio.unlock();if(demo)demoReset=createGiftReset(demo);demo=null;renderDemo();});
 $('#demo-finale').addEventListener('click',()=>{
  if(draftError)return;
- audio.reset();const tier=$('#demo-finale-level').value;
+ demoReset=null;audio.reset();const tier=$('#demo-finale-level').value;
  const rangeId=demo?.privateRange?.id??configuredGiftRanges(draftValue)[0]?.id;
  try{
   if(tier===''&&rangeId){

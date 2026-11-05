@@ -14,7 +14,7 @@ if(overlay){try{audio.setEnabled(true);}catch{}}
 document.addEventListener('pointerdown',()=>{try{audio.unlock();}catch{}},{once:true});
 function render(){
  const needsRange=!overlay&&!snapshot?.round&&snapshot?.controls?.ranges.some(r=>r.min!==null);
- const heldTotal=overlay&&snapshot?.round?.holdFinal&&snapshot.round.completedAt!=null;
+ const heldTotal=overlay&&(snapshot?.round?.holdFinal&&snapshot.round.completedAt!=null||!!snapshot?.reset);
  if(snapshot)view.update(snapshot,{preview:!overlay,canPick:connected&&!pending&&!needsRange,show:!overlay||connected||heldTotal});
  if(overlay){if(!connected&&!heldTotal)view.hide();return;}
  versionPicker?.update(snapshot,connected&&!pending&&volumeTarget===null);mixer.setEnabled(connected);
@@ -24,7 +24,7 @@ function render(){
  $('#viewer').disabled=false;
  renderGiftRangeButtons($('#live-ranges'),snapshot?.controls?.ranges,{alwaysEnabled:true,activeId:snapshot?.controls?.activeRange?.id,onStart:startRange});
  const active=snapshot?.controls?.activeRange;
- $('#live-range-status').textContent=active?active.name+' · '+giftRangeText(active)+' final total. A game button starts a fresh round; Reset clears it immediately.':needsRange?'Enter a viewer, then choose a game. Its final total includes all multipliers and bonus picks.':'Set your four ranges in Edit gift games. Your saved prize setup is available until then.';
+ $('#live-range-status').textContent=active?active.name+' · '+giftRangeText(active)+' final total. A game button starts a fresh round; Reset fades out the display.':needsRange?'Enter a viewer, then choose a game. Its final total includes all multipliers and bonus picks.':'Set your four ranges in Edit gift games. Your saved prize setup is available until then.';
  $('#control-status').textContent=error||(!viewReady?'Loading gifts…':!connected?readiness:busy?'Opening one present…':finished?money(giftTotal(r))+' total. Stays on screen until you press Reset.':r?r.remaining+' pick'+(r.remaining===1?'':'s')+' left. Choose any wrapped present.':snapshot?.lastResult?'Ready for the next viewer. Last total: '+money(snapshot.lastResult.totalCents):'First pick: appear + unwrap. Last pick: total reveal.');
  if(!error&&connected&&!busy&&!finished&&giftModifierDue(r))$('#control-status').textContent+=' A modifier is guaranteed on this pick.';
 }
@@ -48,7 +48,7 @@ async function startRange(id){
 }
 async function endRound(){
  if(overlay)return;if(!session){error='The game is still loading; no round has started here.';render();return;}
- const request=++commandVersion;pending=true;error='';render();try{const next=await session.endRound();audio.reset();if(request===commandVersion)receive(next);}catch(e){if(request===commandVersion)error=e.message;}finally{if(request===commandVersion)pending=false;render();}
+ const request=++commandVersion;pending=true;error='';render();try{if(audio.enabled)audio.unlock();const next=await session.endRound();if(request===commandVersion)receive(next);}catch(e){if(request===commandVersion)error=e.message;}finally{if(request===commandVersion)pending=false;render();}
 }
 async function init(){
  if(overlay){session=connectGiftDisplay(receive,value=>{connected=value;render();});}
