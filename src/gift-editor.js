@@ -59,7 +59,7 @@ function renderDemo(){
  const eligible=eligibleGiftOutcomes(demo??{preset:draftValue,side:draftValue.side,allocated:draftValue.picks});
  for(const o of $('#demo-prize').options)if(o.value!=='')o.disabled=eligible[Number(o.value)]?.weight<=0;
  if($('#demo-prize').selectedOptions[0]?.disabled)$('#demo-prize').value='';
- const text=draftError||(needsRange?'Choose a game button above to demo its guaranteed total range.':!ready?'Loading gifts…':demo?.celebrationPreview?money(giftTotal(demo))+' sample total · '+GIFT_CELEBRATIONS[giftCelebrationLevel(demo)].label+' celebration.':demo?.flight?'Opening your present…':demo?.completedAt!==null&&demo?money(giftTotal(demo))+' total · '+demo.opened.length+' presents opened.':demo?demo.remaining+' pick'+(demo.remaining===1?'':'s')+' left. Choose any wrapped present.':'Choose any of the '+draftValue.side**2+' presents. You have '+draftValue.picks+' picks.');
+ const text=draftError||(needsRange?'Choose a game button above to demo its guaranteed total range.':!ready?'Loading gifts…':demo?.celebrationPreview?money(giftTotal(demo))+' sample total · '+GIFT_CELEBRATIONS[giftCelebrationLevel(demo)].label+' celebration.':demo?.flight?'Opening your present…':demo?.completedAt!==null&&demo?money(giftTotal(demo))+' total · '+demo.opened.length+' presents opened. Press Reset to clear.':demo?demo.remaining+' pick'+(demo.remaining===1?'':'s')+' left. Choose any wrapped present.':'Choose any of the '+draftValue.side**2+' presents. You have '+draftValue.picks+' picks.');
  $('#demo-status').textContent=text+(!draftError&&demo&&!busy&&giftModifierDue(demo)?' A modifier is guaranteed on this pick.':'');$('#demo-status').classList.toggle('error',!!draftError);
 }
 function pick(cell=null){

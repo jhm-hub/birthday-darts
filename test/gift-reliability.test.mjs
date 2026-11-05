@@ -17,6 +17,6 @@ test('save, backup, reload and next viewer preserve independent games and frozen
  const backup=exportGiftSettings(restored.list());const imported=importGiftSettings(backup);await restored.import(imported);assert.equal(restored.list().length,4);assert.notEqual(restored.roomKey(imported[0].id),key);
  let time=restored.snapshot('gift-pile').round.flight.finishAt;await restored.advance(time);
  for(const cell of ['0:0','0:1']){await restored.unwrap('gift-pile','QA',cell,time+100);time=restored.snapshot('gift-pile').round.flight.finishAt;await restored.advance(time);}
- assert.equal(restored.snapshot('gift-pile').lastResult.totalCents,'3702');time=restored.snapshot('gift-pile').round.hideAt+500;await restored.advance(time);
+ assert.equal(restored.snapshot('gift-pile').lastResult.totalCents,'3702');time+=60000;await restored.advance(time);assert.equal(restored.snapshot('gift-pile').round.viewer,'QA');await restored.endRound('gift-pile',time);
  await restored.unwrap('gift-pile','Next','0:0',time+100);const next=restored.snapshot('gift-pile',time+100).round;assert.equal(next.preset.picks,1);assert.equal(next.flight.prize.value,99);assert.equal(next.cashCents,0);assert.equal(next.multiplier,1);assert.equal(next.viewer,'Next');
 });

@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {DEFAULT_GIFTS,startGiftRound,GIFT_HOLD_MS,GIFT_CLEAR_MS,giftTotal} from '../src/gift-game.js';
 import {sampleGiftTierFinale} from '../src/gift-finale-preview.js';
 import {giftExitMotion,createGiftPresence,GIFT_EXIT_MS,GIFT_ENTER_MS} from '../src/gift-exit-motion.js';
-import {giftPlaybackScale} from '../src/gift-playback.js';
 import {createGiftStore} from '../src/gift-store.js';
 const sample=level=>sampleGiftTierFinale(DEFAULT_GIFTS,level,10000);
 
@@ -71,13 +70,13 @@ test('active games do not exit and reduced motion clears without tweening',()=>{
  assert.equal(view('gifts',null,r.hideAt+GIFT_CLEAR_MS,opts).opacity,1);
  assert.equal(view('gifts',null,r.hideAt+GIFT_CLEAR_MS,opts).entering,false);
 });
-test('store keeps exact result through exit, then accepts a fresh viewer at the round’s paced clear time',async()=>{
+test('store holds the exact final result until Reset, then accepts a fresh viewer',async()=>{
  const data=new Map(),store=createGiftStore({getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)},{request:(_name,fn)=>fn()});
  await store.init();await store.save({...DEFAULT_GIFTS,picks:1,outcomes:[{kind:'cash',value:12.34,weight:1}]});
  await store.unwrap('gift-pile','Previous viewer','0:0',1000);const finishAt=store.snapshot('gift-pile').round.flight.finishAt;await store.advance(finishAt);
- const before=store.snapshot('gift-pile',finishAt),clearAt=before.round.hideAt+GIFT_CLEAR_MS*giftPlaybackScale(before.round);
+ const before=store.snapshot('gift-pile',finishAt),clearAt=finishAt+86400000;assert.equal(before.round.hideAt,null);
  await store.advance(clearAt-1);assert.deepEqual(store.snapshot('gift-pile',clearAt-1).round,before.round);
  await assert.rejects(()=>store.unwrap('gift-pile','Too early','0:1',clearAt-1),/complete/);
- await store.advance(clearAt);const cleared=store.snapshot('gift-pile',clearAt);assert.equal(cleared.round,null);assert.equal(cleared.lastResult.viewer,'Previous viewer');assert.equal(cleared.lastResult.totalCents,'1234');
+ await store.endRound('gift-pile',clearAt);const cleared=store.snapshot('gift-pile',clearAt);assert.equal(cleared.round,null);assert.equal(cleared.lastResult.viewer,'Previous viewer');assert.equal(cleared.lastResult.totalCents,'1234');
  const next=await store.unwrap('gift-pile','Next viewer','0:1',clearAt);assert.equal(next.round.viewer,'Next viewer');assert.equal(next.round.cashCents,0);assert.equal(next.round.multiplier,1);assert.equal(next.round.opened.length,0);assert.notEqual(next.round.id,before.round.id);assert.equal(next.round.flight.cell,'0:1');assert.equal(next.lastResult.totalCents,'1234');
 });

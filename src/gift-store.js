@@ -1,7 +1,7 @@
-import {prepareGiftPlay,giftPlaybackScale} from './gift-playback.js';
+import {prepareGiftPlay} from './gift-playback.js';
 import {createSharedSettings} from './shared-settings.js';
 import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
-import {GIFT_CLEAR_MS,DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,cleanGiftRound,giftTotal} from './gift-game.js';
+import {DEFAULT_GIFTS,validateGiftWidget,startGiftRound,unwrapGift,advanceGiftRound,cleanGiftRound,giftTotal} from './gift-game.js';
 import {randomKey,validKey} from './protocol.js';
 import {giftVolume} from './gift-volume.js';
 import {validateGiftRanges,configuredGiftRanges} from './gift-ranges.js';
@@ -30,7 +30,7 @@ export function createGiftStore(storage,locks,sharedOptions={}){
  function read(){const raw=storage.getItem(GIFT_STORE_KEY);if(!raw)return null;let state;try{state=JSON.parse(raw);if(state.schema!==1||!Array.isArray(state.widgets)||!state.widgets.length)throw Error();for(const w of state.widgets)validateGiftWidget(w);}catch{throw Error('Saved Gift Pile data could not be read. It has not been overwritten.');}return state;}
  function write(s){storage.setItem(GIFT_STORE_KEY,JSON.stringify(s));shared.notify(()=>{for(const fn of listeners)fn();});}
  function find(s,id){const w=s.widgets.find(w=>w.id===id);if(!w)throw Error('This gift game was not found.');return w;}
- function settle(s,now){let changed=false;for(const w of s.widgets){if(advanceGiftRound(w.round,now)){changed=true;if(w.round.completedAt!==null)w.lastResult={viewer:w.round.viewer,totalCents:giftTotal(w.round),opened:w.round.opened.length,completedAt:w.round.completedAt};}if(w.round?.hideAt&&now>=w.round.hideAt+GIFT_CLEAR_MS*giftPlaybackScale(w.round)){w.round=null;changed=true;}if(upgradeStarter(w))changed=true;}return changed;}
+ function settle(s,now){let changed=false;for(const w of s.widgets){if(w.round&&(!w.round.holdFinal||w.round.hideAt!=null)){w.round.holdFinal=true;w.round.hideAt=null;changed=true;}if(advanceGiftRound(w.round,now)){changed=true;if(w.round.completedAt!==null)w.lastResult={viewer:w.round.viewer,totalCents:giftTotal(w.round),opened:w.round.opened.length,completedAt:w.round.completedAt};}if(upgradeStarter(w))changed=true;}return changed;}
  function snapshot(id,now=Date.now()){const w=find(read(),id),{outcomes,gameRanges,rangeCashMax,...widget}=validateGiftWidget(w);return {kind:'faith-gifts',serverNow:now,widget,audio:{volume:giftVolume(w.audioVolume)},round:cleanGiftRound(w.round),lastResult:w.lastResult??null};}
  return {
   ...permanentDisplayStore({read,write,lock}),

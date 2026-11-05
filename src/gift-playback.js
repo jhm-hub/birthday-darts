@@ -3,6 +3,7 @@
 export const GIFT_PLAYBACK_SCALE=1.25;
 export const giftPlaybackScale=round=>round?.playbackScale===GIFT_PLAYBACK_SCALE?GIFT_PLAYBACK_SCALE:1;
 export function prepareGiftPlay(round){
+ round.holdFinal=true;round.hideAt=null;
  if(giftPlaybackScale(round)===GIFT_PLAYBACK_SCALE)return round;
  const anchor=round.completedAt??round.startedAt,stamp=value=>Number.isFinite(value)?anchor+(value-anchor)*GIFT_PLAYBACK_SCALE:value;
  const shot=s=>s?{...s,startAt:stamp(s.startAt),revealAt:stamp(s.revealAt),finishAt:stamp(s.finishAt)}:null;
@@ -14,7 +15,7 @@ const cache=new WeakMap();
 export function giftPresentation(round,time){
  const scale=giftPlaybackScale(round);if(scale===1)return {round,time};
  const anchor=round.startedAt,stamp=value=>Number.isFinite(value)?anchor+(value-anchor)/scale:value;
- const signature=[round.flight?.id,round.opened.length,round.completedAt,round.hideAt].join(':');
+ const signature=[round.flight?.id,round.opened.length,round.completedAt,round.hideAt,round.holdFinal].join(':');
  let saved=cache.get(round);
  if(!saved||saved.signature!==signature){
   const shot=s=>s?{...s,startAt:stamp(s.startAt),revealAt:stamp(s.revealAt),finishAt:stamp(s.finishAt)}:null;

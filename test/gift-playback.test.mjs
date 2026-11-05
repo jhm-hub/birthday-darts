@@ -12,6 +12,31 @@ import {giftExitMotion} from '../src/gift-exit-motion.js';
 import {presentedGiftRound} from '../src/gift-finish-motion.js';
 
 const fixture=()=>{const data=new Map(),storage={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)},locks={request:async(_,fn)=>fn()};return {data,storage,locks,store:createGiftStore(storage,locks)};};
+test('every final tier survives time, reload and settings edits until an explicit reset',async()=>{
+ for(const value of [25,125,300]){
+  const f=fixture(),s=f.store;await s.init();const id=s.list()[0].id;
+  await s.save({...DEFAULT_GIFTS,picks:1,outcomes:[{kind:'cash',value,weight:1}]});
+  const link=s.displayKey(),settings=s.list();await s.unwrap(id,'Held viewer',null,1000);
+  await s.advance(s.snapshot(id).round.flight.finishAt);const held=s.snapshot(id).round,result=s.snapshot(id).lastResult;
+  for(const delay of [10000,60000,86400000]){
+   await s.advance(held.completedAt+delay);assert.deepEqual(s.snapshot(id).round,held);
+   const p=giftPresentation(held,held.completedAt+delay),motion=giftFinaleMotion(p.round,p.time);
+   assert.equal(giftExitMotion(p.round,p.time).visible,true);assert.equal(motion.particles,false);assert.equal(motion.glow,0);
+  }
+  const resumed=createGiftStore(f.storage,f.locks);await resumed.init();assert.deepEqual(resumed.snapshot(id).round,held);
+  await resumed.save({...settings[0],name:'Changed after win'});assert.deepEqual(resumed.snapshot(id).round,held);
+  await resumed.endRound(id);await resumed.advance();assert.equal(resumed.snapshot(id).round,null);
+  assert.deepEqual(resumed.snapshot(id).lastResult,result);assert.equal(resumed.displayKey(),link);assert.equal(resumed.list()[0].name,'Changed after win');
+  await resumed.restartRange(id,'range1','Next viewer');assert.equal(resumed.snapshot(id).round.viewer,'Next viewer');assert.equal(resumed.snapshot(id).round.holdFinal,true);
+ }
+});
+test('upgrading an existing completed round preserves its amount instead of expiring it',async()=>{
+ const f=fixture();await f.store.init();const old=startGiftRound({...DEFAULT_GIFTS,picks:1},'Previous viewer',0);
+ const shot=unwrapGift(old,0,{forcedIndex:0});advanceGiftRound(old,shot.finishAt);assert.ok(old.hideAt);
+ const state=JSON.parse(f.data.get(GIFT_STORE_KEY));state.widgets[0].round=old;f.data.set(GIFT_STORE_KEY,JSON.stringify(state));
+ await f.store.init();const held=f.store.snapshot(DEFAULT_GIFTS.id).round;
+ assert.equal(held.hideAt,null);assert.equal(held.holdFinal,true);assert.equal(held.completedAt,old.completedAt);assert.equal(giftTotal(held),giftTotal(old));assert.equal(held.playbackScale,undefined);
+});
 test('new presentation gives each pick 25% more time with identical unwrap, cash and bonus poses',()=>{
  for(const index of [0,4,5,6,7]){
   const normal=startGiftRound(DEFAULT_GIFTS,'Viewer',1000),slow=prepareGiftPlay(structuredClone(normal));
@@ -30,19 +55,19 @@ test('new presentation gives each pick 25% more time with identical unwrap, cash
   assert.equal(giftPresentation(slow,b.finishAt).round.opened.length,1);assert.equal(cleanGiftRound(slow).playbackScale,1.25);
  }
 });
-test('finale prediction, reading hold and fade share the slower clock across a late snapshot',()=>{
+test('finale prediction holds its result on the slower clock across a late snapshot',()=>{
  const r=prepareGiftPlay(startGiftRound({...DEFAULT_GIFTS,picks:1},'Viewer',1000)),shot=unwrapGift(r,1000,{forcedIndex:0});
  const p=giftPresentation(r,shot.finishAt),predicted=presentedGiftRound(p.round,p.time);
- assert.equal(predicted.hideAt-predicted.completedAt,5500);
- advanceGiftRound(r,shot.finishAt);assert.equal(r.hideAt-r.completedAt,6875);assert.equal(giftTotal(r),'1000');
+ assert.equal(predicted.hideAt,null);assert.equal(predicted.holdFinal,true);
+ advanceGiftRound(r,shot.finishAt);assert.equal(r.hideAt,null);assert.equal(giftTotal(r),'1000');
  const actual=giftPresentation(r,shot.finishAt).round;assert.equal(actual.hideAt,predicted.hideAt);
- for(const age of [0,180,600,3400,5500,5800,5840]){
+ for(const age of [0,180,600,3400,5500,5800,5840,60000,86400000]){
   const shown=giftPresentation(r,r.completedAt+age*1.25);
   assert.deepEqual(giftFinaleMotion(shown.round,shown.time),giftFinaleMotion(actual,actual.completedAt+age));
   assert.deepEqual(giftExitMotion(shown.round,shown.time),giftExitMotion(actual,actual.completedAt+age));
  }
  const sample=sampleGiftFinale(DEFAULT_GIFTS,200000,()=>0);prepareGiftPlay(sample);
- assert.equal(sample.completedAt,200000);assert.equal(sample.hideAt,206875);assert.equal(giftPresentation(sample,200000).round.completedAt,giftPresentation(sample,200000).time);
+ assert.equal(sample.completedAt,200000);assert.equal(sample.hideAt,null);assert.equal(giftPresentation(sample,200000).round.completedAt,giftPresentation(sample,200000).time);
  const once=structuredClone(sample);prepareGiftPlay(sample);assert.deepEqual(sample,once);
 });
 test('saved slower rounds resume without changing settings, links, totals or immediate stop/restart',async()=>{

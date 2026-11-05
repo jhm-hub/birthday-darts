@@ -90,7 +90,7 @@ export function projectedGiftRound(round,time){if(!round?.flight||time<round.fli
 export function advanceGiftRound(round,now=Date.now()){
  if(!round?.flight||now<round.flight.finishAt)return false;
  const shot=round.flight;award(round,shot);round.flight=null;
- if(round.remaining===0){round.completedAt=shot.finishAt;round.hideAt=shot.finishAt+GIFT_HOLD_MS*giftPlaybackScale(round);}return true;
+ if(round.remaining===0){round.completedAt=shot.finishAt;round.hideAt=round.holdFinal?null:shot.finishAt+GIFT_HOLD_MS*giftPlaybackScale(round);}return true;
 }
 export function cleanGiftRound(round){if(!round)return null;const copy=structuredClone(round);delete copy.prizePlan;delete copy.privateRange;delete copy.preset.gameRanges;delete copy.preset.rangeCashMax;copy.preset.outcomes=copy.preset.outcomes.map(({kind,value})=>({kind,value}));return copy;}
 export function sampleGiftFinale(widget,now=Date.now(),draw=randomInt){
