@@ -1,3 +1,4 @@
+import {linkedFirstChamber,VAULT_FIRST_CASH_LAND_MS} from './vault-first-chamber.js';
 import {vaultCollectAt,vaultBonusAt,VAULT_BONUS_DELAY_MS} from './vault-timing.js';
 import {CHAMBER_SLOTS,VAULT_ART} from './vault-layout.js';
 export {CHAMBER_SLOTS} from './vault-layout.js';
@@ -19,12 +20,12 @@ export function chamberBirths(round){
 }
 export function chamberPose(shot,time,quiet=false){
  if(!shot)return {open:0,bolt:0,turn:0,glow:0,reward:0,loot:1};
- const age=time-shot.startAt,shown=time>=shot.revealAt;
+ const age=time-shot.startAt,shown=time>=shot.revealAt,first=linkedFirstChamber(shot);
  if(quiet)return {open:Number(shown),bolt:Number(shown),turn:shown?120:0,glow:0,reward:0,loot:1};
  return {
-  open:smoother((age-330)/610),bolt:ease((age-190)/220),turn:ease((age-60)/430)*150,
+  open:first?smoother((age-300)/700):smoother((age-330)/610),bolt:first?ease((age-150)/190):ease((age-190)/220),turn:(first?smoother((age-25)/400):ease((age-60)/430))*150,
   glow:shown&&time<shot.revealAt+650?Math.sin(clamp((time-shot.revealAt)/650)*Math.PI):0,
-  reward:ease((time-shot.revealAt)/180)*(1-ease((time-shot.finishAt+360)/360)),
+  reward:ease((time-shot.revealAt)/(first?VAULT_FIRST_CASH_LAND_MS:180))*(1-ease((time-shot.finishAt+(first?300:360))/(first?300:360))),
   loot:1-.55*ease((time-shot.revealAt)/180)*(1-ease((time-shot.finishAt+350)/350))
  };
 }

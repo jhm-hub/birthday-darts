@@ -461,3 +461,15 @@ test('v1 chest snapshots keep the previous reveal sound and do not pick up the n
  const r=prepareVaultPlay(startVaultRound(DEFAULT_VAULT,'Old chest',0,()=>0));r.introStyle='chest-v1';r.readyAt=4500;const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);
  a.sync(r,1100*1.5);assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('opening-treasure-reveal',{pace:1.5}));a.sync(r,2740*1.5);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('ready',{pace:1.5}));
 });
+
+import {finishVaultAnimation} from '../src/vault-fast-forward.js';
+test('finishing an intro or chamber cuts its audio tails and does not replay skipped sounds after a reload',()=>{
+ const r=prepareVaultPlay(startVaultRound(DEFAULT_VAULT,'Fast',0,()=>0)),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(r,540);assert.equal(sources(ctx).length,1);
+ finishVaultAnimation(r,{roundId:r.id,shotId:null},600);a.sync(r,600);assert.equal(sources(ctx).length,1);assert.equal(sources(ctx)[0].stops.length,1);
+ const s=unlockVault(r,700,{forcedBonus:'multiply'});a.sync(r,700);assert.equal(sources(ctx).length,2);assert.deepEqual(sources(ctx)[1].buffer.getChannelData(0),renderVaultSound('treasure-first-unlock',{pace:1.5,index:0}));finishVaultAnimation(r,{roundId:r.id,shotId:s.id},800);a.sync(r,800);assert.equal(sources(ctx).length,2);assert.equal(sources(ctx)[1].stops.length,1);a.sync(structuredClone(r),850);assert.equal(sources(ctx).length,2);
+ const joined=context(),b=createVaultAudio({createContext:()=>joined});b.setEnabled(true);b.sync(r,850);assert.equal(sources(joined).length,0);
+ unlockVault(r,900,{forcedBonus:null});a.sync(r,900);assert.equal(sources(ctx).length,3,'next chosen chamber still sounds normally');
+});
+test('new first-cash cue follows its saved reveal clock once and retains the original stream level',()=>{
+ const r=prepareVaultPlay(startVaultRound(DEFAULT_VAULT,'First cash',0,()=>0)),s=unlockVault(r,r.readyAt,{forcedCash:1,forcedBonus:null}),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(r,s.revealAt);assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('treasure-first-cash',{tier:1,pace:1.5}));a.sync(structuredClone(r),s.revealAt+50);assert.equal(sources(ctx).length,1);
+});

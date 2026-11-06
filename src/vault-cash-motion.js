@@ -1,3 +1,4 @@
+import {linkedFirstChamber,VAULT_FIRST_CASH_LAND_MS} from './vault-first-chamber.js';
 import {ease} from './vault-motion.js';
 
 // Individual cash awards use the original $25 / $100 audio boundaries. Final
@@ -9,7 +10,9 @@ export function vaultCashPose(shot,time,quiet=false){
  const level=vaultCashLevel(shot?.cashCents),off={visible:false,level,scale:1,y:0,shine:0,sweep:0,bankScale:1,gleam:0,fontSize:[38,40,42][level]};
  if(!shot||time<shot.revealAt||time>=shot.finishAt)return off;
  if(quiet)return {...off,visible:true};
- const age=time-shot.revealAt,arrive=ease(age/VAULT_CASH_LAND_MS),peak=[1.045,1.075,1.1][level];
+ const age=time-shot.revealAt;
+ if(linkedFirstChamber(shot))return {...off,visible:true,y:6*(1-ease(age/VAULT_FIRST_CASH_LAND_MS)),shine:.22*pulse((age-VAULT_FIRST_CASH_LAND_MS)/300),sweep:ease((age-VAULT_FIRST_CASH_LAND_MS)/300),gleam:.5*pulse((age-VAULT_FIRST_CASH_LAND_MS)/280)};
+ const arrive=ease(age/VAULT_CASH_LAND_MS),peak=[1.045,1.075,1.1][level];
  const emphasis=pulse(age/260);
  return {...off,visible:true,
   scale:age<VAULT_CASH_LAND_MS?.92+(peak-.92)*arrive:1+(peak-1)*(1-ease((age-VAULT_CASH_LAND_MS)/200)),
@@ -18,8 +21,8 @@ export function vaultCashPose(shot,time,quiet=false){
 }
 export function vaultCashSpark(index,pose,shot,time,quiet=false){
  const off={visible:false,x:0,y:0,opacity:0,width:8};
- if(quiet||!pose.visible||index>=[6,10,16][pose.level])return off;
- const age=time-shot.revealAt-70-Math.floor(index/2)*6-index%2*4,t=age/[260,280,300][pose.level];
+ if(quiet||!pose.visible||index>=(linkedFirstChamber(shot)?6:[6,10,16][pose.level]))return off;
+ const age=time-shot.revealAt-(linkedFirstChamber(shot)?VAULT_FIRST_CASH_LAND_MS:70)-Math.floor(index/2)*6-index%2*4,t=age/[260,280,300][pose.level];
  if(t<=0||t>=1)return off;
  const side=index%2?-1:1,row=Math.floor(index/2)%3;
  return {visible:true,x:side*Math.round(8+row*4+t*[12,18,24][pose.level]),

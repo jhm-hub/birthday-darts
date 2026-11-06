@@ -16,6 +16,7 @@ export async function connectVaultControl(id,onSnapshot,onStatus){
   async setGameRanges(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setGameRanges(id,value);},
   async startExperience(value,viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.startExperience(id,value,viewer);},
   async reset(){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.reset(id);},
+  async finishAnimation(expected,cancelled){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.finishAnimation(id,expected,Date.now(),cancelled);},
   async setExperience(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setExperience(id,value);},
   async setViewerRange(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setViewerRange(id,value);},
   async removeViewerRange(username){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.removeViewerRange(id,username);},

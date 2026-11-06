@@ -1,3 +1,4 @@
+import {linkedFirstChamber,firstChamberReadout} from './vault-first-chamber.js';
 import {vaultOpeningTreasure,vaultOpeningCoin,polishedOpeningTreasure} from './vault-opening-treasure.js';
 import {vaultOpeningChest} from './vault-opening-art.js';
 import {vaultPresentation} from './vault-playback.js';
@@ -87,7 +88,7 @@ export function createVaultView(root,{audio,preview=true}={}){
  function render(){
   if(disposed)return;raf=requestAnimationFrame(render);
   const quiet=options.quiet??reduced.matches;
-  const actualTime=options.frozenAt??clock.now(),presentation=vaultPresentation(snapshot?.round,actualTime),time=presentation.time,r=presentedVaultRound(presentation.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=vaultBonusReadout(r,now,time),bonusPose=vaultBonusPose(r?.flight,time,quiet),cashPose=vaultCashPose(r?.flight,time,quiet),collection=vaultCollectionBank(r?.flight,time,quiet);
+  const actualTime=options.frozenAt??clock.now(),presentation=vaultPresentation(snapshot?.round,actualTime),time=presentation.time,r=presentedVaultRound(presentation.round,time),p=snapshot?.widget??{chambers:5},finished=!!r&&r.completedAt!==null,now=projectedVault(r,time),readout=firstChamberReadout(r,vaultBonusReadout(r,now,time),time),bonusPose=vaultBonusPose(r?.flight,time,quiet),cashPose=vaultCashPose(r?.flight,time,quiet),collection=vaultCollectionBank(r?.flight,time,quiet);
   const startingTreasure=vaultOpeningTreasure(r,time,quiet);
   const visible=options.show!==false&&(options.preview||!!r),exit=vaultExit(r,time,quiet),entrance=vaultIntro(r,time,quiet),welcome=vaultWelcomeFlow(r,time,quiet),opening=vaultOpeningHandoff(r,time,quiet),between=vaultChamberHandoff(r,time,quiet);
   stage.style.opacity=visible?exit.stage*(r?entrance.stage:vaultIdleOpacity(idleAt,time)):0;
@@ -235,7 +236,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   els.bank.setAttribute('aria-hidden',String(entrance.pending));
   els.bank.style.opacity=handoff.linked?1:finished?finale.amount:entrance.amount;
   els.bank.style.transform=handoff.linked?`scale(${handoff.pulse+(finished?finale.scale-1:0)})`:finished?`translateY(${finale.rise}px) scale(${finale.scale})`:`translateY(${entrance.amountY}px) scale(${entrance.amountScale})`;
-  const emphasis=Math.max(cashPose.bankScale,bonusPose.bankScale,collection.scale);
+  const emphasis=linkedFirstChamber(shot)?1:Math.max(cashPose.bankScale,bonusPose.bankScale,collection.scale);
   if(emphasis!==1)els.bank.style.transform+=` scale(${emphasis})`;
   els.bank.style.color=handoff.linked?handoff.color:'';
   els.bank.style.backgroundColor=handoff.linked?handoff.background:'';

@@ -1,3 +1,4 @@
+import {finishVaultAnimation} from './vault-fast-forward.js';
 import {prepareVaultPlay} from './vault-playback.js';
 import {vaultStore,exportVaultSettings,importVaultSettings} from './vault-store.js';
 import {DEFAULT_VAULT,validateVault,unlockVault,advanceVault,vaultTotal,vaultBonuses,vaultBonusDue,vaultCashPrizes,money,sampleVaultFinale} from './vault-game.js';
@@ -74,6 +75,7 @@ function render(){
  if(draft)view.update({widget:vaultExperiencePreset(draft,experience),round:demo},{preview:true});
  const opening=demo&&Date.now()<demo.readyAt,busy=!!demo?.flight,finished=!!demo&&demo.completedAt!==null;
  $('#demo-unlock').disabled=!!draftError||!draft||busy||finished||opening||auto;$('#preview-finale').disabled=!!draftError||!draft||presetMode;$('#demo-auto').disabled=!!draftError||!draft;$('#demo-auto').textContent=auto?'Stop autoplay':'Watch a sample round';
+ const skipButton=$('#demo-skip');if(skipButton)skipButton.disabled=!!draftError||!demo||finished||(!opening&&!busy);
  $('#demo-unlock').textContent=opening?'Opening starting treasure…':busy?'Unlocking…':finished?'Vault cleared':demo?'Unlock chamber '+(demo.opened.length+1):'Open starting treasure';
  $('#demo-status').textContent=draftError||(!demo?'Open your starting treasure, then unlock one chamber at a time.':opening?'Opening your starting treasure…':busy?'Turning the lock. Cash and possible bonus incoming…':finished?money(vaultTotal(demo))+' final total. Press Reset when you’re ready to clear it.':`${money(vaultTotal(demo))} banked · ${demo.remaining} unlock${demo.remaining===1?'':'s'} left.`+(vaultBonusDue(demo)?' A bonus is guaranteed in this chamber.':''));
  $('#demo-status').classList.toggle('error',!!draftError);
@@ -83,7 +85,8 @@ function pick(){if(!draft||draftError||demo?.flight||demo&&demo.completedAt!==nu
 $('#demo-experience').onchange=()=>resetDemo();
 $('#demo-custom').onclick=()=>{resetDemo(false);$('#demo-experience').value='custom';pick();};
 $('#demo-viewer').oninput=()=>resetDemo();
-$('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-reset').onclick=()=>resetDemo();
+$('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-skip')?.addEventListener('click',()=>{if(!demo)return;auto=false;if(finishVaultAnimation(demo,{roundId:demo.id,shotId:demo.flight?.id??null})){audio.reset();render();}});
+$('#demo-reset').onclick=()=>resetDemo();
 $('#demo-auto').onclick=()=>{if(auto){auto=false;render();return;}resetDemo(false);auto=true;pick();nextAuto=Date.now()+1550;render();showPreview();};
 $('#demo-payoff').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=sampleVaultLatePayoff(draft,Date.now(),Number($('#demo-boost').value));demoExample=true;render();showPreview();}catch(e){$('#demo-status').textContent=e.message;}};
 $('#demo-luck-run').onclick=()=>{if(draftError||!draft)return;resetDemo(false);try{if(audio.enabled)audio.unlock();demo=prepareVaultPlay(startVaultTotalRange(draft,{min:10000,max:10000},'Demo viewer'));demoExample=true;auto=true;nextAuto=demo.readyAt;render();showPreview();}catch(e){resetDemo(false);$('#demo-status').textContent=e.message;}};

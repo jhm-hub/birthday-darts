@@ -82,7 +82,7 @@ saves against a local API fixture; no production settings are changed. Optional
 `VAULT_QA_OUTPUT` chooses where screenshots and the JSON report are saved.
 `npm run test:vault-reset` checks emergency reset through the built controls
 and a separate display browser, including held totals across waits and reloads,
-audio cancellation, pending starts,
+audio cancellation, pending starts and skips, exact-prize animation finishing,
 reloads, duplicate control tabs and the game desk. It uses the same runtime
 options and requires access to the normal PeerJS signaling service.
 
@@ -495,6 +495,11 @@ are sample settings, editable alongside all cash values and odds.
   Old active rounds retain their intro; reduced motion shows exact amounts.
   New rounds run at a gentler pace: regular unlocks take 4.2 seconds, with
   animation and casino strikes synchronized at their original sound pitch.
+  The first lock continues the starting-treasure handoff: a dry key turn, bolt
+  release and latch lead into cash settling onto its plaque. One register catch
+  credits the exact cash as it lands; bonus timing and prizes are unchanged.
+  The first cash label and bankroll keep a fixed scale throughout this reveal.
+  This applies to newly started rounds; older active rounds retain their motion.
 
 ### Faith’s quick Vault setup
 
@@ -512,7 +517,11 @@ are sample settings, editable alongside all cash values and odds.
    Space also works outside inputs. The final total stays visible until you
    press **End game & reset**, including after a controls/display reload.
    Clear it when ready, then switch saved setups or start the next viewer.
-   To stop early, click **End game & reset** directly below **Open vault**.
+   **Finish animation**, directly below **Open vault**, skips the current
+   opening or chamber animation while keeping its already-chosen prize. It
+   never opens the next chamber. Use it to cut a wait while keeping the round.
+   The editor demo has the same optional button and never changes saved settings.
+   To stop early, click **End game & reset** beside **Finish animation**.
    It works during the opening, any chamber or bonus, and the celebration.
    It cancels unfinished play, stops the audio and clears the stream display;
    it does not award the unfinished total. Enter the next viewer and press

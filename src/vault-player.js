@@ -26,10 +26,11 @@ function render(){
  const experience=vaultExperienceInfo(chosen,snapshot?.control?.gameRanges);
  $('#experience-status').textContent=activeRule?'Using the saved username range for this round. The preset stays saved for other viewers.':(experience?experience.name+' · '+vaultExperienceRange(chosen,snapshot?.control?.gameRanges)+' final total, including bonuses.':'Custom settings · uses the amounts and odds in the editor.')+(r?' Locked until this round clears.':' Press a Start button for a new game.');
  $('#live-unlock').disabled=!connected||pending||busy||finished||opening;$('#live-unlock').textContent=opening?'Opening starting treasure…':busy?'Unlocking…':finished?'Vault cleared':r?'Open vault · chamber '+(r.opened.length+1):chosen==='custom'?'Open starting treasure':'Start '+(experience?.name??'game')+' again';$('#viewer').disabled=!!r||pending;
+ const skipButton=$('#live-skip');if(skipButton)skipButton.disabled=!connected||pending||finished||(!opening&&!busy);
  $('#live-reset').disabled=!connected||resetting||(!r&&!pending);$('#live-reset').textContent=resetting?'Ending game…':'End game & reset';
- $('#control-status').textContent=error||(!connected?readiness:resetting?'Ending the game and clearing the display…':opening?'Opening your starting treasure…':busy?'Opening one chamber…':finished?money(vaultTotal(r))+' final total. Stays on stream until you press End game & reset.':r?r.remaining+' unlock'+(r.remaining===1?'':'s')+' left.'+(vaultBonusDue(r)?' A bonus is guaranteed in this chamber.':''):notice|| (snapshot?.lastResult?'Ready for the next viewer. Last total: '+money(snapshot.lastResult.totalCents):'Open your starting treasure, then unlock each chamber.'));
+ $('#control-status').textContent=error||(!connected?readiness:resetting?'Ending the game and clearing the display…':opening?'Opening your starting treasure…':busy?'Opening one chamber…':finished?money(vaultTotal(r))+' final total. Stays on stream until you press End game & reset.':r?(notice?notice+' ':'')+r.remaining+' unlock'+(r.remaining===1?'':'s')+' left.'+(vaultBonusDue(r)?' A bonus is guaranteed in this chamber.':''):notice|| (snapshot?.lastResult?'Ready for the next viewer. Last total: '+money(snapshot.lastResult.totalCents):'Open your starting treasure, then unlock each chamber.'));
 }
-function receive(next){const previous=snapshot?.round;if(previous&&!next.round)audio.reset();snapshot=next;view.update(next,{preview:!overlay,show:!overlay||connected});if(overlay)audio.setVolume(next.audio?.volume);else{mixer.update(volumeTarget??next.audio?.volume);$('#control-name').textContent=next.widget.name;document.title=next.widget.name+' — Controls';if(previous&&!next.round)$('#viewer').value='';if(next.round)$('#viewer').value=next.round.viewer;}render();}
+function receive(next){const previous=snapshot?.round;if(previous&&(!next.round||previous.id===next.round.id&&previous.animationSkip!==next.round.animationSkip))audio.reset();snapshot=next;view.update(next,{preview:!overlay,show:!overlay||connected});if(overlay)audio.setVolume(next.audio?.volume);else{mixer.update(volumeTarget??next.audio?.volume);$('#control-name').textContent=next.widget.name;document.title=next.widget.name+' — Controls';if(previous&&!next.round)$('#viewer').value='';if(next.round)$('#viewer').value=next.round.viewer;}render();}
 async function changeVolume(value){volumeTarget=value;const version=++volumeVersion;$('#volume-status').textContent='';try{await session.setVolume(value);}catch(e){if(version===volumeVersion)$('#volume-status').textContent='Volume could not be saved. '+e.message;}finally{if(version===volumeVersion){volumeTarget=null;mixer.update(snapshot?.audio?.volume);}}}
 async function startGame(id){
  if(overlay||!connected||pending||snapshot?.round)return;if(gameRanges.dirty){error='Save the edited game names and ranges before starting.';render();return;}pending=true;error='';notice='';const operation=++operationVersion;render();
@@ -39,6 +40,13 @@ async function action(){
  if(!overlay&&!snapshot?.round&&gameRanges.dirty){error='Save the edited game names and ranges before starting.';render();return;}if(overlay||!connected||pending||snapshot?.round?.flight||snapshot?.round&&snapshot.round.completedAt!==null)return;
  pending=true;error='';notice='';const operation=++operationVersion;render();
  try{if(audio.enabled)audio.unlock();const next=await session.action($('#viewer').value);if(operation===operationVersion)receive(next);}catch(e){if(operation===operationVersion)error=e.message;}finally{if(operation===operationVersion){pending=false;render();}}
+}
+async function finishAnimation(){
+ const r=snapshot?.round;if(overlay||!connected||pending||!r||r.completedAt!==null||(!r.flight&&Date.now()>=r.readyAt))return;
+ const expected={roundId:r.id,shotId:r.flight?.id??null},operation=++operationVersion;pending=true;error='';notice='';render();
+ try{const next=await session.finishAnimation(expected,()=>operation!==operationVersion);if(operation===operationVersion){notice='Animation finished.';receive(next);}}
+ catch(e){if(operation===operationVersion)error=e.message;}
+ finally{if(operation===operationVersion){pending=false;render();}}
 }
 async function resetGame(){
  if(overlay||!connected||resetting||(!snapshot?.round&&!pending))return;
@@ -54,6 +62,7 @@ if(!overlay){
  $('#viewer').addEventListener('input',render);
  for(const e of VAULT_EXPERIENCES){const button=document.createElement('button');button.type='button';button.className='experience-card';button.dataset.experience=e.id;button.innerHTML='<strong>Start '+e.name+'</strong><span>'+vaultExperienceRange(e.id)+'</span>';button.setAttribute('aria-pressed','false');$('#experience-options').append(button);}
  for(const button of document.querySelectorAll('[data-experience]'))button.onclick=async()=>{if(!connected||pending||snapshot?.round)return;if(button.dataset.experience!=='custom'){void startGame(button.dataset.experience);return;}pending=true;error='';notice='';const operation=++operationVersion;render();try{const next=await session.setExperience(button.dataset.experience);if(operation===operationVersion)receive(next);}catch(e){if(operation===operationVersion)error=e.message;}finally{if(operation===operationVersion){pending=false;render();}}};
+ $('#live-skip')?.addEventListener('click',()=>void finishAnimation());
  $('#live-reset').onclick=()=>void resetGame();
  $('#vault-controls').onsubmit=e=>{e.preventDefault();void action();};$('#live-sound').onclick=()=>{audio.setEnabled(!audio.enabled);$('#live-sound').textContent=audio.enabled?'Preview sound on':'Preview sound off';$('#live-sound').setAttribute('aria-pressed',String(audio.enabled));};window.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&!e.target.closest('input,select,textarea,button,a,summary')){e.preventDefault();void action();}});}
 const pulse=setInterval(()=>{if(snapshot?.round&&Date.now()<snapshot.round.readyAt+2000)render();},100);

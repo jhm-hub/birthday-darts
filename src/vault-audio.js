@@ -1,3 +1,4 @@
+import {linkedFirstChamber} from './vault-first-chamber.js';
 import {hasOpeningTreasure,polishedOpeningTreasure,vaultOpeningGuideMs,VAULT_TREASURE_UNLOCK_MS,VAULT_TREASURE_REVEAL_MS,VAULT_TREASURE_COLLECT_MS} from './vault-opening-treasure.js';
 import {vaultPresentation,vaultPlaybackScale} from './vault-playback.js';
 import {vaultTreasureCoda} from './vault-treasure-coda.js';
@@ -22,7 +23,7 @@ import {VAULT_OPENING_REVEAL_MS} from './vault-intro-motion.js';
 import {vaultChamberLinks,VAULT_CHAMBER_GUIDE_LEAD_MS,VAULT_WING_LEAD_MS} from './vault-chamber-handoff.js';
 
 export function createVaultAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)(),createWorker=()=>typeof Worker==='undefined'?null:new Worker(new URL('./vault-audio-worker.js',import.meta.url),{type:'module'})}={}){
- let ctx,master,enabled=false,volume=70,disposed=false,roundId=null,generation=0,pace=1;
+ let ctx,master,enabled=false,volume=70,disposed=false,roundId=null,generation=0,pace=1,skippedSerial=0;
  let worker,workerStarted=false,workerFailed=false;
  const seen=new Set(),playing=new Set(),buffers=new Map(),pending=new Map();
  function stopWorker(){workerFailed=true;worker?.terminate();worker=null;for(const job of pending.values()){clearTimeout(job.timeout);job.resolve(null);}pending.clear();}
@@ -87,7 +88,7 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
   if(!ctx||ctx.state!=='running')return;
   if(play(sound,options,(time-at)*pace/1000))seen.add(id);
  }
- function reset(){generation++;seen.clear();stop();roundId=null;}
+ function reset(){generation++;seen.clear();stop();roundId=null;skippedSerial=0;}
  return {get enabled(){return enabled;},get volume(){return volume;},unlock,
   setEnabled(v){if(disposed)return;enabled=!!v;generation++;if(enabled)void unlock();else stop();},
   setVolume(v){if(disposed)return;const next=giftVolume(v);if(next===volume)return;volume=next;if(master){master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setTargetAtTime(volume/100,ctx.currentTime,.015);}},
@@ -104,27 +105,29 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    if(!r){if(roundId!==null)reset();return;}
    pace=vaultPlaybackScale(r);const presentation=vaultPresentation(r,time);time=presentation.time;r=presentedVaultRound(presentation.round,time);
    if(roundId!==r.id){reset();roundId=r.id;}
-   if(hasOpeningTreasure(r)){
+   if((r.animationSkip??0)!==skippedSerial){stop();skippedSerial=r.animationSkip??0;}
+   if(!r.openingSkipped&&hasOpeningTreasure(r)){
     cue(r.id+':treasure-lock',r.startedAt+VAULT_TREASURE_UNLOCK_MS,time,'opening-treasure-lock');
     cue(r.id+':treasure-reveal',r.startedAt+VAULT_TREASURE_REVEAL_MS,time,polishedOpeningTreasure(r)?'opening-treasure-count':'opening-treasure-reveal');
     if(r.openingCents>0)cue(r.id+':treasure-collect',r.startedAt+VAULT_TREASURE_COLLECT_MS,time,'opening-treasure-deposit');
-   }else{
+   }else if(!r.openingSkipped){
     cue(r.id+':intro',r.startedAt,time,'intro-arrive');
     cue(r.id+':balance',r.startedAt+VAULT_OPENING_REVEAL_MS,time,'intro-balance');
    }
-   cue(r.id+':ready',r.startedAt+vaultOpeningGuideMs(r),time,polishedOpeningTreasure(r)?'opening-treasure-ready':'ready');
+   if(!r.openingSkipped)cue(r.id+':ready',r.startedAt+vaultOpeningGuideMs(r),time,polishedOpeningTreasure(r)?'opening-treasure-ready':'ready');
    const shot=r.flight??r.opened.at(-1);
-   if(shot){
+   if(shot&&!shot.skippedAnimation){
     // One mechanism and one payout voice. Rich prizes keep their visual
     // flourishes without stacking another sound over the same event.
-    cue(shot.id+':lock',shot.startAt,time,shot.index===0?'first-unlock':'linked-unlock',{index:shot.index});
-    cue(shot.id+':cash',shot.revealAt,time,'cash',{tier:vaultCashLevel(shot.cashCents)});
+    cue(shot.id+':lock',shot.startAt,time,linkedFirstChamber(shot)?'treasure-first-unlock':shot.index===0?'first-unlock':'linked-unlock',{index:shot.index});
+    cue(shot.id+':cash',shot.revealAt,time,linkedFirstChamber(shot)?'treasure-first-cash':'cash',{tier:vaultCashLevel(shot.cashCents)});
     const boost=vaultFinalBoost(r);
     if(vaultBonusBuildMs(shot))cue(shot.id+':bonus-build',vaultBonusBuildAt(shot),time,vaultFinalBoostCue(boost,'build'));
     if(shot.bonus)cue(shot.id+':bonus',vaultBonusAt(shot),time,shot.bonus.kind==='multiply'?vaultFinalBoostCue(boost,'reveal'):'extra');
     cue(shot.id+':collect',vaultCollectAt(shot),time,'collect',{tier:vaultCashLevel(shot.cashCents),bonus:!!shot.bonus});
    }
    for(const link of vaultChamberLinks(r,time)){
+    if(link.from.skippedAnimation)continue;
     const special=vaultSpecialTheme(r,link.index);
     if(special){
      const depth=vaultChapter(r,link.index).level;
@@ -141,8 +144,8 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
     bufferFor(bridge.linked?'linked-final':['standard','big','royal'][tier],{tier,pace});
     if(richness)bufferFor('rich-final',{richness,pace});
    }
-   if(bridge.linked)cue(last.id+':treasure-bridge',bridge.startAt,time,bridge.payoff?'finish-boost':bridge.style===1?'finish-gold':'finish-jewel',{bridgeMs:bridge.bridgeMs});
-   else if(last)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle',{tier:vaultLevel(projectedVault(r,time))});
+   if(bridge.linked&&!last.skippedAnimation)cue(last.id+':treasure-bridge',bridge.startAt,time,bridge.payoff?'finish-boost':bridge.style===1?'finish-gold':'finish-jewel',{bridgeMs:bridge.bridgeMs});
+   else if(last&&!last.skippedAnimation)cue(last.id+':settle',last.finishAt-VAULT_SETTLE_LEAD_MS,time,'settle',{tier:vaultLevel(projectedVault(r,time))});
    if(r.completedAt!==null){
     const level=vaultLevel(r);
     const richness=vaultTreasureLevel(vaultTotal(r),'final');

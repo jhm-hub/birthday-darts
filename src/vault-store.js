@@ -1,3 +1,4 @@
+import {finishVaultAnimation} from './vault-fast-forward.js';
 import {prepareVaultPlay} from './vault-playback.js';
 import {createSharedSettings} from './shared-settings.js';
 import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
@@ -34,6 +35,13 @@ export function createVaultStore(storage,locks,sharedOptions={}){
   // Cancel, rather than settle, an unfinished round. No new result is awarded.
   // Use the same transaction as unlock/advance so queued animations cannot restore it.
   async reset(id){return lock(()=>{const s=read(),w=find(s,id);w.round=null;write(s);return controlSnapshot(id);});},
+  async finishAnimation(id,expected,now=Date.now(),cancelled=()=>false){return lock(()=>{
+   const s=read(),w=find(s,id);if(cancelled())return controlSnapshot(id,now);
+   if(finishVaultAnimation(w.round,expected,now)){
+    if(w.round.completedAt!==null)w.lastResult={viewer:w.round.viewer,totalCents:vaultTotal(w.round),chambers:w.round.opened.length,completedAt:w.round.completedAt};
+    write(s);
+   }return controlSnapshot(id,now);
+  });},
   async setGameRanges(id,input,now=Date.now()){const ranges=validateVaultGameRanges(input);return lock(()=>{const s=read();settle(s,now);const w=find(s,id);if(w.round)throw Error('Edit game ranges before starting the next viewer.');w.gameRanges=ranges;write(s);return controlSnapshot(id,now);});},
   async startExperience(id,value,viewer='',now=Date.now()){
    const experience=validateVaultExperience(value);if(experience==='custom')throw Error('Choose one of the four range games.');

@@ -1,3 +1,4 @@
+import {VAULT_FIRST_CHAMBER_STYLE} from './vault-first-chamber.js';
 import {vaultPlaybackScale} from './vault-playback.js';
 import {randomInt,randomUUID} from './random.js';
 import {chooseOutcome} from './game.js';
@@ -78,6 +79,7 @@ export function unlockVault(r,now=Date.now(),{draw=randomInt,forcedCash=null,for
  }else if(available&&(due||draw(10000)<Math.round(p.bonusChance*100))){const b=bonuses[chooseOutcome(bonuses,draw)];bonus={kind:b.kind,value:b.value};}
  const pace=vaultPlaybackScale(r);
  r.flight={id:randomUUID(),index:r.opened.length,cashCents:Math.round(prizes[index].value*100),bonus,startAt:now,revealAt:now+VAULT_REVEAL_MS*pace,finishAt:now+VAULT_UNLOCK_MS*pace};
+ if(r.opened.length===0&&r.firstChamberStyle===VAULT_FIRST_CHAMBER_STYLE)r.flight.openingStyle=VAULT_FIRST_CHAMBER_STYLE;
  // A short final-act pause belongs to the actual earned multiplier, never
  // to a private range or a future prize. All following beats share its clock.
  if(bonus?.kind==='multiply'&&r.opened.length>=Math.max(6,p.chambers)&&r.remaining<=2&&BigInt(r.multiplier)>1n){
