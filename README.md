@@ -82,7 +82,7 @@ saves against a local API fixture; no production settings are changed. Optional
 `VAULT_QA_OUTPUT` chooses where screenshots and the JSON report are saved.
 `npm run test:vault-reset` checks emergency reset through the built controls
 and a separate display browser, including held totals across waits and reloads,
-audio cancellation, pending starts and skips, exact-prize animation finishing,
+audio cancellation, pending starts and skips, saved suspense holds/resumes, exact-prize animation finishing,
 reloads, duplicate control tabs and the game desk. It uses the same runtime
 options and requires access to the normal PeerJS signaling service.
 
@@ -517,12 +517,16 @@ are sample settings, editable alongside all cash values and odds.
    Space also works outside inputs. The final total stays visible until you
    press **End game & reset**, including after a controls/display reload.
    Clear it when ready, then switch saved setups or start the next viewer.
-   **Finish animation**, directly below **Open vault**, skips the current
+   **Hold for suspense**, directly below **Open vault**, pauses the current
+   picture, total and sounds for as long as Faith wants to talk. Press
+   **Resume game** to continue from that same point. Holds survive reloading
+   the controls/display; they never redraw a prize or consume an unlock.
+   **Finish animation**, underneath those controls, skips the current
    opening or chamber animation while keeping its already-chosen prize. It
    never opens the next chamber. Use it to cut a wait while keeping the round.
    The editor demo has the same optional button and never changes saved settings.
-   To stop early, click **End game & reset** beside **Finish animation**.
-   It works during the opening, any chamber or bonus, and the celebration.
+   To stop early, click **End game & reset** beside **Hold for suspense**.
+   It works during the opening, any chamber or bonus, a suspense hold, and the celebration.
    It cancels unfinished play, stops the audio and clears the stream display;
    it does not award the unfinished total. Enter the next viewer and press
    any game’s Start button. Saved settings and the OBS source stay the same.

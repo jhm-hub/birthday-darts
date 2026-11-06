@@ -1,8 +1,9 @@
+import {vaultHeld} from './vault-hold.js';
 import {advanceVault} from './vault-game.js';
 // Finish only the animation the button was pressed for. A delayed/duplicate
 // request cannot open a new chamber, affect a new viewer, or draw another prize.
 export function finishVaultAnimation(round,expected,now=Date.now()){
- if(!round||round.id!==expected?.roundId||round.completedAt!==null)return false;
+ if(vaultHeld(round)||!round||round.id!==expected?.roundId||round.completedAt!==null)return false;
  const shot=round.flight;
  if(shot){
   if(shot.id!==expected.shotId)return false;

@@ -1,3 +1,4 @@
+import {vaultRoundTime} from './vault-hold.js';
 import {projectedVault,VAULT_HOLD_MS,DEFAULT_VAULT,startVaultRound,unlockVault,advanceVault,VAULT_INTRO_MS,VAULT_UNLOCK_MS} from './vault-game.js';
 import {clamp,ease} from './vault-motion.js';
 import {finalePose} from './vault-effects.js';
@@ -6,6 +7,7 @@ export const VAULT_SETTLE_LEAD_MS=280;
 // The display can complete the visual on its saved clock while awaiting the
 // controller's commit. It projects exactly once and never mutates round storage.
 export function presentedVaultRound(round,time){
+ time=vaultRoundTime(round,time);
  if(!round?.flight||!Number.isFinite(round.flight.finishAt)||time<round.flight.finishAt)return round;
  const projected=projectedVault(round,time);
  if(projected.remaining!==0)return round;

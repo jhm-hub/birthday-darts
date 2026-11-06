@@ -1,3 +1,4 @@
+import {setVaultHold} from './vault-hold.js';
 import {finishVaultAnimation} from './vault-fast-forward.js';
 import {prepareVaultPlay} from './vault-playback.js';
 import {createSharedSettings} from './shared-settings.js';
@@ -35,6 +36,11 @@ export function createVaultStore(storage,locks,sharedOptions={}){
   // Cancel, rather than settle, an unfinished round. No new result is awarded.
   // Use the same transaction as unlock/advance so queued animations cannot restore it.
   async reset(id){return lock(()=>{const s=read(),w=find(s,id);w.round=null;write(s);return controlSnapshot(id);});},
+  async hold(id,expected,held,now,cancelled=()=>false){return lock(()=>{
+   const s=read(),w=find(s,id);now??=Date.now();if(cancelled())return controlSnapshot(id,now);
+   const advanced=settle(s,now),changed=setVaultHold(w.round,expected,held,now);
+   if(advanced||changed)write(s);return controlSnapshot(id,now);
+  });},
   async finishAnimation(id,expected,now=Date.now(),cancelled=()=>false){return lock(()=>{
    const s=read(),w=find(s,id);if(cancelled())return controlSnapshot(id,now);
    if(finishVaultAnimation(w.round,expected,now)){

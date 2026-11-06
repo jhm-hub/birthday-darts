@@ -71,3 +71,5 @@
 
 .vault-play-station .vault-quick-actions{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr);gap:8px;flex-basis:100%;min-width:0}.vault-play-station .vault-quick-actions button{min-height:44px;padding:10px 6px;font-size:12px}
 .vault-editor-page .demo-actions{flex-wrap:wrap}
+
+.vault-play-station .vault-hold[aria-pressed="true"]{background:#633c70;color:#fff1bc;border-color:#e1b6ed}.vault-play-station .vault-skip{font-size:12px;justify-self:end;padding:4px 0;min-height:32px}

@@ -1,3 +1,4 @@
+import {vaultHeld} from './vault-hold.js';
 import {linkedFirstChamber} from './vault-first-chamber.js';
 import {hasOpeningTreasure,polishedOpeningTreasure,vaultOpeningGuideMs,VAULT_TREASURE_UNLOCK_MS,VAULT_TREASURE_REVEAL_MS,VAULT_TREASURE_COLLECT_MS} from './vault-opening-treasure.js';
 import {vaultPresentation,vaultPlaybackScale} from './vault-playback.js';
@@ -23,9 +24,9 @@ import {VAULT_OPENING_REVEAL_MS} from './vault-intro-motion.js';
 import {vaultChamberLinks,VAULT_CHAMBER_GUIDE_LEAD_MS,VAULT_WING_LEAD_MS} from './vault-chamber-handoff.js';
 
 export function createVaultAudio({createContext=()=>new (window.AudioContext||window.webkitAudioContext)(),createWorker=()=>typeof Worker==='undefined'?null:new Worker(new URL('./vault-audio-worker.js',import.meta.url),{type:'module'})}={}){
- let ctx,master,enabled=false,volume=70,disposed=false,roundId=null,generation=0,pace=1,skippedSerial=0;
+ let ctx,master,enabled=false,volume=70,disposed=false,roundId=null,generation=0,pace=1,skippedSerial=0,held=false,resumePass=false;
  let worker,workerStarted=false,workerFailed=false;
- const seen=new Set(),playing=new Set(),buffers=new Map(),pending=new Map();
+ const recovering=new Set(),seen=new Set(),playing=new Set(),buffers=new Map(),pending=new Map();
  function stopWorker(){workerFailed=true;worker?.terminate();worker=null;for(const job of pending.values()){clearTimeout(job.timeout);job.resolve(null);}pending.clear();}
  function startWorker(){
   if(workerStarted)return;workerStarted=true;
@@ -82,13 +83,14 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
  }
  function cue(id,at,time,sound,options){
   options={...options,pace};
+  if(resumePass&&Number.isFinite(at)&&time>=at)recovering.add(id);
   if(enabled&&ctx&&time>=at-1200&&time<=at+200&&!seen.has(id)&&worker)bufferFor(sound,options);
   if(!Number.isFinite(at)||time<at||seen.has(id)||disposed)return;
-  if(!enabled||(time-at)*pace>200){seen.add(id);return;}
+  if(!enabled||!recovering.has(id)&&(time-at)*pace>200){seen.add(id);recovering.delete(id);return;}
   if(!ctx||ctx.state!=='running')return;
-  if(play(sound,options,(time-at)*pace/1000))seen.add(id);
+  if(play(sound,options,(time-at)*pace/1000)){seen.add(id);recovering.delete(id);}
  }
- function reset(){generation++;seen.clear();stop();roundId=null;skippedSerial=0;}
+ function reset(){generation++;seen.clear();stop();roundId=null;skippedSerial=0;held=false;resumePass=false;recovering.clear();}
  return {get enabled(){return enabled;},get volume(){return volume;},unlock,
   setEnabled(v){if(disposed)return;enabled=!!v;generation++;if(enabled)void unlock();else stop();},
   setVolume(v){if(disposed)return;const next=giftVolume(v);if(next===volume)return;volume=next;if(master){master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setTargetAtTime(volume/100,ctx.currentTime,.015);}},
@@ -105,6 +107,9 @@ export function createVaultAudio({createContext=()=>new (window.AudioContext||wi
    if(!r){if(roundId!==null)reset();return;}
    pace=vaultPlaybackScale(r);const presentation=vaultPresentation(r,time);time=presentation.time;r=presentedVaultRound(presentation.round,time);
    if(roundId!==r.id){reset();roundId=r.id;}
+   resumePass=false;
+   if(vaultHeld(r)){if(!held){stop();held=true;}return;}
+   if(held){held=false;resumePass=true;seen.clear();}
    if((r.animationSkip??0)!==skippedSerial){stop();skippedSerial=r.animationSkip??0;}
    if(!r.openingSkipped&&hasOpeningTreasure(r)){
     cue(r.id+':treasure-lock',r.startedAt+VAULT_TREASURE_UNLOCK_MS,time,'opening-treasure-lock');

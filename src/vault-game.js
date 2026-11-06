@@ -1,3 +1,4 @@
+import {vaultHeld,vaultRoundTime} from './vault-hold.js';
 import {VAULT_FIRST_CHAMBER_STYLE} from './vault-first-chamber.js';
 import {vaultPlaybackScale} from './vault-playback.js';
 import {randomInt,randomUUID} from './random.js';
@@ -57,6 +58,7 @@ export function startVaultRound(widget,viewer='',now=Date.now(),draw=randomInt){
 }
 export function unlockVault(r,now=Date.now(),{draw=randomInt,forcedCash=null,forcedBonus=undefined}={}){
  if(!r||r.completedAt!==null||r.remaining<1)throw Error('Start a new vault round.');
+ if(vaultHeld(r))throw Error('Resume the game before opening another chamber.');
  if(r.flight||now<r.readyAt)throw Error('Wait for the vault to finish opening.');
  let plannedMultiplier;
  if(r.privateExperience||r.privateViewerRange||r.prizePlan){
@@ -93,9 +95,9 @@ function award(r,shot){
  if(shot.bonus?.kind==='extra'){r.remaining++;r.allocated++;}
  r.opened.push(structuredClone(shot));
 }
-export function projectedVault(r,now){if(!r?.flight||now<r.flight.revealAt)return r;const copy=structuredClone(r);award(copy,copy.flight);return copy;}
+export function projectedVault(r,now){now=vaultRoundTime(r,now);if(!r?.flight||now<r.flight.revealAt)return r;const copy=structuredClone(r);award(copy,copy.flight);return copy;}
 export function advanceVault(r,now=Date.now()){
- if(!r?.flight||now<r.flight.finishAt)return false;
+ if(vaultHeld(r)||!r?.flight||now<r.flight.finishAt)return false;
  const shot=r.flight;award(r,shot);r.flight=null;
  if(!r.remaining){r.completedAt=shot.finishAt;r.hideAt=r.holdFinal?null:shot.finishAt+VAULT_HOLD_MS;}return true;
 }

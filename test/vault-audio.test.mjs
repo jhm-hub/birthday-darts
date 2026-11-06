@@ -473,3 +473,17 @@ test('finishing an intro or chamber cuts its audio tails and does not replay ski
 test('new first-cash cue follows its saved reveal clock once and retains the original stream level',()=>{
  const r=prepareVaultPlay(startVaultRound(DEFAULT_VAULT,'First cash',0,()=>0)),s=unlockVault(r,r.readyAt,{forcedCash:1,forcedBonus:null}),ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(r,s.revealAt);assert.equal(sources(ctx).length,1);assert.deepEqual(sources(ctx)[0].buffer.getChannelData(0),renderVaultSound('treasure-first-cash',{tier:1,pace:1.5}));a.sync(structuredClone(r),s.revealAt+50);assert.equal(sources(ctx).length,1);
 });
+
+test('holding fades active audio and resumes its remaining offset without replaying the cue',async()=>{
+ const {setVaultHold}=await import('../src/vault-hold.js');
+ const r=prepareVaultPlay(startVaultRound(DEFAULT_VAULT,'Viewer',10000,()=>0));unlockVault(r,r.readyAt,{forcedBonus:'multiply'});
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);const start=r.flight.startAt,hold=start+600;
+ a.sync(r,start);const first=sources(ctx).at(-1),count=sources(ctx).length;
+ setVaultHold(r,{roundId:r.id,revision:0},true,hold);a.sync(r,hold);assert.equal(first.stops.at(-1),10.015);
+ a.sync(r,hold+50000);assert.equal(sources(ctx).length,count);
+ setVaultHold(r,{roundId:r.id,revision:1},false,hold+50000);a.sync(r,hold+50000);assert.equal(sources(ctx).length,count+1);assert.ok(Math.abs(sources(ctx).at(-1).started[1]-.6)<1e-9);a.sync(r,hold+50001);assert.equal(sources(ctx).length,count+1);
+});
+test('a new audio context stays silent while held and resumes at the saved sound offset',async()=>{
+ const {setVaultHold}=await import('../src/vault-hold.js');const r=prepareVaultPlay(startVaultRound(DEFAULT_VAULT,'Viewer',10000,()=>0));unlockVault(r,r.readyAt,{forcedBonus:null});const hold=r.flight.startAt+700;setVaultHold(r,{roundId:r.id,revision:0},true,hold);
+ const ctx=context(),a=createVaultAudio({createContext:()=>ctx});a.setEnabled(true);a.sync(r,hold+50000);assert.equal(sources(ctx).length,0);setVaultHold(r,{roundId:r.id,revision:1},false,hold+50000);a.sync(r,hold+50000);assert.equal(sources(ctx).length,1);assert.ok(Math.abs(sources(ctx)[0].started[1]-.7)<1e-9);
+});

@@ -1,11 +1,12 @@
+import {vaultHeld} from '../src/vault-hold.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 const source=(await readFile(new URL('../src/vault-session.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replaceAll('export ','');
 function fixture(){
  let local=1000,wire,timer,disposed=false;const states=[],connections=[];
- const connect=new Function('connectRoom','validKey','location','setInterval','clearInterval','performance','Date',source+'\nreturn connectVaultDisplay;')(
-  options=>{wire=options;return {dispose(){disposed=true;}}},()=>true,{hash:'#room=test'},fn=>{timer=fn;return 1;},()=>{timer=null;},{now:()=>local},{now:()=>local});
+ const connect=new Function('vaultHeld','connectRoom','validKey','location','setInterval','clearInterval','performance','Date',source+'\nreturn connectVaultDisplay;')(
+  vaultHeld,options=>{wire=options;return {dispose(){disposed=true;}}},()=>true,{hash:'#room=test'},fn=>{timer=fn;return 1;},()=>{timer=null;},{now:()=>local},{now:()=>local});
  const session=connect(s=>states.push(s),v=>connections.push(v));session.start();
  return {session,states,connections,get wire(){return wire;},get time(){return local;},set time(t){local=t;},tick(){timer?.();},get disposed(){return disposed;}};
 }
@@ -38,4 +39,9 @@ test('a finished held total survives a control outage until an explicit clear sn
  const f=fixture();f.wire.message(packet(10000,{id:'held',holdFinal:true,completedAt:9000,hideAt:null}));f.time=86400000;f.tick();f.wire.status('offline');assert.deepEqual(f.connections,[true]);assert.equal(f.states.at(-1).round.id,'held');
  f.wire.message(packet(10001,null));assert.equal(f.states.at(-1).round,null);f.time+=6001;f.tick();assert.equal(f.connections.at(-1),false);
  f.wire.message(packet(10002,{id:'next',holdFinal:true,completedAt:null}));assert.equal(f.connections.at(-1),true);f.time+=6001;f.tick();assert.equal(f.connections.at(-1),false);
+});
+
+test('a suspense hold remains visible through an outage; resume restores ordinary freshness checks',()=>{
+ const f=fixture();f.wire.message(packet(10000,{id:'held',holdAt:9900,completedAt:null}));f.time=86400000;f.tick();f.wire.status('offline');assert.deepEqual(f.connections,[true]);
+ f.wire.message(packet(10001,{id:'held',holdAt:null,completedAt:null}));f.time+=6001;f.tick();assert.equal(f.connections.at(-1),false);
 });

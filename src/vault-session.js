@@ -1,3 +1,4 @@
+import {vaultHeld} from './vault-hold.js';
 import {vaultStore} from './vault-store.js';
 import {connectRoom} from './room.js';
 import {validKey} from './protocol.js';
@@ -16,6 +17,7 @@ export async function connectVaultControl(id,onSnapshot,onStatus){
   async setGameRanges(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setGameRanges(id,value);},
   async startExperience(value,viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.startExperience(id,value,viewer);},
   async reset(){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.reset(id);},
+  async hold(expected,held,cancelled){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.hold(id,expected,held,undefined,cancelled);},
   async finishAnimation(expected,cancelled){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.finishAnimation(id,expected,Date.now(),cancelled);},
   async setExperience(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setExperience(id,value);},
   async setViewerRange(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setViewerRange(id,value);},
@@ -25,18 +27,18 @@ export async function connectVaultControl(id,onSnapshot,onStatus){
 }
 export function connectVaultDisplay(onSnapshot,onConnection){
  const key=new URLSearchParams(location.hash.slice(1)).get('room');if(!validKey(key))throw Error('Use the private display link from Birthday Vault’s controls.');
- let last=null,lastServer=-Infinity,visible=null,holdingFinal=false,link,timer,disposed=false;
+ let last=null,lastServer=-Infinity,visible=null,holdingStill=false,link,timer,disposed=false;
  // Signaling can reconnect while the established data channel still works.
  // Judge display health by actual snapshots; never blink on a transport event.
- // A completed held result remains readable through a control-tab outage.
+ // A completed result or suspense hold stays visible through a control-tab outage.
  // The next reset/new-viewer snapshot replaces it through the same source.
  function health(){
   if(disposed)return;
-  const fresh=holdingFinal||last!==null&&performance.now()-last<=6000;
+  const fresh=holdingStill||last!==null&&performance.now()-last<=6000;
   if(fresh!==visible){visible=fresh;onConnection(fresh);}
  }
  return {start(){link=connectRoom({role:'viewer',key,status:health,message(raw){
   if(disposed||raw?.type!=='vault-state'||raw.snapshot?.kind!=='faith-vault'||!Number.isFinite(raw.snapshot.serverNow)||raw.snapshot.serverNow<lastServer)return;
-  lastServer=raw.snapshot.serverNow;last=performance.now();holdingFinal=raw.snapshot.round?.holdFinal===true&&Number.isFinite(raw.snapshot.round.completedAt);health();onSnapshot(raw.snapshot);
+  lastServer=raw.snapshot.serverNow;last=performance.now();holdingStill=vaultHeld(raw.snapshot.round)||raw.snapshot.round?.holdFinal===true&&Number.isFinite(raw.snapshot.round.completedAt);health();onSnapshot(raw.snapshot);
  }});timer=setInterval(health,1000);},dispose(){disposed=true;clearInterval(timer);link?.dispose();}};
 }
