@@ -1202,3 +1202,32 @@ and **Next viewer reset**, with **Exit starts**, **Total fades**, **Cleared** an
 **Next ready** checkpoints. Choose a scene and **Replay**, or use
 `pinata-art-preview.html?scene=reset` for the short ending/reset study.
 Review/backups: `Stream-Games/Pinata/Review/royal-exit-v10-2026-10-30/`.
+
+
+### Vault story concepts — November 7, 2026
+
+[Open the four-way comparison](https://jhm-hub.github.io/birthday-darts/vault-concepts.html).
+This is a separate preview page. The live Vault, settings and permanent OBS source
+remain unchanged. **Current · saved** shows the original alongside the concepts.
+
+- **A · Chamber route:** a compact trail marks opened/current rooms. Each revealed
+  +1 bonus visibly extends the trail with a pink bonus room.
+- **B · Assembling crown:** each earned bonus sends a jewel into the crown. The
+  assembled crown takes the place of the decorative finale crest.
+- **C · Lucky crest:** Crown, Ruby and Key personalize a rim medallion, prize
+  flourishes and final crest. This is purely cosmetic.
+
+Play, pause, scrub or use the signature-moment buttons. **Compare all four** keeps
+all views on one timeline; Crest, backdrop, sound, volume and reduced-motion
+controls are local to this preview. One audio instance accompanies all four views.
+Every concept uses the same scripted eight-chamber $8,400 sample through the real
+Vault engine. It never connects to a live display, reads/writes saved games, or
+changes the existing round rules. New sprites are code-authored pixel SVGs using
+the Crown Vault palette; no approved raster assets were replaced.
+
+The complete pre-concept source is preserved at tag
+[`vault-before-concepts-2026-11-07`](https://github.com/jhm-hub/birthday-darts/tree/vault-before-concepts-2026-11-07),
+commit `c130d7f04f9acfb393f49c75f829e1735ec3f3d1`. The external
+`Vault-Concepts-QA-2026-11-07` folder also holds an asset archive and SHA256 manifest.
+Restore only the relevant Vault files if needed; do not rewind unrelated game
+changes. No rollback is needed to keep using the current game.
