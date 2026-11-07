@@ -1,0 +1,22 @@
+/* The experiment is scoped to its own page and never ships in the live player. */
+.story-scene{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0}
+.story-scene>svg{display:block;width:420px;height:460px;overflow:hidden}
+.story-scene image,.story-scene svg{image-rendering:pixelated}
+.vault-screen[data-scene-concept]:not([data-scene-concept=current]) .vault-machine,
+.vault-screen[data-scene-concept]:not([data-scene-concept=current]) .vault-reveal,
+.vault-screen[data-scene-concept]:not([data-scene-concept=current]) .vault-special-arrival,
+.vault-screen[data-scene-concept]:not([data-scene-concept=current]) .vault-loot-trail,
+.vault-screen[data-scene-concept]:not([data-scene-concept=current]) .vault-story-flight,
+.vault-screen[data-scene-concept]:not([data-scene-concept=current]) .vault-collection{visibility:hidden}
+.story-chapter{position:absolute;left:111px;top:129px;width:198px;text-align:center;font-size:10px;line-height:15px;font-weight:600;letter-spacing:.6px;color:#fff0bd;-webkit-text-stroke:2.5px #302035;paint-order:stroke fill}
+.story-cash{position:absolute;top:278px;left:50%;transform:translateX(-50%);width:max-content;max-width:190px;font-size:30px;line-height:36px;padding:0 8px 2px;font-weight:600;color:#ffd2e8;background:#31213ee8;-webkit-text-stroke:3px #301c38;paint-order:stroke fill;box-shadow:inset 0 2px #ffe2ab,inset 0 -2px #ae6a8d;clip-path:polygon(5px 0,calc(100% - 5px) 0,calc(100% - 5px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 5px) calc(100% - 3px),calc(100% - 5px) 100%,5px 100%,5px calc(100% - 3px),0 calc(100% - 3px),0 3px,5px 3px)}
+.story-cash[data-small=true]{font-size:21px;line-height:26px;top:285px}
+.story-bonus{position:absolute;left:70px;right:70px;top:320px;text-align:center;font-size:17px;font-weight:600;line-height:22px;color:#e7c7ff;-webkit-text-stroke:3px #302035;paint-order:stroke fill}
+.story-bonus[data-kind=extra]{color:#c5ffe4}
+.story-waiting-label{position:absolute;left:313px;top:290px;width:58px;text-align:center;font-size:9px;font-weight:600;line-height:12px;color:#c6ffe5;-webkit-text-stroke:2.5px #302035;paint-order:stroke fill}
+.story-coins{position:absolute;inset:0}.story-coins i{position:absolute;left:0;top:0;display:block;width:14px;height:10px;opacity:0}.story-coins svg{width:100%;height:100%;display:block}
+.scene-studio .studio-header>div{display:flex;gap:20px}.scene-studio .intro>p:not(.eyebrow){max-width:565px}
+.scene-studio .concept-tabs{margin-top:4px}.scene-studio .concept-tab>span{width:28px;height:34px}.scene-studio .concept-tab strong{font-size:15px}
+.scene-studio .concept-tab .tab-letter{width:32px;height:32px;display:grid;place-items:center;background:#40263f;border:1px solid #bd849b;border-radius:8px;font-size:18px;color:#ffe9b6}
+.scene-studio .preview-bottom{justify-content:space-between}.scene-studio .concept-tab small{letter-spacing:.7px}
+@media(max-width:650px){.scene-studio .studio-header>div{flex-direction:column;gap:8px;align-items:end}.scene-studio .concept-tab strong{font-size:13px}}

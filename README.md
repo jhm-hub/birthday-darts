@@ -1231,3 +1231,30 @@ commit `c130d7f04f9acfb393f49c75f829e1735ec3f3d1`. The external
 `Vault-Concepts-QA-2026-11-07` folder also holds an asset archive and SHA256 manifest.
 Restore only the relevant Vault files if needed; do not rewind unrelated game
 changes. No rollback is needed to keep using the current game.
+
+### Vault interior concepts — November 7, 2026
+
+[Open the second concept studio](https://jhm-hub.github.io/birthday-darts/vault-scenes.html).
+The first studio above remains available. This second set explores changes inside
+the approved crown frame, using the same eight-chamber $8,400 sample and unchanged
+live renderer for **Current · saved**.
+
+- **A · Treasure rooms:** eight room palettes, opening chests/gifts/jewel coffers
+  and coins flowing from the treasure into the bankroll.
+- **B · Secret doors:** an earned bonus key reveals a hidden passage. Waiting
+  passages remain visible until their bonus chambers are entered.
+- **C · Multiplier machine:** a gold mechanism pulls its handle and spins its
+  reels before applying ×2 or the final ×6 to the whole bankroll. The existing
+  calculation below the total explains the exact result.
+
+Use Play, the signature-moment buttons or **Compare all four**. Sound is off by
+default; one shared casino-audio instance accompanies the sample. Light, dark and
+checkerboard backdrops are preview-only; the game scene remains transparent.
+Reduced motion and mobile layouts are supported. URL options are
+`?idea=treasure`, `?idea=secret`, `?idea=machine`, `?idea=current`, and `?compare=1`.
+
+These prototypes have no live pairing or saved-settings access. The complete
+current game and first concept studio are preserved at tag
+[`vault-before-scenes-2026-11-07`](https://github.com/jhm-hub/birthday-darts/tree/vault-before-scenes-2026-11-07).
+The external `Vault-Scenes-QA-2026-11-07` folder contains the before-change asset
+manifest, browser screenshots, full-round playback checks and test evidence.
