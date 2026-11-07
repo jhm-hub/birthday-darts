@@ -1258,3 +1258,35 @@ current game and first concept studio are preserved at tag
 [`vault-before-scenes-2026-11-07`](https://github.com/jhm-hub/birthday-darts/tree/vault-before-scenes-2026-11-07).
 The external `Vault-Scenes-QA-2026-11-07` folder contains the before-change asset
 manifest, browser screenshots, full-round playback checks and test evidence.
+
+### Royal token finale prototype — November 7, 2026
+
+[Try the token finale](https://jhm-hub.github.io/birthday-darts/vault-tokens.html).
+This is an isolated prototype, with no saved-settings or live OBS connection.
+The original Vault and both previous studios remain unchanged.
+
+The sample vault earns cash, one extra chamber and two machine tokens. Tokens
+replace instant multiplier bonuses in this sample. After the vault, Faith presses
+once per token: each spin independently draws an integer multiplier from ×2–×8
+with equal odds. The highest result multiplies the accumulated cash exactly once;
+lower results cannot reduce it. Remaining tokens stay available even after ×8.
+The total stays until New demo. Pause, immediate reset and Finish with best are
+available in the private controls. No token is spent automatically.
+
+The page starts with $500 and two tokens for a quick audition. **Watch tokens
+being earned** plays the six-chamber lead-in and waits at the machine. Clearly
+labeled scripted examples show rising wins, a protected best and an early ×8;
+Random spins uses the browser's unbiased crypto RNG. The four live game ranges
+are not part of this preview. Integrating this rule later requires a payout-plan
+update so the spin results and saved range guarantees agree.
+
+New raster cabinet art is in `public/assets/vault-tokens/royal-machine-v1.png`.
+Its exact built-in image_gen prompt is saved in `ART-NOTES.txt` beside it. Runtime
+layers animate the reel, insertion and restrained celebration; the sound uses
+the existing casino palette with physical reel ticks and one payoff phrase.
+Volume, reduced motion and light/dark/checker preview backgrounds are included.
+
+Preservation tag: `vault-before-tokens-2026-11-07`, commit `b36e21b`.
+External archive, published-asset manifest and QA evidence:
+`Vault-Tokens-QA-2026-11-07`. No rollback or new OBS source is needed to keep using
+the existing live game.
