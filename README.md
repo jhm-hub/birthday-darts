@@ -1290,3 +1290,16 @@ Preservation tag: `vault-before-tokens-2026-11-07`, commit `b36e21b`.
 External archive, published-asset manifest and QA evidence:
 `Vault-Tokens-QA-2026-11-07`. No rollback or new OBS source is needed to keep using
 the existing live game.
+
+**Vault → machine handoff polish:** **Preview last vault → machine** jumps to
+just the final chamber. The cash plaque keeps identical geometry and stays
+visible while the old chamber fades, the cabinet arrives, and two earned tokens
+arc into its tray. A short cabinet ratchet, two credit contacts and a single
+ready chord share the animation clock. The 2.5-second handoff does not consume
+any tokens; Faith still starts each spin. Pause, resume, mute, reduced motion
+and immediate reset apply throughout the transition.
+
+The previously approved token prototype is preserved at
+[`vault-tokens-before-handoff-2026-11-07`](https://github.com/jhm-hub/birthday-darts/tree/vault-tokens-before-handoff-2026-11-07)
+(commit `9138663`). Its ZIP, before/after file checks, browser traces and polish
+review captures are in external `Vault-Token-Handoff-QA-2026-11-07`.
