@@ -1259,47 +1259,50 @@ current game and first concept studio are preserved at tag
 The external `Vault-Scenes-QA-2026-11-07` folder contains the before-change asset
 manifest, browser screenshots, full-round playback checks and test evidence.
 
-### Royal token finale prototype — November 7, 2026
+### Royal token finale — stacked spin prototype, November 7, 2026
 
-[Try the token finale](https://jhm-hub.github.io/birthday-darts/vault-tokens.html).
-This is an isolated prototype, with no saved-settings or live OBS connection.
-The original Vault and both previous studios remain unchanged.
+[Try the stacking prototype](https://jhm-hub.github.io/birthday-darts/vault-tokens.html).
+[Play the saved original token version](https://jhm-hub.github.io/birthday-darts/vault-tokens-original.html).
+Both are isolated previews. The live Vault, game ranges, saved settings and OBS
+sources remain unchanged.
 
-The sample vault earns cash, one extra chamber and two machine tokens. Tokens
-replace instant multiplier bonuses in this sample. After the vault, Faith presses
-once per token: each spin independently draws an integer multiplier from ×2–×8
-with equal odds. The highest result multiplies the accumulated cash exactly once;
-lower results cannot reduce it. Remaining tokens stay available even after ×8.
-The total stays until New demo. Pause, immediate reset and Finish with best are
-available in the private controls. No token is spent automatically.
+The sample earns $500, one extra chamber and two machine tokens. Faith presses
+once per token. Each spin independently draws an integer multiplier from ×2–×8
+with equal odds. **Every multiplier stacks:** ×8 followed by ×2 becomes ×16,
+so $500 pays $8,000; ×8 followed by ×8 becomes ×64 and pays $32,000. A maximum
+single spin never stops later tokens. No token is spent automatically.
 
-The page starts with $500 and two tokens for a quick audition. **Watch tokens
-being earned** plays the six-chamber lead-in and waits at the machine. Clearly
-labeled scripted examples show rising wins, a protected best and an early ×8;
-Random spins uses the browser's unbiased crypto RNG. The four live game ranges
-are not part of this preview. Integrating this rule later requires a payout-plan
-update so the spin results and saved range guarantees agree.
+Cash stays visible as **Vault cash** while the accumulated multiplier grows.
+After the last spin, a short build-up leads to the exact final total, with a
+casino jackpot phrase, crown rays and pixel confetti. The amount stays until
+New demo. **Reveal earned total** ends early using only multipliers already won.
+Pause, resume, mute, volume and immediate reset work during spins and the finale.
+Reduced motion retains the same result timing without moving tokens or confetti.
 
-New raster cabinet art is in `public/assets/vault-tokens/royal-machine-v1.png`.
-Its exact built-in image_gen prompt is saved in `ART-NOTES.txt` beside it. Runtime
-layers animate the reel, insertion and restrained celebration; the sound uses
-the existing casino palette with physical reel ticks and one payoff phrase.
-Volume, reduced motion and light/dark/checker preview backgrounds are included.
+The insertion starts at the spent tray token, lifts into a curved approach,
+tips into the slot and seats before the reel begins. Reel ticks share the
+continuous acceleration/braking curve with the art. The stop, multiplier
+landing, stack collection and jackpot have separate, timed audio cues. Each
+multiplier flies into the visible stacked boost before the next spin is ready.
+The stage remains 420 × 460 with no opaque background or camera shake.
 
-Preservation tag: `vault-before-tokens-2026-11-07`, commit `b36e21b`.
-External archive, published-asset manifest and QA evidence:
-`Vault-Tokens-QA-2026-11-07`. No rollback or new OBS source is needed to keep using
-the existing live game.
+**Preview last vault → machine** jumps to the polished final chamber handoff;
+**Watch tokens being earned** plays the full six-chamber lead-in. Scripted
+examples are labeled. Random spins uses the browser's unbiased crypto RNG.
+Integrating this stacking prototype with live range guarantees requires a
+separate payout-plan update; it does not alter live game results.
 
-**Vault → machine handoff polish:** **Preview last vault → machine** jumps to
-just the final chamber. The cash plaque keeps identical geometry and stays
-visible while the old chamber fades, the cabinet arrives, and two earned tokens
-arc into its tray. A short cabinet ratchet, two credit contacts and a single
-ready chord share the animation clock. The 2.5-second handoff does not consume
-any tokens; Faith still starts each spin. Pause, resume, mute, reduced motion
-and immediate reset apply throughout the transition.
+The approved cabinet PNG is unchanged in
+`public/assets/vault-tokens/royal-machine-v1.png`; its original generation prompt
+is recorded in `ART-NOTES.txt`. All new motion is a browser overlay on that art.
 
-The previously approved token prototype is preserved at
-[`vault-tokens-before-handoff-2026-11-07`](https://github.com/jhm-hub/birthday-darts/tree/vault-tokens-before-handoff-2026-11-07)
-(commit `9138663`). Its ZIP, before/after file checks, browser traces and polish
-review captures are in external `Vault-Token-Handoff-QA-2026-11-07`.
+Preserved sources:
+- `vault-before-tokens-2026-11-07` — pre-token concept studio, commit `b36e21b`.
+- `vault-tokens-before-handoff-2026-11-07` — first token prototype, commit `9138663`.
+- `vault-tokens-before-stacking-2026-11-07` — polished handoff with the original
+  best-result rule, commit `d5fec6d`. The playable saved original uses the exact
+  frozen bundle and stylesheet from that commit.
+
+External source archives, output manifests, browser traces, sound renders and
+review screenshots are in `Vault-Tokens-QA-2026-11-07`,
+`Vault-Token-Handoff-QA-2026-11-07` and `Vault-Token-Stack-QA-2026-11-07`.

@@ -1,6 +1,6 @@
 import {createVaultView} from './vault-view.js';
 import {createVaultAudio} from './vault-audio.js';
-import {createTokenFinale,beginTokenSpin,advanceTokenSpin,finishTokensEarly,tokenTotal,createTokenVaultSample,tokenVaultFrame,TOKEN_SCENARIOS,ease,clamp} from './vault-tokens-model.js';
+import {createTokenFinale,beginTokenSpin,advanceTokenSpin,finishTokensEarly,tokenTotal,createTokenVaultSample,tokenVaultFrame,TOKEN_SCENARIOS,TOKEN_FINALE,ease,clamp} from './vault-tokens-model.js';
 import {createTokenFinaleView,tokenGlyph} from './vault-tokens-view.js';
 import {createTokenAudio} from './vault-tokens-audio.js';
 import {TOKEN_HANDOFF,tokenHandoffPose} from './vault-token-handoff.js';
@@ -39,26 +39,27 @@ function paint(){
   updateStatus(paused?'Paused · resume the vault-to-machine sequence.':handoff?'Cash secured. Your two earned tokens are moving to the machine. Each spin still waits for Faith.':'Watching the sample vault · '+frame.earned+' token'+(frame.earned===1?'':'s')+' earned. The machine waits for Faith at the end.');
  }else{
   vault.hide();const p=machine.update(state,clock,{quiet});
-  $('#spin').disabled=!p.ready;$('#spin').textContent=p.finished?'Total banked':state.flight?'Spinning…':'Spend token · spin ('+state.remaining+' left)';$('#pause').disabled=!state.flight;$('#bank').disabled=!!state.flight||!state.results.length||state.finishedAt!==null;
-  const text=state.flight&&!p.landed?'Token inserted. The best multiplier stays protected.':p.finished?'Final total '+money(tokenTotal(state))+' · your best ×'+state.best+' is banked.':state.results.length?state.results.at(-1).value<state.best?'That spin landed ×'+state.results.at(-1).value+'. Your best ×'+state.best+' stays locked.':state.best===8?'Maximum ×8 locked. You can still use every remaining token.':'Best ×'+state.best+' locked. '+state.remaining+' spin'+(state.remaining===1?'':'s')+' remaining.':'Two tokens ready. Press once to use each one.';
-  updateStatus(paused?'Paused · resume to continue this spin.':text);
+  $('#spin').disabled=!p.ready;$('#spin').textContent=p.ending?(p.revealed?'Total revealed':'Grand reveal…'):state.flight?'Spinning…':'Spend token · spin ('+state.remaining+' left)';$('#pause').disabled=!p.animating;$('#bank').disabled=!!state.flight||!state.results.length||state.finishedAt!==null;
+  const text=p.ending?(p.revealed?'Grand total '+money(tokenTotal(state))+' · every multiplier stacked to ×'+state.multiplier+'.':'×'+state.multiplier+' stacked. Building the grand reveal…'):state.flight?'Spin '+state.flight.serial+' of '+state.earned+' · every result multiplies your stack.':state.results.length?'×'+state.multiplier+' stacked. '+state.remaining+' token'+(state.remaining===1?'':'s')+' left; the next result multiplies this again.':'Two tokens ready. Press once to use each one.';
+  updateStatus(paused?'Paused · resume to continue the sequence.':text);
  }
- $('#pause').textContent=paused?'Resume':'Pause';$('#scenario').disabled=busy||!!state.flight;$('#journey').disabled=busy||!!state.flight;$('#handoff').disabled=busy||!!state.flight;
- const history=state.results.map((r,i)=>'<span>Spin '+(i+1)+' <strong>×'+r.value+'</strong>'+(r.value<r.best?' · best kept':'')+'</span>').join('');if($('#history').innerHTML!==history)$('#history').innerHTML=history;
+ const animating=!!state.flight||state.finishedAt!==null&&clock-state.finishedAt<TOKEN_FINALE.settle;
+ $('#pause').textContent=paused?'Resume':'Pause';$('#scenario').disabled=busy||animating;$('#journey').disabled=busy||animating;$('#handoff').disabled=busy||animating;
+ const history=state.results.map((r,i)=>'<span>Spin '+(i+1)+' <strong>×'+r.value+'</strong>'+' · stack ×'+r.multiplier+'</span>').join('');if($('#history').innerHTML!==history)$('#history').innerHTML=history;
  $('#preview-mode').textContent=$('#scenario').value==='random'?'RANDOM DEMO · ×2–×8':'SCRIPTED EXAMPLE';
- $('#mode-note').textContent=$('#scenario').value==='random'?'On each spin, ×2 through ×8 have equal odds. Extra tokens give you more chances to improve your best.':'Scripted results for reviewing the animation. Each spin still waits for Faith’s button press.';
+ $('#mode-note').textContent=$('#scenario').value==='random'?'On each spin, ×2 through ×8 have equal odds. Every result multiplies the accumulated boost. The full cash total reveals after the last spin.':'Scripted results for reviewing the animation. Each spin still waits for Faith’s button press.';
 }
 function updateStatus(text){if(text!==lastStatus){lastStatus=text;$('#status').textContent=text;}}
 function startJourney(from=0){newDemo();mode='vault';elapsed=from;lastEarned=tokenVaultFrame(sample,from).earned;state=createTokenFinale({tokens:0});paint();}
-function resumeAudio(){if(!sound||paused)return;if(mode==='handoff')tokenAudio.handoff(clock-handoffAt);else if(state.flight)tokenAudio.spin(state.flight,state.remaining===0,clock-state.flight.startAt);}
+function resumeAudio(){if(!sound||paused)return;if(mode==='handoff')tokenAudio.handoff(clock-handoffAt);else if(state.flight)tokenAudio.spin(state.flight,clock-state.flight.startAt);else if(state.finishedAt!==null&&clock-state.finishedAt<TOKEN_FINALE.settle)tokenAudio.finale(state.multiplier,clock-state.finishedAt);}
 $('#spin').onclick=()=>{
  if(mode!=='machine'||state.flight||state.finishedAt!==null)return;
- const sequence=TOKEN_SCENARIOS[$('#scenario').value],f=beginTokenSpin(state,clock,{forced:sequence?.[state.results.length]??null});paused=false;last=performance.now();tokenAudio.spin(f,state.remaining===0);paint();
+ const sequence=TOKEN_SCENARIOS[$('#scenario').value],f=beginTokenSpin(state,clock,{forced:sequence?.[state.results.length]??null});paused=false;last=performance.now();tokenAudio.spin(f);paint();
 };
 $('#reset').onclick=newDemo;$('#scenario').onchange=newDemo;
 $('#journey').onclick=()=>startJourney();
 $('#handoff').onclick=()=>startJourney(sample.shots.at(-1).startAt-sample.origin);
-$('#bank').onclick=()=>{if(finishTokensEarly(state,clock))paint();};
+$('#bank').onclick=()=>{if(finishTokensEarly(state,clock)){paused=false;last=performance.now();tokenAudio.finale(state.multiplier);paint();}};
 $('#pause').onclick=()=>{paused=!paused;last=performance.now();if(paused)stopAudio();else resumeAudio();paint();};
 $('#sound').onclick=()=>{sound=!sound;vaultAudio.setEnabled(sound);tokenAudio.setEnabled(sound);$('#sound').textContent=sound?'Sound on':'Sound off';$('#sound').setAttribute('aria-pressed',String(sound));resumeAudio();paint();};
 $('#volume').oninput=()=>{vaultAudio.setVolume(Number($('#volume').value));tokenAudio.setVolume(Number($('#volume').value));};$('#quiet').onchange=paint;$('#backdrop').onchange=()=>$('#previews').dataset.background=$('#backdrop').value;
@@ -66,9 +67,9 @@ function tick(now){if(disposed)return;const dt=Math.min(100,Math.max(0,now-last)
  if(!paused){clock+=dt;if(mode==='vault'){
   elapsed=Math.min(sample.duration,elapsed+dt);
   if(elapsed>=sample.duration){vaultAudio.reset();state=createTokenFinale({cashCents:sample.cashCents,tokens:sample.tokens.length,now:clock});mode='handoff';handoffAt=clock;tokenAudio.handoff();}
- }else if(mode==='handoff'){if(clock-handoffAt>=TOKEN_HANDOFF.duration)mode='machine';}else advanceTokenSpin(state,clock);}
+ }else if(mode==='handoff'){if(clock-handoffAt>=TOKEN_HANDOFF.duration)mode='machine';}else{const before=state.finishedAt;advanceTokenSpin(state,clock);if(before===null&&state.finishedAt!==null)tokenAudio.finale(state.multiplier,clock-state.finishedAt);}}
  paint();raf=requestAnimationFrame(tick);
 }
 paint();raf=requestAnimationFrame(tick);
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&(mode!=='machine'||state.flight)){paused=true;stopAudio();paint();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&(mode!=='machine'||state.flight||state.finishedAt!==null&&clock-state.finishedAt<TOKEN_FINALE.settle)){paused=true;stopAudio();paint();}});
 window.addEventListener('pagehide',()=>{disposed=true;cancelAnimationFrame(raf);machine.dispose();vault.dispose();tokenAudio.dispose();vaultAudio.dispose();},{once:true});

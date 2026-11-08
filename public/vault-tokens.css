@@ -15,7 +15,7 @@
    scoped rules never reach the live Vault or its OBS display. */
 .token-preview-sizer .token-ledger{top:367px;bottom:auto!important;left:15px;right:15px;transform:none!important;transition:none!important;z-index:5;text-align:center}
 .token-preview-sizer .token-ledger small{font-size:11px;line-height:17px;letter-spacing:1.2px;font-weight:600;color:#fff2cc;-webkit-text-stroke:2.7px #362139;paint-order:stroke fill}
-.token-preview-sizer .token-ledger strong{display:inline-block;width:auto!important;min-width:180px;max-width:370px;font-size:47px!important;line-height:54px;padding:0 9px 3px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:#c4ffe4!important;background:#2c183ce8!important;box-shadow:inset 0 2px #f7d5b0,inset 0 -2px #98637e!important;-webkit-text-stroke:3px #362139;paint-order:stroke fill;text-shadow:none;transform:none!important;clip-path:polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),0 calc(100% - 3px),0 3px,6px 3px)}
+.token-preview-sizer .token-ledger strong{display:inline-block;width:auto!important;min-width:180px;max-width:370px;font-size:var(--token-font-size,47px)!important;line-height:54px;padding:0 9px 3px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:#c4ffe4!important;background:#2c183ce8!important;box-shadow:inset 0 2px #f7d5b0,inset 0 -2px #98637e!important;-webkit-text-stroke:3px #362139;paint-order:stroke fill;text-shadow:none;transform:none!important;clip-path:polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),0 calc(100% - 3px),0 3px,6px 3px)}
 .token-preview-sizer .token-ledger>span{display:block;margin-top:0!important;font-size:12px!important;line-height:18px;font-weight:500;letter-spacing:0;color:#fff2d8;-webkit-text-stroke:2.5px #362139;paint-order:stroke fill}
 .token-preview-sizer .token-stage[data-phase=finished] .token-ledger strong{color:#ffe5aa!important}
 #vault-preview .vault-heading{line-height:23px}
@@ -26,3 +26,14 @@
 .token-transfer svg{position:absolute;left:0;top:0;width:21px;height:23px;opacity:0;image-rendering:pixelated}
 .token-tray-catches i{position:absolute;top:102px;left:34px;font-size:16px;font-style:normal;color:#ffe8b5;opacity:0;text-shadow:0 1px #593449}
 .token-tray-catches i:nth-child(2){left:59px}
+/* Physical credit insertion and stacked-multiplier finale; every effect is
+   confined to the existing transparent canvas and leaves the amount clear. */
+.token-insertion{width:21px;height:23px;z-index:7}
+.token-insertion-trail{position:absolute;inset:0;pointer-events:none;z-index:6}.token-insertion-trail i{position:absolute;left:0;top:0;width:3px;height:3px;background:#ffe4a2;opacity:0}
+.token-slot-light{position:absolute;left:184px;top:261px;width:52px;height:4px;opacity:0;background:#fff1c7;box-shadow:0 2px #e5b56b;pointer-events:none}
+.token-reel-lamps{position:absolute;inset:0;pointer-events:none}.token-reel-lamps i{position:absolute;width:3px;height:3px;background:#fff0bd;box-shadow:1px 1px #b77745;opacity:0}
+.token-stack-flight{position:absolute;left:0;top:0;z-index:7;opacity:0;pointer-events:none;min-width:45px;padding:2px 6px 3px;font-size:24px;line-height:29px;font-weight:600;text-align:center;color:#ffe3a1;background:#43213e;box-shadow:inset 0 2px #fff0be,inset 0 -2px #b47751;-webkit-text-stroke:2px #43213e;paint-order:stroke fill;clip-path:polygon(4px 0,calc(100% - 4px) 0,calc(100% - 4px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 4px) calc(100% - 3px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 3px),0 calc(100% - 3px),0 3px,4px 3px)}
+.token-royal-rays{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:-1}.token-royal-rays svg{display:block;width:100%;height:100%}
+.token-bank-halo{position:absolute;top:14px;left:50%;height:63px;transform:translateX(-50%);border:3px solid #ffe7a4;opacity:0;z-index:-1;pointer-events:none;clip-path:polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),0 calc(100% - 3px),0 3px,6px 3px)}
+.token-stage[data-revealed=true] .token-bank strong{color:#ffe5aa!important}
+.token-finale-particles>i.token-confetti-coin{width:12px;height:13px;background:none;box-shadow:none}.token-finale-particles>i>svg{width:100%;height:100%}
