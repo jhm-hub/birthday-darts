@@ -1306,3 +1306,20 @@ Preserved sources:
 External source archives, output manifests, browser traces, sound renders and
 review screenshots are in `Vault-Tokens-QA-2026-11-07`,
 `Vault-Token-Handoff-QA-2026-11-07` and `Vault-Token-Stack-QA-2026-11-07`.
+
+
+**Between-token polish — November 8, 2026:** Earned multiplier chips remain
+visible below the cabinet while the next reel spins. The new factor settles
+beside them, the accumulated boost collects it, and a short pixel-light trail
+passes the focus to the next unspent token. The final trail charges the crown
+instead, connecting the last stack to the grand reveal. A dry casino credit
+chord rises with the earned stack; one quiet contact completes the relay, with
+a silent tail before the next cue. Each manual spin now takes 5.4 seconds.
+The money plaque and 420 × 460 transparent stage remain fixed; reduced motion,
+pause, immediate reset, early reveal and final-total hold are preserved.
+
+[Previous stacking version](https://jhm-hub.github.io/birthday-darts/vault-tokens-stacking-v1.html)
+is playable using its exact frozen bundle/styles from `174c32f`, also saved at
+`vault-tokens-before-relay-2026-11-08`. The earlier best-result prototype stays
+at `vault-tokens-original.html`. No live game, range, save or OBS wiring changes.
+QA/source archive: external `Vault-Token-Relay-QA-2026-11-08`.

@@ -28,3 +28,23 @@ export function tokenFinaleParticle(index,age,quiet=false){
  return {opacity:Math.min(1,t*8,(1-t)*5),x:Math.max(12,Math.min(408,210+side*(58+reach*Math.sin(t*Math.PI/2)))),
   y:288-(230+(index%5)*14)*t+215*t*t,rotation:side*t*(110+index*17)};
 }
+
+// A collected multiplier hands the focus to the next token, or to the crown
+// on the final spin. All clocks live inside the spin, so pause/reset also freeze
+// or cancel the bridge; there are no delayed DOM mutations or animation timers.
+export function tokenBridgePose(f,age,quiet=false){
+ const final=!!f&&f.remainingAfter===0,level=f?Math.min(3,1+Math.floor(Math.log2(Math.max(1,f.previous))/3)):1;
+ const u=ease((age-T.relayStart)/(T.relayLand-T.relayStart)),targetX=final?210:40.5;
+ const active=!!f&&age>=T.stackLand&&age<T.finish;
+ return {final,level,active,receipt:!f||age<T.land?0:ease((age-T.land)/240),
+  bloom:quiet||!active?0:Math.sin(Math.PI*clamp((age-T.stackLand)/480)),
+  pulse:quiet||!active?0:Math.sin(Math.PI*clamp((age-T.relayLand)/260)),
+  crown:quiet||!final||!active?0:ease((age-T.relayLand)/200),
+  opacity:quiet||!f||age<T.relayStart||age>=T.relayLand?0:Math.min(1,(age-T.relayStart)/60,(T.relayLand-age)/50),
+  x:arc(367,final?322:300,final?240:116,targetX,u),y:arc(88,48,final?48:60,final?76:116.5,u)};
+}
+export function tokenBridgeSpark(index,f,age,quiet=false){
+ const p=tokenBridgePose(f,age,quiet),u=clamp((age-T.stackLand)/560),angle=index*Math.PI/4;
+ return {opacity:quiet||!f||age<T.stackLand||age>=T.stackLand+560?0:Math.sin(Math.PI*u)*(.65+.1*p.level),
+  x:367+Math.cos(angle)*(13+u*18),y:88+Math.sin(angle)*(14+u*13)};
+}

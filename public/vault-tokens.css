@@ -37,3 +37,15 @@
 .token-bank-halo{position:absolute;top:14px;left:50%;height:63px;transform:translateX(-50%);border:3px solid #ffe7a4;opacity:0;z-index:-1;pointer-events:none;clip-path:polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),0 calc(100% - 3px),0 3px,6px 3px)}
 .token-stage[data-revealed=true] .token-bank strong{color:#ffe5aa!important}
 .token-finale-particles>i.token-confetti-coin{width:12px;height:13px;background:none;box-shadow:none}.token-finale-particles>i>svg{width:100%;height:100%}
+
+/* Earned boost -> next credit -> crown. Local accents only; the stage and
+   money ledger never bounce, resize or flash during an inter-spin handoff. */
+.token-bridge{position:absolute;inset:0;pointer-events:none;z-index:6}
+.token-stack-bloom{position:absolute;left:325px;top:65px;width:80px;height:42px;border:2px solid #ffe3a1;box-shadow:inset 0 0 0 2px #8f5472;opacity:0;clip-path:polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 6px) calc(100% - 4px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 4px),0 calc(100% - 4px),0 4px,6px 4px)}
+.token-bridge-trail i,.token-stack-sparks i{position:absolute;left:0;top:0;width:4px;height:4px;opacity:0;background:#fff1c4;box-shadow:0 2px #d8955a;image-rendering:pixelated}
+.token-bridge-trail i:first-child{width:6px;height:6px;background:#fff4d8;box-shadow:-2px 2px #edacd5,2px 2px #e9bd70}.token-bridge-trail i:nth-child(3n),.token-stack-sparks i:nth-child(2n){background:#f8b7de}
+.token-next-credit{position:absolute;left:25px;top:101px;width:31px;height:31px;border:2px solid #ffe5a5;opacity:0;clip-path:polygon(0 0,8px 0,8px 2px,2px 2px,2px 8px,0 8px,0 0,100% 0,100% 8px,calc(100% - 2px) 8px,calc(100% - 2px) 2px,calc(100% - 8px) 2px,calc(100% - 8px) 0,100% 0,100% 100%,calc(100% - 8px) 100%,calc(100% - 8px) calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) calc(100% - 8px),100% calc(100% - 8px),100% 100%,0 100%,0 calc(100% - 8px),2px calc(100% - 8px),2px calc(100% - 2px),8px calc(100% - 2px),8px 100%,0 100%)}
+.token-crown-charge{position:absolute;left:193px;top:57px;width:34px;height:38px;font-size:32px;line-height:38px;text-align:center;color:#fff0be;text-shadow:0 2px #ad6a48;opacity:0}
+.token-result-note{top:337px;display:flex;align-items:center;justify-content:center;gap:6px;min-height:24px;font-size:12px;line-height:24px}
+.token-stack-chip,.token-stack-product{display:inline-block;min-width:36px;padding:0 5px;line-height:23px;font-size:17px;color:#ffe9b7;background:#382039e8;box-shadow:inset 0 1px #e8b98f,inset 0 -2px #8c4c70;clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 3px) calc(100% - 2px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 2px),0 calc(100% - 2px),0 2px,3px 2px)}
+.token-stack-product{color:#cbffe4}.token-stack-join{font-size:16px;color:#ffe7bf}.token-stage[data-revealed=true] .token-stack-product{color:#ffe39b}

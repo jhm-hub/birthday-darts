@@ -34,7 +34,17 @@ export function renderTokenSpinSound(f,rate=48000){
  tokenReelCrossings(f).slice(0,-1).forEach((ms,i)=>click(ms,.027+.020*i/f.distance,71+i*17,.024));
  click(TOKEN_TIMING.reelStop,.11,251,.065);
  add(renderVaultSound(f.value===8?'boost-6-reveal':'multiply',{},rate),TOKEN_TIMING.land,.72);
+ // One dry credit chord confirms the accumulated boost. The pitch rises
+ // with the earned stack; a quiet relay contact points to the next token.
+ const rank=Math.min(3,1+Math.floor(Math.log2(Math.max(1,f.previous))/3));
  click(TOKEN_TIMING.stackLand,.055,281,.045);
+ const credit=new Float32Array(Math.ceil(rate*.18)),root=880*2**((rank-1)*2/12);
+ for(let i=0;i<credit.length;i++){
+  const t=i/rate,edge=Math.min(1,t/.002,(credit.length-1-i)/(rate*.015));
+  credit[i]=edge*Math.exp(-t*27)*(.044*Math.sin(2*Math.PI*root*t)+.022*Math.sin(2*Math.PI*root*1.5*t)+.013*Math.sin(2*Math.PI*root*2.013*t));
+ }
+ add(credit,TOKEN_TIMING.stackLand);
+ click(TOKEN_TIMING.relayLand,f.remainingAfter===0?.045:.035,313,.045);
  return total;
 }
 export function renderTokenFinaleSound(multiplier,rate=48000){
@@ -60,7 +70,7 @@ export function createTokenAudio(getContext){
   node.onended=()=>{node.disconnect();gain.disconnect();playing.delete(entry);if(source===entry)source=null;};node.start(0,Math.max(0,elapsed));
  }
  return {setEnabled(value){enabled=!!value;if(enabled)ensure();else stop();},setVolume(value){volume=Math.max(0,Math.min(100,Number(value)||0))/100;if(master)master.gain.setTargetAtTime(volume,ctx.currentTime,.02);},stop,
-  spin(f,elapsed=0){if(!enabled)return;ensure();const key=['spin',f.value,f.distance].join(':');const data=cache.has(key)?new Float32Array(0):renderTokenSpinSound(f,ctx.sampleRate);play(data,key,elapsed/1000);},
+  spin(f,elapsed=0){if(!enabled)return;ensure();const key=['spin',f.value,f.distance,f.previous,f.remainingAfter].join(':');const data=cache.has(key)?new Float32Array(0):renderTokenSpinSound(f,ctx.sampleRate);play(data,key,elapsed/1000);},
   finale(multiplier,elapsed=0){if(!enabled)return;ensure();const key='finale:'+Number(multiplier>=16);play(cache.has(key)?new Float32Array(0):renderTokenFinaleSound(multiplier,ctx.sampleRate),key,elapsed/1000);},
   earned(){if(!enabled)return;ensure();play(renderVaultSound('extra',{},ctx.sampleRate),'earn');},
   handoff(elapsed=0){if(!enabled)return;ensure();play(cache.has('handoff')?new Float32Array(0):renderTokenHandoffSound(ctx.sampleRate),'handoff',elapsed/1000);},
