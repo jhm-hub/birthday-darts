@@ -22,6 +22,14 @@ export function renderTokenHandoffSound(rate=48000){
  add(chord,TOKEN_HANDOFF.lightAt);return pcm;
 }
 
+// Short struck-register notes, not a sustained musical pad. The two notes
+// at the crown join the two pickup notes in the jackpot's shared PCM timeline.
+function registerNote(rate,hz,gain,length=.07){
+ const pcm=new Float32Array(Math.ceil(rate*length));
+ for(let i=0;i<pcm.length;i++){const t=i/rate,edge=Math.min(1,t/.0015,(pcm.length-1-i)/(rate*.012));pcm[i]=gain*edge*Math.exp(-t*32)*(Math.sin(2*Math.PI*hz*t)+.28*Math.sin(2*Math.PI*hz*2.01*t)+.13*Math.sin(2*Math.PI*hz*3.97*t));}
+ return pcm;
+}
+
 // The reel crossings drive the ratchet cadence, so it audibly slows with
 // the visible reel. The final stop replaces the last tick; no doubled hit.
 export function renderTokenSpinSound(f,rate=48000){
@@ -44,19 +52,32 @@ export function renderTokenSpinSound(f,rate=48000){
   credit[i]=edge*Math.exp(-t*27)*(.044*Math.sin(2*Math.PI*root*t)+.022*Math.sin(2*Math.PI*root*1.5*t)+.013*Math.sin(2*Math.PI*root*2.013*t));
  }
  add(credit,TOKEN_TIMING.stackLand);
- click(TOKEN_TIMING.relayLand,f.remainingAfter===0?.045:.035,313,.045);
+ if(f.remainingAfter===0){add(registerNote(rate,1174.66,.04),TOKEN_TIMING.relayLand);add(registerNote(rate,1480,.043),TOKEN_TIMING.relayLand+150);}
+ else click(TOKEN_TIMING.relayLand,.035,313,.045);
  return total;
 }
 export function renderTokenFinaleSound(multiplier,rate=48000){
  const total=new Float32Array(Math.ceil(rate*TOKEN_FINALE.settle/1000));
  const add=(data,ms,gain)=>{const at=Math.round(ms*rate/1000);for(let i=0;i<data.length&&i+at<total.length;i++)total[i+at]+=data[i]*gain;};
- add(renderVaultSound('wing',{},rate),100,.7);
+ add(registerNote(rate,1760,.045),80,1);
+ add(registerNote(rate,2349.32,.048),220,1);
  const tier=multiplier>=16?2:1;
  // The shared casino score retains its original anticipation silence.
  // Remove that lead so its actual jackpot hit lands on this reveal clock.
  const payoff=renderVaultSound('linked-final',{tier},rate).subarray(Math.round(finalePose(0,tier).build*rate/1000));
- add(payoff,TOKEN_FINALE.reveal,.85);
+ add(payoff,TOKEN_FINALE.reveal,.98);
+ // A low cash-register body supports the hit without a second melody or
+ // repeating payout alarm. The later bell/coin phrase belongs to the score.
+ const body=new Float32Array(Math.ceil(rate*.15));
+ for(let i=0;i<body.length;i++){const t=i/rate,edge=Math.min(1,t/.004,(body.length-1-i)/(rate*.02));body[i]=.033*edge*Math.exp(-t*25)*(Math.sin(2*Math.PI*196*t)+.22*Math.sin(2*Math.PI*392*t));}
+ add(body,TOKEN_FINALE.reveal,1);
  return total;
+}
+// The last spin is one source all the way through its jackpot. Its suffix
+// is also used for pause/resume after the model crosses the spin boundary.
+export function renderTokenRunoutSound(f,rate=48000){
+ const spin=renderTokenSpinSound(f,rate);if(f.remainingAfter!==0)return spin;
+ const finale=renderTokenFinaleSound(f.previous*f.value,rate),pcm=new Float32Array(spin.length+finale.length);pcm.set(spin);pcm.set(finale,spin.length);return pcm;
 }
 export function createTokenAudio(getContext){
  let ctx,master,source,enabled=false,volume=.5;const cache=new Map(),playing=new Set();
@@ -70,7 +91,7 @@ export function createTokenAudio(getContext){
   node.onended=()=>{node.disconnect();gain.disconnect();playing.delete(entry);if(source===entry)source=null;};node.start(0,Math.max(0,elapsed));
  }
  return {setEnabled(value){enabled=!!value;if(enabled)ensure();else stop();},setVolume(value){volume=Math.max(0,Math.min(100,Number(value)||0))/100;if(master)master.gain.setTargetAtTime(volume,ctx.currentTime,.02);},stop,
-  spin(f,elapsed=0){if(!enabled)return;ensure();const key=['spin',f.value,f.distance,f.previous,f.remainingAfter].join(':');const data=cache.has(key)?new Float32Array(0):renderTokenSpinSound(f,ctx.sampleRate);play(data,key,elapsed/1000);},
+  spin(f,elapsed=0){if(!enabled)return;ensure();const key=['spin',f.value,f.distance,f.previous,f.remainingAfter].join(':');const data=cache.has(key)?new Float32Array(0):renderTokenRunoutSound(f,ctx.sampleRate);play(data,key,elapsed/1000);},
   finale(multiplier,elapsed=0){if(!enabled)return;ensure();const key='finale:'+Number(multiplier>=16);play(cache.has(key)?new Float32Array(0):renderTokenFinaleSound(multiplier,ctx.sampleRate),key,elapsed/1000);},
   earned(){if(!enabled)return;ensure();play(renderVaultSound('extra',{},ctx.sampleRate),'earn');},
   handoff(elapsed=0){if(!enabled)return;ensure();play(cache.has('handoff')?new Float32Array(0):renderTokenHandoffSound(ctx.sampleRate),'handoff',elapsed/1000);},

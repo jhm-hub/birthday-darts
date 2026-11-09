@@ -3,7 +3,7 @@ import {DEFAULT_VAULT,startVaultRound,unlockVault,advanceVault,cleanVaultRound} 
 import {prepareVaultPlay} from './vault-playback.js';
 
 export const TOKEN_TIMING=Object.freeze({pickup:160,approach:600,insert:760,reelStart:880,reelStop:3540,land:3760,stackStart:3970,stackLand:4480,relayStart:4720,relayLand:5140,finish:5400});
-export const TOKEN_FINALE=Object.freeze({reveal:750,settle:3200});
+export const TOKEN_FINALE=Object.freeze({reveal:750,settle:4400});
 export const TOKEN_SCENARIOS=Object.freeze({random:null,rising:[3,6],stacked:[8,2],royal:[8,8]});
 export const clamp=t=>Math.max(0,Math.min(1,t));
 export const ease=t=>{t=clamp(t);return t*t*(3-2*t);};

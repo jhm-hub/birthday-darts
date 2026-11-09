@@ -67,7 +67,7 @@ function tick(now){if(disposed)return;const dt=Math.min(100,Math.max(0,now-last)
  if(!paused){clock+=dt;if(mode==='vault'){
   elapsed=Math.min(sample.duration,elapsed+dt);
   if(elapsed>=sample.duration){vaultAudio.reset();state=createTokenFinale({cashCents:sample.cashCents,tokens:sample.tokens.length,now:clock});mode='handoff';handoffAt=clock;tokenAudio.handoff();}
- }else if(mode==='handoff'){if(clock-handoffAt>=TOKEN_HANDOFF.duration)mode='machine';}else{const before=state.finishedAt;advanceTokenSpin(state,clock);if(before===null&&state.finishedAt!==null)tokenAudio.finale(state.multiplier,clock-state.finishedAt);}}
+ }else if(mode==='handoff'){if(clock-handoffAt>=TOKEN_HANDOFF.duration)mode='machine';}else advanceTokenSpin(state,clock); /* Last-spin audio includes its jackpot; do not restart at this boundary. */}
  paint();raf=requestAnimationFrame(tick);
 }
 paint();raf=requestAnimationFrame(tick);

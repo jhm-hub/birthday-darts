@@ -49,3 +49,10 @@
 .token-result-note{top:337px;display:flex;align-items:center;justify-content:center;gap:6px;min-height:24px;font-size:12px;line-height:24px}
 .token-stack-chip,.token-stack-product{display:inline-block;min-width:36px;padding:0 5px;line-height:23px;font-size:17px;color:#ffe9b7;background:#382039e8;box-shadow:inset 0 1px #e8b98f,inset 0 -2px #8c4c70;clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 3px) calc(100% - 2px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 2px),0 calc(100% - 2px),0 2px,3px 2px)}
 .token-stack-product{color:#cbffe4}.token-stack-join{font-size:16px;color:#ffe7bf}.token-stage[data-revealed=true] .token-stack-product{color:#ffe39b}
+
+/* The jackpot runs around the cabinet and outside the cash plaque; the amount
+   is never covered, counted through false values, scaled or shaken. */
+.token-jackpot-conduits{position:absolute;inset:0;z-index:4;pointer-events:none}
+.token-jackpot-conduits i{position:absolute;left:-2px;top:-2px;width:5px;height:7px;opacity:0;background:#ffe5a3;box-shadow:inset 1px 1px #fff5d7}
+.token-jackpot-conduits i:nth-child(-n+2){width:7px;height:9px;background:#fff2c8;box-shadow:0 2px #e8a9c7}.token-jackpot-conduits i:nth-child(4n){background:#edb3d8}
+.token-stage[data-revealed=true] .token-subtitle{font-size:14px;letter-spacing:2px;color:#ffe29b}

@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {createTokenFinale,beginTokenSpin,advanceTokenSpin,finishTokensEarly,tokenSpinPose,tokenTotal,reelTape,createTokenVaultSample,tokenVaultFrame,TOKEN_TIMING,TOKEN_FINALE,smoothReel,tokenReelCrossings} from '../src/vault-tokens-model.js';
-import {renderTokenSpinSound,renderTokenFinaleSound} from '../src/vault-tokens-audio.js';
-import {tokenInsertionPose,tokenStackFlight,tokenFinaleParticle,tokenBridgePose,tokenBridgeSpark} from '../src/vault-token-spin-motion.js';
+import {renderTokenSpinSound,renderTokenFinaleSound,renderTokenRunoutSound} from '../src/vault-tokens-audio.js';
+import {tokenInsertionPose,tokenStackFlight,tokenFinaleParticle,tokenBridgePose,tokenBridgeSpark,tokenFinalePose,tokenJackpotAge,tokenJackpotConduit,TOKEN_FINALE_PARTICLES} from '../src/vault-token-spin-motion.js';
 
 test('two manual tokens stack ×8 then ×2 into ×16; cash waits for the grand reveal',()=>{
  const s=createTokenFinale(),a=beginTokenSpin(s,0,{forced:8});assert.equal(s.remaining,1);assert.equal(s.multiplier,1);assert.throws(()=>beginTokenSpin(s,1));
@@ -80,5 +80,34 @@ test('credit chord rises with the stack, relay click has space and a silent tail
  const T=TOKEN_TIMING,rate=16000,s=createTokenFinale(),a=beginTokenSpin(s,0,{forced:2});advanceTokenSpin(s,a.finishAt);const b=beginTokenSpin(s,6000,{forced:2});b.previous=8;
  const first=renderTokenSpinSound(a,rate),later=renderTokenSpinSound(b,rate),slice=(pcm,start,end)=>pcm.slice(Math.ceil(rate*start/1000),Math.floor(rate*end/1000));
  assert.notDeepEqual(slice(first,T.stackLand,T.stackLand+180),slice(later,T.stackLand,T.stackLand+180));
- assert.ok(slice(later,T.relayStart,T.relayLand).every(v=>v===0));assert.ok(slice(later,T.relayLand,T.relayLand+45).some(v=>Math.abs(v)>.001));assert.ok(slice(later,T.relayLand+50,T.finish).every(v=>v===0));
+ assert.ok(slice(later,T.relayStart,T.relayLand).every(v=>v===0));assert.ok(slice(later,T.relayLand,T.relayLand+45).some(v=>Math.abs(v)>.001));assert.ok(slice(first,T.relayLand+50,T.finish).every(v=>v===0));
+});
+
+test('last relay and jackpot share a continuous clock across the model boundary',()=>{
+ const s=createTokenFinale(),first=beginTokenSpin(s,0,{forced:8});advanceTokenSpin(s,first.finishAt);const last=beginTokenSpin(s,6000,{forced:2});
+ assert.equal(tokenJackpotAge(s,last.startAt+TOKEN_TIMING.relayLand-1),null);
+ assert.equal(tokenJackpotAge(s,last.startAt+TOKEN_TIMING.relayLand),TOKEN_TIMING.relayLand-TOKEN_TIMING.finish);
+ const before=tokenFinalePose(tokenJackpotAge(s,last.finishAt-1));advanceTokenSpin(s,last.finishAt);
+ assert.equal(tokenJackpotAge(s,last.finishAt),0);const after=tokenFinalePose(tokenJackpotAge(s,last.finishAt));
+ assert.ok(Math.abs(before.crown-after.crown)<.005);assert.ok(Math.abs(before.build-after.build)<.005);
+ assert.equal(tokenSpinPose(s,last.finishAt).total,50000);assert.equal(tokenSpinPose(s,last.finishAt+TOKEN_FINALE.reveal).total,800000);
+ const fresh=createTokenFinale();assert.equal(tokenJackpotAge(fresh,1e8),null);
+});
+test('all jackpot motion stays compact and keeps the widest total plaque clear',()=>{
+ for(let age=-300;age<=TOKEN_FINALE.settle;age+=13){
+  for(let i=0;i<20;i++){const p=tokenJackpotConduit(i,age);if(p.opacity){assert.ok(p.x>=12&&p.x<=408&&p.y>=70&&p.y<420);if(p.y>=367)assert.ok(p.x<22||p.x>398);}assert.equal(tokenJackpotConduit(i,age,true).opacity,0);}
+  for(let i=0;i<TOKEN_FINALE_PARTICLES;i++){const p=tokenFinaleParticle(i,age);if(p.opacity)assert.ok(p.x>=12&&p.x<=408&&p.y>0&&p.y<340);assert.equal(tokenFinaleParticle(i,age,true).opacity,0);}
+  const q=tokenFinalePose(age,true);for(const k of ['rays','shine','crown','halo'])assert.equal(q[k],0);
+ }
+ for(let i=0;i<TOKEN_FINALE_PARTICLES;i++)assert.equal(tokenFinaleParticle(i,TOKEN_FINALE.settle).opacity,0);
+ const settled=tokenFinalePose(TOKEN_FINALE.settle);assert.equal(settled.rays,0);assert.equal(settled.halo,0);
+});
+test('last-spin sound contains exactly one continuous jackpot, with identical resume suffix',()=>{
+ const rate=16000,s=createTokenFinale(),first=beginTokenSpin(s,0,{forced:8});advanceTokenSpin(s,first.finishAt);const last=beginTokenSpin(s,6000,{forced:2});
+ assert.deepEqual(renderTokenRunoutSound(first,rate),renderTokenSpinSound(first,rate));
+ const joined=renderTokenRunoutSound(last,rate),spin=renderTokenSpinSound(last,rate),finale=renderTokenFinaleSound(16,rate);
+ assert.equal(joined.length,rate*(TOKEN_TIMING.finish+TOKEN_FINALE.settle)/1000);assert.deepEqual(joined.slice(0,spin.length),spin);assert.deepEqual(joined.slice(spin.length),finale);
+ const cue=(ms,duration=60)=>joined.slice(Math.floor(ms*rate/1000),Math.floor((ms+duration)*rate/1000));
+ for(const ms of [TOKEN_TIMING.relayLand,TOKEN_TIMING.relayLand+150,TOKEN_TIMING.finish+80,TOKEN_TIMING.finish+220,TOKEN_TIMING.finish+TOKEN_FINALE.reveal])assert.ok(cue(ms).some(x=>Math.abs(x)>.005));
+ let peak=0;for(const sample of joined){assert.ok(Number.isFinite(sample));peak=Math.max(peak,Math.abs(sample));}assert.ok(peak<.3);assert.equal(joined.at(-1),0);
 });

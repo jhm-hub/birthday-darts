@@ -1323,3 +1323,22 @@ is playable using its exact frozen bundle/styles from `174c32f`, also saved at
 `vault-tokens-before-relay-2026-11-08`. The earlier best-result prototype stays
 at `vault-tokens-original.html`. No live game, range, save or OBS wiring changes.
 QA/source archive: external `Vault-Token-Relay-QA-2026-11-08`.
+
+
+**Connected token jackpot — November 8, 2026:** The last multiplier's relay
+now shares one clock with the crown build-up, cabinet-side gold trails and
+final payout. The reel changes to the full accumulated multiplier as it reaches
+the crown; the cash plaque retains the base cash until the exact grand reveal.
+A larger two-stage, 80-piece pixel coin/confetti burst and sustained crown rays
+stay inside the existing transparent 420 × 460 stage, clear of the amount.
+The celebration settles over 4.4 seconds and the total remains until reset.
+
+The last spin and casino jackpot play as one PCM source, with a rising register
+pickup and a heavier cash-register hit, followed by the existing jackpot phrase.
+Pause/resume after the spin boundary uses the identical finale suffix, without
+replaying the pickup or payout. Reduced motion removes the travel and burst.
+
+[Previous approved relay version](https://jhm-hub.github.io/birthday-darts/vault-tokens-relay-v1.html)
+uses the exact frozen bundle/styles from `5133868`, also tagged
+`vault-tokens-before-jackpot-2026-11-08`. All earlier prototypes and the live
+Vault remain unchanged. QA/source archive: `Vault-Token-Jackpot-QA-2026-11-08`.
