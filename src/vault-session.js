@@ -14,6 +14,7 @@ export async function connectVaultControl(id,onSnapshot,onStatus){
  function dispose(){disposed=true;ready=false;clearInterval(pulse);clearInterval(heartbeat);clearTimeout(retry);unsubscribe?.();link?.dispose();legacyLink?.dispose();release?.();}
  window.addEventListener('pagehide',dispose,{once:true});
  return {get id(){return id;},versions:()=>vaultStore.versions(),async selectVersion(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');await vaultStore.selectVersion(value);publish();return id;},displayURL:url.href,get ready(){return ready&&peerStatus!=='duplicate';},start:claim,dispose,
+  async setFinaleMode(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setFinaleMode(id,value);},
   async setGameRanges(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.setGameRanges(id,value);},
   async startExperience(value,viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.startExperience(id,value,viewer);},
   async reset(){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return vaultStore.reset(id);},

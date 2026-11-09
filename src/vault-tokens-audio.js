@@ -79,10 +79,18 @@ export function renderTokenRunoutSound(f,rate=48000){
  const spin=renderTokenSpinSound(f,rate);if(f.remainingAfter!==0)return spin;
  const finale=renderTokenFinaleSound(f.previous*f.value,rate),pcm=new Float32Array(spin.length+finale.length);pcm.set(spin);pcm.set(finale,spin.length);return pcm;
 }
-export function createTokenAudio(getContext){
- let ctx,master,source,enabled=false,volume=.5;const cache=new Map(),playing=new Set();
+export function createTokenAudio(getContext,{createWorker=null}={}){
+ let ctx,master,source,enabled=false,volume=.5,worker,requestVersion=0;const cache=new Map(),playing=new Set();
  function ensure(){if(!ctx){ctx=getContext();master=ctx.createGain();master.gain.value=volume;master.connect(ctx.destination);}void ctx.resume().catch(()=>{});}
- function stop(){if(source){const entry=source;source=null;entry.gain.gain.cancelScheduledValues(ctx.currentTime);entry.gain.gain.setValueAtTime(entry.gain.gain.value,ctx.currentTime);entry.gain.gain.linearRampToValueAtTime(0,ctx.currentTime+.008);try{entry.node.stop(ctx.currentTime+.012);}catch{}}}
+ function stop(){requestVersion++;if(source){const entry=source;source=null;entry.gain.gain.cancelScheduledValues(ctx.currentTime);entry.gain.gain.setValueAtTime(entry.gain.gain.value,ctx.currentTime);entry.gain.gain.linearRampToValueAtTime(0,ctx.currentTime+.008);try{entry.node.stop(ctx.currentTime+.012);}catch{}}}
+ function request(sound,key,elapsed,payload,render){
+  if(cache.has(key)){play(new Float32Array(0),key,elapsed/1000);return;}
+  if(!createWorker){play(render(),key,elapsed/1000);return;}
+  if(!worker){try{worker=createWorker();worker.onmessage=({data})=>{if(data.ticket!==requestVersion||!enabled||!(data.samples instanceof Float32Array))return;play(data.samples,data.key,(data.elapsed+Math.max(0,performance.now()-data.requestedAt))/1000);};worker.onerror=()=>{worker?.terminate();worker=null;requestVersion++;};}catch{return;}}
+  // Synthesis runs away from the animation thread. A held/reset/replaced cue
+  // invalidates its ticket; delayed audio can never restart an old viewer.
+  stop();worker.postMessage({sound,key,elapsed,payload,rate:ctx.sampleRate,ticket:++requestVersion,requestedAt:performance.now()});
+ }
  function play(data,key,elapsed=0){
   if(!enabled)return;ensure();stop();let buffer=cache.get(key);
   if(!buffer){buffer=ctx.createBuffer(1,data.length,ctx.sampleRate);buffer.copyToChannel(data,0);if(cache.size>=10)cache.delete(cache.keys().next().value);cache.set(key,buffer);}
@@ -91,10 +99,10 @@ export function createTokenAudio(getContext){
   node.onended=()=>{node.disconnect();gain.disconnect();playing.delete(entry);if(source===entry)source=null;};node.start(0,Math.max(0,elapsed));
  }
  return {setEnabled(value){enabled=!!value;if(enabled)ensure();else stop();},setVolume(value){volume=Math.max(0,Math.min(100,Number(value)||0))/100;if(master)master.gain.setTargetAtTime(volume,ctx.currentTime,.02);},stop,
-  spin(f,elapsed=0){if(!enabled)return;ensure();const key=['spin',f.value,f.distance,f.previous,f.remainingAfter].join(':');const data=cache.has(key)?new Float32Array(0):renderTokenRunoutSound(f,ctx.sampleRate);play(data,key,elapsed/1000);},
-  finale(multiplier,elapsed=0){if(!enabled)return;ensure();const key='finale:'+Number(multiplier>=16);play(cache.has(key)?new Float32Array(0):renderTokenFinaleSound(multiplier,ctx.sampleRate),key,elapsed/1000);},
+  spin(f,elapsed=0){if(!enabled)return;ensure();const key=['spin',f.value,f.distance,f.previous,f.remainingAfter].join(':');request('spin',key,elapsed,f,()=>renderTokenRunoutSound(f,ctx.sampleRate));},
+  finale(multiplier,elapsed=0){if(!enabled)return;ensure();const key='finale:'+Number(multiplier>=16);request('finale',key,elapsed,multiplier,()=>renderTokenFinaleSound(multiplier,ctx.sampleRate));},
   earned(){if(!enabled)return;ensure();play(renderVaultSound('extra',{},ctx.sampleRate),'earn');},
-  handoff(elapsed=0){if(!enabled)return;ensure();play(cache.has('handoff')?new Float32Array(0):renderTokenHandoffSound(ctx.sampleRate),'handoff',elapsed/1000);},
-  dispose(){for(const entry of playing){try{entry.node.stop();}catch{}entry.node.disconnect();entry.gain.disconnect();}playing.clear();source=null;cache.clear();master?.disconnect();}
+  handoff(elapsed=0){if(!enabled)return;ensure();request('handoff','handoff',elapsed,null,()=>renderTokenHandoffSound(ctx.sampleRate));},
+  dispose(){requestVersion++;worker?.terminate();for(const entry of playing){try{entry.node.stop();}catch{}entry.node.disconnect();entry.gain.disconnect();}playing.clear();source=null;cache.clear();master?.disconnect();}
  };
 }

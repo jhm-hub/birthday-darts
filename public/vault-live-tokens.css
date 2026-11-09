@@ -1,0 +1,5 @@
+.vault-live-root{position:relative}.vault-overlay .vault-live-root.token-preview-sizer{max-width:none;margin:0;aspect-ratio:auto}
+.vault-live-layer{position:absolute;inset:0;overflow:hidden;background:transparent}
+.vault-live-layer.is-token-handoff .vault-heading,.vault-live-layer.is-token-handoff .token-ledger,.vault-live-layer.is-token-handoff .vault-topline,.vault-live-layer.is-token-handoff .earned-token-tray{visibility:hidden}
+.vault-mode-control{margin:12px 0 18px}.vault-mode-control label{display:block;font-weight:700;margin-bottom:6px}.vault-mode-control select{width:100%;padding:10px 12px;border:1px solid #d6c5df;border-radius:10px;background:#fff8fc;color:#40283f;font:inherit}
+.vault-live-root .token-result-note{max-width:400px;overflow:hidden}.vault-live-root .token-bank span{white-space:nowrap;font-size:11px}

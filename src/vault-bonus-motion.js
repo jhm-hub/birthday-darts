@@ -27,7 +27,7 @@ export function vaultBonusPose(shot,time,quiet=false){
   scale:age<VAULT_BONUS_LAND_MS?(vaultBonusBuildMs(shot)?1+.12*arrive:(multiply?.84:.9)+(multiply?.28:.2)*arrive):1+(multiply?.12:.1)*(1-settle),
   y:vaultBonusBuildMs(shot)?0:(1-arrive)*(multiply?6:9),iconOffset:vaultBonusBuildMs(shot)?0:Math.round(3*(1-arrive)),
   shine:pulse((age-VAULT_BONUS_LAND_MS)/handoffSpan)*.32,sweep:ease((age-VAULT_BONUS_LAND_MS)/handoffSpan),
-  bankScale:multiply?1+.035*emphasis:1,gleam:multiply?emphasis:0,countScale:multiply?1:1+.12*emphasis};
+  bankScale:multiply?1+.035*emphasis:1,gleam:multiply?emphasis:0,countScale:shot.bonus.kind==='extra'?1+.12*emphasis:1};
 }
 export function vaultBonusReadout(round,shown,time){
  const result={total:vaultTotal(shown),multiplier:shown?.multiplier??1,remaining:shown?.remaining??0,pendingExtra:false};
@@ -36,7 +36,7 @@ export function vaultBonusReadout(round,shown,time){
  if(shot.bonus.kind==='multiply'){
   result.multiplier=round.multiplier;
   result.total=(BigInt(shown.cashCents)*BigInt(round.multiplier)).toString();
- }else{
+ }else if(shot.bonus.kind==='extra'){
   result.remaining=Math.max(0,shown.remaining-1);result.pendingExtra=true;
  }
  return result;

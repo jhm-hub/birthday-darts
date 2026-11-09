@@ -179,7 +179,7 @@ export function createVaultView(root,{audio,preview=true}={}){
    const revealed=eligible&&award&&time>=award.revealAt;
    c.number.dataset.state=current?'active':revealed?'open':'closed';
    const label=revealed?money(award.cashCents):'';if(c.award.textContent!==label)c.award.textContent=label;
-   const bonusLabel=revealed&&award.bonus&&time>=vaultBonusAt(award)+VAULT_BONUS_LAND_MS?(award.bonus.kind==='multiply'?'×'+award.bonus.value:'+1'):'';if(c.bonus.textContent!==bonusLabel)c.bonus.textContent=bonusLabel;c.bonus.style.opacity=(quiet?1:ease((time-(award?.finishAt??time)+240)/240))*(current?1:vaultOtherAwardOpacity(shot,time,quiet))*exit.labels*awardReadback;
+   const bonusLabel=revealed&&award.bonus&&time>=vaultBonusAt(award)+VAULT_BONUS_LAND_MS?(award.bonus.kind==='multiply'?'×'+award.bonus.value:award.bonus.kind==='token'?'T':'+1'):'';if(c.bonus.textContent!==bonusLabel)c.bonus.textContent=bonusLabel;c.bonus.style.opacity=(quiet?1:ease((time-(award?.finishAt??time)+240)/240))*(current?1:vaultOtherAwardOpacity(shot,time,quiet))*exit.labels*awardReadback;
 c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(Math.max(1,c.award.textContent.length)*.61)));
    c.award.style.opacity=revealed?(quiet?1:ease((time-award.finishAt+240)/240))*(current?1:vaultOtherAwardOpacity(shot,time,quiet))*exit.labels*awardReadback:0;
   });
@@ -204,7 +204,7 @@ c.award.setAttribute('font-size',Math.min(c.i%5===4?50:58,(c.i%5===4?200:310)/(M
   boostSeats.forEach(el=>{el.style.opacity=boostPose.gems[Number(el.dataset.seat)];});
   boostBits.forEach((el,i)=>{const p=vaultFinalBoostSpark(i,boost,boostPose);el.style.opacity=p.opacity;el.style.transform=`translate(${p.x}px,${p.y}px)`;});
   els.bonusShell.style.display=kind?'':'none';els.bonusShell.dataset.kind=kind;
-  text(els.bonusText,kind?(kind==='multiply'?'×'+reward.bonus.value+(bonusPose.building?(boost?' BOOST':' INCOMING'):' TOTAL'):'+1 UNLOCK'):'');
+  text(els.bonusText,kind?(kind==='token'?'SPIN TOKEN':kind==='multiply'?'×'+reward.bonus.value+(bonusPose.building?(boost?' BOOST':' INCOMING'):' TOTAL'):'+1 UNLOCK'):'');
   els.bonusShell.dataset.building=String(bonusPose.building);
   els.bonus.dataset.kind=kind;els.bonusShell.style.opacity=bonusPose.opacity;
   els.bonusShell.setAttribute('aria-hidden',String(!bonusPose.visible));

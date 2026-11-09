@@ -8,8 +8,9 @@ import {validateVaultGameRanges} from './vault-game-ranges.js';
 import {bindVaultGameRanges} from './vault-game-range-controls.js';
 import {findVaultViewerRange,startVaultViewerRange,startVaultTotalRange,vaultViewerRangeText} from './vault-targets.js';
 import {sampleVaultLatePayoff} from './vault-payoff-preview.js';
-import {createVaultView} from './vault-view.js';
-import {createVaultAudio} from './vault-audio.js';
+import {createVaultLiveView as createVaultView} from './vault-live-view.js';
+import {vaultLivePhase} from './vault-live-phase.js';
+import {createVaultLiveAudio as createVaultAudio} from './vault-live-audio.js';
 import {VAULT_SOUND_LABELS} from './vault-sound-design.js';
 import {bindGiftVolume} from './gift-mixer.js';
 const $=s=>document.querySelector(s),audio=createVaultAudio(),view=createVaultView($('#vault-preview'),{audio});
@@ -35,7 +36,7 @@ const fields={'opening-min':'openingMin','opening-max':'openingMax',chambers:'ch
 function message(text,error=false){$('#editor-status').textContent=text;$('#editor-status').classList.toggle('error',error);}
 function readDraft(){
  if([...$('#vault-settings').querySelectorAll('input')].some(x=>!x.validity.valid))throw Error('Finish the highlighted settings before playing the demo.');
- return {...validateVault({...(selected?{id:selected}:{}),name:$('#game-name').value,...Object.fromEntries(Object.entries(fields).map(([id,key])=>[key,Number($('#'+id).value)])),guarantee:$('#guarantee').checked,celebration:{big:Number($('#celebration-big').value),royal:Number($('#celebration-royal').value)},...Object.fromEntries([['outcomes','cash'],['specialOutcomes','special-cash']].map(([key,pool])=>[key,[...$('#'+pool+'-rows').children].map(r=>({value:Number(r.querySelector('.cash-value').value),weight:Number(r.querySelector('.cash-weight').value)}))]))}),gameRanges:gameRanges.read({report:false})};
+ return {...validateVault({...(selected?{id:selected}:{}),finaleMode:vaultStore.list().find(w=>w.id===selected)?.finaleMode??'original',name:$('#game-name').value,...Object.fromEntries(Object.entries(fields).map(([id,key])=>[key,Number($('#'+id).value)])),guarantee:$('#guarantee').checked,celebration:{big:Number($('#celebration-big').value),royal:Number($('#celebration-royal').value)},...Object.fromEntries([['outcomes','cash'],['specialOutcomes','special-cash']].map(([key,pool])=>[key,[...$('#'+pool+'-rows').children].map(r=>({value:Number(r.querySelector('.cash-value').value),weight:Number(r.querySelector('.cash-weight').value)}))]))}),gameRanges:gameRanges.read({report:false})};
 }
 function cashRow(o={value:25,weight:10},pool='cash'){
  const container=$('#'+pool+'-rows');
@@ -69,25 +70,25 @@ function render(){
  renderRangeChoices();renderDemoCash();
  const experience=$('#demo-experience').value,rule=demoRule(),presetMode=demoExample||!!rule||experience!=='custom';
  $('#demo-viewer-rule').textContent=rule?'@'+rule.username+' · '+vaultViewerRangeText(rule)+' final total. This username range takes priority.':'Try a saved username to preview their range. Manage names in Faith’s controls.';
- $('#demo-experience-note').textContent=demoExample?'Sample round · small cash prizes, multipliers and bonus vaults. Your saved settings stay the same.':rule?'This sample uses the saved username range, including all bonuses.':presetMode?vaultExperienceRange(experience,demo?.privateExperience?(draft?.gameRanges??savedGameRanges).map(r=>r.id===experience?{...r,min:demo.privateExperience.min,max:demo.privateExperience.max}:r):(draft?.gameRanges??savedGameRanges))+' final total, including bonuses. This preview uses the settings you’re editing.':'Uses the cash amounts and odds in this editor.';
- $('#demo-luck-run').disabled=$('#demo-payoff').disabled=!!draftError||!draft;
+ $('#demo-experience-note').textContent=draft?.finaleMode==='tokens'?'Token Machine mode · cash is banked, then earned spins multiply the whole total. Change modes in live controls. '+vaultExperienceRange(experience,draft.gameRanges)+' final total.':demoExample?'Sample round · small cash prizes, multipliers and bonus vaults. Your saved settings stay the same.':rule?'This sample uses the saved username range, including all bonuses.':presetMode?vaultExperienceRange(experience,demo?.privateExperience?(draft?.gameRanges??savedGameRanges).map(r=>r.id===experience?{...r,min:demo.privateExperience.min,max:demo.privateExperience.max}:r):(draft?.gameRanges??savedGameRanges))+' final total, including bonuses. This preview uses the settings you’re editing.':'Uses the cash amounts and odds in this editor.';
+ $('#demo-luck-run').disabled=!!draftError||!draft;$('#demo-payoff').disabled=!!draftError||!draft||draft.finaleMode==='tokens';
  $('#demo-cash').disabled=$('#demo-bonus').disabled=$('#demo-finale').disabled=presetMode;
  if(demo){demo.holdFinal=true;demo.hideAt=null;}
  if(draft)view.update({widget:vaultExperiencePreset(draft,experience),round:demo},{preview:true});
- const held=vaultHeld(demo),opening=demo&&vaultRoundTime(demo,Date.now())<demo.readyAt,busy=!!demo?.flight,finished=!!demo&&demo.completedAt!==null;
+ const held=vaultHeld(demo),phase=vaultLivePhase(demo),opening=phase.opening||phase.handoff,busy=phase.busy,finished=!!demo&&demo.completedAt!==null;
  $('#demo-unlock').disabled=!!draftError||!draft||held||busy||finished||opening||auto;$('#preview-finale').disabled=!!draftError||!draft||presetMode;$('#demo-auto').disabled=!!draftError||!draft;$('#demo-auto').textContent=auto?'Stop autoplay':'Watch a sample round';
  const holdButton=$('#demo-hold');if(holdButton){holdButton.disabled=!!draftError||!demo||finished;holdButton.textContent=held?'Resume game':'Hold for suspense';holdButton.setAttribute('aria-pressed',String(held));}
- const skipButton=$('#demo-skip');if(skipButton)skipButton.disabled=!!draftError||!demo||held||finished||(!opening&&!busy);
- $('#demo-unlock').textContent=held?'Game held':opening?'Opening starting treasure…':busy?'Unlocking…':finished?'Vault cleared':demo?'Unlock chamber '+(demo.opened.length+1):'Open starting treasure';
- $('#demo-status').textContent=draftError||(!demo?'Open your starting treasure, then unlock one chamber at a time.':held?'Held for suspense. Press Resume game when ready.':opening?'Opening your starting treasure…':busy?'Turning the lock. Cash and possible bonus incoming…':finished?money(vaultTotal(demo))+' final total. Press Reset when you’re ready to clear it.':`${money(vaultTotal(demo))} banked · ${demo.remaining} unlock${demo.remaining===1?'':'s'} left.`+(vaultBonusDue(demo)?' A bonus is guaranteed in this chamber.':''));
+ const skipButton=$('#demo-skip');if(skipButton)skipButton.disabled=!!draftError||!demo||held||finished||!phase.canSkip;
+ $('#demo-unlock').textContent=held?'Game held':finished?'Vault cleared':phase.label?phase.label:opening?'Opening starting treasure…':busy?'Unlocking…':finished?'Vault cleared':demo?'Unlock chamber '+(demo.opened.length+1):'Open starting treasure';
+ $('#demo-status').textContent=draftError||(!demo?'Open your starting treasure, then unlock one chamber at a time.':held?'Held for suspense. Press Resume game when ready.':opening?'Opening your starting treasure…':busy?(demo?.tokenFinale?'Spinning your saved token…':'Turning the lock. Cash and possible bonus incoming…'):demo?.tokenFinale&&!finished?demo.tokenFinale.remaining+' spins left · ×'+demo.tokenFinale.multiplier+' stacked.':finished?money(vaultTotal(demo))+' final total. Press Reset when you’re ready to clear it.':`${money(vaultTotal(demo))} banked · ${demo.remaining} unlock${demo.remaining===1?'':'s'} left.`+(vaultBonusDue(demo)?' A bonus is guaranteed in this chamber.':''));
  $('#demo-status').classList.toggle('error',!!draftError);
  const bonuses=draft?vaultBonuses(demo??{preset:draft,allocated:draft.chambers}):[];for(const option of $('#demo-bonus').options)if(option.value)option.disabled=!draft||draft.bonusChance===0||!bonuses.some(b=>b.kind===option.value&&b.weight>0);if($('#demo-bonus').selectedOptions[0]?.disabled)$('#demo-bonus').value='';
 }
-function pick(){if(!draft||draftError||vaultHeld(demo)||demo?.flight||demo&&demo.completedAt!==null||demo&&Date.now()<demo.readyAt)return;try{if(audio.enabled)audio.unlock();if(!demo){const rule=demoRule(),viewer=$('#demo-viewer').value||'Demo viewer';demo=prepareVaultPlay(rule?startVaultViewerRange(draft,rule,viewer):startVaultExperience(draft,$('#demo-experience').value,viewer));}else unlockVault(demo,Date.now(),demo.prizePlan?{}:{forcedCash:$('#demo-cash').value===''?null:Number($('#demo-cash').value),forcedBonus:$('#demo-bonus').value||undefined});nextAuto=Date.now()+2400;render();}catch(e){auto=false;$('#demo-status').textContent=e.message;}}
+function pick(){if(!draft||draftError||vaultHeld(demo)||vaultLivePhase(demo).busy||demo&&demo.completedAt!==null||demo&&Date.now()<demo.readyAt)return;try{if(audio.enabled)audio.unlock();if(!demo){const rule=demoRule(),viewer=$('#demo-viewer').value||'Demo viewer';demo=prepareVaultPlay(rule?startVaultViewerRange(draft,rule,viewer):startVaultExperience(draft,$('#demo-experience').value,viewer));}else unlockVault(demo,Date.now(),demo.prizePlan||demo.tokenFinale?{}:{forcedCash:$('#demo-cash').value===''?null:Number($('#demo-cash').value),forcedBonus:$('#demo-bonus').value||undefined});nextAuto=Date.now()+2400;render();}catch(e){auto=false;$('#demo-status').textContent=e.message;}}
 $('#demo-experience').onchange=()=>resetDemo();
 $('#demo-custom').onclick=()=>{resetDemo(false);$('#demo-experience').value='custom';pick();};
 $('#demo-viewer').oninput=()=>resetDemo();
-$('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-skip')?.addEventListener('click',()=>{if(!demo)return;auto=false;if(finishVaultAnimation(demo,{roundId:demo.id,shotId:demo.flight?.id??null})){audio.reset();render();}});
+$('#demo-unlock').onclick=()=>{pick();showPreview();};$('#demo-skip')?.addEventListener('click',()=>{if(!demo)return;auto=false;if(finishVaultAnimation(demo,{roundId:demo.id,shotId:vaultLivePhase(demo).skipId})){audio.reset();render();}});
 $('#demo-hold')?.addEventListener('click',()=>{if(!demo)return;auto=false;advanceVault(demo);setVaultHold(demo,{roundId:demo.id,revision:demo.holdRevision??0},!vaultHeld(demo));render();});
 $('#demo-reset').onclick=()=>resetDemo();
 $('#demo-auto').onclick=()=>{if(auto){auto=false;render();return;}resetDemo(false);auto=true;pick();nextAuto=Date.now()+1550;render();showPreview();};
@@ -122,7 +123,7 @@ $('#duplicate').onclick=async()=>{try{const w=await vaultStore.save({...readDraf
 $('#copy-display').onclick=async()=>{try{await navigator.clipboard.writeText($('#vault-display-url').value);message('Display link copied.');}catch{$('#vault-display-url').select();message('Select and copy the display link.');}};
 $('#export-vaults').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(exportVaultSettings(vaultStore.list()),null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='faith-vault-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 $('#import-vaults').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>1000000)throw Error('This settings file is too large.');await vaultStore.import(importVaultSettings(JSON.parse(await file.text())));widgets=vaultStore.list();list();message('Imported vaults. Existing games were kept.');}catch(e){message(e.message,true);}finally{e.target.value='';}};
-let wasIntro=false;const pulse=setInterval(()=>{if(!demo)return;const opening=vaultRoundTime(demo,Date.now())<demo.readyAt;if(advanceVault(demo)||wasIntro!==opening)render();wasIntro=opening;if(auto&&!demo.flight&&demo.completedAt===null&&Date.now()>=nextAuto)pick();},50);
+let wasIntro=false;const pulse=setInterval(()=>{if(!demo)return;const opening=vaultRoundTime(demo,Date.now())<demo.readyAt;if(advanceVault(demo)||wasIntro!==opening||demo.tokenFinale)render();wasIntro=opening;if(auto&&!vaultLivePhase(demo).busy&&demo.completedAt===null&&Date.now()>=nextAuto)pick();},50);
 const unsubscribeRanges=vaultStore.subscribe(()=>{
  if(!selected)return;const latest=vaultStore.list(),w=latest.find(w=>w.id===selected);if(!w)return;
  if(saving)return;

@@ -58,7 +58,7 @@ export function startVaultTotalRange(widget,input,viewer='',now=Date.now(),draw=
  const target=lowerWeightedRange(rule.min,rule.max,pick),luck=target>=1500,longRun=target>=7500;
  // Game 1 keeps its existing draw sequence. Higher games, larger username
  // ranges and unlabelled previews use the longer, smaller-cash bonus journey.
- if(input.id!=='low'&&(['medium','high','extreme'].includes(input.id)||luck))return startVaultBoostRound(widget,target,viewer,now,pick);
+ if(widget.finaleMode==='tokens'||input.id!=='low'&&(['medium','high','extreme'].includes(input.id)||luck))return startVaultBoostRound(widget,target,viewer,now,pick);
  const extras=longRun?4+pick(2):luck?2+pick(2):1+pick(3),count=5+extras;
  const powers=[1,2,4,8].filter(m=>target%m===0&&target/m>=count);
  // Every whole-dollar target supports ×4 to the cent, including odd totals.

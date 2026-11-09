@@ -1,3 +1,4 @@
+import {TOKEN_FINALE} from './vault-token-game.js';
 import {startVaultRound,unlockVault,advanceVault,vaultTotal} from './vault-game.js';
 
 const factors=[2,4,6],routes=[];
@@ -12,8 +13,11 @@ addRoutes();
 // The default higher-game ranges fit these caps without rounding the final total.
 const capsFor=count=>Array.from({length:count},(_,i)=>i<5?10000:25000);
 const capacity=count=>15000+capsFor(count).reduce((a,b)=>a+b,0);
-function chooseRoute(target,count,pick){
- const cents=target*100,valid=routes.filter(r=>cents%r.multiplier===0&&cents/r.multiplier>=count);
+const tokenRoutes=[];
+function addTokenRoutes(values=[]){if(values.length>=2)tokenRoutes.push({boosts:values,multiplier:values.reduce((a,b)=>a*b,1)});if(values.length<4)for(let n=2;n<=8;n++)addTokenRoutes([...values,n]);}
+addTokenRoutes();
+function chooseRoute(target,count,pick,tokens=false){
+ const cents=target*100,valid=(tokens?tokenRoutes:routes).filter(r=>cents%r.multiplier===0&&cents/r.multiplier>=(tokens?5+(count-5)*2:count));
  if(!valid.length)throw Error('Could not prepare an exact multiplier path.');
  let choices;
  for(;count<=15;count++){
@@ -84,14 +88,17 @@ function distributeCash(baseCents,count,pick){
 }
 
 export function startVaultBoostRound(widget,target,viewer,now,pick){
- const initial=target>=7500?12+pick(4):target>=4000?11+pick(3):target>=2000?10+pick(3):8+pick(3);
- const route=chooseRoute(target,initial,pick),{count,multiplier,boosts}=route;
+ const tokens=widget.finaleMode==='tokens';
+ const initial=tokens&&target<1500?6+pick(3):target>=7500?12+pick(4):target>=4000?11+pick(3):target>=2000?10+pick(3):8+pick(3);
+ const route=chooseRoute(target,initial,pick,tokens),{count,multiplier,boosts}=route;
  const {opening,amounts}=distributeCash(target*100/multiplier,count,pick),bonuses=planBonuses(count,boosts,pick);
  const pool=values=>[...new Set(values)].map(cents=>({value:cents/100,weight:1})),outcomes=pool(amounts.slice(0,5)),specialOutcomes=pool(amounts.slice(5));
  const round=startVaultRound({...widget,openingMin:opening,openingMax:opening,chambers:5,maxChambers:15,bonusChance:35,multiplyValue:2,multiplyWeight:1,extraWeight:1,guarantee:true,outcomes,specialOutcomes},viewer.trim().replace(/^@/,''),now,()=>0);
  round.prizePlan=amounts.map((cents,i)=>({...bonuses[i],cashIndex:(i<5?outcomes:specialOutcomes).findIndex(p=>Math.round(p.value*100)===cents)}));
+ if(tokens){round.privateTokenPlan=boosts;round.prizePlan=round.prizePlan.map(p=>p.bonus==='multiply'?{cashIndex:p.cashIndex,bonus:'token'}:p);}
  const check=structuredClone(round);
  while(check.remaining){const shot=unlockVault(check,check.opened.at(-1)?.finishAt??check.readyAt);advanceVault(check,shot.finishAt);}
+ if(tokens){while(check.tokenFinale.remaining){const f=unlockVault(check,Math.max(check.readyAt,check.tokenFinale.results.at(-1)?.at+2000||0));advanceVault(check,f.finishAt);}advanceVault(check,check.tokenFinale.finishedAt+TOKEN_FINALE.settle);}
  if(vaultTotal(check)!==String(target*100))throw Error('Could not prepare this total range. No round was started.');
  return round;
 }

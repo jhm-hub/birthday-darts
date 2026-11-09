@@ -1,8 +1,10 @@
+import {tokenTotal} from './vault-token-game.js';
 import {money} from './vault-game.js';
 import {tokenHandoffPose,tokenHandoffToken} from './vault-token-handoff.js';
 import {TOKEN_TIMING,tokenSpinPose,reelTape,ease,clamp} from './vault-tokens-model.js';
 import {tokenInsertionPose,tokenStackFlight,tokenSpinLight,tokenFinalePose,tokenFinaleParticle,tokenBridgePose,tokenBridgeSpark,tokenJackpotAge,tokenJackpotConduit,TOKEN_FINALE_PARTICLES} from './vault-token-spin-motion.js';
-export function tokenGlyph(){return '<svg viewBox="0 0 32 34" shape-rendering="crispEdges" aria-hidden="true"><path d="M10 1H22V3H27V7H30V12H32V24H29V29H24V32H8V30H3V26H0V11H3V6H7V3H10Z" fill="#40263d"/><path d="M10 3H22V5H26V9H29V13H30V23H27V27H23V30H9V28H5V25H2V12H5V8H9V5H10Z" fill="#b76e40"/><path d="M10 3H22V5H26V9H29V20H27V24H23V27H9V25H5V22H3V12H5V8H9V5H10Z" fill="#edba66"/><path d="M10 5H21V7H25V10H27V15H25V11H21V9H11V11H8V20H6V12H8V8H10Z" fill="#fff1bd"/><path d="M11 9H21V11H24V23H21V25H11V23H8V12H11Z" fill="#8c456e"/><path d="M9 13L13 16L16 10L19 16L23 13L21 22H11Z" fill="#ffe3a5"/><path d="M13 20H20V22H12Z" fill="#d49b53"/><path d="M15 17H18V20H15Z" fill="#ee88bc"/><path d="M10 29H22V30H10ZM29 14H30V21H29Z" fill="#ffdd94"/></svg>';}
+import {tokenGlyph} from './vault-token-art.js';
+export {tokenGlyph};
 
 const lamps=[...Array.from({length:7},(_,i)=>[128+i*27,180]),...Array.from({length:7},(_,i)=>[128+i*27,246]),...[196,212,228].flatMap(y=>[[115,y],[302,y]])];
 function royalRays(){return '<svg viewBox="0 0 420 460" shape-rendering="crispEdges" aria-hidden="true">'+Array.from({length:12},(_,i)=>'<path transform="rotate('+i*30+' 210 215)" d="M206 129V99H202V72H206V47H214V72H218V99H214V129Z" fill="'+(i%3?'#ffe1a0':'#f5acd8')+'"/>').join('')+'</svg>';}
@@ -39,7 +41,7 @@ export function createTokenFinaleView(root){
   // Retain earned results while the next reel spins; reveal the new factor
   // only when it lands, then resolve its equation when the boost collects it.
   const factors=s.results.map(r=>r.value),resolved=!f||p.stacked;
-  const receipt=h?h.caption:!factors.length?p.status:factors.map((v,i)=>'<span class="token-stack-chip">×'+v+'</span>').join('<b class="token-stack-join">·</b>')+(resolved&&factors.length>1?'<b class="token-stack-join">=</b><strong class="token-stack-product">×'+p.multiplier+'</strong>':'');
+  const receipt=h?h.caption:!factors.length?p.status:(factors.length>4?'<span class="token-stack-join">…</span>':'')+factors.slice(-4).map((v,i)=>'<span class="token-stack-chip">×'+v+'</span>').join('<b class="token-stack-join">·</b>')+(resolved&&factors.length>1?'<b class="token-stack-join">=</b><strong class="token-stack-product">×'+p.multiplier+'</strong>':'');
   if(receipt!==receiptKey){receiptKey=receipt;note.innerHTML=receipt;}
   const newChip=f&&p.landed?note.querySelector('.token-stack-chip:last-of-type'):null;
   if(newChip)newChip.style.transform=quiet?'none':`translateY(${6*(1-bridge.receipt)}px)`;
@@ -64,4 +66,4 @@ export function createTokenFinaleView(root){
   return p;
  },dispose(){observer.disconnect();root.innerHTML='';}};
 }
-const tokenTotalForView=s=>s.cashCents*s.multiplier;
+const tokenTotalForView=s=>tokenTotal(s);

@@ -1,4 +1,4 @@
-import {clamp,ease} from './vault-tokens-model.js';
+import {clamp,ease} from './vault-token-game.js';
 
 // One clock for the cabinet, token landings and their audio. The bankroll
 // remains on its fixed plaque; these are presentation credits, never spins.

@@ -24,8 +24,8 @@ test('early reveal banks only earned multipliers and reset isolates obsolete fli
  const s=createTokenFinale();const f=beginTokenSpin(s,0,{forced:6});assert.equal(finishTokensEarly(s,100),false);advanceTokenSpin(s,f.finishAt);assert.ok(finishTokensEarly(s,6000));assert.equal(s.remaining,1);assert.equal(tokenSpinPose(s,6000).total,50000);assert.equal(tokenSpinPose(s,6750).total,300000);assert.equal(tokenSpinPose(s,1e9).total,300000);
  const fresh=createTokenFinale();advanceTokenSpin(fresh,1e9);assert.equal(fresh.results.length,0);assert.equal(fresh.multiplier,1);assert.equal(fresh.remaining,2);
 });
-test('configurations that could lose exact cents are rejected before a token is spent',()=>{
- assert.throws(()=>createTokenFinale({cashCents:100000000,tokens:12}),/exact payout/);
+test('large live token configurations preserve exact cents through JSON reloads',()=>{
+ let large=createTokenFinale({cashCents:2100000000,tokens:20});for(let i=0;i<20;i++){const f=beginTokenSpin(large,i*6000,{forced:8});advanceTokenSpin(large,f.finishAt);large=JSON.parse(JSON.stringify(large));}assert.equal(String(tokenTotal(large)),String(2100000000n*8n**20n));
  const s=createTokenFinale({cashCents:1,tokens:12});for(let i=0;i<12;i++){const f=beginTokenSpin(s,i*6000,{forced:8});advanceTokenSpin(s,f.finishAt);}assert.equal(tokenTotal(s),8**12);assert.ok(Number.isSafeInteger(tokenTotal(s)));
 });
 test('reel braking and audio crossings share a continuous monotonic motion',()=>{

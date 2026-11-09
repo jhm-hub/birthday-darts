@@ -1,4 +1,6 @@
 import {vaultHeld,vaultRoundTime} from './vault-hold.js';
+import {createTokenFinale,beginTokenSpin,advanceTokenSpin,TOKEN_FINALE} from './vault-token-game.js';
+import {TOKEN_HANDOFF} from './vault-token-handoff.js';
 import {VAULT_FIRST_CHAMBER_STYLE} from './vault-first-chamber.js';
 import {vaultPlaybackScale} from './vault-playback.js';
 import {randomInt,randomUUID} from './random.js';
@@ -28,6 +30,7 @@ function initialSpecialPrizes(outcomes){
  return outcomes.map((o,i)=>({value:standard?DEFAULT_VAULT.specialOutcomes[i].value:Math.min(1000000,Math.round(o.value*200)/100),weight:o.weight}));
 }
 export function validateVault(input){
+ const finaleMode=input?.finaleMode??'original';if(!['original','tokens'].includes(finaleMode))throw Error('Choose Original Vault or Token Machine.');
  if(!input||typeof input.name!=='string'||!input.name.trim()||input.name.trim().length>40)throw Error('Give this vault a name using 1–40 characters.');
  if(!integer(input.openingMin,0,1000000)||!integer(input.openingMax,input.openingMin,1000000))throw Error('Opening balances use whole dollars from $0–$1,000,000. Maximum must be at least the minimum.');
  if(!integer(input.chambers,1,10)||!integer(input.maxChambers,input.chambers,20))throw Error('Use 1–10 starting chambers and a round limit up to 20.');
@@ -38,25 +41,33 @@ export function validateVault(input){
  const outcomes=validateCashPrizes(input.outcomes,'Starting chamber cash');
  const specialOutcomes=validateCashPrizes(input.specialOutcomes===undefined?initialSpecialPrizes(outcomes):input.specialOutcomes,'Special vault cash');
  const id=input.id??randomUUID();if(!/^[\w-]{1,80}$/.test(id))throw Error('Invalid vault identifier.');
- return {id,name:input.name.trim(),openingMin:input.openingMin,openingMax:input.openingMax,chambers:input.chambers,maxChambers:input.maxChambers,bonusChance:input.bonusChance,multiplyValue:input.multiplyValue,multiplyWeight:input.multiplyWeight,extraWeight:input.extraWeight,guarantee:input.guarantee!==false,celebration:validateGiftCelebration(input.celebration),outcomes,specialOutcomes};
+ return {id,finaleMode,name:input.name.trim(),openingMin:input.openingMin,openingMax:input.openingMax,chambers:input.chambers,maxChambers:input.maxChambers,bonusChance:input.bonusChance,multiplyValue:input.multiplyValue,multiplyWeight:input.multiplyWeight,extraWeight:input.extraWeight,guarantee:input.guarantee!==false,celebration:validateGiftCelebration(input.celebration),outcomes,specialOutcomes};
 }
 // A saved round from before separate pools keeps its original prizes until it
 // finishes. Never migrate the frozen round preset while selecting an award.
 export const vaultCashPrizes=r=>r.opened.length>=r.preset.chambers?(r.preset.specialOutcomes??r.preset.outcomes):r.preset.outcomes;
 export const vaultTotal=r=>r?(BigInt(r.cashCents)*BigInt(r.multiplier)).toString():'0';
 export const vaultLevel=giftCelebrationLevel;
-export function vaultBonuses(r){return [{kind:'multiply',value:r.preset.multiplyValue,weight:r.preset.multiplyWeight},{kind:'extra',value:1,weight:r.allocated<r.preset.maxChambers?r.preset.extraWeight:0}];}
+export function vaultBonuses(r){return [{kind:r.tokenMachine?'token':'multiply',value:r.tokenMachine?1:r.preset.multiplyValue,weight:r.preset.multiplyWeight},{kind:'extra',value:1,weight:r.allocated<r.preset.maxChambers?r.preset.extraWeight:0}];}
 export const vaultBonusDue=r=>!!r?.bonusBy&&r.opened.length+1>=r.bonusBy&&!r.opened.some(x=>x.bonus);
 export function startVaultRound(widget,viewer='',now=Date.now(),draw=randomInt){
- const preset=validateVault(widget);
+ const preset=validateVault(widget);if(preset.finaleMode==='original')delete preset.finaleMode;
  if(typeof viewer!=='string'||viewer.trim().length>32)throw Error('Keep viewer names to 32 characters.');
  const opening=preset.openingMin+draw(preset.openingMax-preset.openingMin+1);
  if(!integer(opening,preset.openingMin,preset.openingMax))throw Error('Invalid opening draw.');
  const r={id:randomUUID(),viewer:viewer.trim(),preset,startedAt:now,readyAt:now+VAULT_INTRO_MS,openingCents:opening*100,cashCents:opening*100,multiplier:1,allocated:preset.chambers,remaining:preset.chambers,opened:[],flight:null,completedAt:null,hideAt:null,bonusBy:0};
+ if(preset.finaleMode==='tokens'){r.tokenMachine=true;r.tokenCount=0;}
  if(preset.guarantee&&preset.chambers>=3&&preset.bonusChance>0&&vaultBonuses(r).some(b=>b.weight>0))r.bonusBy=3;
  return r;
 }
 export function unlockVault(r,now=Date.now(),{draw=randomInt,forcedCash=null,forcedBonus=undefined}={}){
+ if(r?.tokenFinale&&r.completedAt===null){
+  if(vaultHeld(r)||now<r.readyAt)throw Error('Wait for the machine, or resume the held game.');
+  if(forcedCash!==null||forcedBonus!==undefined)throw Error('Use the Spin token button.');
+  const index=r.tokenFinale.results.length;
+  if(r.prizePlan&&(!r.privateTokenPlan||!Number.isInteger(r.privateTokenPlan[index])))throw Error('This round is missing its next spin. Reload the controls.');
+  return beginTokenSpin(r.tokenFinale,now,{draw,forced:r.privateTokenPlan?.[index]??null});
+ }
  if(!r||r.completedAt!==null||r.remaining<1)throw Error('Start a new vault round.');
  if(vaultHeld(r))throw Error('Resume the game before opening another chamber.');
  if(r.flight||now<r.readyAt)throw Error('Wait for the vault to finish opening.');
@@ -93,17 +104,26 @@ function award(r,shot){
  r.cashCents+=shot.cashCents;r.remaining--;
  if(shot.bonus?.kind==='multiply')r.multiplier=(BigInt(r.multiplier)*BigInt(shot.bonus.value)).toString();
  if(shot.bonus?.kind==='extra'){r.remaining++;r.allocated++;}
+ if(shot.bonus?.kind==='token')r.tokenCount=(r.tokenCount??0)+1;
  r.opened.push(structuredClone(shot));
 }
 export function projectedVault(r,now){now=vaultRoundTime(r,now);if(!r?.flight||now<r.flight.revealAt)return r;const copy=structuredClone(r);award(copy,copy.flight);return copy;}
 export function advanceVault(r,now=Date.now()){
+ if(r?.tokenFinale&&!vaultHeld(r)&&r.completedAt===null){
+  const s=r.tokenFinale,before=JSON.stringify(s);advanceTokenSpin(s,now);
+  if(s.finishedAt!==null&&now>=s.finishedAt+TOKEN_FINALE.settle){r.multiplier=s.multiplier;r.completedAt=s.finishedAt+TOKEN_FINALE.settle;r.hideAt=null;return true;}
+  return before!==JSON.stringify(s);
+ }
  if(vaultHeld(r)||!r?.flight||now<r.flight.finishAt)return false;
  const shot=r.flight;award(r,shot);r.flight=null;
- if(!r.remaining){r.completedAt=shot.finishAt;r.hideAt=r.holdFinal?null:shot.finishAt+VAULT_HOLD_MS;}return true;
+ if(!r.remaining){
+  if(r.tokenMachine&&r.tokenCount){r.tokenFinale=createTokenFinale({cashCents:r.cashCents,tokens:r.tokenCount});r.tokenHandoffAt=shot.finishAt;r.readyAt=shot.finishAt+TOKEN_HANDOFF.duration;}
+  else{r.completedAt=shot.finishAt;r.hideAt=r.holdFinal?null:shot.finishAt+VAULT_HOLD_MS;}
+ }return true;
 }
 export function cleanVaultRound(r){
  if(!r)return null;const copy=structuredClone(r),{outcomes,specialOutcomes,bonusChance,multiplyWeight,extraWeight,openingMin,openingMax,...preset}=copy.preset;
- delete copy.privateExperience;delete copy.privateViewerRange;delete copy.prizePlan;
+ delete copy.privateExperience;delete copy.privateViewerRange;delete copy.prizePlan;delete copy.privateTokenPlan;delete preset.finaleMode;
  copy.preset=preset;return copy;
 }
 export function sampleVaultFinale(widget,level=2,now=Date.now()){

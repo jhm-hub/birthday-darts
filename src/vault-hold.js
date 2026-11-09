@@ -13,9 +13,10 @@ export function setVaultHold(round,expected,held,now=Date.now()){
  if(held)round.holdAt=now;
  else{
   const delay=Math.max(0,now-round.holdAt);
-  for(const key of ['startedAt','readyAt','completedAt','hideAt'])if(Number.isFinite(round[key]))round[key]+=delay;
+  for(const key of ['startedAt','readyAt','completedAt','hideAt','tokenHandoffAt'])if(Number.isFinite(round[key]))round[key]+=delay;
   for(const shot of [...round.opened,...(round.flight?[round.flight]:[])])
    for(const key of ['startAt','revealAt','finishAt'])shot[key]+=delay;
+  const tokens=round.tokenFinale;if(tokens){if(Number.isFinite(tokens.finishedAt))tokens.finishedAt+=delay;for(const hit of tokens.results)hit.at+=delay;if(tokens.flight)for(const key of ['startAt','landAt','finishAt'])tokens.flight[key]+=delay;}
   round.holdAt=null;round.resumedAt=now;
  }
  round.holdRevision=(round.holdRevision??0)+1;
