@@ -6,7 +6,7 @@ const $=s=>document.querySelector(s),params=new URLSearchParams(location.search)
 let game=DEMO_GAMES.includes(params.get('game'))?params.get('game'):'mirror-add',config,showcase,scenario='both',ticket=0,connection,sound=false;
 const savedIds=new Map();
 const centreToggle=$('#demo-centre'),centreSize=$('#demo-centre-size');let centreTouched=params.has('centre'),centreDiameter=120;centreToggle.checked=params.get('centre')==='1';
-function demoConfig(){return {...config,centrePng:readCentrePng({enabled:centreToggle.checked,diameter:centreDiameter})};}
+function demoConfig(){return {...config,centrePng:readCentrePng({...config.centrePng,enabled:centreToggle.checked,diameter:centreDiameter})};}
 function centreChange(){if(!centreSize.reportValidity())return;centreTouched=true;centreDiameter=Number(centreSize.value);showcase=null;audio.stop();$('#demo-status').textContent='';render();}
 centreToggle.onchange=centreChange;centreSize.onchange=centreChange;
 try{connection=readSharedConnection();}catch(e){$('#load-status').textContent=e.message;}

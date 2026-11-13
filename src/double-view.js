@@ -14,7 +14,7 @@ export function createDoubleAudio(){
  },dispose(){stop();void ctx?.close();}};
 }
 export function createDoubleView(root,{audio=null,onFontStatus=()=>{}}={}){
- root.innerHTML='<div class="dw-stage"><header><h2></h2><p class="dw-viewer"></p></header><div class="dw-wheel"><div class="dw-disc"></div><div class="dw-centre-guide" aria-hidden="true"><span>PNG</span></div><div class="dw-hub"><span>DOUBLE</span><strong>+</strong></div></div><div class="dw-result"><small></small><div class="dw-line-breakdown" hidden><p data-line="outer" hidden></p><p data-line="inner" hidden></p></div><strong></strong><p class="dw-viewer-total" hidden></p></div></div>';
+ root.innerHTML='<div class="dw-stage"><header><h2></h2><p class="dw-viewer"></p></header><div class="dw-wheel"><div class="dw-disc"></div><img class="dw-centre-image" alt="" referrerpolicy="no-referrer" hidden><div class="dw-centre-guide" aria-hidden="true"><span>PNG</span></div><div class="dw-hub"><span>DOUBLE</span><strong>+</strong></div></div><div class="dw-result"><small></small><div class="dw-line-breakdown" hidden><p data-line="outer" hidden></p><p data-line="inner" hidden></p></div><strong></strong><p class="dw-viewer-total" hidden></p></div></div>';
  const stage=root.querySelector('.dw-stage'),disc=root.querySelector('.dw-disc'),title=root.querySelector('h2'),viewer=root.querySelector('.dw-viewer'),equation=root.querySelector('.dw-result strong'),caption=root.querySelector('.dw-result small');
  let snap=null,wheel,configKey='',visible=false,offset=0,frame,roundId=null,lastNow=0,font='',fontTimer,fontTicket=0;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');stage.style.opacity='0';

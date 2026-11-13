@@ -15,12 +15,12 @@ test('PNG space survives save/reload in all six games and never moves a captured
  for(const create of [createDoubleStore,createBonusStore,createMirrorStore])for(const mode of ['add','multiply']){
   const storage=memory(),locks={request:async(_,fn)=>fn()},s=create(mode,storage,locks);await s.init();const c=s.list()[0],key=s.displayKey();
   assert.equal(c.centrePng.enabled,false);
-  await s.save({...c,centrePng:{enabled:true,diameter:150}});
+  await s.save({...c,centrePng:{enabled:true,diameter:150,assetId:'a'.repeat(64)}});
   await s.action(c.id,'spin',{},Date.now());
   await s.save({...c,centrePng:{enabled:false,diameter:60}});
   const reloaded=create(mode,storage,locks);await reloaded.init();
   assert.deepEqual(reloaded.list()[0].centrePng,{enabled:false,diameter:60});
-  assert.deepEqual(reloaded.snapshot(c.id).round.config.centrePng,{enabled:true,diameter:150});
+  assert.deepEqual(reloaded.snapshot(c.id).round.config.centrePng,{enabled:true,diameter:150,assetId:'a'.repeat(64)});
   assert.equal(reloaded.displayKey(),key);
  }
 });
@@ -36,7 +36,7 @@ test('every supported PNG size leaves real clearance around the inner and third 
 });
 test('centre space leaves Add/Multiply outcomes, mirrored re-spins and third-wheel timing unchanged',()=>{
  for(const mode of ['add','multiply'])for(const game of ['bonus-','mirror-'])for(const scenario of game==='mirror-'?['inner','mirror','both']:['inner']){
-  const config=demoDefaults(game+mode),a=createWheelShowcase(config,scenario,100),b=createWheelShowcase({...config,centrePng:{enabled:true,diameter:150}},scenario,100);
+  const config=demoDefaults(game+mode),a=createWheelShowcase(config,scenario,100),b=createWheelShowcase({...config,centrePng:{enabled:true,diameter:150,assetId:'a'.repeat(64)}},scenario,100);
   for(let now=100;now<30000;now+=100){a.step(now);b.step(now);assert.equal(a.round.phase,b.round.phase);}
   assert.equal(a.round.phase,'complete');assert.deepEqual(a.round.result,b.round.result);assert.equal(a.round.total,b.round.total);
  }
