@@ -14,7 +14,7 @@ if(connection){
  const showStatus=({message,state})=>{status.textContent=message;panel.dataset.state=state;reload.hidden=!['conflict','error'].includes(state);};
  window.addEventListener('shared-settings-status',event=>showStatus(event.detail));
  if(window.__faithSharedSettingsStatus)showStatus(window.__faithSharedSettingsStatus);
- const pages=new Set(['','index.html','desk.html','gifts.html','gift-play.html','darts.html','play.html','vault.html','vault-play.html','pinata.html','pinata-play.html','brokie.html']);
+ const pages=new Set(['','index.html','desk.html','gifts.html','gift-play.html','darts.html','play.html','vault.html','vault-play.html','pinata.html','pinata-play.html','brokie.html','double-add.html','double-add-play.html','double-multiply.html','double-multiply-play.html']);
  function links(){
   for(const note of document.querySelectorAll('.local-note,.backup-line span'))if(/saved in this browser|Back them up|Save changes to update a version/.test(note.textContent))note.textContent='Save changes to update this shared game. You and Faith use the same private editing link. Your permanent OBS display link stays the same.';
   for(const a of document.querySelectorAll('a[href]')){

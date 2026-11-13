@@ -2,12 +2,12 @@
 
 A browser game for Faith's streams: enter a viewer's name, press once per dart, and let the pixel-art scene reveal the total. Includes birthday balloons and the original classic dartboard.
 
-**Faith's Game Room (all seven games):** https://jhm-hub.github.io/birthday-darts/
+**Faith's Game Room (all nine games):** https://jhm-hub.github.io/birthday-darts/
 
 **Darts settings and demo:** https://jhm-hub.github.io/birthday-darts/darts.html
 
 The Game Room links to Crown Vault, Presents, Darts, Piñata Party, Brokie Wheel,
-Birthday Scam Wheel and the original Scam Wheel. Each card has **Edit saved
+Double Wheel Add, Double Wheel Multiply, Birthday Scam Wheel and the original Scam Wheel. Each card has **Edit saved
 settings** and **Open live controls**, opening in a new tab. Its saved-version
 summary reads this browser's existing settings without creating a round or
 changing a selection. Each private game page has an **All games** return link.
@@ -15,6 +15,8 @@ The homepage does not replace any OBS display URL. Old Darts editor links with
 a saved ID or demo fragment redirect to `darts.html`, retaining that information.
 
 **One permanent source per game:** [keep the same OBS source when settings change](PERMANENT-SOURCES.md).
+
+**Double Wheel Add and Multiply:** [editable numbers, private controls and OBS setup](DOUBLE-WHEEL.md).
 
 **Simple stream setup:** https://jhm-hub.github.io/birthday-darts/setup.html
 

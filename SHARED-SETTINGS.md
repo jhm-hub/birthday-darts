@@ -1,6 +1,6 @@
 # Shared settings with one lasting private link
 
-The private editing link opens `desk.html`, one control room for Presents, Darts, Crown Vault, Piñata Party, Brokie Wheel, Birthday Scam Wheel and the original Scam Wheel. Both people open that same full link once in their browser. Use **Save changes** to update the existing game; ordinary saves keep its ID and do not create another widget.
+The private editing link opens `desk.html`, one control room for Presents, Darts, Crown Vault, Piñata Party, Brokie Wheel, Double Wheel Add, Double Wheel Multiply, Birthday Scam Wheel and the original Scam Wheel. Both people open that same full link once in their browser. Use **Save changes** to update the existing game; ordinary saves keep its ID and do not create another widget.
 
 Open the link first in the browser containing the settings you want to share. The first time each game is opened, its existing settings become the shared starting point. If the browser has no settings, that game starts with its normal defaults. Original local libraries remain untouched as a backup. The service only initializes a game once; opening it on another computer then loads the shared copy.
 

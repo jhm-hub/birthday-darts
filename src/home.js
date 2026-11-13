@@ -12,7 +12,12 @@ function wheelArt(kind){
  const wedges=Array.from({length:12},(_,i)=>{const a=(i*30-90)*Math.PI/180,b=((i+1)*30-90)*Math.PI/180;return `<path d="M80 80L${80+66*Math.cos(a)} ${80+66*Math.sin(a)}A66 66 0 0 1 ${80+66*Math.cos(b)} ${80+66*Math.sin(b)}Z" fill="${colors[i%4]}" stroke="#fff0cc" stroke-width="1.6"/>`;}).join('');
  return `<svg viewBox="0 0 160 174" aria-hidden="true"><circle cx="80" cy="83" r="74" fill="#704264"/><circle cx="80" cy="80" r="73" fill="#f1c67d" stroke="#53334b" stroke-width="3"/>${wedges}<circle cx="80" cy="80" r="23" fill="#684468" stroke="#ffe5b1" stroke-width="4"/><path d="M67 73h7v5h5v-11h4v11h5v-5h7v16H67Z" fill="#ffe5a7"/><path d="M72 1h16v12l-8 10-8-10Z" fill="#fff0c5" stroke="#714261" stroke-width="3"/><g fill="#fff5d8">${Array.from({length:16},(_,i)=>`<circle cx="${80+70*Math.cos(i*Math.PI/8)}" cy="${80+70*Math.sin(i*Math.PI/8)}" r="1.7"/>`).join('')}</g></svg>`;
 }
+function doubleArt(id){
+ const ring=(n,r,colors)=>Array.from({length:n},(_,i)=>{const a=i*2*Math.PI/n,b=(i+1)*2*Math.PI/n;return `<path d="M80 80L${80+r*Math.cos(a)} ${80+r*Math.sin(a)}A${r} ${r} 0 0 1 ${80+r*Math.cos(b)} ${80+r*Math.sin(b)}Z" fill="${colors[i%2]}" stroke="#724184"/>`;}).join('');
+ return `<svg viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="75" fill="#633375"/>${ring(8,70,['#ab4bb8','#d9a9e8'])}<circle cx="80" cy="80" r="49" fill="#633375" stroke="#d6aadf"/>${ring(6,41,['#c42d9a','#f4a6cf'])}<circle cx="80" cy="80" r="16" fill="#fbe1f1" stroke="#633375" stroke-width="3"/><text x="80" y="88" text-anchor="middle" fill="#633375" font-size="26">${id==='double-add'?'+':'×'}</text><path d="M140 80l17-8v16Z M113 80l12-6v12Z" fill="#f4dfff" stroke="#633375"/></svg>`;
+}
 function art(id){
+ if(id.startsWith('double-'))return doubleArt(id);
  if(id==='vault')return '<img src="./assets/vault/crown-v3-closed.png" width="1254" height="1254" alt="" fetchpriority="high">';
  if(id==='pinata')return '<img src="./assets/pinata/birthday-royalty-v4.png" width="1280" height="1280" alt="" loading="lazy">';
  if(id==='gifts')return '<div class="gift-cluster">'+[1,0,2].map(i=>activeGiftSVG(i)).join('')+'</div>';

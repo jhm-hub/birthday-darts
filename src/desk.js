@@ -1,6 +1,6 @@
 import {GAMES,savedSummary} from './home-catalog.js';
 import {readSharedConnection,sharedURL,sharedStorageKey} from './shared-settings-connection.js';
-const $=s=>document.querySelector(s),frames=new Map(),states=new Map(),icons={gifts:'✦',vault:'♛',darts:'➶',pinata:'♧',brokie:'◉','birthday-scam':'✿',scam:'♠'};
+const $=s=>document.querySelector(s),frames=new Map(),states=new Map(),icons={gifts:'✦',vault:'♛',darts:'➶',pinata:'♧',brokie:'◉','double-add':'⊕','double-multiply':'⊗','birthday-scam':'✿',scam:'♠'};
 let connection,game='gifts',view='play';
 try{connection=readSharedConnection();if(!connection)throw Error('Open the complete private editing link to use Faith’s shared game desk.');}catch(e){$('#desk-error').hidden=false;$('#desk-error').textContent=e.message;$('#desk-save').textContent='Private link needed';$('#copy-desk').disabled=true;}
 const setStatus=(state,message)=>{const el=$('#desk-save');el.dataset.state=state;el.textContent=message;};
