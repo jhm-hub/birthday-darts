@@ -1,4 +1,5 @@
 import {DEFAULTS,DEFAULT_LINE_CHANCE,readConfig,planSpin,frameAt,parseValues,indexAtPointer} from './double-wheel/model.js';
+import {readCentrePng} from './centre-png.js';
 import {readAppearance} from './double-appearance.js';
 export {parseValues,indexAtPointer};
 export const HOLD_MS=6500,CLEAR_MS=450;
@@ -16,7 +17,7 @@ export function validateDouble(raw,mode=raw?.operation){
  const spins=raw.spins??1;if(!Number.isInteger(spins)||spins<1||spins>20)throw Error('Choose 1–20 spins per viewer.');
  const lineLandings=raw.lineLandings??false,lineChance=raw.lineChance??DEFAULT_LINE_CHANCE;
  if(typeof lineLandings!=='boolean'||!Number.isInteger(lineChance)||lineChance<0||lineChance>100)throw Error('Choose a line-landing chance from 0 to 100%.');
- return {id:raw.id,name:raw.name.trim(),...c,spins,lineLandings,lineChance,appearance:readAppearance(raw.appearance,c)};
+ return {id:raw.id,name:raw.name.trim(),...c,spins,lineLandings,lineChance,centrePng:readCentrePng(raw.centrePng),appearance:readAppearance(raw.appearance,c)};
 }
 export function landingText(result,side){const landing=result?.[side+'Landing'];return landing?.type==='line'?landing.values.map(formatDouble).join(' + ')+' = '+formatDouble(result[side]):'';}
 export function resultEquation(result){const term=side=>result?.[side+'Landing']?.type==='line'?'('+result[side+'Landing'].values.map(formatDouble).join(' + ')+')':formatDouble(result[side]);return `${term('outer')} ${operator(result.operation)} ${term('inner')} = ${formatDouble(result.result)}`;}

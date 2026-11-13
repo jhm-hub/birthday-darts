@@ -1,8 +1,10 @@
+import {createCentreEditor} from './centre-png.js';
 import {COLOR_FIELDS,hexColor,presetAppearance,readAppearance,resizeSpots,spotCount} from './double-appearance.js';
 
 // The number of visible rows is the number of spots; saved arrays are the sole
 // source of truth. Hidden draft rows let a count change be reversed before Save.
 export function createDoubleEditor(form){
+ const centre=createCentreEditor(form);
  const $=selector=>form.querySelector(selector),drafts={outer:[],inner:[]};
  function colorInput(label,attributes=''){
   return `<span class="dw-hex"><input type="text" aria-label="${label} hex" placeholder="#AB4BB8" maxlength="7" spellcheck="false" required ${attributes}><input type="color" aria-label="${label} colour picker" tabindex="-1"></span>`;
@@ -42,6 +44,7 @@ export function createDoubleEditor(form){
  return {
   input:handleInput,
   set(config){
+   centre.set(config);
    const appearance=readAppearance(config.appearance,config);
    $('#font-family').value=appearance.fontFamily;
    for(const side of ['outer','inner']){$('#'+side+'-count').value=config[side].length;drafts[side]=config[side].map(value=>({value:String(value)}));}
@@ -58,7 +61,7 @@ export function createDoubleEditor(form){
     pair(side);appearance[side+'Colors']=rows.map(row=>hexColor(row.querySelector('input[type=text]').value));
    }
    for(const input of form.querySelectorAll('[data-trim]'))appearance.colors[input.dataset.trim]=hexColor(input.value);
-   return {...values,appearance};
+   return {...values,centrePng:centre.read(),appearance};
   },
  };
 }

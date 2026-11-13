@@ -1,3 +1,4 @@
+import {wheelGeometry,reserveSvgCentre} from '../centre-png.js';
 import { wheelLayout } from "./model.js";
 import {readAppearance} from '../double-appearance.js';
 const NS = "http://www.w3.org/2000/svg";
@@ -16,6 +17,7 @@ function path(inner, outer, a, b) {
 }
 function renderWheel(host, config) {
   const appearance=readAppearance(config.appearance,config);
+  const geometry=wheelGeometry(config,false);
   host.replaceChildren();
   const svg = node("svg", { viewBox: "0 0 600 600", "aria-hidden": "true", class: "wheel-svg" });
   svg.append(node("circle", { cx: 300, cy: 300, r: 282, fill: "var(--rim)", class: "rim-shadow" }));
@@ -37,10 +39,10 @@ function renderWheel(host, config) {
     svg.append(group);
     return { group, labels };
   };
-  const outer = rotor(config.outer, 192, 274, "outer");
-  svg.append(node("circle", { cx: 300, cy: 300, r: 186, fill: "var(--rim)", stroke: "var(--ring-light)", "stroke-width": 3 }));
-  const inner = rotor(config.inner, 48, 157, "inner");
-  svg.append(node("circle", { cx: 300, cy: 300, r: 160, fill: "none", stroke: "var(--ring-light)", "stroke-width": 4 }));
+  const outer = rotor(config.outer, ...geometry.outer, "outer");
+  svg.append(node("circle", { cx: 300, cy: 300, r: geometry.innerRim, fill: "var(--rim)", stroke: "var(--ring-light)", "stroke-width": 3 }));
+  const inner = rotor(config.inner, ...geometry.inner, "inner");
+  svg.append(node("circle", { cx: 300, cy: 300, r: geometry.inner[1]+3, fill: "none", stroke: "var(--ring-light)", "stroke-width": 4 }));
   const pointer = (x, scale) => {
     const g = node("g", { transform: `translate(${x} 300) scale(${scale})`, class: "gem-pointer" });
     g.append(node("path", { d: "M -21 0 L 5 -15 L 24 -10 L 24 10 L 5 15 Z", fill: "var(--pointer)", stroke: "var(--rim)", "stroke-width": 2.5 }));
@@ -50,7 +52,8 @@ function renderWheel(host, config) {
     svg.append(g);
   };
   pointer(575, 1);
-  pointer(466, 0.79);
+  pointer(geometry.innerPointer, 0.79);
+  reserveSvgCentre(svg,geometry);
   host.append(svg);
   return {
     draw(angles) {

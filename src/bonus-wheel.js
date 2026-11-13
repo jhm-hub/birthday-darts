@@ -1,3 +1,4 @@
+import {wheelGeometry,reserveSvgCentre} from './centre-png.js';
 import { wheelLayout } from "./double-wheel/model.js";
 import {readBonusAppearance,mirroredSides} from './bonus-game.js';
 const NS = "http://www.w3.org/2000/svg";
@@ -16,6 +17,7 @@ function path(inner, outer, a, b) {
 }
 function renderWheel(host, config) {
   const appearance=readBonusAppearance(config);
+  const geometry=wheelGeometry(config,true);
   host.replaceChildren();
   const svg = node("svg", { viewBox: "0 0 600 600", "aria-hidden": "true", class: "wheel-svg" });
   svg.append(node("circle", { cx: 300, cy: 300, r: 282, fill: "var(--rim)", class: "rim-shadow" }));
@@ -39,13 +41,13 @@ function renderWheel(host, config) {
     svg.append(group);
     return { group, labels,mirrorLabels };
   };
-  const outer = rotor(config.outer, 214, 274, "outer");
-  svg.append(node("circle", { cx: 300, cy: 300, r: 209, fill: "var(--rim)", stroke: "var(--ring-light)", "stroke-width": 3 }));
-  const inner = rotor(config.inner, 123, 190, "inner");
-  svg.append(node("circle", { cx: 300, cy: 300, r: 193, fill: "none", stroke: "var(--ring-light)", "stroke-width": 4 }));
-  svg.append(node("circle", {cx:300,cy:300,r:116,fill:"var(--rim)",stroke:"var(--ring-light)","stroke-width":3}));
-  const bonus=rotor(config.bonus,30,105,"bonus");
-  svg.append(node("circle",{cx:300,cy:300,r:108,fill:"none",stroke:"var(--ring-light)","stroke-width":3}));
+  const outer = rotor(config.outer, ...geometry.outer, "outer");
+  svg.append(node("circle", { cx: 300, cy: 300, r: geometry.innerRim, fill: "var(--rim)", stroke: "var(--ring-light)", "stroke-width": 3 }));
+  const inner = rotor(config.inner, ...geometry.inner, "inner");
+  svg.append(node("circle", { cx: 300, cy: 300, r: geometry.inner[1]+3, fill: "none", stroke: "var(--ring-light)", "stroke-width": 4 }));
+  svg.append(node("circle", {cx:300,cy:300,r:geometry.bonusRim,fill:"var(--rim)",stroke:"var(--ring-light)","stroke-width":3}));
+  const bonus=rotor(config.bonus,...geometry.bonus,"bonus");
+  svg.append(node("circle",{cx:300,cy:300,r:geometry.bonus[1]+3,fill:"none",stroke:"var(--ring-light)","stroke-width":3}));
   const pointer = (x, scale, direction=1) => {
     const g = node("g", { transform: `translate(${x} 300) scale(${scale*direction} ${scale})`, class: "gem-pointer" });
     g.append(node("path", { d: "M -21 0 L 5 -15 L 24 -10 L 24 10 L 5 15 Z", fill: "var(--pointer)", stroke: "var(--rim)", "stroke-width": 2.5 }));
@@ -55,17 +57,24 @@ function renderWheel(host, config) {
     svg.append(g);return g;
   };
   pointer(575, 1);
-  pointer(498, .7);
-  const mirrored=mirroredSides(config),bonusPointer=pointer(412,.55),mirrorPointers=[];
+  pointer(geometry.innerPointer, .7);
+  const mirrored=mirroredSides(config),bonusPointer=pointer(geometry.bonusPointer,.55),mirrorPointers=[];
   if(mirrored.includes('outer'))mirrorPointers.push({node:pointer(25,1,-1),side:'outer'});
-  if(mirrored.includes('inner'))mirrorPointers.push({node:pointer(102,.7,-1),side:'inner'});
-  if(mirrored.includes('bonus'))mirrorPointers.push({node:pointer(188,.55,-1),side:'bonus'});
+  if(mirrored.includes('inner'))mirrorPointers.push({node:pointer(600-geometry.innerPointer,.7,-1),side:'inner'});
+  if(mirrored.includes('bonus'))mirrorPointers.push({node:pointer(600-geometry.bonusPointer,.55,-1),side:'bonus'});
   mirrorPointers.forEach(p=>p.node.classList.add('mirror-pointer'));
   const cover=node("g",{class:"bw-cover"});
+  if(geometry.png.enabled){
+   cover.append(node("circle",{cx:300,cy:300,r:geometry.bonusRim-1,fill:"var(--hub)",stroke:"var(--rim)","stroke-width":3}));
+   const radial=(geometry.bonus[0]+geometry.bonus[1])/2;
+   for(const [text,y] of [["BONUS",300-radial],["LOCKED",300+radial]]){const label=node("text",{x:300,y,"text-anchor":"middle","dominant-baseline":"central",fill:"var(--rim)","font-size":15,"font-weight":700});label.textContent=text;cover.append(label);}
+  }else{
   cover.append(node("circle",{cx:300,cy:300,r:115,fill:"var(--hub)",stroke:"var(--rim)","stroke-width":5}));
   const lock=node("path",{d:"M285 284v-12a15 15 0 0 1 30 0v12 M279 284h42v32h-42Z",fill:"none",stroke:"var(--rim)","stroke-width":5,"stroke-linejoin":"round"});cover.append(lock);
   for(const [text,y,size] of [["BONUS",340,21],["LOCKED",361,12]]){const label=node("text",{x:300,y,"text-anchor":"middle",fill:"var(--rim)","font-size":size,"font-weight":700});label.textContent=text;cover.append(label);}
+  }
   svg.append(cover);
+  reserveSvgCentre(svg,geometry);
   host.append(svg);
   return {
     draw(angles,unlocked=false,mirrorActive=config.mirrorUnlock!=='slot') {

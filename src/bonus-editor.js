@@ -1,9 +1,11 @@
+import {createCentreEditor} from './centre-png.js';
 import {readBonusAppearance} from './bonus-game.js';
 import {COLOR_FIELDS,hexColor,presetAppearance,resizeSpots,spotCount} from './double-appearance.js';
 
 // The number of visible rows is the number of spots; saved arrays are the sole
 // source of truth. Hidden draft rows let a count change be reversed before Save.
 export function createBonusEditor(form,{mirror=false}={}){
+ const centre=createCentreEditor(form);
  const $=selector=>form.querySelector(selector),drafts={outer:[],inner:[],bonus:[]};
  function colorInput(label,attributes=''){
   return `<span class="dw-hex"><input type="text" aria-label="${label} hex" placeholder="#AB4BB8" maxlength="7" spellcheck="false" required ${attributes}><input type="color" aria-label="${label} colour picker" tabindex="-1"></span>`;
@@ -45,6 +47,7 @@ export function createBonusEditor(form,{mirror=false}={}){
  return {
   input:handleInput,
   set(config){
+   centre.set(config);
    const appearance=readBonusAppearance(config);
    $('#font-family').value=appearance.fontFamily;
    for(const side of ['outer','inner','bonus']){$('#'+side+'-count').value=config[side].length;drafts[side]=config[side].map((value,i)=>({value:String(value),bonus:side==='inner'&&config.bonusSlots.includes(i),mirror:side==='inner'&&config.mirrorSlots?.includes(i)}));}
@@ -61,7 +64,7 @@ export function createBonusEditor(form,{mirror=false}={}){
     pair(side);appearance[side+'Colors']=rows.map(row=>hexColor(row.querySelector('input[type=text]').value));
    }
    for(const input of form.querySelectorAll('[data-trim]'))appearance.colors[input.dataset.trim]=hexColor(input.value);
-   const bonusSlots=[...$('#inner-spots').children].flatMap((row,i)=>row.querySelector('[data-bonus-slot]').checked?[i]:[]);return {...values,appearance,bonusColors:appearance.bonusColors,bonusTextColor:hexColor($('[data-bonus-text]').value),bonusSlots,...(mirror?{mirrorSlots:[...$('#inner-spots').children].flatMap((row,i)=>row.querySelector('[data-mirror-slot]').checked?[i]:[])}:{})};
+   const bonusSlots=[...$('#inner-spots').children].flatMap((row,i)=>row.querySelector('[data-bonus-slot]').checked?[i]:[]);return {...values,centrePng:centre.read(),appearance,bonusColors:appearance.bonusColors,bonusTextColor:hexColor($('[data-bonus-text]').value),bonusSlots,...(mirror?{mirrorSlots:[...$('#inner-spots').children].flatMap((row,i)=>row.querySelector('[data-mirror-slot]').checked?[i]:[])}:{})};
   },
  };
 }

@@ -3,3 +3,10 @@
 @font-face{font-family:Nunito;src:url(./fonts/Nunito.ttf);font-weight:200 1000;font-display:swap}.dw-viewer-total{margin:1px 0 0;font-size:17px;font-weight:700;color:var(--result-text,#ffe8f7)}
 
 .dw-stage[data-line-landings=true] .dw-wheel{left:35px;width:470px;height:470px}.dw-line-breakdown{margin:3px 0}.dw-line-breakdown p{margin:0;font-size:12px;line-height:1.3;color:var(--result-text,#ffe8f7);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* Stable OBS centre, shared by paired, bonus and mirror wheels. */
+.dw-stage[data-centre-png=true] .dw-wheel{left:45px;top:50px;width:450px;height:450px}
+.dw-stage[data-centre-png=true] .dw-hub{display:none}
+.dw-centre-guide{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);box-sizing:border-box;width:var(--centre-png-size,120px);height:var(--centre-png-size,120px);border:2px dashed #ffe7a5;border-radius:50%;background:#231329ee;color:#ffe7a5;align-items:center;justify-content:center;font:600 14px var(--wheel-font,Fredoka),sans-serif;pointer-events:none}
+[data-centre-guide=true] .dw-stage[data-centre-png=true] .dw-centre-guide{display:flex}
+.dw-stage[data-centre-png=true] .bw-cover.is-open{transform:none}

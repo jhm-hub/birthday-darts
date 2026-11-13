@@ -1,3 +1,4 @@
+import {setCentreLayout} from './centre-png.js';
 import {renderWheel} from './double-wheel/render.js';
 import {doubleAngles,restingDouble,operator,formatDouble,indexAtPointer,landingText,landingIndices,CLEAR_MS} from './double-game.js';
 import {readAppearance,loadWheelFont} from './double-appearance.js';
@@ -13,11 +14,11 @@ export function createDoubleAudio(){
  },dispose(){stop();void ctx?.close();}};
 }
 export function createDoubleView(root,{audio=null,onFontStatus=()=>{}}={}){
- root.innerHTML='<div class="dw-stage"><header><h2></h2><p class="dw-viewer"></p></header><div class="dw-wheel"><div class="dw-disc"></div><div class="dw-hub"><span>DOUBLE</span><strong>+</strong></div></div><div class="dw-result"><small></small><div class="dw-line-breakdown" hidden><p data-line="outer" hidden></p><p data-line="inner" hidden></p></div><strong></strong><p class="dw-viewer-total" hidden></p></div></div>';
+ root.innerHTML='<div class="dw-stage"><header><h2></h2><p class="dw-viewer"></p></header><div class="dw-wheel"><div class="dw-disc"></div><div class="dw-centre-guide" aria-hidden="true"><span>PNG</span></div><div class="dw-hub"><span>DOUBLE</span><strong>+</strong></div></div><div class="dw-result"><small></small><div class="dw-line-breakdown" hidden><p data-line="outer" hidden></p><p data-line="inner" hidden></p></div><strong></strong><p class="dw-viewer-total" hidden></p></div></div>';
  const stage=root.querySelector('.dw-stage'),disc=root.querySelector('.dw-disc'),title=root.querySelector('h2'),viewer=root.querySelector('.dw-viewer'),equation=root.querySelector('.dw-result strong'),caption=root.querySelector('.dw-result small');
  let snap=null,wheel,configKey='',visible=false,offset=0,frame,roundId=null,lastNow=0,font='',fontTimer,fontTicket=0;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');stage.style.opacity='0';
- function render(time){if(!snap)return;const r=snap.round,c=r?.config??snap.config,key=JSON.stringify(c);if(key!==configKey){configKey=key;stage.dataset.palette=c.palette;stage.dataset.lineLandings=String(!!c.lineLandings);
+ function render(time){if(!snap)return;const r=snap.round,c=r?.config??snap.config,key=JSON.stringify(c);if(key!==configKey){configKey=key;setCentreLayout(stage,c);stage.dataset.palette=c.palette;stage.dataset.lineLandings=String(!!c.lineLandings);
   const a=readAppearance(c.appearance,c),vars={rim:'rim',divider:'divider',ring:'ring-light',hub:'hub',labelA:'label-a',labelB:'label-b',pointer:'pointer',title:'title-color',resultBackground:'result-background',resultText:'result-text'};
   for(const [key,variable] of Object.entries(vars))stage.style.setProperty('--'+variable,a.colors[key]);
   stage.style.setProperty('--wheel-font','"'+a.fontFamily+'", Fredoka, system-ui, sans-serif');
