@@ -8,3 +8,6 @@
 .bw-bonus-toggle input{width:17px;height:17px;flex:none;accent-color:#e78ab8}
 .dw-spot-row input:disabled{opacity:.4}.bw-stage .dw-line-breakdown p{font-size:11px}
 @media(prefers-reduced-motion:reduce){.bw-cover,.bw-stage .dw-hub{transition:none}}
+
+.mirror-pointer{transition:opacity .65s ease}.dw-stage[data-demo=true] .dw-viewer{color:#ffe19a;font-weight:700;letter-spacing:1px}
+@media(prefers-reduced-motion:reduce){.mirror-pointer{transition:none}}

@@ -66,3 +66,13 @@ control locks are retained. Settings sync across computers; local rounds,
 history, totals and display keys do not. Keep editing and display links private.
 Check actual OBS Browser Source audio routing before streaming; browser pairing
 verification is not a physical OBS/audio test.
+
+## Bonus demo
+
+[Open the showcase](https://jhm-hub.github.io/birthday-darts/wheel-demo.html)
+or use **Open bonus demo** at the top of the editor/live controls. Choose the
+Bonus Add or Multiply game, then **Show inner-wheel bonus** to guarantee the
+reveal. The same page offers Mirror games and a combined-bonus demonstration.
+It uses your saved look and numbers, stages one shorter centre-landing spin,
+labels the wheel DEMO, and holds the result for replay. Saved settings, session
+totals/history and OBS are unaffected. Sound starts muted.

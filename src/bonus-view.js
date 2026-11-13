@@ -7,7 +7,7 @@ export function createBonusAudio(){
  function tone(frequency,duration,gain){if(!ctx||!enabled||ctx.state!=='running')return;const osc=ctx.createOscillator(),g=ctx.createGain();osc.frequency.value=frequency;g.gain.setValueAtTime(gain*volume,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+duration);osc.connect(g);g.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+duration);playing.add(osc);osc.onended=()=>{playing.delete(osc);osc.disconnect();g.disconnect();};}
  function stop(){for(const osc of playing)try{osc.stop();}catch{}playing.clear();}
  return {unlock,stop,setEnabled(value){enabled=value;if(value)void unlock().catch(()=>{});else stop();},setVolume(value){volume=value/100;},sync(r,now,angles){
-  const f=r?.bonusFlight??r?.flight,spin=r?r.id+':'+f.startAt:'';if(spin!==roundId){roundId=spin;lastIndices='';landed=false;stop();}if(!r)return;
+  const f=r?.bonusFlight??r?.mirrorFlight??r?.flight,spin=r?r.id+':'+f.startAt:'';if(spin!==roundId){roundId=spin;lastIndices='';landed=false;stop();}if(!r)return;
   if(now>=f.startAt&&now<f.landAt){const indices=r.bonusFlight?'bonus:'+indexAtPointer(r.config.bonus,angles.bonus):indexAtPointer(r.config.outer,angles.outer)+':'+indexAtPointer(r.config.inner,angles.inner);if(indices!==lastIndices&&now-lastTick>60){tone(560,.025,.04);lastTick=now;}lastIndices=indices;}
   else if((r.result||r.base)&&now>=f.landAt&&!landed){landed=true;if(now-f.landAt<250)tone(880,.22,.08);}
  },dispose(){stop();void ctx?.close();}};
@@ -25,17 +25,17 @@ export function createBonusView(root,{audio=null,onFontStatus=()=>{}}={}){
   wheel=renderWheel(disc,c);title.textContent=c.name;root.querySelector('.dw-hub strong').textContent=operator(c.operation);}
   if(roundId!==r?.id){roundId=r?.id;lastNow=0;}const now=Math.max(time,lastNow);lastNow=now;
   const a=r?bonusAngles(r,now,reduced.matches):restingBonus(c),shown=r?.result??r?.base,unlocked=!!r?.bonusFlight;
-  stage.dataset.unlocked=String(unlocked);wheel.draw(a,unlocked);
+  const mirrorActive=c.mirrorUnlock!=='slot'||!!r?.mirrorUnlocked;stage.dataset.unlocked=String(unlocked);stage.dataset.mirrorActive=String(mirrorActive);stage.dataset.demo=String(!!r?.demo);wheel.draw(a,unlocked,mirrorActive);
   const done=!!r?.result;
   wheel.highlight(shown?landingIndices(shown,'outer',c.outer,a.outer):undefined,shown?landingIndices(shown,'inner',c.inner,a.inner):undefined,done&&unlocked?landingIndices(r.result,'bonus',c.bonus,a.bonus):undefined);
-  viewer.textContent=r?.viewer||(unlocked?'BONUS WHEEL UNLOCKED':'HIT BONUS TO UNLOCK THE INNER WHEEL');
-  const spins=c.spins,taken=r?.results.length??0,number=['spinning','bonus'].includes(r?.phase)?taken+1:taken;
-  const bonusPhase=r?.phase==='bonus',opening=bonusPhase&&now<r.bonusFlight.startAt;
-  caption.textContent=bonusPhase?(opening?'BONUS UNLOCKED':'BONUS WHEEL SPINNING'):r?(r.phase==='complete'?'ALL SPINS COMPLETE':`SPIN ${number} OF ${spins}`)+(done?(unlocked?' · BONUS LANDED':' · BOTH LANDED'):''):`${spins} ${spins===1?'SPIN':'SPINS'} PER VIEWER`;
+  viewer.textContent=r?.demo?'DEMO · STAGED BONUS':r?.viewer||(unlocked?'BONUS WHEEL UNLOCKED':c.mirrorUnlock==='slot'?'LAND BONUS OR MIRROR TO UNLOCK':'HIT BONUS TO UNLOCK THE INNER WHEEL');
+  const spins=c.spins,taken=r?.results.length??0,number=['spinning','mirror','bonus'].includes(r?.phase)?taken+1:taken;
+  const bonusPhase=r?.phase==='bonus',mirrorPhase=r?.phase==='mirror',opening=bonusPhase&&now<r.bonusFlight.startAt;
+  caption.textContent=mirrorPhase?(now<r.mirrorFlight.startAt?'MIRROR BONUS UNLOCKED':'MIRRORED WHEELS SPINNING'):bonusPhase?(opening?'BONUS UNLOCKED':'BONUS WHEEL SPINNING'):r?(r.phase==='complete'?'ALL SPINS COMPLETE':`SPIN ${number} OF ${spins}`)+(done?((r.mirrorUnlocked?' · MIRROR':'')+(unlocked?' · BONUS LANDED':' · BOTH LANDED')):''):`${spins} ${spins===1?'SPIN':'SPINS'} PER VIEWER`;
   const breakdown=root.querySelector('.dw-line-breakdown');let any=false;
   for(const side of ['outer','inner','bonus']){const text=shown?landingText(shown,side):'',el=breakdown.querySelector('[data-line="'+side+'"]');el.hidden=!text;el.textContent=text?(side==='outer'?'Outer':side==='inner'?'Inner':'Bonus')+': '+text:'';any ||= !!text;}
   breakdown.hidden=!any;
-  equation.textContent=done?`${formatBonus(r.result.outer)} ${operator(c.operation)} ${formatBonus(r.result.inner)} = ${formatBonus(r.result.result)}`:bonusPhase?`${formatBonus(r.base.outer)} ${operator(c.operation)} BONUS = …`:`— ${operator(c.operation)} — = —`;
+  equation.textContent=mirrorPhase?'MIRROR BONUS · RESPIN':done?`${formatBonus(r.result.outer)} ${operator(c.operation)} ${formatBonus(r.result.inner)} = ${formatBonus(r.result.result)}`:bonusPhase?`${formatBonus(r.base.outer)} ${operator(c.operation)} BONUS = …`:`— ${operator(c.operation)} — = —`;
   const length=equation.textContent.length;equation.style.fontSize=length>36?'16px':length>26?'20px':length>16?'26px':'34px';
   const total=root.querySelector('.dw-viewer-total');total.hidden=spins===1;total.textContent=`${r?.phase==='complete'?'FINAL':'VIEWER'} TOTAL · ${formatBonus(r?.total??0)}`;
   const alpha=r?.hideAt?Math.max(0,Math.min(1,1-(now-r.hideAt)/CLEAR_MS)):1;

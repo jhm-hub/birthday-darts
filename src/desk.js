@@ -50,4 +50,5 @@ function select(id,mode=view){
 for(const item of GAMES){const button=document.createElement('button');button.className='desk-game';button.dataset.game=item.id;const icon=document.createElement('span');icon.textContent=icons[item.id];icon.setAttribute('aria-hidden','true');button.append(icon,document.createTextNode(item.name));button.onclick=()=>select(item.id,'play');$('#desk-games').append(button);}
 $('#tab-play').onclick=()=>select(game,'play');$('#tab-settings').onclick=()=>select(game,'settings');
 $('#copy-desk').onclick=async()=>{try{await navigator.clipboard.writeText(sharedURL(new URL('./desk.html',location.href).href,connection));$('#copy-desk').textContent='Copied';setTimeout(()=>$('#copy-desk').textContent='Copy private link',1800);}catch{setStatus('error','Copy the complete address from your browser.');}};
+$('#desk-demo').href=sharedURL(new URL('./wheel-demo.html',location.href).href,connection);
 select(game);

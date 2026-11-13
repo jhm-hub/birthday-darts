@@ -18,7 +18,13 @@ export function validateBonus(raw,mode=raw?.operation){
  if(!Array.isArray(slots)||!slots.length||new Set(slots).size!==slots.length||slots.some(i=>!Number.isInteger(i)||i<0||i>=base.inner.length))throw Error('Mark at least one valid inner spot as a Bonus slot.');
  if(!Array.isArray(raw.bonusColors)||raw.bonusColors.length!==bonus.length)throw Error('Every bonus spot needs a hex colour.');
  if(!Number.isFinite(raw.bonusDuration)||raw.bonusDuration<2||raw.bonusDuration>15)throw Error('Choose a bonus spin duration from 2 to 15 seconds.');
- return {...base,mirrorMode,bonus:[...bonus],bonusSlots:[...slots].sort((a,b)=>a-b),bonusDuration:raw.bonusDuration,bonusTextColor:hexColor(raw.bonusTextColor??'#492450'),bonusColors:raw.bonusColors.map(hexColor)};
+ let mirror={};
+ if(raw.mirrorUnlock==='slot'){
+  const marks=raw.mirrorSlots;
+  if(!Array.isArray(marks)||new Set(marks).size!==marks.length||marks.some(i=>!Number.isInteger(i)||i<0||i>=base.inner.length||slots.includes(i)))throw Error('Choose valid Mirror slots, separate from the Bonus slots.');
+  mirror={mirrorUnlock:'slot',mirrorSlots:[...marks].sort((a,b)=>a-b)};
+ }
+ return {...base,mirrorMode,...mirror,bonus:[...bonus],bonusSlots:[...slots].sort((a,b)=>a-b),bonusDuration:raw.bonusDuration,bonusTextColor:hexColor(raw.bonusTextColor??'#492450'),bonusColors:raw.bonusColors.map(hexColor)};
 }
 export function readBonusAppearance(config){return {...readAppearance(config.appearance,config),bonusColors:config.bonusColors,bonusTextColor:config.bonusTextColor??'#492450'};}
 export const mirroredSides=config=>config.mirrorMode==='all'?['outer','inner','bonus']:config.mirrorMode==='main'?['outer','inner']:config.mirrorMode==='outer'?['outer']:[];
@@ -30,21 +36,23 @@ export function drawLanding(values,config,choose=randomIndex,special=[],side='ou
  return {type:line?'line':'section',index,indices:[...new Set(pointers.flatMap(p=>p.indices))],values:numbers,total:numbers.reduce((s,n)=>s+Math.round((n??0)*100),0)/100,unlocks:numbers.includes(null),mirrored,pointers};
 }
 const combine=(outer,inner,operation)=>operation==='add'?(Math.round(outer*100)+Math.round(inner*100))/100:Math.round(outer*100)*Math.round(inner*100)/10000;
-export function initialPlan(config,from,choose){
- const outerLanding=drawLanding(config.outer,config,choose,[],'outer'),innerLanding=drawLanding(config.inner,config,choose,config.bonusSlots,'inner');
- return {from:{...from},to:{outer:targetRotation(from.outer,config.outer,outerLanding.index,-1,5,outerLanding.type==='line'),inner:targetRotation(from.inner,config.inner,innerLanding.index,1,6,innerLanding.type==='line'),bonus:from.bonus},duration:config.duration*1000,round:{outer:outerLanding.total,inner:innerLanding.total,outerLanding,innerLanding,unlocked:innerLanding.unlocks,operation:config.operation,result:innerLanding.unlocks?null:combine(outerLanding.total,innerLanding.total,config.operation)}};
+export function initialPlan(config,from,choose,mirrorActive=config.mirrorUnlock!=='slot',carryBonus=false){
+ const effective=mirrorActive?config:{...config,mirrorMode:'none'};
+ const outerLanding=drawLanding(config.outer,effective,choose,[],'outer'),innerLanding=drawLanding(config.inner,effective,choose,config.bonusSlots,'inner');
+ const mirrorTriggered=!mirrorActive&&innerLanding.indices.some(i=>config.mirrorSlots?.includes(i)),unlocked=innerLanding.unlocks||carryBonus;
+ return {from:{...from},to:{outer:targetRotation(from.outer,config.outer,outerLanding.index,-1,5,outerLanding.type==='line'),inner:targetRotation(from.inner,config.inner,innerLanding.index,1,6,innerLanding.type==='line'),bonus:from.bonus},duration:config.duration*1000,round:{outer:outerLanding.total,inner:innerLanding.total,outerLanding,innerLanding,unlocked,mirrorTriggered,mirrorUnlocked:config.mirrorUnlock==='slot'&&mirrorActive,carriedBonus:carryBonus,operation:config.operation,result:unlocked||mirrorTriggered?null:combine(outerLanding.total,innerLanding.total,config.operation)}};
 }
 export function restingBonus(config){return {outer:-180/config.outer.length,inner:-180/config.inner.length,bonus:-180/config.bonus.length};}
 export function startBonus(config,viewer='',now=Date.now(),choose){
  const c=validateBonus(config),p=initialPlan(c,restingBonus(c),choose);
- return {id:crypto.randomUUID(),config:c,viewer:String(viewer).trim().slice(0,40),phase:'spinning',flight:{from:p.from,to:p.to,duration:p.duration,startAt:now,landAt:now+p.duration},bonusFlight:null,base:null,pending:p.round,result:null,results:[],total:0,completedAt:null,hideAt:null,creditedSpins:0};
+ return {id:crypto.randomUUID(),config:c,viewer:String(viewer).trim().slice(0,40),phase:'spinning',flight:{from:p.from,to:p.to,duration:p.duration,startAt:now,landAt:now+p.duration},mirrorFlight:null,mirrorUnlocked:false,bonusFlight:null,base:null,pending:p.round,result:null,results:[],total:0,completedAt:null,hideAt:null,creditedSpins:0};
 }
 export const bonusResults=round=>round?.results??[];
 export const bonusTotal=round=>bonusResults(round).reduce((s,r)=>s+Math.round(r.result*10000),0)/10000;
 export function continueBonus(round,now=Date.now(),choose){
  if(round?.phase!=='ready'||round.results.length>=round.config.spins)throw Error('Wait for the current spin and bonus to finish.');
- const from={...round.flight.to,bonus:round.bonusFlight?.to.bonus??round.flight.to.bonus},p=initialPlan(round.config,from,choose);
- Object.assign(round,{phase:'spinning',flight:{from:p.from,to:p.to,duration:p.duration,startAt:now,landAt:now+p.duration},bonusFlight:null,base:null,pending:p.round,result:null});return round;
+ const from={...(round.mirrorFlight??round.flight).to,bonus:round.bonusFlight?.to.bonus??round.flight.to.bonus},p=initialPlan(round.config,from,choose);
+ Object.assign(round,{phase:'spinning',flight:{from:p.from,to:p.to,duration:p.duration,startAt:now,landAt:now+p.duration},mirrorFlight:null,mirrorUnlocked:false,bonusFlight:null,base:null,pending:p.round,result:null});return round;
 }
 function finish(round,landAt){
  round.result=round.pending;round.pending=null;round.results.push(round.result);round.total=bonusTotal(round);
@@ -52,37 +60,43 @@ function finish(round,landAt){
 }
 export function advanceBonus(round,now=Date.now(),choose){
  if(!round)return false;let changed=false;
+ const mainFinished=flight=>{
+  if(!round.pending.unlocked){finish(round,flight.landAt);return;}
+  round.base=round.pending;const c=round.config,effective=c.mirrorUnlock==='slot'&&!round.mirrorUnlocked?{...c,mirrorMode:'none'}:c;
+  const landing=drawLanding(c.bonus,effective,choose,[],'bonus'),from={...flight.to},startAt=flight.landAt+REVEAL_MS,duration=c.bonusDuration*1000;
+  round.bonusFlight={from,to:{...from,bonus:targetRotation(from.bonus,c.bonus,landing.index,-1,5,landing.type==='line')},duration,startAt,landAt:startAt+duration};
+  const inner=(Math.round(round.base.inner*100)+Math.round(landing.total*100))/100;
+  round.pending={...round.base,inner,bonus:landing.total,bonusLanding:landing,result:combine(round.base.outer,inner,c.operation)};round.phase='bonus';
+ };
  if(round.phase==='spinning'&&now>=round.flight.landAt){
   changed=true;
-  if(!round.pending.unlocked)finish(round,round.flight.landAt);
-  else {
-   round.base=round.pending;const c=round.config,landing=drawLanding(c.bonus,c,choose,[],'bonus'),from={...round.flight.to},startAt=round.flight.landAt+REVEAL_MS,duration=c.bonusDuration*1000;
-   round.bonusFlight={from,to:{...from,bonus:targetRotation(from.bonus,c.bonus,landing.index,-1,5,landing.type==='line')},duration,startAt,landAt:startAt+duration};
-   const inner=(Math.round(round.base.inner*100)+Math.round(landing.total*100))/100;
-   round.pending={...round.base,inner,bonus:landing.total,bonusLanding:landing,result:combine(round.base.outer,inner,c.operation)};round.phase='bonus';
-  }
+  if(round.pending.mirrorTriggered){
+   const startAt=round.flight.landAt+REVEAL_MS,p=initialPlan(round.config,round.flight.to,choose,true,round.pending.unlocked);
+   round.mirrorFlight={from:p.from,to:p.to,duration:p.duration,startAt,landAt:startAt+p.duration};round.pending=p.round;round.mirrorUnlocked=true;round.phase='mirror';
+  }else mainFinished(round.flight);
  }
+ if(round.phase==='mirror'&&now>=round.mirrorFlight.landAt){changed=true;mainFinished(round.mirrorFlight);}
  if(round.phase==='bonus'&&now>=round.bonusFlight.landAt){finish(round,round.bonusFlight.landAt);changed=true;}
  return changed;
 }
 export function bonusAngles(round,now,reduced=false){
- const f=round.bonusFlight??round.flight;if(reduced&&now<f.landAt)return {...f.from};
+ const f=round.bonusFlight??round.mirrorFlight??round.flight;if(reduced&&now<f.landAt)return {...f.from};
  const result=frameAt(f,now-f.startAt),t=Math.max(0,Math.min(1,(now-f.startAt)/f.duration)),ease=t===1?1:10*t*t-20*t**3+15*t**4-4*t**5;
  return {outer:result.outer,inner:result.inner,bonus:f.from.bonus+(f.to.bonus-f.from.bonus)*ease};
 }
 export function publicBonus(round){
  if(!round)return null;
- const {id,config,viewer,phase,flight,bonusFlight,base,result,results,total,completedAt,hideAt}=round;
- return structuredClone({id,config,viewer,phase,flight,bonusFlight,base,result,results,total,completedAt,hideAt});
+ const {id,config,viewer,phase,flight,mirrorFlight,mirrorUnlocked,bonusFlight,base,result,results,total,completedAt,hideAt,demo}=round;
+ return structuredClone({id,config,viewer,phase,flight,mirrorFlight,mirrorUnlocked,bonusFlight,base,result,results,total,completedAt,hideAt,...(demo?{demo:true}:{})});
 }
 export function resultEquation(r){
  const term=l=>l.values.map(v=>v===null?'BONUS':formatDouble(v)).join(' + '),outer=(r.outerLanding.type==='line'||r.outerLanding.mirrored)?'('+term(r.outerLanding)+')':formatDouble(r.outer);
  const inner=r.unlocked?formatDouble(r.inner):(r.innerLanding.type==='line'||r.innerLanding.mirrored)?'('+term(r.innerLanding)+')':formatDouble(r.inner);
- return (r.unlocked?'Bonus '+formatDouble(r.bonus)+' → ':'')+outer+' '+operator(r.operation)+' '+inner+' = '+formatDouble(r.result);
+ return (r.mirrorUnlocked?'Mirror → ':'')+(r.unlocked?'Bonus '+formatDouble(r.bonus)+' → ':'')+outer+' '+operator(r.operation)+' '+inner+' = '+formatDouble(r.result);
 }
 export function landingIndices(result,side,values,angle){return result?.[side+'Landing']?.indices??[indexAtPointer(values,angle)];}
 export function landingText(result,side){
  const l=result?.[side+'Landing'];if(!l)return '';
- if(side==='inner'&&l.unlocks)return l.values.filter(v=>v!==null).map(formatDouble).concat('Bonus '+(result.bonus===undefined?'…':formatDouble(result.bonus))).join(' + ')+(result.bonus===undefined?'':' = '+formatDouble(result.inner));
+ if(side==='inner'&&result.unlocked)return l.values.filter(v=>v!==null).map(formatDouble).concat('Bonus '+(result.bonus===undefined?'…':formatDouble(result.bonus))).join(' + ')+(result.bonus===undefined?'':' = '+formatDouble(result.inner));
  return l.type==='line'||l.mirrored?l.values.map(formatDouble).join(' + ')+' = '+formatDouble(result[side]):'';
 }

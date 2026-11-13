@@ -21,21 +21,23 @@ function renderWheel(host, config) {
   svg.append(node("circle", { cx: 300, cy: 300, r: 282, fill: "var(--rim)", class: "rim-shadow" }));
   const rotor = (values, inner2, outer2, name) => {
     const group = node("g", { "data-rotor": name });
-    const labels = [];
+    const labels = [],mirrorLabels=[];
     wheelLayout(values).forEach((slice, i) => {
       const a = slice.startTurn * 360, b = a + slice.sizeTurn * 360, middle = (a + b) / 2;
       const wedge = node("path", { d: path(inner2, outer2, a, b), fill: appearance[name+'Colors'][i], stroke: "var(--divider)", "stroke-width": 1.5, "data-slice": i });
       group.append(wedge);
       const radial = (inner2 + outer2) / 2;
       const [x, y] = point(radial, middle).split(" ");
-      const size = Math.min(name === "outer" ? 34 : 30, (outer2 - inner2) * 0.9 / Math.max(1, String(name==='inner'&&config.bonusSlots.includes(i)?'BONUS':values[i]).length * 0.65), 2 * radial * Math.sin(Math.PI / values.length) * 0.7);
+      const mirrorSlot=name==='inner'&&config.mirrorUnlock==='slot'&&config.mirrorSlots?.includes(i);
+      const label=name==='inner'&&config.bonusSlots.includes(i)?'BONUS':mirrorSlot?'MIRROR':String(values[i]);
+      const sizeFor=value=>Math.min(name === "outer" ? 34 : 30, (outer2 - inner2) * 0.9 / Math.max(1, String(value).length * 0.65), 2 * radial * Math.sin(Math.PI / values.length) * 0.7),size=sizeFor(label);
       const text = node("text", { x, y, transform: `rotate(${middle} ${x} ${y})`, "font-size": size, class: "slice-label",style:name==='bonus'?'fill:'+appearance.bonusTextColor:'' });
-      text.textContent = String(name==='inner'&&config.bonusSlots.includes(i)?'BONUS':values[i]);
+      text.textContent = label;if(mirrorSlot)mirrorLabels.push({text,value:String(values[i]),size,numericSize:sizeFor(values[i])});
       group.append(text);
       labels.push(wedge);
     });
     svg.append(group);
-    return { group, labels };
+    return { group, labels,mirrorLabels };
   };
   const outer = rotor(config.outer, 214, 274, "outer");
   svg.append(node("circle", { cx: 300, cy: 300, r: 209, fill: "var(--rim)", stroke: "var(--ring-light)", "stroke-width": 3 }));
@@ -54,10 +56,11 @@ function renderWheel(host, config) {
   };
   pointer(575, 1);
   pointer(498, .7);
-  const mirrored=mirroredSides(config),bonusPointers=[pointer(412,.55)];
-  if(mirrored.includes('outer'))pointer(25,1,-1);
-  if(mirrored.includes('inner'))pointer(102,.7,-1);
-  if(mirrored.includes('bonus'))bonusPointers.push(pointer(188,.55,-1));
+  const mirrored=mirroredSides(config),bonusPointer=pointer(412,.55),mirrorPointers=[];
+  if(mirrored.includes('outer'))mirrorPointers.push({node:pointer(25,1,-1),side:'outer'});
+  if(mirrored.includes('inner'))mirrorPointers.push({node:pointer(102,.7,-1),side:'inner'});
+  if(mirrored.includes('bonus'))mirrorPointers.push({node:pointer(188,.55,-1),side:'bonus'});
+  mirrorPointers.forEach(p=>p.node.classList.add('mirror-pointer'));
   const cover=node("g",{class:"bw-cover"});
   cover.append(node("circle",{cx:300,cy:300,r:115,fill:"var(--hub)",stroke:"var(--rim)","stroke-width":5}));
   const lock=node("path",{d:"M285 284v-12a15 15 0 0 1 30 0v12 M279 284h42v32h-42Z",fill:"none",stroke:"var(--rim)","stroke-width":5,"stroke-linejoin":"round"});cover.append(lock);
@@ -65,9 +68,11 @@ function renderWheel(host, config) {
   svg.append(cover);
   host.append(svg);
   return {
-    draw(angles,unlocked=false) {
+    draw(angles,unlocked=false,mirrorActive=config.mirrorUnlock!=='slot') {
       cover.classList.toggle("is-open",unlocked);
-      bonusPointers.forEach(p=>p.style.opacity=unlocked?'1':'0');
+      bonusPointer.style.opacity=unlocked?'1':'0';
+      mirrorPointers.forEach(p=>p.node.style.opacity=mirrorActive&&(p.side!=='bonus'||unlocked)?'1':'0');
+      inner.mirrorLabels.forEach(p=>{p.text.textContent=mirrorActive?p.value:'MIRROR';p.text.setAttribute('font-size',mirrorActive?p.numericSize:p.size);});
       bonus.group.setAttribute("transform",`rotate(${angles.bonus} 300 300)`);
       outer.group.setAttribute("transform", `rotate(${angles.outer} 300 300)`);
       inner.group.setAttribute("transform", `rotate(${angles.inner} 300 300)`);
