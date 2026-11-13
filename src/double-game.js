@@ -1,4 +1,4 @@
-import {DEFAULTS,readConfig,planSpin,frameAt,normalize,parseValues,indexAtPointer} from './double-wheel/model.js';
+import {DEFAULTS,DEFAULT_LINE_CHANCE,readConfig,planSpin,frameAt,parseValues,indexAtPointer} from './double-wheel/model.js';
 import {readAppearance} from './double-appearance.js';
 export {parseValues,indexAtPointer};
 export const HOLD_MS=6500,CLEAR_MS=450;
@@ -6,7 +6,7 @@ export const doubleKey=mode=>'faith-double-wheel-live-'+mode+'-v1';
 export const gameId=mode=>'double-'+mode;
 export const formatDouble=n=>new Intl.NumberFormat('en-US',{maximumFractionDigits:4}).format(n);
 export const operator=mode=>mode==='add'?'+':'×';
-export function defaultDouble(mode){return {...structuredClone(DEFAULTS),operation:mode,spins:1,id:gameId(mode),name:'Double Wheel '+(mode==='add'?'Add':'Multiply')};}
+export function defaultDouble(mode){return {...structuredClone(DEFAULTS),operation:mode,spins:1,lineLandings:false,lineChance:DEFAULT_LINE_CHANCE,id:gameId(mode),name:'Double Wheel '+(mode==='add'?'Add':'Multiply')};}
 export function validateDouble(raw,mode=raw?.operation){
  if(!['add','multiply'].includes(mode)||raw?.operation!==mode)throw Error('Choose the correct Add or Multiply game.');
  if(!/^[-\w]{1,80}$/.test(raw.id??'')||typeof raw.name!=='string'||!raw.name.trim()||raw.name.length>40)throw Error('Use a saved game name from 1 to 40 characters.');
@@ -14,8 +14,13 @@ export function validateDouble(raw,mode=raw?.operation){
  for(const key of ['outer','inner'])if(!Array.isArray(raw[key])||JSON.stringify(c[key])!==JSON.stringify(raw[key]))throw Error('Each wheel needs 2–24 numbers from 0 to 9999.99, with up to two decimal places.');
  if(raw.duration!==c.duration||raw.palette!==c.palette)throw Error('Choose a valid colour scheme and spin duration from 2 to 15 seconds.');
  const spins=raw.spins??1;if(!Number.isInteger(spins)||spins<1||spins>20)throw Error('Choose 1–20 spins per viewer.');
- return {id:raw.id,name:raw.name.trim(),...c,spins,appearance:readAppearance(raw.appearance,c)};
+ const lineLandings=raw.lineLandings??false,lineChance=raw.lineChance??DEFAULT_LINE_CHANCE;
+ if(typeof lineLandings!=='boolean'||!Number.isInteger(lineChance)||lineChance<0||lineChance>100)throw Error('Choose a line-landing chance from 0 to 100%.');
+ return {id:raw.id,name:raw.name.trim(),...c,spins,lineLandings,lineChance,appearance:readAppearance(raw.appearance,c)};
 }
+export function landingText(result,side){const landing=result?.[side+'Landing'];return landing?.type==='line'?landing.values.map(formatDouble).join(' + ')+' = '+formatDouble(result[side]):'';}
+export function resultEquation(result){const term=side=>result?.[side+'Landing']?.type==='line'?'('+result[side+'Landing'].values.map(formatDouble).join(' + ')+')':formatDouble(result[side]);return `${term('outer')} ${operator(result.operation)} ${term('inner')} = ${formatDouble(result.result)}`;}
+export function landingIndices(result,side,values,angle){return result?.[side+'Landing']?.indices??[indexAtPointer(values,angle)];}
 export function startDouble(config,viewer='',now=Date.now(),choose){
  const c=validateDouble(config),from={outer:-180/c.outer.length,inner:-180/c.inner.length},plan=planSpin(c,from,choose);
  return {id:crypto.randomUUID(),config:c,viewer:String(viewer).trim().slice(0,40),phase:'spinning',flight:{from:plan.from,to:plan.to,duration:plan.duration,startAt:now,landAt:now+plan.duration},pending:plan.round,result:null,results:[],total:0,completedAt:null,hideAt:null,creditedSpins:0};

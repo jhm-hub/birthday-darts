@@ -58,8 +58,9 @@ function renderWheel(host, config) {
       inner.group.setAttribute("transform", `rotate(${angles.inner} 300 300)`);
     },
     highlight(oi, ii) {
-      outer.labels.forEach((el, i) => el.classList.toggle("winner", i === oi));
-      inner.labels.forEach((el, i) => el.classList.toggle("winner", i === ii));
+      const outerIndices=Array.isArray(oi)?oi:oi===undefined?[]:[oi],innerIndices=Array.isArray(ii)?ii:ii===undefined?[]:[ii];
+      outer.labels.forEach((el, i) => el.classList.toggle("winner", outerIndices.includes(i)));
+      inner.labels.forEach((el, i) => el.classList.toggle("winner", innerIndices.includes(i)));
     }
   };
 }

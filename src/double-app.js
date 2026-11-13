@@ -1,4 +1,4 @@
-import {defaultDouble,validateDouble,startDouble,continueDouble,advanceDouble,publicDouble,formatDouble,operator,CLEAR_MS} from './double-game.js';
+import {defaultDouble,validateDouble,startDouble,continueDouble,advanceDouble,publicDouble,formatDouble,resultEquation,CLEAR_MS} from './double-game.js';
 import {createDoubleEditor} from './double-editor.js';
 import {createDoubleStore} from './double-store.js';
 import {createDoubleView,createDoubleAudio} from './double-view.js';
@@ -17,7 +17,7 @@ function render(){
  $('#action').disabled=busy||!ready||!live&&!validDraft||!!r&&!waiting;$('#action').textContent=spinning?'Spinning together…':waiting?`Spin ${taken+1} of ${spins}`:r?'All spins complete':live?`Spin both${spins>1?' · 1 of '+spins:''}`:'Spin practice';
  $('#reset').disabled=busy||!ready||live&&!!r&&r.phase!=='complete';$('#reset').textContent=live?'Next viewer':'Reset practice';$('#viewer').disabled=!!r||busy||!ready;$('#volume').disabled=live&&!ready;
  $('#reset-total').disabled=busy||!ready||!!r;
- if(live){const m=snapshot?.metrics;$('#total').textContent=formatDouble(m?.total??0);$('#spin-count').textContent=String(m?.spins??0);$('#history').replaceChildren(...(m?.history??[]).map(r=>{const li=document.createElement('li');li.textContent=`${formatDouble(r.outer)} ${operator(mode)} ${formatDouble(r.inner)} = ${formatDouble(r.result)}`;return li;}));}
+ if(live){const m=snapshot?.metrics;$('#total').textContent=formatDouble(m?.total??0);$('#spin-count').textContent=String(m?.spins??0);$('#history').replaceChildren(...(m?.history??[]).map(r=>{const li=document.createElement('li');li.textContent=resultEquation({...r,operation:r.operation??mode});return li;}));}
  if(picker&&snapshot)picker.update({...snapshot,widget:snapshot.config},ready);
  if(!busy)status(live&&!ready?controlStatus:spinning?`Spin ${taken+1} of ${spins} · both wheels stop together.`:waiting?`Viewer total: ${formatDouble(r.total)} · ${spins-taken} ${spins-taken===1?'spin':'spins'} remaining.`:r?`Final viewer total: ${formatDouble(r.total)} · clears shortly`:(live?'Ready for the next viewer.':'Practice only. The stream is unaffected.'));
 }
@@ -29,9 +29,9 @@ async function command(action){if(busy||!ready)return;busy=true;render();try{
  busy=false;render();
  }catch(e){busy=false;render();status(e.message,true);}}
 function fields(){
- validDraft=true;$('#game-name').value=config.name;$('#duration').value=String(config.duration);$('#spins').value=String(config.spins??1);$('#palette').value=config.palette;editor.set(config);editorSignature=JSON.stringify(config);
+ validDraft=true;$('#game-name').value=config.name;$('#duration').value=String(config.duration);$('#spins').value=String(config.spins??1);$('#line-landings').checked=config.lineLandings??false;$('#line-chance').value=String(config.lineChance??defaultDouble(mode).lineChance);$('#palette').value=config.palette;editor.set(config);editorSignature=JSON.stringify(config);
 }
-function readFields(){return validateDouble({id,name:$('#game-name').value,operation:mode,...editor.read(),duration:Number($('#duration').value),spins:Number($('#spins').value),palette:$('#palette').value},mode);}
+function readFields(){return validateDouble({id,name:$('#game-name').value,operation:mode,...editor.read(),duration:Number($('#duration').value),spins:Number($('#spins').value),lineLandings:$('#line-landings').checked,lineChance:$('#line-chance').value.trim()===''?NaN:Number($('#line-chance').value),palette:$('#palette').value},mode);}
 function list(){const select=$('#wheel-list');select.replaceChildren(...store.list().map(c=>new Option(c.name,c.id)));select.value=id;}
 function links(){const edit=new URL('./double-'+mode+'.html',location.href);edit.searchParams.set('id',id);$('#edit-link').href=edit.href;const control=new URL('./double-'+mode+'-play.html',location.href);control.searchParams.set('id',id);$('#live-link').href=control.href;$('#live-link').hidden=live||dirty;const url=new URL(location.href);url.searchParams.set('id',id);history.replaceState(null,'',url);}
 async function save(copy=false){if(busy)return;busy=true;try{let next=readFields();if(copy)next={...next,id:crypto.randomUUID(),name:next.name.slice(0,35)+' copy'};await store.save(next);config=next;id=next.id;dirty=false;demo=null;fields();list();links();window.dispatchEvent(new CustomEvent('shared-settings-clean'));$('#save-status').textContent=copy?'New version saved. The OBS source stays the same.':'Changes saved. They apply to the next viewer.';}catch(e){$('#save-status').textContent=e.message;}finally{busy=false;render();}}

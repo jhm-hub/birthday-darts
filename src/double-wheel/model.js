@@ -1,6 +1,7 @@
 import { layout, sliceCenterDeg, sliceAtAngle } from "./vendor/model/geometry.js";
 import { deg, normalizeDeg, sliceIndex, weight } from "./vendor/model/units.js";
 const DEFAULTS = { outer: [5, 4, 9, 5, 6, 7, 8, 10], inner: [6, 7, 4, 3, 4, 5], duration: 6.2, operation: "add", palette: "landaire" };
+const DEFAULT_LINE_CHANCE = 25;
 const normalize = (n) => normalizeDeg(deg(n));
 const wheelLayout = (values) => layout(values.map((value, index) => ({ index: sliceIndex(index), text: String(value), weight: weight(1) })));
 function parseValues(raw) {
@@ -22,9 +23,10 @@ function readConfig(value) {
 function indexAtPointer(values, rotation) {
   return sliceAtAngle(wheelLayout(values), deg(normalize(-rotation)));
 }
-function targetRotation(current, values, index, direction, turns) {
-  const center = sliceCenterDeg(wheelLayout(values)[index]);
-  const target = normalize(-center);
+function targetRotation(current, values, index, direction, turns, line = false) {
+  const slice = wheelLayout(values)[index];
+  const angle = line ? slice.startTurn * 360 : sliceCenterDeg(slice);
+  const target = normalize(-angle);
   const travel = direction === 1 ? normalize(target - current) : normalize(current - target);
   return current + direction * (turns * 360 + travel);
 }
@@ -36,16 +38,25 @@ function randomIndex(length) {
   } while (sample[0] >= limit);
   return sample[0] % length;
 }
+function chooseLanding(values, config, choose) {
+  // A line draw and a position draw are independent. When disabled, retain
+  // the original uniform section draw without consuming extra random values.
+  const line = !!config.lineLandings && choose(100) < (config.lineChance ?? DEFAULT_LINE_CHANCE);
+  const index = choose(values.length);
+  const indices = line ? [(index - 1 + values.length) % values.length, index] : [index];
+  const numbers = indices.map(i => values[i]);
+  return { type: line ? 'line' : 'section', index, indices, values: numbers, total: numbers.reduce((sum,n)=>sum+Math.round(n*100),0)/100 };
+}
 function planSpin(config, from, choose = randomIndex) {
-  const oi = choose(config.outer.length), ii = choose(config.inner.length);
-  const outer = config.outer[oi], inner = config.inner[ii];
+  const outerLanding = chooseLanding(config.outer, config, choose), innerLanding = chooseLanding(config.inner, config, choose);
+  const outer = outerLanding.total, inner = innerLanding.total;
   const a = Math.round(outer * 100), b = Math.round(inner * 100);
   const result = config.operation === "multiply" ? a * b / 1e4 : config.operation === "add" ? (a + b) / 100 : null;
   return {
     from: { ...from },
-    to: { outer: targetRotation(from.outer, config.outer, oi, -1, 5), inner: targetRotation(from.inner, config.inner, ii, 1, 6) },
+    to: { outer: targetRotation(from.outer, config.outer, outerLanding.index, -1, 5, outerLanding.type==='line'), inner: targetRotation(from.inner, config.inner, innerLanding.index, 1, 6, innerLanding.type==='line') },
     duration: config.duration * 1e3,
-    round: { outer, inner, result, operation: config.operation }
+    round: { outer, inner, result, operation: config.operation, outerLanding, innerLanding }
   };
 }
 function frameAt(plan, elapsed) {
@@ -59,6 +70,7 @@ function frameAt(plan, elapsed) {
 }
 export {
   DEFAULTS,
+  DEFAULT_LINE_CHANCE,
   frameAt,
   indexAtPointer,
   normalize,

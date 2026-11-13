@@ -34,6 +34,17 @@ are added together for that viewer: for example three Add results of 5.75 total
 17.25; three Multiply results of 7.875 total 23.625. Spin duration remains 2–15
 seconds per paired spin. Practice is separate from the live display.
 
+**Allow line landings** is optional and starts off. When enabled, **Line chance
+per wheel (%)** starts at **25%** and can be set from 0–100%. Each wheel draws
+independently, so neither, one, or both wheels can land on a dividing line.
+Each section or boundary within its selected landing type has equal odds.
+For a line landing, the two adjacent spot values are added first, including
+the last/first boundary. Those wheel totals then use the game's Add or Multiply
+operation. For example, an outer line between 3 and 4 gives 7; with an inner
+5, Add gives 12 and Multiply gives 35. Both adjacent sections highlight, and
+the stream display and private history explain the calculation. Turning the
+option off restores centre-only landings. Existing saved games stay off.
+
 ## Stream setup
 
 1. Open the desired game in the private desk's **Play** tab or its live controls.
@@ -53,7 +64,7 @@ inner. Decimal calculations retain up to four decimal places for products.
 Intermediate results stay until Faith starts the next spin. The final viewer
 total holds for 6.5 seconds, then fades to transparent. **Next viewer** can clear
 the completed turn early. A live viewer must finish their configured spins.
-Saving new numbers, colours, fonts or spin counts during a turn affects the
+Saving new numbers, colours, fonts, spin counts or line settings during a turn affects the
 next viewer; the current viewer retains their original settings and outcomes.
 
 Only the wheel, optional viewer name and result appear on stream. Buttons,
@@ -78,7 +89,8 @@ service; rounds, pairing keys, totals and history remain local.
 The shared service recognizes separate `double-add` and `double-multiply`
 records under the existing private editing key. No new access permissions or
 production test records are required. Automated tests cover both directions,
-all supported slice counts, exact results, simultaneous stops, reloads,
+all supported slice counts and line boundaries, independent line probabilities,
+exact results, simultaneous stops, reloads,
 duplicate controls, permanent sources, stale displays and shared-setting
 isolation. Browser QA also exercises actual paired controls/displays and both
 games in the private desk against a local authenticated settings service.

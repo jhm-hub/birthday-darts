@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {defaultDouble,validateDouble,startDouble,continueDouble,advanceDouble,publicDouble,doubleAngles,doubleKey,HOLD_MS,CLEAR_MS} from '../src/double-game.js';
+import {defaultDouble,validateDouble,startDouble,continueDouble,advanceDouble,publicDouble,doubleAngles,doubleKey,landingText,resultEquation,landingIndices,HOLD_MS,CLEAR_MS} from '../src/double-game.js';
 import {hexColor,fontName,resizeSpots,presetAppearance} from '../src/double-appearance.js';
-import {targetRotation,indexAtPointer,parseValues} from '../src/double-wheel/model.js';
+import {targetRotation,indexAtPointer,parseValues,planSpin,normalize,wheelLayout} from '../src/double-wheel/model.js';
 import {createDoubleStore} from '../src/double-store.js';
 const memory=()=>{const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),map};};
 function fixture(mode='add',storage=memory(),sharedOptions={}){let tail=Promise.resolve();const locks={request:(_,fn)=>{const p=tail.then(fn);tail=p.catch(()=>{});return p;}};return {storage,locks,store:createDoubleStore(mode,storage,locks,sharedOptions)};}
@@ -46,7 +46,7 @@ test('bad saved data stays intact and session reset does not change settings or 
 test('shared settings sync both modes to another computer without sharing runtime or OBS keys',async()=>{
  const records=new Map(),connection={workspace:'double-test-123456',key:'A'.repeat(43)};
  const fetcher=async(url,o)=>{const old=records.get(url)??{settings:null,revision:0};if(o.method==='GET')return Response.json(old);if(Number(o.headers['If-Match'])!==old.revision)return Response.json({error:'Conflict'},{status:409});const next={settings:JSON.parse(o.body),revision:old.revision+1};records.set(url,next);return Response.json(next);};
- for(const mode of ['add','multiply']){const opts={connection,fetcher,browser:null},a=fixture(mode,memory(),opts).store;await a.init();const appearance=presetAppearance('sweetheart',2,6,'Nunito');appearance.outerColors[0]='#123456';await a.save({...a.list()[0],name:'Shared '+mode,outer:[2.25,9],spins:4,appearance});const b=fixture(mode,memory(),opts).store;await b.init();assert.equal(b.list()[0].name,'Shared '+mode);assert.deepEqual(b.list()[0].outer,[2.25,9]);assert.deepEqual(b.list()[0].appearance,appearance);assert.equal(b.list()[0].spins,4);assert.notEqual(a.displayKey(),b.displayKey());}
+ for(const mode of ['add','multiply']){const opts={connection,fetcher,browser:null},a=fixture(mode,memory(),opts).store;await a.init();const appearance=presetAppearance('sweetheart',2,6,'Nunito');appearance.outerColors[0]='#123456';await a.save({...a.list()[0],name:'Shared '+mode,outer:[2.25,9],spins:4,lineLandings:true,lineChance:37,appearance});const b=fixture(mode,memory(),opts).store;await b.init();assert.equal(b.list()[0].name,'Shared '+mode);assert.deepEqual(b.list()[0].outer,[2.25,9]);assert.deepEqual(b.list()[0].appearance,appearance);assert.equal(b.list()[0].spins,4);assert.equal(b.list()[0].lineLandings,true);assert.equal(b.list()[0].lineChance,37);assert.notEqual(a.displayKey(),b.displayKey());}
  assert.equal(records.size,2);const wire=JSON.stringify([...records.values()]);for(const forbidden of ['"room"','"stream"','"round"','"metrics"'])assert.ok(!wire.includes(forbidden));
 });
 async function sessions(){
@@ -111,4 +111,66 @@ test('pre-update completed rounds keep their single credit after reload',async()
  const f=fixture(),s=f.store;await s.init();const id=s.list()[0].id;await s.action(id,'spin');const raw=JSON.parse(f.storage.getItem(s.key)),r=raw.widgets[0].round;
  delete r.results;delete r.creditedSpins;delete r.config.spins;delete r.config.appearance;r.phase='complete';r.result=r.pending;r.pending=null;r.credited=true;r.completedAt=Date.now();r.hideAt=Date.now()+HOLD_MS;raw.widgets[0].metrics={spins:1,total:r.result.result,history:[]};f.storage.setItem(s.key,JSON.stringify(raw));
  await s.init();assert.equal(s.controlSnapshot(id).metrics.spins,1);assert.equal(s.snapshot(id).round.results.length,1);assert.equal(s.snapshot(id).round.total,r.result.result);
+});
+test('line landings default off with an editable 25 percent chance and strict validation',()=>{
+ const legacy=defaultDouble('add');delete legacy.lineLandings;delete legacy.lineChance;
+ const c=validateDouble(legacy);assert.equal(c.lineLandings,false);assert.equal(c.lineChance,25);
+ for(const lineChance of [-1,101,2.5,NaN,'25'])assert.throws(()=>validateDouble({...c,lineChance}));
+ for(const lineLandings of [0,1,'true'])assert.throws(()=>validateDouble({...c,lineLandings}));
+ for(const lineChance of [0,25,100])assert.equal(validateDouble({...c,lineChance}).lineChance,lineChance);
+ const bounds=[];const off=planSpin({...c,lineChance:100},{outer:0,inner:0},n=>{bounds.push(n);return 0;});
+ assert.deepEqual(bounds,[8,6]);assert.equal(off.round.outerLanding.type,'section');assert.equal(off.round.innerLanding.type,'section');
+});
+test('every line endpoint is exactly between its two adjacent sections, including wraparound',()=>{
+ const distance=(a,b)=>Math.min(normalize(a-b),normalize(b-a));
+ for(let n=2;n<=24;n++){
+  const values=Array.from({length:n},(_,i)=>i+.25),layout=wheelLayout(values);
+  for(let boundary=0;boundary<n;boundary++)for(const start of [-105873.2,0,103947])for(const direction of [-1,1]){
+   const to=targetRotation(start,values,boundary,direction,5,true);
+   assert.ok(distance(normalize(-to),layout[boundary].startTurn*360)<1e-8);assert.ok((to-start)*direction>=1800-1e-8);
+  }
+  for(let boundary=0;boundary<n;boundary++){
+   const inputs=[0,boundary,0,boundary],p=planSpin({...defaultDouble('add'),outer:values,inner:values,lineLandings:true,lineChance:100},{outer:0,inner:0},()=>inputs.shift());
+   const indices=[(boundary-1+n)%n,boundary];assert.deepEqual(p.round.outerLanding.indices,indices);assert.deepEqual(p.round.innerLanding.indices,indices);
+   assert.equal(p.round.outer,indices.reduce((sum,i)=>sum+values[i],0));
+  }
+ }
+});
+test('25 percent is independent per wheel and every boundary has equal opportunity',()=>{
+ const c={...defaultDouble('add'),outer:[1,2,3,4],inner:[5,6,7],lineLandings:true,lineChance:25},counts={none:0,outer:0,inner:0,both:0};
+ for(let outer=0;outer<100;outer++)for(let inner=0;inner<100;inner++){
+  const inputs=[outer,0,inner,0],p=planSpin(c,{outer:0,inner:0},()=>inputs.shift());
+  const o=p.round.outerLanding.type==='line',i=p.round.innerLanding.type==='line';counts[o&&i?'both':o?'outer':i?'inner':'none']++;
+ }
+ assert.deepEqual(counts,{none:5625,outer:1875,inner:1875,both:625});
+ for(const chance of [0,100])for(const roll of [0,99]){const inputs=[roll,0,roll,0],p=planSpin({...c,lineChance:chance},{outer:0,inner:0},()=>inputs.shift());assert.equal(p.round.outerLanding.type,chance===100?'line':'section');assert.equal(p.round.innerLanding.type,chance===100?'line':'section');}
+});
+test('line values add before Add or Multiply and retain exact decimals and explanation',()=>{
+ for(const mode of ['add','multiply'])for(const [outerRoll,innerRoll,outer,inner] of [[0,0,5.75,9],[0,99,5.75,5],[99,0,3.5,9],[99,99,3.5,5]]){
+  const c={...defaultDouble(mode),outer:[2.25,3.5],inner:[4,5],lineLandings:true},inputs=[outerRoll,1,innerRoll,1];
+  const r=startDouble(c,'Test',0,()=>inputs.shift());assert.equal(r.result,null);assert.equal(publicDouble(r).pending,undefined);assert.deepEqual(publicDouble(r).results,[]);
+  advanceDouble(r,r.flight.landAt);assert.equal(r.result.outer,outer);assert.equal(r.result.inner,inner);assert.equal(r.total,mode==='add'?outer+inner:outer*inner);
+  assert.equal(landingText(r.result,'outer'),outerRoll===0?'2.25 + 3.5 = 5.75':'');
+  assert.deepEqual(landingIndices(r.result,'outer',c.outer,r.flight.to.outer),outerRoll===0?[0,1]:[1]);
+  if(mode==='multiply'&&outerRoll===0&&innerRoll===0)assert.equal(resultEquation(r.result),'(2.25 + 3.5) × (4 + 5) = 51.75');
+ }
+ const repeated=planSpin({...defaultDouble('multiply'),outer:[0,0],inner:[9999.99,9999.99],lineLandings:true,lineChance:100},{outer:0,inner:0},()=>0);
+ assert.equal(repeated.round.outer,0);assert.equal(repeated.round.inner,19999.98);assert.equal(repeated.round.result,0);assert.deepEqual(repeated.round.innerLanding.indices,[1,0]);
+ const max=planSpin({...defaultDouble('multiply'),outer:[9999.99,9999.99],inner:[9999.99,9999.99],lineLandings:true,lineChance:100},{outer:0,inner:0},()=>0);
+ assert.equal(max.round.result,399999200.0004);
+ assert.deepEqual(landingIndices({outer:2},'outer',[2,3],-90),[0]);
+});
+test('line results survive reload, credit once, and toggling mid-viewer only changes the next viewer',async()=>{
+ const f=fixture('multiply'),s=f.store;await s.init();const id=s.list()[0].id,key=s.displayKey();
+ await s.save({...s.list()[0],outer:[2.25,2.25],inner:[3.5,3.5],spins:2,lineLandings:true,lineChance:100,appearance:undefined});
+ let now=Date.now();await s.action(id,'spin',{},now);const before=s.snapshot(id).round;
+ const reloaded=createDoubleStore('multiply',f.storage,f.locks);await reloaded.init();assert.deepEqual(reloaded.snapshot(id).round,before);
+ await reloaded.save({...reloaded.list()[0],lineLandings:false,lineChance:25});
+ for(let n=1;n<=2;n++){
+  now=reloaded.snapshot(id).round.flight.landAt;await reloaded.advance(id,now);await reloaded.advance(id,now+1);
+  const current=reloaded.controlSnapshot(id);assert.equal(current.round.total,31.5*n);assert.equal(current.metrics.spins,n);assert.equal(current.metrics.total,31.5*n);assert.equal(current.round.result.outerLanding.type,'line');assert.equal(current.round.result.innerLanding.type,'line');
+  if(n<2)await reloaded.action(id,'spin',{},now+1);
+ }
+ await reloaded.action(id,'clear',{},now);await reloaded.action(id,'spin',{},now+1);assert.equal(reloaded.snapshot(id).round.config.lineLandings,false);assert.equal(reloaded.displayKey(),key);
+ now=reloaded.snapshot(id).round.flight.landAt;await reloaded.advance(id,now);assert.equal(reloaded.snapshot(id).round.result.result,7.875);assert.equal(reloaded.snapshot(id).round.result.outerLanding.type,'section');
 });
