@@ -5,8 +5,8 @@ import {GAMES,savedSummary,gameLinks,legacyDartsLink} from '../src/home-catalog.
 
 const game=id=>GAMES.find(g=>g.id===id);
 function store(entries={}){return {getItem:key=>entries[key]??null,setItem(){assert.fail('The homepage must not write game state');},removeItem(){assert.fail('The homepage must not remove game state');}};}
-test('all eleven editors and controls remain separate, with relative routes',async()=>{
- assert.equal(GAMES.length,11);assert.equal(new Set(GAMES.map(g=>g.id)).size,11);
+test('all thirteen editors and controls remain separate, with relative routes',async()=>{
+ assert.equal(GAMES.length,13);assert.equal(new Set(GAMES.map(g=>g.id)).size,13);
  for(const g of GAMES){
   const links=gameLinks(g,{});assert.equal(links.editor,g.editor);assert.equal(links.controls,g.controls);
   for(const link of Object.values(links))if(link.startsWith('./'))await access(new URL('../public/'+link.slice(2).split('?')[0],import.meta.url));
@@ -16,7 +16,7 @@ test('all eleven editors and controls remain separate, with relative routes',asy
  assert.equal(gameLinks(game('scam'),{}).controls,'../scam-wheel/browser.html');
 });
 test('widget summaries prefer the active saved version and never expose rooms or rounds',()=>{
- for(const id of ['vault','gifts','darts','pinata','double-add','double-multiply','bonus-add','bonus-multiply']){
+ for(const id of ['vault','gifts','darts','pinata','double-add','double-multiply','bonus-add','bonus-multiply','mirror-add','mirror-multiply']){
   const g=game(id),a={id:'first',name:'First',room:'secret'},b={id:'chosen & #',name:'Saved birthday game',viewerRanges:[{username:'private'}],round:{viewer:'private'}};
   const state=JSON.stringify({widgets:[a,b],stream:{activeId:b.id,room:'private'}});
   const storage=store({[g.key]:state}),summary=savedSummary(storage,g);
@@ -51,6 +51,6 @@ test('legacy Darts bookmarks preserve their saved ID and demo payload',()=>{
  }
 });
 test('home navigation is only added to private pages, not transparent overlays',async()=>{
- for(const file of ['darts','play','gifts','gift-play','vault','vault-play','pinata','pinata-play','brokie','double-add','double-add-play','double-multiply','double-multiply-play','bonus-add','bonus-add-play','bonus-multiply','bonus-multiply-play'])assert.match(await readFile(new URL('../public/'+file+'.html',import.meta.url),'utf8'),/class="game-home-nav"/);
- for(const file of ['display','gift-display','vault-display','pinata-display','brokie-display','double-add-display','double-multiply-display','bonus-add-display','bonus-multiply-display'])assert.doesNotMatch(await readFile(new URL('../public/'+file+'.html',import.meta.url),'utf8'),/game-home-nav/);
+ for(const file of ['darts','play','gifts','gift-play','vault','vault-play','pinata','pinata-play','brokie','double-add','double-add-play','double-multiply','double-multiply-play','bonus-add','bonus-add-play','bonus-multiply','bonus-multiply-play','mirror-add','mirror-add-play','mirror-multiply','mirror-multiply-play'])assert.match(await readFile(new URL('../public/'+file+'.html',import.meta.url),'utf8'),/class="game-home-nav"/);
+ for(const file of ['display','gift-display','vault-display','pinata-display','brokie-display','double-add-display','double-multiply-display','bonus-add-display','bonus-multiply-display','mirror-add-display','mirror-multiply-display'])assert.doesNotMatch(await readFile(new URL('../public/'+file+'.html',import.meta.url),'utf8'),/game-home-nav/);
 });

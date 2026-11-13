@@ -1,5 +1,5 @@
 import { wheelLayout } from "./double-wheel/model.js";
-import {readBonusAppearance} from './bonus-game.js';
+import {readBonusAppearance,mirroredSides} from './bonus-game.js';
 const NS = "http://www.w3.org/2000/svg";
 function node(name, attrs) {
   const el = document.createElementNS(NS, name);
@@ -44,17 +44,20 @@ function renderWheel(host, config) {
   svg.append(node("circle", {cx:300,cy:300,r:116,fill:"var(--rim)",stroke:"var(--ring-light)","stroke-width":3}));
   const bonus=rotor(config.bonus,30,105,"bonus");
   svg.append(node("circle",{cx:300,cy:300,r:108,fill:"none",stroke:"var(--ring-light)","stroke-width":3}));
-  const pointer = (x, scale) => {
-    const g = node("g", { transform: `translate(${x} 300) scale(${scale})`, class: "gem-pointer" });
+  const pointer = (x, scale, direction=1) => {
+    const g = node("g", { transform: `translate(${x} 300) scale(${scale*direction} ${scale})`, class: "gem-pointer" });
     g.append(node("path", { d: "M -21 0 L 5 -15 L 24 -10 L 24 10 L 5 15 Z", fill: "var(--pointer)", stroke: "var(--rim)", "stroke-width": 2.5 }));
     g.append(node("path", { d: "M -21 0 L 5 -15 L 10 0 Z", fill: "#FFFFFF", opacity:.25 }));
     g.append(node("path", { d: "M -21 0 L 10 0 L 5 15 Z", fill: "#000000", opacity:.15 }));
     g.append(node("path", { d: "M 10 0 L 24 -10 L 24 10 L 5 15 Z", fill: "#000000", opacity:.3 }));
-    svg.append(g);
+    svg.append(g);return g;
   };
   pointer(575, 1);
   pointer(498, .7);
-  pointer(412,.55);
+  const mirrored=mirroredSides(config),bonusPointers=[pointer(412,.55)];
+  if(mirrored.includes('outer'))pointer(25,1,-1);
+  if(mirrored.includes('inner'))pointer(102,.7,-1);
+  if(mirrored.includes('bonus'))bonusPointers.push(pointer(188,.55,-1));
   const cover=node("g",{class:"bw-cover"});
   cover.append(node("circle",{cx:300,cy:300,r:115,fill:"var(--hub)",stroke:"var(--rim)","stroke-width":5}));
   const lock=node("path",{d:"M285 284v-12a15 15 0 0 1 30 0v12 M279 284h42v32h-42Z",fill:"none",stroke:"var(--rim)","stroke-width":5,"stroke-linejoin":"round"});cover.append(lock);
@@ -64,6 +67,7 @@ function renderWheel(host, config) {
   return {
     draw(angles,unlocked=false) {
       cover.classList.toggle("is-open",unlocked);
+      bonusPointers.forEach(p=>p.style.opacity=unlocked?'1':'0');
       bonus.group.setAttribute("transform",`rotate(${angles.bonus} 300 300)`);
       outer.group.setAttribute("transform", `rotate(${angles.outer} 300 300)`);
       inner.group.setAttribute("transform", `rotate(${angles.inner} 300 300)`);
