@@ -14,10 +14,10 @@ function wheelArt(kind){
 }
 function doubleArt(id){
  const ring=(n,r,colors)=>Array.from({length:n},(_,i)=>{const a=i*2*Math.PI/n,b=(i+1)*2*Math.PI/n;return `<path d="M80 80L${80+r*Math.cos(a)} ${80+r*Math.sin(a)}A${r} ${r} 0 0 1 ${80+r*Math.cos(b)} ${80+r*Math.sin(b)}Z" fill="${colors[i%2]}" stroke="#724184"/>`;}).join('');
- return `<svg viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="75" fill="#633375"/>${ring(8,70,['#ab4bb8','#d9a9e8'])}<circle cx="80" cy="80" r="49" fill="#633375" stroke="#d6aadf"/>${ring(6,41,['#c42d9a','#f4a6cf'])}<circle cx="80" cy="80" r="16" fill="#fbe1f1" stroke="#633375" stroke-width="3"/><text x="80" y="88" text-anchor="middle" fill="#633375" font-size="26">${id==='double-add'?'+':'×'}</text><path d="M140 80l17-8v16Z M113 80l12-6v12Z" fill="#f4dfff" stroke="#633375"/></svg>`;
+ return `<svg viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="75" fill="#633375"/>${ring(8,70,['#ab4bb8','#d9a9e8'])}<circle cx="80" cy="80" r="49" fill="#633375" stroke="#d6aadf"/>${ring(6,41,['#c42d9a','#f4a6cf'])}${id.startsWith('bonus-')?ring(6,28,['#ffc86b','#ffe9ad']):''}<circle cx="80" cy="80" r="16" fill="#fbe1f1" stroke="#633375" stroke-width="3"/><text x="80" y="88" text-anchor="middle" fill="#633375" font-size="26">${id.endsWith('-add')?'+':'×'}</text><path d="M140 80l17-8v16Z M113 80l12-6v12Z" fill="#f4dfff" stroke="#633375"/></svg>`;
 }
 function art(id){
- if(id.startsWith('double-'))return doubleArt(id);
+ if(id.startsWith('double-')||id.startsWith('bonus-'))return doubleArt(id);
  if(id==='vault')return '<img src="./assets/vault/crown-v3-closed.png" width="1254" height="1254" alt="" fetchpriority="high">';
  if(id==='pinata')return '<img src="./assets/pinata/birthday-royalty-v4.png" width="1280" height="1280" alt="" loading="lazy">';
  if(id==='gifts')return '<div class="gift-cluster">'+[1,0,2].map(i=>activeGiftSVG(i)).join('')+'</div>';
