@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {defaultDouble,validateDouble,startDouble,advanceDouble,publicDouble,doubleAngles,doubleKey,HOLD_MS,CLEAR_MS} from '../src/double-game.js';
+import {defaultDouble,validateDouble,startDouble,continueDouble,advanceDouble,publicDouble,doubleAngles,doubleKey,HOLD_MS,CLEAR_MS} from '../src/double-game.js';
+import {hexColor,fontName,resizeSpots,presetAppearance} from '../src/double-appearance.js';
 import {targetRotation,indexAtPointer,parseValues} from '../src/double-wheel/model.js';
 import {createDoubleStore} from '../src/double-store.js';
 const memory=()=>{const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),map};};
@@ -25,7 +26,7 @@ test('live draws ignore attempts to force results through action payloads',async
 test('serialized duplicate actions award exactly once and preserve an unfinished spin on reload',async()=>{
  const f=fixture(),s=f.store;await s.init();const c=s.list()[0],now=Date.now();
  const calls=await Promise.allSettled([s.action(c.id,'spin',{},now),s.action(c.id,'spin',{},now)]);assert.equal(calls.filter(c=>c.status==='fulfilled').length,1);
- await assert.rejects(s.action(c.id,'clear',{},now),/Wait/);await assert.rejects(s.save(c),/Finish/);
+ await assert.rejects(s.action(c.id,'clear',{},now),/Finish/);await s.save({...c,spins:3});assert.equal(s.snapshot(c.id).round.config.spins,1);
  const before=s.snapshot(c.id).round,again=createDoubleStore('add',f.storage,f.locks);await again.init();assert.deepEqual(again.snapshot(c.id).round,before);
  await again.advance(c.id,before.flight.landAt);await again.advance(c.id,before.flight.landAt+10);assert.equal(again.controlSnapshot(c.id).metrics.spins,1);
  assert.equal(again.controlSnapshot(c.id).metrics.total,again.snapshot(c.id).round.result.result);
@@ -33,7 +34,7 @@ test('serialized duplicate actions award exactly once and preserve an unfinished
 });
 test('both games and their permanent sources stay separate; copies retain the same source',async()=>{
  const local=memory(),a=fixture('add',local).store,m=fixture('multiply',local).store;await a.init();await m.init();assert.notEqual(a.displayKey(),m.displayKey());
- const first=a.list()[0],room=a.displayKey();await a.save({...first,id:'vip',name:'VIP',outer:[10,20]});await a.selectVersion('vip');assert.equal(a.displayKey(),room);assert.equal(m.list().length,1);
+ const first=a.list()[0],room=a.displayKey();await a.save({...first,id:'vip',name:'VIP',outer:[10,20],appearance:undefined});await a.selectVersion('vip');assert.equal(a.displayKey(),room);assert.equal(m.list().length,1);
  const reload=fixture('add',local).store;await reload.init();assert.equal(reload.selectedId(),'vip');assert.equal(reload.displayKey(),room);
  await reload.action('vip','spin');await assert.rejects(reload.selectVersion(first.id),/Finish/);await assert.rejects(reload.action(first.id,'spin'),/selected/);
  const pub=JSON.stringify(reload.snapshot('vip'));for(const secret of [room,'metrics','stream','pending'])assert.ok(!pub.includes(secret));
@@ -45,7 +46,7 @@ test('bad saved data stays intact and session reset does not change settings or 
 test('shared settings sync both modes to another computer without sharing runtime or OBS keys',async()=>{
  const records=new Map(),connection={workspace:'double-test-123456',key:'A'.repeat(43)};
  const fetcher=async(url,o)=>{const old=records.get(url)??{settings:null,revision:0};if(o.method==='GET')return Response.json(old);if(Number(o.headers['If-Match'])!==old.revision)return Response.json({error:'Conflict'},{status:409});const next={settings:JSON.parse(o.body),revision:old.revision+1};records.set(url,next);return Response.json(next);};
- for(const mode of ['add','multiply']){const opts={connection,fetcher,browser:null},a=fixture(mode,memory(),opts).store;await a.init();await a.save({...a.list()[0],name:'Shared '+mode,outer:[2.25,9]});const b=fixture(mode,memory(),opts).store;await b.init();assert.equal(b.list()[0].name,'Shared '+mode);assert.deepEqual(b.list()[0].outer,[2.25,9]);assert.notEqual(a.displayKey(),b.displayKey());}
+ for(const mode of ['add','multiply']){const opts={connection,fetcher,browser:null},a=fixture(mode,memory(),opts).store;await a.init();const appearance=presetAppearance('sweetheart',2,6,'Nunito');appearance.outerColors[0]='#123456';await a.save({...a.list()[0],name:'Shared '+mode,outer:[2.25,9],spins:4,appearance});const b=fixture(mode,memory(),opts).store;await b.init();assert.equal(b.list()[0].name,'Shared '+mode);assert.deepEqual(b.list()[0].outer,[2.25,9]);assert.deepEqual(b.list()[0].appearance,appearance);assert.equal(b.list()[0].spins,4);assert.notEqual(a.displayKey(),b.displayKey());}
  assert.equal(records.size,2);const wire=JSON.stringify([...records.values()]);for(const forbidden of ['"room"','"stream"','"round"','"metrics"'])assert.ok(!wire.includes(forbidden));
 });
 async function sessions(){
@@ -68,4 +69,46 @@ test('display hides stale content, rejects older/wrong-mode snapshots, and never
  const h=await sessions(),seen=[],visible=[],display=h.funcs.connectDoubleDisplay('add',s=>seen.push(s),v=>visible.push(v));display.start();const transport=h.hosts[0];
  const send=(time,mode='add')=>transport.options.message({type:'double-state',snapshot:{kind:'faith-double-wheel',version:1,mode,serverNow:time}});
  send(100);send(99);send(101,'multiply');assert.equal(seen.length,1);assert.deepEqual(visible,[true]);h.advance(6001);assert.equal(visible.at(-1),false);send(102);assert.equal(visible.at(-1),true);assert.equal(h.wire.length,0);display.dispose();
+});
+test('hex colours, fonts and spot counts validate without changing older saved wheels',()=>{
+ const legacy=defaultDouble('add');delete legacy.spins;const c=validateDouble(legacy);
+ assert.equal(c.spins,1);assert.equal(c.appearance.fontFamily,'Fredoka');assert.equal(c.appearance.outerColors.length,8);
+ assert.equal(hexColor('abc'),'#AABBCC');assert.equal(hexColor('#e0AAf1'),'#E0AAF1');
+ for(const value of ['red','#12','#12345678','url(x)'])assert.throws(()=>hexColor(value));
+ assert.equal(fontName(' Nunito Sans '),'Nunito Sans');assert.throws(()=>fontName('x";color:red'));
+ const old=[{value:'50',color:'#123456'},{value:'75',color:'#ABCDEF'}],grown=resizeSpots(old,4,['#000000','#FFFFFF']);
+ assert.deepEqual(grown.slice(0,2),old);assert.equal(grown[2].value,'0');assert.equal(grown[3].color,'#FFFFFF');assert.equal(resizeSpots(grown,2,[]).length,2);
+ for(const count of [0,1,2.5,25,NaN])assert.throws(()=>resizeSpots(old,count,[]));
+ for(const spins of [0,1.5,21])assert.throws(()=>validateDouble({...c,spins}));
+ assert.throws(()=>validateDouble({...c,appearance:{...c.appearance,outerColors:['#FFFFFF']}}));
+});
+test('each configured paired spin contributes exactly once to the viewer total in both games',()=>{
+ for(const mode of ['add','multiply']){
+  const c={...defaultDouble(mode),outer:[2.25,2.25],inner:[3.5,3.5],spins:3},r=startDouble(c,'Viewer',100,()=>0),value=mode==='add'?5.75:7.875;
+  for(let n=1;n<=3;n++){
+   const end=r.flight.landAt;advanceDouble(r,end);assert.equal(r.total,value*n);assert.equal(r.results.length,n);
+   assert.equal(r.phase,n===3?'complete':'ready');assert.equal(r.hideAt,n===3?end+HOLD_MS:null);
+   assert.equal(advanceDouble(r,end+1),false);
+   if(n<3){const from={...r.flight.to};continueDouble(r,end+500,()=>0);assert.deepEqual(r.flight.from,from);assert.equal(r.result,null);assert.equal(r.results.length,n);assert.throws(()=>continueDouble(r,end+501));}
+  }
+  assert.throws(()=>continueDouble(r,1e9));assert.equal(publicDouble(r).total,value*3);
+ }
+});
+test('multi-spin reload, duplicate clicks and next-viewer edits preserve the current rules and source',async()=>{
+ const f=fixture('multiply'),s=f.store;await s.init();const base=s.list()[0];
+ await s.save({...base,outer:[2.25,2.25],inner:[3.5,3.5],spins:3,duration:2,appearance:undefined});const key=s.displayKey();let now=Date.now();
+ await s.action(base.id,'spin',{viewer:'Viewer'},now);const original=s.snapshot(base.id).round.config;
+ await s.save({...s.list()[0],outer:[100,200,300],spins:1,appearance:presetAppearance('reference',3,2,'Nunito')});
+ for(let n=1;n<=3;n++){
+  now=s.snapshot(base.id).round.flight.landAt;await s.advance(base.id,now);await s.advance(base.id,now);
+  assert.equal(s.controlSnapshot(base.id).metrics.spins,n);assert.equal(s.controlSnapshot(base.id).metrics.total,7.875*n);
+  assert.deepEqual(s.snapshot(base.id).round.config,original);
+  if(n<3){await assert.rejects(s.action(base.id,'clear',{},now),/Finish/);const reloaded=createDoubleStore('multiply',f.storage,f.locks);await reloaded.init();assert.equal(reloaded.snapshot(base.id).round.phase,'ready');const clicks=await Promise.allSettled([s.action(base.id,'spin',{},now+1),s.action(base.id,'spin',{},now+1)]);assert.equal(clicks.filter(c=>c.status==='fulfilled').length,1);}
+ }
+ await s.action(base.id,'clear',{},now);await s.action(base.id,'spin',{},now+1);assert.equal(s.snapshot(base.id).round.config.spins,1);assert.equal(s.snapshot(base.id).round.config.outer.length,3);assert.equal(s.displayKey(),key);
+});
+test('pre-update completed rounds keep their single credit after reload',async()=>{
+ const f=fixture(),s=f.store;await s.init();const id=s.list()[0].id;await s.action(id,'spin');const raw=JSON.parse(f.storage.getItem(s.key)),r=raw.widgets[0].round;
+ delete r.results;delete r.creditedSpins;delete r.config.spins;delete r.config.appearance;r.phase='complete';r.result=r.pending;r.pending=null;r.credited=true;r.completedAt=Date.now();r.hideAt=Date.now()+HOLD_MS;raw.widgets[0].metrics={spins:1,total:r.result.result,history:[]};f.storage.setItem(s.key,JSON.stringify(raw));
+ await s.init();assert.equal(s.controlSnapshot(id).metrics.spins,1);assert.equal(s.snapshot(id).round.results.length,1);assert.equal(s.snapshot(id).round.total,r.result.result);
 });

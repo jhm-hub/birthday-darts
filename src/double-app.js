@@ -1,39 +1,40 @@
-import {defaultDouble,validateDouble,parseValues,startDouble,advanceDouble,publicDouble,formatDouble,operator,CLEAR_MS} from './double-game.js';
+import {defaultDouble,validateDouble,startDouble,continueDouble,advanceDouble,publicDouble,formatDouble,operator,CLEAR_MS} from './double-game.js';
+import {createDoubleEditor} from './double-editor.js';
 import {createDoubleStore} from './double-store.js';
 import {createDoubleView,createDoubleAudio} from './double-view.js';
 import {connectDoubleControl,connectDoubleDisplay} from './double-session.js';
 import {bindVersionPicker} from './version-picker.js';
 
 const $=s=>document.querySelector(s),mode=document.documentElement.dataset.mode,overlay=document.documentElement.classList.contains('dw-overlay'),live=document.documentElement.classList.contains('dw-live');
-const audio=createDoubleAudio(),view=createDoubleView($('#game'),{audio});
-let config=defaultDouble(mode),id=new URLSearchParams(location.search).get('id')??config.id,store,session,snapshot,demo=null,pulse,observer,busy=false,ready=!live,sound=false,dirty=false,connected=false,editorSignature='',controlStatus='Connecting live controls…';
+const audio=createDoubleAudio(),view=createDoubleView($('#game'),{audio,onFontStatus:text=>{if($('#font-status'))$('#font-status').textContent=text;}}),editor=overlay?null:createDoubleEditor($('#settings'));
+let config=defaultDouble(mode),id=new URLSearchParams(location.search).get('id')??config.id,store,session,snapshot,demo=null,pulse,observer,busy=false,ready=!live,sound=false,dirty=false,validDraft=true,connected=false,editorSignature='',controlStatus='Connecting live controls…';
 function status(text,error=false){if(overlay)return;$('#play-status').textContent=text;$('#play-status').classList.toggle('error',error);}
 function received(next){const old=snapshot?.round;snapshot=next;if(live){id=next.config.id;config=next.config;if(old&&!next.round)$('#viewer').value='';if(next.round)$('#viewer').value=next.round.viewer;}audio.setVolume(next.volume);if(!overlay){$('#volume').value=String(next.volume);$('#volume-value').textContent=next.volume+'%';}render();}
 function render(){
  const snap=live||overlay?snapshot:{kind:'faith-double-wheel',version:1,mode,serverNow:Date.now(),config,volume:Number($('#volume').value),round:publicDouble(demo)};
  if(snap)view.update(snap,{show:!overlay||connected&&!!snap.round});if(overlay)return;
- const r=snap?.round,spinning=r?.phase==='spinning';
- $('#action').disabled=busy||!ready||!!r;$('#action').textContent=spinning?'Spinning together…':r?'Both wheels landed':live?'Spin both':'Spin practice';
- $('#reset').disabled=busy||!ready||spinning;$('#reset').textContent=live?'Next viewer':'Reset practice';$('#viewer').disabled=!!r||busy||!ready;$('#volume').disabled=live&&!ready;
+ const r=snap?.round,spinning=r?.phase==='spinning',waiting=r?.phase==='ready',spins=r?.config.spins??config.spins??1,taken=r?.results?.length??0;
+ $('#action').disabled=busy||!ready||!live&&!validDraft||!!r&&!waiting;$('#action').textContent=spinning?'Spinning together…':waiting?`Spin ${taken+1} of ${spins}`:r?'All spins complete':live?`Spin both${spins>1?' · 1 of '+spins:''}`:'Spin practice';
+ $('#reset').disabled=busy||!ready||live&&!!r&&r.phase!=='complete';$('#reset').textContent=live?'Next viewer':'Reset practice';$('#viewer').disabled=!!r||busy||!ready;$('#volume').disabled=live&&!ready;
  $('#reset-total').disabled=busy||!ready||!!r;
  if(live){const m=snapshot?.metrics;$('#total').textContent=formatDouble(m?.total??0);$('#spin-count').textContent=String(m?.spins??0);$('#history').replaceChildren(...(m?.history??[]).map(r=>{const li=document.createElement('li');li.textContent=`${formatDouble(r.outer)} ${operator(mode)} ${formatDouble(r.inner)} = ${formatDouble(r.result)}`;return li;}));}
  if(picker&&snapshot)picker.update({...snapshot,widget:snapshot.config},ready);
- if(!busy)status(live&&!ready?controlStatus:spinning?'Outer counterclockwise · inner clockwise · one shared finish.':r?`${formatDouble(r.result.outer)} ${operator(mode)} ${formatDouble(r.result.inner)} = ${formatDouble(r.result.result)} · clears shortly`:(live?'Ready for the next viewer.':'Practice only. The stream is unaffected.'));
+ if(!busy)status(live&&!ready?controlStatus:spinning?`Spin ${taken+1} of ${spins} · both wheels stop together.`:waiting?`Viewer total: ${formatDouble(r.total)} · ${spins-taken} ${spins-taken===1?'spin':'spins'} remaining.`:r?`Final viewer total: ${formatDouble(r.total)} · clears shortly`:(live?'Ready for the next viewer.':'Practice only. The stream is unaffected.'));
 }
 let picker;
 async function command(action){if(busy||!ready)return;busy=true;render();try{
  if(sound)await audio.unlock();
  if(live)received(await session.action(action,{viewer:$('#viewer').value}));
- else if(action==='spin'){config=readFields();demo=startDouble(config,$('#viewer').value);}else demo=null;
+ else if(action==='spin'){config=readFields();if(demo?.phase==='ready')continueDouble(demo);else demo=startDouble(config,$('#viewer').value);}else demo=null;
  busy=false;render();
  }catch(e){busy=false;render();status(e.message,true);}}
 function fields(){
- $('#game-name').value=config.name;$('#outer-values').value=config.outer.join(', ');$('#inner-values').value=config.inner.join(', ');$('#duration').value=String(config.duration);$('#palette').value=config.palette;editorSignature=JSON.stringify(config);
+ validDraft=true;$('#game-name').value=config.name;$('#duration').value=String(config.duration);$('#spins').value=String(config.spins??1);$('#palette').value=config.palette;editor.set(config);editorSignature=JSON.stringify(config);
 }
-function readFields(){return validateDouble({id,name:$('#game-name').value,operation:mode,outer:parseValues($('#outer-values').value),inner:parseValues($('#inner-values').value),duration:Number($('#duration').value),palette:$('#palette').value},mode);}
+function readFields(){return validateDouble({id,name:$('#game-name').value,operation:mode,...editor.read(),duration:Number($('#duration').value),spins:Number($('#spins').value),palette:$('#palette').value},mode);}
 function list(){const select=$('#wheel-list');select.replaceChildren(...store.list().map(c=>new Option(c.name,c.id)));select.value=id;}
 function links(){const edit=new URL('./double-'+mode+'.html',location.href);edit.searchParams.set('id',id);$('#edit-link').href=edit.href;const control=new URL('./double-'+mode+'-play.html',location.href);control.searchParams.set('id',id);$('#live-link').href=control.href;$('#live-link').hidden=live||dirty;const url=new URL(location.href);url.searchParams.set('id',id);history.replaceState(null,'',url);}
-async function save(copy=false){if(busy)return;busy=true;try{let next=readFields();if(copy)next={...next,id:crypto.randomUUID(),name:next.name.slice(0,35)+' copy'};await store.save(next);config=next;id=next.id;dirty=false;demo=null;fields();list();links();window.dispatchEvent(new CustomEvent('shared-settings-clean'));$('#save-status').textContent=copy?'New version saved. The OBS source stays the same.':'Changes saved. They apply to the next live spin.';}catch(e){$('#save-status').textContent=e.message;}finally{busy=false;render();}}
+async function save(copy=false){if(busy)return;busy=true;try{let next=readFields();if(copy)next={...next,id:crypto.randomUUID(),name:next.name.slice(0,35)+' copy'};await store.save(next);config=next;id=next.id;dirty=false;demo=null;fields();list();links();window.dispatchEvent(new CustomEvent('shared-settings-clean'));$('#save-status').textContent=copy?'New version saved. The OBS source stays the same.':'Changes saved. They apply to the next viewer.';}catch(e){$('#save-status').textContent=e.message;}finally{busy=false;render();}}
 async function init(){
  if(overlay){audio.setEnabled(true);session=connectDoubleDisplay(mode,received,value=>{connected=value;render();});session.start();return;}
  if(!navigator.locks)throw Error('Open this page over HTTPS in an up-to-date browser.');
@@ -44,7 +45,7 @@ async function init(){
  $('.layout').classList.toggle('dw-live-layout',live);
  $('#action').onclick=()=>void command('spin');$('#reset').onclick=()=>void command('clear');$('#reset-total').onclick=()=>void command('reset-total');
  $('#settings').onsubmit=e=>{e.preventDefault();void save();};$('#new-wheel').onclick=()=>void save(true);
- $('#settings').oninput=()=>{dirty=true;links();window.dispatchEvent(new CustomEvent('shared-settings-dirty'));try{config=readFields();demo=null;$('#save-status').textContent='Unsaved changes · practice updated.';render();}catch(e){$('#save-status').textContent=e.message;$('#action').disabled=true;}};
+ $('#settings').oninput=e=>{dirty=true;links();window.dispatchEvent(new CustomEvent('shared-settings-dirty'));try{editor.input(e);config=readFields();validDraft=true;demo=null;$('#save-status').textContent='Unsaved changes · practice updated.';render();}catch(e){validDraft=false;$('#save-status').textContent=e.message;$('#action').disabled=true;}};
  $('#wheel-list').onchange=()=>{if(dirty){$('#wheel-list').value=id;$('#save-status').textContent='Save your edits before switching versions.';return;}id=$('#wheel-list').value;config=store.list().find(c=>c.id===id);demo=null;fields();links();render();};
  $('#sound').onclick=()=>{sound=!sound;audio.setEnabled(sound);$('#sound').textContent=sound?'Preview sound on':'Preview sound off';$('#sound').setAttribute('aria-pressed',String(sound));};
  $('#volume').oninput=()=>{const volume=Number($('#volume').value);audio.setVolume(volume);$('#volume-value').textContent=volume+'%';if(live)void session.setVolume(volume).catch(e=>status(e.message,true));};

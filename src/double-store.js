@@ -1,7 +1,7 @@
 import {createSharedSettings} from './shared-settings.js';
 import {randomKey,validKey} from './protocol.js';
 import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
-import {defaultDouble,validateDouble,startDouble,advanceDouble,publicDouble,doubleKey,gameId,CLEAR_MS} from './double-game.js';
+import {defaultDouble,validateDouble,startDouble,continueDouble,advanceDouble,publicDouble,doubleResults,doubleKey,gameId,CLEAR_MS} from './double-game.js';
 const emptyMetrics=()=>({total:0,spins:0,history:[]});
 export function createDoubleStore(mode,storage,locks,sharedOptions={}){
  if(!['add','multiply'].includes(mode))throw Error('Unknown double wheel.');
@@ -13,7 +13,7 @@ export function createDoubleStore(mode,storage,locks,sharedOptions={}){
  function find(state,id){const w=state.widgets.find(w=>w.id===id);if(!w)throw Error('Choose a saved wheel from this browser.');return w;}
  function settle(w,now){
   let changed=advanceDouble(w.round,now);
-  if(w.round?.phase==='complete'&&!w.round.credited){const r=w.round;w.metrics??=emptyMetrics();w.metrics.total=Math.round((w.metrics.total+r.result.result)*10000)/10000;w.metrics.spins++;w.metrics.history=[{...r.result,viewer:r.viewer},...w.metrics.history].slice(0,8);w.round.credited=true;changed=true;}
+  if(w.round){const r=w.round,results=doubleResults(r),credited=r.creditedSpins??(r.credited?1:0);for(const result of results.slice(credited)){w.metrics??=emptyMetrics();w.metrics.total=Math.round((w.metrics.total+result.result)*10000)/10000;w.metrics.spins++;w.metrics.history=[{...result,viewer:r.viewer},...w.metrics.history].slice(0,8);changed=true;}if(results.length!==credited)r.creditedSpins=results.length;}
   if(w.round?.hideAt&&now>=w.round.hideAt+CLEAR_MS){w.round=null;changed=true;}return changed;
  }
  function snapshot(id,now=Date.now()){const w=find(read(),id);return {kind:'faith-double-wheel',version:1,mode,serverNow:now,config:validate(w),volume:w.volume??45,round:publicDouble(w.round)};}
@@ -22,10 +22,10 @@ export function createDoubleStore(mode,storage,locks,sharedOptions={}){
  return {...display,mode,key,shared:shared.enabled,
   async init(){await lock(()=>{const state=read()??{version:1,widgets:[{...defaultDouble(mode),room:randomKey(),round:null,volume:45,metrics:emptyMetrics()}]};for(const w of state.widgets){if(!validKey(w.room))w.room=randomKey();settle(w,Date.now());}ensurePermanentDisplay(state);write(state);});},
   list:()=>read().widgets.map(validate),snapshot,controlSnapshot,room:id=>find(read(),id).room,
-  async save(raw){const config=validate(raw);await lock(()=>{const state=read(),w=state.widgets.find(w=>w.id===config.id);if(w){if(w.round)throw Error('Finish the live spin before editing this version.');Object.assign(w,config);}else{if(state.widgets.length>=30)throw Error('Save up to 30 versions.');state.widgets.push({...config,room:randomKey(),round:null,volume:45,metrics:emptyMetrics()});}write(state);});return config;},
+  async save(raw){const config=validate(raw);await lock(()=>{const state=read(),w=state.widgets.find(w=>w.id===config.id);if(w){Object.assign(w,config);}else{if(state.widgets.length>=30)throw Error('Save up to 30 versions.');state.widgets.push({...config,room:randomKey(),round:null,volume:45,metrics:emptyMetrics()});}write(state);});return config;},
   async action(id,action,payload={},now=Date.now()){return lock(()=>{const state=read(),w=find(state,id);if(id!==state.stream.activeId)throw Error('Use the selected live version.');settle(w,now);
-   if(action==='spin'){if(w.round)throw Error('Wait for the result to clear, or choose Next viewer.');w.round=startDouble(validate(w),payload.viewer,now);}
-   else if(action==='clear'){if(w.round?.phase==='spinning')throw Error('Wait for both wheels to stop.');w.round=null;}
+   if(action==='spin'){if(w.round?.phase==='ready')continueDouble(w.round,now);else if(w.round)throw Error('Wait for the result to clear, or choose Next viewer.');else w.round=startDouble(validate(w),payload.viewer,now);}
+   else if(action==='clear'){if(w.round&&w.round.phase!=='complete')throw Error('Finish all spins for this viewer first.');w.round=null;}
    else if(action==='reset-total'){if(w.round)throw Error('Finish the current viewer before resetting the total.');w.metrics=emptyMetrics();}
    else throw Error('Unknown wheel action.');write(state);return controlSnapshot(id,now);
   });},

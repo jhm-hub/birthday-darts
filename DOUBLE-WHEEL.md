@@ -10,21 +10,37 @@ Without it, edits stay in the current browser, as with the other games.
 
 ## Numbers and versions
 
-Every outer and inner number is editable. Enter 2–24 comma-separated numbers
-per wheel, from 0 to 9999.99 with up to two decimal places. Add/remove entries
-to change the slice count. All slices have equal odds; repeated values occupy
-multiple slices. Save changes to apply them to the next spin, or save a new
-version for another setup. Add and Multiply have independent saved versions.
+Set **Outer spots** and **Inner spots** independently from 2–24. Each numbered
+row has its own value and hex colour. New spots start at 0; set the numbers
+before playing. Values support 0–9999.99, with up to two decimal places. All
+spots have equal odds; repeated values occupy multiple spots. Reducing a count
+removes the extra rows when saved. Save changes to apply them to the next viewer,
+or save a new version for another setup. Add and Multiply have independent saves.
 
-The Landaire grape/pink palette is the default. Rose/cream and the supplied
-reference's blue/orange/red/green palette are also available. Spin duration is
-editable from 2 to 15 seconds. Practice is separate from the live display.
+Hex fields accept three or six digits, with or without `#`. Each wheel has quick
+odd/even colour controls plus individual spot overrides. Expand **Numbers, rim,
+pointer & result colours** to customize the rest. Presets replace all colours;
+the Landaire, Sweetheart and reference palettes remain available.
+
+**Wheel font** accepts a Google Fonts family name, matching the original
+Landaire source's font setting. Its source default, Nunito, is bundled alongside
+Fredoka. Existing saved games retain Fredoka until changed. Other family names
+load online and show a loading/ready/error message in the editor. If a font is
+unavailable, the display uses its fallback; verify the name and preview before
+playing. Font, colours and spot counts share through the private editing link.
+
+Set **Spins per viewer** from 1–20. Each click starts one paired spin. Results
+are added together for that viewer: for example three Add results of 5.75 total
+17.25; three Multiply results of 7.875 total 23.625. Spin duration remains 2–15
+seconds per paired spin. Practice is separate from the live display.
 
 ## Stream setup
 
 1. Open the desired game in the private desk's **Play** tab or its live controls.
 2. Copy its **Permanent OBS link** into a Browser Source at **540 × 660**.
 3. Keep one control tab open per game. Enter a viewer, then **Spin both**.
+4. For multiple spins, press **Spin 2 of…**, **Spin 3 of…**, etc. after each
+   landing. Both wheels turn once per click; the viewer total accumulates.
 
 Add and Multiply each have their own permanent OBS source. Changing settings
 or switching saved versions in the same browser keeps that game's source.
@@ -34,12 +50,17 @@ link. Keep the full display link private.
 The outer wheel turns counterclockwise, the inner turns clockwise, and both
 stop on the same timeline. Add shows outer + inner; Multiply shows outer ×
 inner. Decimal calculations retain up to four decimal places for products.
-The result holds for 6.5 seconds, then fades to transparent. **Next viewer** can
-clear a landed result early. A spin cannot be interrupted or rerolled.
+Intermediate results stay until Faith starts the next spin. The final viewer
+total holds for 6.5 seconds, then fades to transparent. **Next viewer** can clear
+the completed turn early. A live viewer must finish their configured spins.
+Saving new numbers, colours, fonts or spin counts during a turn affects the
+next viewer; the current viewer retains their original settings and outcomes.
 
 Only the wheel, optional viewer name and result appear on stream. Buttons,
 settings, running totals and spin history stay in the private controls.
-Reloading controls resumes an unfinished spin and credits a result once.
+Reloading controls resumes an unfinished turn, including spins remaining, and
+credits each paired spin once. Older one-spin saved games and active rounds
+remain compatible. Existing OBS source URLs and 540 × 660 dimensions are retained.
 Duplicate control tabs cannot operate the same game simultaneously.
 
 The display has tick/landing sounds with an adjustable game volume. The private

@@ -1,4 +1,5 @@
 import { wheelLayout } from "./model.js";
+import {readAppearance} from '../double-appearance.js';
 const NS = "http://www.w3.org/2000/svg";
 function node(name, attrs) {
   const el = document.createElementNS(NS, name);
@@ -14,6 +15,7 @@ function path(inner, outer, a, b) {
   return `M ${point(outer, a)} A ${outer} ${outer} 0 ${large} 1 ${point(outer, b)} L ${point(inner, b)} A ${inner} ${inner} 0 ${large} 0 ${point(inner, a)} Z`;
 }
 function renderWheel(host, config) {
+  const appearance=readAppearance(config.appearance,config);
   host.replaceChildren();
   const svg = node("svg", { viewBox: "0 0 600 600", "aria-hidden": "true", class: "wheel-svg" });
   svg.append(node("circle", { cx: 300, cy: 300, r: 282, fill: "var(--rim)", class: "rim-shadow" }));
@@ -22,7 +24,7 @@ function renderWheel(host, config) {
     const labels = [];
     wheelLayout(values).forEach((slice, i) => {
       const a = slice.startTurn * 360, b = a + slice.sizeTurn * 360, middle = (a + b) / 2;
-      const wedge = node("path", { d: path(inner2, outer2, a, b), fill: `var(--${name}-${i % 2 ? "b" : "a"})`, stroke: "var(--divider)", "stroke-width": 1.5, "data-slice": i });
+      const wedge = node("path", { d: path(inner2, outer2, a, b), fill: appearance[name+'Colors'][i], stroke: "var(--divider)", "stroke-width": 1.5, "data-slice": i });
       group.append(wedge);
       const radial = (inner2 + outer2) / 2;
       const [x, y] = point(radial, middle).split(" ");
@@ -41,10 +43,10 @@ function renderWheel(host, config) {
   svg.append(node("circle", { cx: 300, cy: 300, r: 160, fill: "none", stroke: "var(--ring-light)", "stroke-width": 4 }));
   const pointer = (x, scale) => {
     const g = node("g", { transform: `translate(${x} 300) scale(${scale})`, class: "gem-pointer" });
-    g.append(node("path", { d: "M -21 0 L 5 -15 L 24 -10 L 24 10 L 5 15 Z", fill: "#f6e6ff", stroke: "var(--rim)", "stroke-width": 2.5 }));
-    g.append(node("path", { d: "M -21 0 L 5 -15 L 10 0 Z", fill: "#e6c5ff" }));
-    g.append(node("path", { d: "M -21 0 L 10 0 L 5 15 Z", fill: "#b16cd0" }));
-    g.append(node("path", { d: "M 10 0 L 24 -10 L 24 10 L 5 15 Z", fill: "#873fa7" }));
+    g.append(node("path", { d: "M -21 0 L 5 -15 L 24 -10 L 24 10 L 5 15 Z", fill: "var(--pointer)", stroke: "var(--rim)", "stroke-width": 2.5 }));
+    g.append(node("path", { d: "M -21 0 L 5 -15 L 10 0 Z", fill: "#FFFFFF", opacity:.25 }));
+    g.append(node("path", { d: "M -21 0 L 10 0 L 5 15 Z", fill: "#000000", opacity:.15 }));
+    g.append(node("path", { d: "M 10 0 L 24 -10 L 24 10 L 5 15 Z", fill: "#000000", opacity:.3 }));
     svg.append(g);
   };
   pointer(575, 1);
