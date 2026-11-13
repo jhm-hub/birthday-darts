@@ -28,7 +28,7 @@ export function createBonusView(root,{audio=null,onFontStatus=()=>{}}={}){
   stage.dataset.unlocked=String(unlocked);wheel.draw(a,unlocked);
   const done=!!r?.result;
   wheel.highlight(shown?landingIndices(shown,'outer',c.outer,a.outer):undefined,shown?landingIndices(shown,'inner',c.inner,a.inner):undefined,done&&unlocked?landingIndices(r.result,'bonus',c.bonus,a.bonus):undefined);
-  viewer.textContent=r?.viewer||'HIT BONUS TO UNLOCK THE INNER WHEEL';
+  viewer.textContent=r?.viewer||(unlocked?'BONUS WHEEL UNLOCKED':'HIT BONUS TO UNLOCK THE INNER WHEEL');
   const spins=c.spins,taken=r?.results.length??0,number=['spinning','bonus'].includes(r?.phase)?taken+1:taken;
   const bonusPhase=r?.phase==='bonus',opening=bonusPhase&&now<r.bonusFlight.startAt;
   caption.textContent=bonusPhase?(opening?'BONUS UNLOCKED':'BONUS WHEEL SPINNING'):r?(r.phase==='complete'?'ALL SPINS COMPLETE':`SPIN ${number} OF ${spins}`)+(done?(unlocked?' · BONUS LANDED':' · BOTH LANDED'):''):`${spins} ${spins===1?'SPIN':'SPINS'} PER VIEWER`;
