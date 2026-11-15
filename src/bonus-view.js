@@ -26,10 +26,11 @@ export function createBonusView(root,{audio=null,onFontStatus=()=>{}}={}){
   wheel=renderWheel(disc,c);title.textContent=c.name;root.querySelector('.dw-hub strong').textContent=operator(c.operation);}
   if(roundId!==r?.id){roundId=r?.id;lastNow=0;}const now=Math.max(time,lastNow);lastNow=now;
   const a=r?bonusAngles(r,now,reduced.matches):restingBonus(c),shown=r?.result??r?.base,unlocked=!!r?.bonusFlight;
-  const mirrorActive=c.mirrorUnlock!=='slot'||!!r?.mirrorUnlocked;stage.dataset.unlocked=String(unlocked);stage.dataset.mirrorActive=String(mirrorActive);stage.dataset.demo=String(!!r?.demo);wheel.draw(a,unlocked,mirrorActive);
+  root.querySelector('.dw-hub span').textContent=c.bonusEnabled===false?'SPIN':'BONUS';
+  const mirrorActive=c.mirrorEnabled!==false&&(c.mirrorUnlock!=='slot'||!!r?.mirrorUnlocked);stage.dataset.unlocked=String(unlocked);stage.dataset.mirrorActive=String(mirrorActive);stage.dataset.demo=String(!!r?.demo);wheel.draw(a,unlocked,mirrorActive);
   const done=!!r?.result;
   wheel.highlight(shown?landingIndices(shown,'outer',c.outer,a.outer):undefined,shown?landingIndices(shown,'inner',c.inner,a.inner):undefined,done&&unlocked?landingIndices(r.result,'bonus',c.bonus,a.bonus):undefined);
-  viewer.textContent=r?.demo?'DEMO · STAGED BONUS':r?.viewer||(unlocked?'BONUS WHEEL UNLOCKED':c.mirrorUnlock==='slot'?'LAND BONUS OR MIRROR TO UNLOCK':'HIT BONUS TO UNLOCK THE INNER WHEEL');
+  viewer.textContent=r?.demo?'DEMO · STAGED BONUS':r?.viewer||(unlocked?'BONUS WHEEL UNLOCKED':c.bonusEnabled===false?(c.mirrorUnlock==='slot'&&c.mirrorEnabled!==false?'LAND MIRROR TO UNLOCK':'SPIN BOTH WHEELS'):c.mirrorUnlock==='slot'&&c.mirrorEnabled!==false?'LAND BONUS OR MIRROR TO UNLOCK':'HIT BONUS TO UNLOCK THE INNER WHEEL');
   const spins=c.spins,taken=r?.results.length??0,number=['spinning','mirror','bonus'].includes(r?.phase)?taken+1:taken;
   const bonusPhase=r?.phase==='bonus',mirrorPhase=r?.phase==='mirror',opening=bonusPhase&&now<r.bonusFlight.startAt;
   caption.textContent=mirrorPhase?(now<r.mirrorFlight.startAt?'MIRROR BONUS UNLOCKED':'MIRRORED WHEELS SPINNING'):bonusPhase?(opening?'BONUS UNLOCKED':'BONUS WHEEL SPINNING'):r?(r.phase==='complete'?'ALL SPINS COMPLETE':`SPIN ${number} OF ${spins}`)+(done?((r.mirrorUnlocked?' · MIRROR':'')+(unlocked?' · BONUS LANDED':' · BOTH LANDED')):''):`${spins} ${spins===1?'SPIN':'SPINS'} PER VIEWER`;
