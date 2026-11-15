@@ -8,7 +8,7 @@ const brightness=hex=>{const ns=hex.slice(1).match(/../g).map(n=>parseInt(n,16))
 export function createLabView(host){
  let config,signature='',rotors=[],cover,coverPointer,svg;const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  function set(c,run){
-  const key=JSON.stringify([c, c.kind==='climb'?(run?.tier??0):0]);if(key===signature)return;signature=key;config=c;rotors=[];
+  const key=JSON.stringify([c, c.kind==='climb'?(run?.tier??0):0]);if(key===signature){draw(run);return;}signature=key;config=c;rotors=[];
   svg=node('svg',{viewBox:'0 0 600 600',role:'img','aria-label':CONCEPTS[c.kind].name+' wheel. Landed numbers appear in the result below.'});
   svg.style.fontFamily='"'+c.font+'", Fredoka, sans-serif';
   svg.append(node('circle',{cx:300,cy:300,r:285,fill:c.rim,stroke:'#F2C98E','stroke-width':2}));
