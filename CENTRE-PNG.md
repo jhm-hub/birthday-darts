@@ -30,7 +30,13 @@ viewing that one PNG; there is no public upload endpoint or image listing.
 
 The alignment guide is preview-only, is never sent to OBS or saved, and resets
 on reload. The demo shows the uploaded PNG from the saved setup, without writing
-to the live game. The reserved centre remains fixed at X 270, Y 275; numbers,
+to the live game. It also accepts a temporary PNG directly on the demo page,
+without an editing key or server upload. Use Faith sample, Remove preview, or
+Use saved PNG to compare artwork. Temporary previews survive game switches and
+replays in the tab but clear on refresh. The diameter and guide are independent
+demo controls; both bonus sequences use the same chosen image. The sample badge
+is downloadable, and appears initially when the setup has no saved PNG.
+The art=sample query option explicitly starts with the Faith sample badge. The reserved centre remains fixed at X 270, Y 275; numbers,
 lock labels and pointers stay outside it. Gameplay and probabilities are unchanged.
 
 Existing saved wheels retain their previous layout until enabled or a PNG is
@@ -39,4 +45,4 @@ uploaded. The original separate OBS Image Source workflow still works with
 its own visibility. At 120 × 120 its top left is X 210, Y 215 relative to the
 540 × 660 browser source; at 150 × 150 use X 195, Y 200.
 
-[Multiply demonstration](https://jhm-hub.github.io/birthday-darts/wheel-demo.html?game=mirror-multiply&centre=1)
+[Multiply demonstration](https://jhm-hub.github.io/birthday-darts/wheel-demo.html?game=mirror-multiply&centre=1&art=sample)

@@ -16,9 +16,9 @@ export function createBonusAudio(){
 export function createBonusView(root,{audio=null,onFontStatus=()=>{}}={}){
  root.innerHTML='<div class="dw-stage bw-stage"><header><h2></h2><p class="dw-viewer"></p></header><div class="dw-wheel"><div class="dw-disc"></div><img class="dw-centre-image" alt="" referrerpolicy="no-referrer" hidden><div class="dw-centre-guide" aria-hidden="true"><span>PNG</span></div><div class="dw-hub"><span>BONUS</span><strong>+</strong></div></div><div class="dw-result"><small></small><div class="dw-line-breakdown" hidden><p data-line="outer" hidden></p><p data-line="inner" hidden></p><p data-line="bonus" hidden></p></div><strong></strong><p class="dw-viewer-total" hidden></p></div></div>';
  const stage=root.querySelector('.dw-stage'),disc=root.querySelector('.dw-disc'),title=root.querySelector('h2'),viewer=root.querySelector('.dw-viewer'),equation=root.querySelector('.dw-result strong'),caption=root.querySelector('.dw-result small');
- let snap=null,wheel,configKey='',visible=false,offset=0,frame,roundId=null,lastNow=0,font='',fontTimer,fontTicket=0;
+ let snap=null,wheel,configKey='',visible=false,offset=0,frame,roundId=null,lastNow=0,font='',fontTimer,fontTicket=0,imageSource;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');stage.style.opacity='0';
- function render(time){if(!snap)return;const r=snap.round,c=r?.config??snap.config,key=JSON.stringify(c);if(key!==configKey){configKey=key;setCentreLayout(stage,c);stage.dataset.palette=c.palette;stage.dataset.lineLandings=String(!!c.lineLandings);
+ function render(time){if(!snap)return;const r=snap.round,c=r?.config??snap.config,key=JSON.stringify([c,imageSource===undefined?'saved':imageSource]);if(key!==configKey){configKey=key;setCentreLayout(stage,c,{imageSource});stage.dataset.palette=c.palette;stage.dataset.lineLandings=String(!!c.lineLandings);
   const a=readAppearance(c.appearance,c),vars={rim:'rim',divider:'divider',ring:'ring-light',hub:'hub',labelA:'label-a',labelB:'label-b',pointer:'pointer',title:'title-color',resultBackground:'result-background',resultText:'result-text'};
   for(const [key,variable] of Object.entries(vars))stage.style.setProperty('--'+variable,a.colors[key]);
   stage.style.setProperty('--wheel-font','"'+a.fontFamily+'", Fredoka, system-ui, sans-serif');
@@ -43,5 +43,5 @@ export function createBonusView(root,{audio=null,onFontStatus=()=>{}}={}){
   stage.style.opacity=visible?String(alpha):'0';if(audio&&visible&&alpha>0)audio.sync(r,now,a);
  }
  function tick(){render(Date.now()+offset);frame=requestAnimationFrame(tick);}frame=requestAnimationFrame(tick);
- return {update(next,{show=true}={}){snap=next;offset=next.serverNow-Date.now();visible=show;if(!show)audio?.stop();render(next.serverNow);},dispose(){fontTicket++;clearTimeout(fontTimer);cancelAnimationFrame(frame);root.replaceChildren();}};
+ return {update(next,{show=true,centreImage}={}){imageSource=centreImage;snap=next;offset=next.serverNow-Date.now();visible=show;if(!show)audio?.stop();render(next.serverNow);},dispose(){fontTicket++;clearTimeout(fontTimer);cancelAnimationFrame(frame);root.replaceChildren();}};
 }

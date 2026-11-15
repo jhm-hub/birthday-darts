@@ -23,14 +23,17 @@ export function reserveSvgCentre(svg,geometry){
  content.append(node('circle',{cx:300,cy:300,r:geometry.cutout+2,fill:'none',stroke:'var(--ring-light)','stroke-width':2}));
 }
 export const centreImageURL=id=>SHARED_API+'/api/wheel-images/image/'+id+'.png';
-export function setCentreLayout(stage,config){
+export function setCentreLayout(stage,config,{imageSource}={}){
  const png=readCentrePng(config.centrePng);stage.dataset.centrePng=String(png.enabled);stage.style.setProperty('--centre-png-size',png.diameter+'px');
  const img=stage.querySelector('.dw-centre-image');
- if(img&&img.dataset.assetId!==(png.assetId??'')){
-  img.hidden=true;img.dataset.assetId=png.assetId??'';
-  if(png.assetId){const id=png.assetId;img.onload=()=>{if(img.dataset.assetId===id)img.hidden=false;};img.onerror=()=>{img.hidden=true;};img.src=centreImageURL(id);}else{img.onload=null;img.onerror=null;img.removeAttribute('src');}
+ // View-only overrides let the demo use local blob URLs without admitting
+ // arbitrary image URLs into saved settings or OBS snapshots.
+ const source=imageSource===undefined?(png.assetId?centreImageURL(png.assetId):null):imageSource;
+ if(img&&img.dataset.imageSource!==(source??'')){
+  img.hidden=true;img.dataset.imageSource=source??'';
+  if(source){img.onload=()=>{if(img.dataset.imageSource===source)img.hidden=false;};img.onerror=()=>{if(img.dataset.imageSource===source)img.hidden=true;};img.src=source;}else{img.onload=null;img.onerror=null;img.removeAttribute('src');}
  }
- stage.dataset.centreImage=String(!!png.assetId);
+ stage.dataset.centreImage=String(!!source);
 }
 export function createCentreEditor(form){
  const fieldset=document.createElement('fieldset');fieldset.className='dw-line-settings centre-png-settings';
