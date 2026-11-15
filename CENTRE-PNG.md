@@ -29,15 +29,17 @@ only an unguessable read-only image identifier, never that key. Image links allo
 viewing that one PNG; there is no public upload endpoint or image listing.
 
 The alignment guide is preview-only, is never sent to OBS or saved, and resets
-on reload. The demo shows the uploaded PNG from the saved setup, without writing
-to the live game. It also accepts a temporary PNG directly on the demo page,
-without an editing key or server upload. Use Faith sample, Remove preview, or
-Use saved PNG to compare artwork. Temporary previews survive game switches and
-replays in the tab but clear on refresh. The diameter and guide are independent
-demo controls; both bonus sequences use the same chosen image. The sample badge
-is downloadable, and appears initially when the setup has no saved PNG.
-The art=sample query option explicitly starts with the Faith sample badge. The reserved centre remains fixed at X 270, Y 275; numbers,
-lock labels and pointers stay outside it. Gameplay and probabilities are unchanged.
+on reload. The demo has a separate browser-local library with Regular and High
+Roller examples. It can copy a live setup without writing to that setup. Upload
+a PNG directly on the demo page, then choose **Save demo wheel** to retain it
+across refreshes with that preset. No editing key or server upload is needed.
+Use **Use Faith sample**, **Remove preview**, or **Restore preset PNG** to compare
+artwork. Each saved demo wheel keeps its own PNG, diameter, values and toggles.
+Both bonus sequences use the selected image. The sample badge is downloadable.
+The `art=sample` query option selects the sample when initializing a new demo
+library; it never replaces artwork in an already-saved demo preset. The reserved
+centre remains fixed at X 270, Y 275; numbers, lock labels and pointers stay
+outside it. Gameplay and probabilities are unchanged. See DEMO-PRESETS.md.
 
 Existing saved wheels retain their previous layout until enabled or a PNG is
 uploaded. The original separate OBS Image Source workflow still works with

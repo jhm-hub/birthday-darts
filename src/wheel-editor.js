@@ -1,4 +1,3 @@
-import {createCentreEditor} from './centre-png.js';
 import {COLOR_FIELDS,hexColor,presetAppearance,readAppearance,resizeSpots,spotCount} from './double-appearance.js';
 
 export function parseWheelNumbers(text){
@@ -6,8 +5,8 @@ export function parseWheelNumbers(text){
  if(tokens.length<2||tokens.length>24)throw Error('Paste 2–24 numbers, separated by commas or new lines.');
  return tokens.map(token=>{const n=Number(token);if(!/^\d+(?:\.\d{1,2})?$/.test(token)||!Number.isFinite(n)||n>9999.99)throw Error('Use numbers from 0 to 9999.99, with up to two decimal places.');return n;});
 }
-export function createWheelEditor(form,{bonus=false,mirror=false}={}){
- const centre=createCentreEditor(form),$=s=>form.querySelector(s),sides=bonus?['outer','inner','bonus']:['outer','inner'],drafts=Object.fromEntries(sides.map(s=>[s,[]]));
+export function createWheelEditor(form,{bonus=false,mirror=false,centre}={}){
+ const $=s=>form.querySelector(s),sides=bonus?['outer','inner','bonus']:['outer','inner'],drafts=Object.fromEntries(sides.map(s=>[s,[]]));
  const title=s=>s[0].toUpperCase()+s.slice(1);
  const colorInput=(label,attrs='')=>`<span class="dw-hex"><input type="text" aria-label="${label} hex" placeholder="#AB4BB8" maxlength="7" spellcheck="false" required ${attrs}><input type="color" aria-label="${label} colour picker"></span>`;
  $('#wheel-setup').innerHTML=`<div class="wheel-tabs" role="tablist" aria-label="Wheel values">${sides.map(s=>`<button type="button" role="tab" id="${s}-tab" aria-controls="${s}-panel" aria-selected="${s==='outer'}" tabindex="${s==='outer'?0:-1}" data-wheel-tab="${s}">${title(s)} wheel</button>`).join('')}</div>`+sides.map(side=>`<section id="${side}-panel" class="dw-spot-group" role="tabpanel" aria-labelledby="${side}-tab" ${side==='outer'?'':'hidden'}><div class="wheel-count-row"><label class="field">${title(side)} spots<input id="${side}-count" data-count="${side}" type="number" min="2" max="24" step="1" required></label><p class="hint">${side==='inner'?'Clockwise':'Counterclockwise'}<br>Each spot has equal odds.</p></div><p class="hint" data-slot-note="${side}"></p><div id="${side}-spots" class="wheel-value-grid"></div><details class="wheel-paste"><summary>Paste a list of numbers</summary><label class="field">${title(side)} number list<textarea data-number-list="${side}" rows="3" placeholder="10, 20, 30, 40"></textarea></label><button type="button" data-apply-list="${side}">Apply numbers</button><p class="hint">Updates the spot count. Existing colours and special-slot positions stay where possible.</p><p role="status" data-list-status="${side}"></p></details><details class="wheel-spot-colors"><summary>Spot colours</summary><div class="dw-pair"><label>Odd spots${colorInput(title(side)+' odd spot',`data-pair="${side}" data-parity="0"`)}</label><label>Even spots${colorInput(title(side)+' even spot',`data-pair="${side}" data-parity="1"`)}</label></div><label class="dw-toggle"><input type="checkbox" data-show-colors="${side}">Edit each spot’s hex colour</label></details></section>`).join('');

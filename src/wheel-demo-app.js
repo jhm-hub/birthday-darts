@@ -1,69 +1,79 @@
-import {createDemoArtwork} from './demo-artwork.js';
+import {createDemoPresetStore,demoPngData} from './demo-presets.js';
+import {createWheelEditor} from './wheel-editor.js';
+import {prepareCentrePng} from './centre-png-upload.js';
 import {readCentrePng,centreImageURL} from './centre-png.js';
+import {validateBonus} from './bonus-game.js';
+import {validateMirror} from './mirror-game.js';
 import {createBonusView,createBonusAudio} from './bonus-view.js';
 import {readSharedConnection,sharedURL} from './shared-settings-connection.js';
-import {DEMO_GAMES,demoDefaults,loadDemoConfig,createWheelShowcase} from './wheel-demo.js';
-const $=s=>document.querySelector(s),params=new URLSearchParams(location.search);
-let game=DEMO_GAMES.includes(params.get('game'))?params.get('game'):'mirror-add',config,showcase,scenario='both',ticket=0,connection,sound=false;
-const savedIds=new Map(),artwork=createDemoArtwork();
-const pngFile=$('#demo-png-file'),pngStatus=$('#demo-png-status'),pngThumbnail=$('#demo-png-thumbnail'),guide=$('#demo-centre-guide');
-let preparing=false,artworkTouched=false,artworkTicket=0;
-guide.checked=params.get('guide')==='1';
-function updateArtworkPreview(){
- const state=artwork.read(),source=state.source===undefined?(config?.centrePng?.assetId?centreImageURL(config.centrePng.assetId):null):state.source;
- if(pngThumbnail.dataset.source!==(source??'')){pngThumbnail.dataset.source=source??'';pngThumbnail.hidden=!source;if(source)pngThumbnail.src=source;else pngThumbnail.removeAttribute('src');}
- $('#demo-png-sample').setAttribute('aria-pressed',String(state.kind==='sample'));$('#demo-png-saved').setAttribute('aria-pressed',String(state.kind==='saved'));
- return source;
-}
-async function previewArtwork(file,{sample=false}={}){
- if(running()||preparing)return;const mine=++artworkTicket;preparing=true;pngStatus.textContent=sample?'Preparing Faith’s sample badge…':'Preparing your PNG…';render();
- try{
-  if(sample){const response=await fetch('./demo-assets/faith-wheel-badge-v1.png',{referrerPolicy:'no-referrer',signal:AbortSignal.timeout(12000)});if(!response.ok)throw Error('The sample badge could not load. Please retry.');file=await response.blob();}
-  if(mine!==artworkTicket)return;
-  const next=await artwork.choose(file,{kind:sample?'sample':'upload',label:sample?'Faith sample badge':file.name||'Your PNG'});if(!next||mine!==artworkTicket)return;
-  artworkTouched=true;centreTouched=true;centreToggle.checked=true;showcase=null;audio.stop();$('#demo-status').textContent='';
-  pngStatus.textContent=sample?'Faith sample badge · only in this demo.':next.label.slice(0,100)+' · stays in this tab; refreshing clears it.';
- }catch(error){if(mine===artworkTicket)pngStatus.textContent=error.message;}
- finally{if(mine===artworkTicket){preparing=false;pngFile.value='';render();}}
-}
-
-const centreToggle=$('#demo-centre'),centreSize=$('#demo-centre-size');let centreTouched=params.has('centre'),centreDiameter=120;centreToggle.checked=params.get('centre')==='1';
-function demoConfig(){return {...config,centrePng:readCentrePng({...config.centrePng,enabled:centreToggle.checked,diameter:centreDiameter})};}
-function centreChange(){if(!centreSize.reportValidity())return;centreTouched=true;centreDiameter=Number(centreSize.value);showcase=null;audio.stop();$('#demo-status').textContent='';render();}
-centreToggle.onchange=centreChange;centreSize.onchange=centreChange;
-centreSize.oninput=()=>{if(centreSize.checkValidity())centreChange();};
+import {DEMO_GAMES,demoDefaults,loadDemoConfig,createWheelShowcase,createWheelTrial} from './wheel-demo.js';
+const $=s=>document.querySelector(s),params=new URLSearchParams(location.search),form=$('#settings');
+let game=DEMO_GAMES.includes(params.get('game'))?params.get('game'):'mirror-add',config,state,store,editor,showcase,scenario='both',connection,sound=false,loading=true,busy=false,preparing=false,dirty=false,valid=false,disposed=false,ticket=0,art={kind:'sample'};
+const sourceIds=new Map([[game,params.get('id')]]),pngFile=$('#demo-png-file'),guide=$('#demo-centre-guide');guide.checked=params.get('guide')==='1';
 try{connection=readSharedConnection();}catch(e){$('#load-status').textContent=e.message;}
-const audio=createBonusAudio(),view=createBonusView($('#game'),{audio}),select=$('#demo-game');select.value=game;
-function running(){return !!showcase&&!['complete','ready'].includes(showcase.round.phase);}
+const audio=createBonusAudio(),view=createBonusView($('#game'),{audio,onFontStatus:text=>{$('#font-status').textContent=text;}});
+const validator=()=>game.startsWith('mirror-')?validateMirror:validateBonus;
+const current=()=>state?.wheels.find(w=>w.config.id===state.selected);
+const turnActive=()=>!!showcase&&showcase.round.phase!=='complete';
+const imageSource=(choice=art,c=config)=>choice.kind==='saved'?undefined:choice.kind==='none'?null:choice.kind==='upload'?choice.png:'./demo-assets/faith-wheel-badge-v1.png';
+function reset(){showcase=null;audio.stop();$('#demo-status').textContent='';}
+const centre={set(c){const png=readCentrePng(c.centrePng);$('#demo-centre').checked=png.enabled;$('#demo-centre-size').value=png.diameter;},read(){return readCentrePng({...config.centrePng,enabled:$('#demo-centre').checked,diameter:Number($('#demo-centre-size').value)});}};
+function makeEditor(){editor=createWheelEditor(form,{bonus:true,mirror:game.startsWith('mirror-'),centre});$('#mirror-enabled').closest('label').hidden=!game.startsWith('mirror-');const label=$('#mirror-mode').closest('label');label.hidden=!game.startsWith('mirror-');label.nextElementSibling.hidden=!game.startsWith('mirror-');}
+function fill(){const record=current();config=structuredClone(record.config);art=structuredClone(record.artwork);dirty=false;valid=true;reset();$('#game-name').value=config.name;$('#spins').value=config.spins;$('#duration').value=config.duration;$('#bonus-duration').value=config.bonusDuration;$('#line-landings').checked=config.lineLandings;$('#line-chance').value=config.lineChance;$('#palette').value=config.palette;editor.set(config);$('#new-wheel-name').value='';$('#save-copy').open=false;$('#save-status').textContent='';list();render();}
+function readFields(){return validator()({id:config.id,name:$('#game-name').value,operation:config.operation,...editor.read(),spins:Number($('#spins').value),duration:Number($('#duration').value),bonusDuration:Number($('#bonus-duration').value),lineLandings:$('#line-landings').checked,lineChance:$('#line-chance').value.trim()===''?NaN:Number($('#line-chance').value),palette:$('#palette').value});}
+function list(){const select=$('#wheel-list');select.replaceChildren(...state.wheels.map(w=>new Option(w.config.name,w.config.id)));select.value=state.selected;}
+function artworkPreview(){
+ const source=imageSource(),thumbnail=$('#demo-png-thumbnail'),resolved=source===undefined?(config?.centrePng?.assetId?centreImageURL(config.centrePng.assetId):null):source;
+ if(thumbnail.dataset.source!==(resolved??'')){thumbnail.dataset.source=resolved??'';thumbnail.hidden=!resolved;if(resolved)thumbnail.src=resolved;else thumbnail.removeAttribute('src');}
+ $('#demo-png-sample').setAttribute('aria-pressed',String(art.kind==='sample'));
+ if(!preparing)$('#demo-png-status').textContent=art.kind==='upload'?art.label+' · '+(dirty?'Save this demo wheel to keep the PNG.':'Saved with this demo wheel in this browser.'):art.kind==='sample'?'Faith sample badge · demo only.':art.kind==='none'?'No PNG on this demo wheel.':'Using the copied live PNG. The live setup is unchanged.';
+}
 function render(){
- const now=Date.now();if(showcase)showcase.step(now);
- if(config)view.update(showcase?showcase.snapshot(now):{config:demoConfig(),serverNow:now,round:null,volume:45},{centreImage:artwork.read().source});
- const active=running(),locked=active||preparing,source=updateArtworkPreview();centreToggle.disabled=locked;centreSize.disabled=locked;guide.disabled=locked||!centreToggle.checked;$('.demo-preview').dataset.centreGuide=String(guide.checked&&centreToggle.checked);select.disabled=locked;$('#use-sample').disabled=locked;$('#replay').disabled=locked||!showcase;pngFile.disabled=locked||!config;$('#demo-png-sample').disabled=locked||!config;$('#demo-png-remove').disabled=locked||!source;$('#demo-png-saved').disabled=locked||!config?.centrePng?.assetId;$('.demo-foot').hidden=!game.startsWith('mirror-');
- for(const b of document.querySelectorAll('[data-demo]')){b.hidden=b.dataset.demo!=='inner'&&!game.startsWith('mirror-');b.disabled=locked||!config||!centreSize.checkValidity();}
- if(showcase){const r=showcase.round;$('#demo-status').textContent=r.phase==='spinning'?'Demo: landing on a special slot…':r.phase==='mirror'?'Mirror unlocked: opposite pointers appear, then both wheels re-spin.':r.phase==='bonus'?'Inner bonus unlocked: the third wheel spins while the main wheels hold.':'Demo complete. The result stays here until you replay or choose another bonus.';}
+ const locked=loading||busy||preparing||turnActive(),ready=!!config;
+ if(ready)view.update(showcase?showcase.snapshot(Date.now()):{config,serverNow:Date.now(),round:null,volume:45},{centreImage:imageSource()});
+ form.querySelector('#wheel-fields').disabled=locked||!ready;$('#demo-game').disabled=locked||dirty;$('#wheel-list').disabled=locked||dirty||!ready;$('#create-wheel').disabled=locked||!ready;$('#discard-wheel').disabled=locked||!dirty;$('#new-wheel').disabled=locked||!ready;
+ $('#use-sample').disabled=$('#copy-live').disabled=locked||dirty||!ready;
+ $('#test-wheel').disabled=loading||busy||preparing||dirty||!valid||turnActive()&&showcase.round.phase!=='ready';
+ $('#test-wheel').textContent=showcase&&scenario==='trial'?(showcase.round.phase==='ready'?`Test spin ${showcase.round.results.length+1} of ${showcase.round.config.spins}`:turnActive()?'Testing wheel…':'Test wheel again'):'Test wheel';
+ $('#replay').disabled=locked||dirty||!valid||!showcase;$('#stop-demo').disabled=loading||busy||preparing;
+ for(const b of document.querySelectorAll('[data-demo]')){b.hidden=b.dataset.demo!=='inner'&&!game.startsWith('mirror-');b.disabled=locked||dirty||!valid;}
+ $('#preset-note').textContent=turnActive()?'Finish this demo turn or choose Stop / reset before switching wheels.':dirty?'Save or undo your edits before switching demo wheels.':'Regular and High Roller are editable examples. These saves stay in this browser.';
+ $('#demo-note').textContent=dirty?'Unsaved preview · save this demo wheel before testing.':scenario==='trial'&&showcase?'Test spins use this wheel’s saved settings. Nothing is sent to live controls or OBS.':'Bonus showcases temporarily enable the requested bonuses, use centre landings and one shorter spin. Your saved wheel stays unchanged.';
+ $('.demo-preview').dataset.centreGuide=String(guide.checked&&$('#demo-centre').checked);guide.disabled=locked||!$('#demo-centre').checked;
+ if(ready)artworkPreview();
+ if(showcase){const r=showcase.round;$('#demo-status').textContent=r.phase==='spinning'?(scenario==='trial'?'Demo test spin · using saved rules.':'Staged demo: landing on a special slot…'):r.phase==='mirror'?'Mirror unlocked: opposite pointers appear, then both wheels re-spin.':r.phase==='bonus'?'Inner bonus unlocked: the third wheel spins while the main wheels hold.':r.phase==='ready'?`Demo turn has ${r.config.spins-r.results.length} more spin(s).`:'Demo complete. Save, switch wheels or try another spin.';}
 }
-async function load(sample=false){
- const mine=++ticket;config=null;showcase=null;audio.stop();$('#load-status').textContent=sample?'Loading sample…':'Loading your setup…';$('#demo-status').textContent='';render();
- try{const result=sample?{config:demoDefaults(game),saved:false}:await loadDemoConfig(game,params.get('game')===game?params.get('id'):null,{storage:localStorage,connection});if(mine!==ticket)return;config=result.config;if(!centreTouched){const png=readCentrePng(config.centrePng);centreToggle.checked=png.enabled;centreSize.value=png.diameter;centreDiameter=png.diameter;}if(result.saved)savedIds.set(game,config.id);$('#load-status').textContent=result.saved?'Using saved setup: '+config.name:'Using the sample setup. Your saved games are unchanged.';}
- catch(e){if(mine!==ticket)return;$('#load-status').textContent=e.message+' Use the sample to continue.';}
- const edit=new URL('./'+game+'.html',location.href),sourceId=savedIds.get(game)||(params.get('game')===game?params.get('id'):null);if(sourceId)edit.searchParams.set('id',sourceId);$('#back-game').href=sharedURL(edit.href,connection);$('#all-games').href=sharedURL(new URL('./',location.href).href,connection);render();
- if(config&&!artworkTouched){
-  if(params.get('art')==='sample'||!config.centrePng?.assetId)await previewArtwork(null,{sample:true});
-  else pngStatus.textContent='Using the saved game PNG. Any changes here affect only this demo.';
- }
-
+function links(){const edit=new URL('./'+game+'.html',location.href);if(sourceIds.get(game))edit.searchParams.set('id',sourceIds.get(game));$('#back-game').href=sharedURL(edit.href,connection);$('#all-games').href=sharedURL(new URL('./',location.href).href,connection);const url=new URL(location.href);url.searchParams.set('game',game);history.replaceState(null,'',url);}
+async function load(){
+ const mine=++ticket;loading=true;config=null;reset();$('#load-status').textContent='Loading demo wheels…';render();
+ try{
+  store=createDemoPresetStore(game);state=store.read();
+  if(!state){let result;try{result=await loadDemoConfig(game,sourceIds.get(game),{storage:localStorage,connection});}catch{result={config:demoDefaults(game),saved:false};}
+   if(disposed||mine!==ticket)return;let source=result.config;if(result.saved)sourceIds.set(game,source.id);
+   const artwork=params.get('art')==='sample'||!source.centrePng?.assetId?{kind:'sample'}:{kind:'saved'};
+   source={...source,centrePng:{...readCentrePng(source.centrePng),enabled:params.get('centre')==='1'||artwork.kind==='sample'||source.centrePng?.enabled===true}};
+   state=await store.init(source,artwork);
+  }
+  if(disposed||mine!==ticket)return;makeEditor();fill();links();$('#load-status').textContent='Demo wheels and PNGs save only in this browser. Faith’s live games are unchanged.';
+ }catch(e){$('#load-status').textContent=e.message;}finally{if(mine===ticket){loading=false;render();}}
 }
-async function play(next){
- if(!config||running()||preparing||!centreSize.reportValidity())return;try{if(sound)await audio.unlock();scenario=next;showcase=createWheelShowcase(demoConfig(),scenario);$('#demo-note').textContent=showcase.sampleTrigger?'A temporary MIRROR slot was added to this demo because your setup has none. Nothing is saved.':'Uses your numbers and colours for one staged spin, with centre landings and shorter timing. No live totals or settings change.';render();$('.demo-preview').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}catch(e){$('#demo-status').textContent=e.message;}
-}
-pngFile.onchange=()=>{const file=pngFile.files?.[0];if(file)void previewArtwork(file);};
-$('#demo-png-sample').onclick=()=>void previewArtwork(null,{sample:true});
-$('#demo-png-remove').onclick=()=>{artworkTouched=true;artwork.clear();showcase=null;audio.stop();pngStatus.textContent='Preview image removed. Your saved PNG is unchanged.';$('#demo-status').textContent='';render();};
-$('#demo-png-saved').onclick=()=>{artworkTouched=true;artwork.saved();centreTouched=true;centreToggle.checked=true;showcase=null;audio.stop();pngStatus.textContent='Using the saved game PNG. Nothing was changed.';$('#demo-status').textContent='';render();};
-guide.onchange=render;
-select.onchange=()=>{game=select.value;void load();};$('#use-sample').onclick=()=>void load(true);
-for(const b of document.querySelectorAll('[data-demo]'))b.onclick=()=>void play(b.dataset.demo);
-$('#replay').onclick=()=>void play(scenario);$('#stop-demo').onclick=()=>{showcase=null;audio.stop();$('#demo-status').textContent='Demo stopped. Choose a bonus to show.';render();};
+function changed(e){if(loading||preparing||busy||turnActive())return;if(e.target===pngFile||e.target===guide)return;dirty=true;try{editor.input(e);config=readFields();valid=true;reset();$('#save-status').textContent='Unsaved demo edits.';}catch(error){valid=false;$('#save-status').textContent=error.message;}render();}
+form.oninput=changed;$('#new-wheel-name').addEventListener('input',e=>e.stopPropagation());guide.addEventListener('input',e=>e.stopPropagation());guide.onchange=render;
+form.onsubmit=e=>{e.preventDefault();void save();};$('#new-wheel').onclick=()=>void save(true);$('#create-wheel').onclick=()=>{$('#save-copy').open=true;$('#new-wheel-name').focus();};
+async function save(copy=false){if(loading||busy||preparing||turnActive()||!config)return;busy=true;render();try{const next={config:readFields(),artwork:art};state=await store.save(next,{...(copy?{copyName:$('#new-wheel-name').value}:{}),expectedRevision:state.revision});fill();$('#save-status').textContent=copy?'New demo wheel saved. Your original is still here.':'Demo wheel saved in this browser, including its PNG.';}catch(e){$('#save-status').textContent=e.message;}finally{busy=false;render();}}
+$('#discard-wheel').onclick=()=>{try{state=store.read();fill();$('#save-status').textContent='Edits undone. Saved demo wheel restored.';}catch(e){$('#save-status').textContent=e.message;}};
+$('#wheel-list').onchange=async()=>{if(loading||busy||dirty||preparing||turnActive())return;const id=$('#wheel-list').value;busy=true;render();try{state=await store.select(id,state.revision);fill();$('#save-status').textContent='Using '+config.name+'.';}catch(e){$('#save-status').textContent=e.message;list();}finally{busy=false;render();}};
+$('#demo-game').value=game;$('#demo-game').onchange=()=>{if(loading||busy||dirty||preparing||turnActive())return;game=$('#demo-game').value;void load();};
+function setArtwork(next){art=next;$('#demo-centre').checked=true;changed({target:form});}
+pngFile.onchange=async()=>{const file=pngFile.files?.[0];if(!file||loading||busy||preparing||turnActive())return;preparing=true;$('#demo-png-status').textContent='Preparing your PNG…';render();try{const png=await demoPngData(await prepareCentrePng(file));if(disposed)return;preparing=false;setArtwork({kind:'upload',png,label:file.name.slice(0,100)});}catch(e){$('#save-status').textContent=e.message;}finally{preparing=false;pngFile.value='';if(!disposed)render();}};
+$('#demo-png-sample').onclick=()=>setArtwork({kind:'sample'});$('#demo-png-remove').onclick=()=>{art={kind:'none'};changed({target:form});};$('#demo-png-saved').onclick=()=>setArtwork(structuredClone(current().artwork));
+async function play(next){if(loading||busy||preparing||dirty||!valid||turnActive()&&!(next==='trial'&&scenario==='trial'&&showcase.round.phase==='ready'))return;busy=true;render();try{if(sound)await audio.unlock();if(next==='trial'&&scenario==='trial'&&showcase?.round.phase==='ready')showcase.next();else showcase=next==='trial'?createWheelTrial(config):createWheelShowcase(config,next);scenario=next;}catch(e){showcase=null;audio.stop();$('#demo-status').textContent=e.message;}finally{busy=false;render();}}
+$('#test-wheel').onclick=()=>void play('trial');for(const b of document.querySelectorAll('[data-demo]'))b.onclick=()=>void play(b.dataset.demo);$('#replay').onclick=()=>void play(scenario);$('#stop-demo').onclick=()=>{reset();render();$('#demo-status').textContent='Demo stopped. Choose a saved wheel or test again.';};
 $('#sound').onclick=()=>{sound=!sound;audio.setEnabled(sound);$('#sound').setAttribute('aria-pressed',String(sound));$('#sound').textContent=sound?'Demo sound on':'Demo sound off';};
+function uniqueName(base){let name=base.slice(0,35),n=2;while(state.wheels.some(w=>w.config.name.toLowerCase()===name.toLowerCase()))name=base.slice(0,30)+' '+n++;return name;}
+async function addSource(live){if(loading||busy||dirty||preparing||turnActive())return;busy=true;render();try{const result=live?await loadDemoConfig(game,sourceIds.get(game),{storage:localStorage,connection}):{config:demoDefaults(game),saved:false};if(live&&!result.saved)throw Error('No saved live setup was found. You can add a sample wheel instead.');if(result.saved)sourceIds.set(game,result.config.id);const source={...result.config,centrePng:{...readCentrePng(result.config.centrePng),enabled:true}};state=await store.save({config:source,artwork:source.centrePng.assetId?{kind:'saved'}:{kind:'sample'}},{copyName:uniqueName(live?'Live setup copy':'Sample wheel'),expectedRevision:state.revision});fill();links();$('#save-status').textContent=live?'Live setup copied into a separate demo wheel.':'Sample added as a new demo wheel.';}catch(e){$('#save-status').textContent=e.message;}finally{busy=false;render();}}
+$('#use-sample').onclick=()=>void addSource(false);$('#copy-live').onclick=()=>void addSource(true);
+window.addEventListener('storage',e=>{if(e.key!==store?.key||loading||busy||preparing)return;if(dirty||turnActive()){$('#save-status').textContent='Demo wheels changed in another tab. Reload before saving.';return;}try{state=store.read();fill();}catch(error){$('#save-status').textContent=error.message;}});
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 const observer=new ResizeObserver(entries=>{const stage=$('#game .dw-stage');if(stage)stage.style.transform=`scale(${entries[0].contentRect.width/540})`;});observer.observe($('#game'));
-const pulse=setInterval(render,80);void load();window.addEventListener('pagehide',()=>{ticket++;artworkTicket++;artwork.dispose();clearInterval(pulse);observer.disconnect();view.dispose();audio.dispose();},{once:true});
+const pulse=setInterval(()=>{if(showcase)showcase.step(Date.now());render();},80);void load();window.addEventListener('pagehide',()=>{disposed=true;ticket++;clearInterval(pulse);observer.disconnect();view.dispose();audio.dispose();},{once:true});

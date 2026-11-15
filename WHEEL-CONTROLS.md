@@ -12,6 +12,8 @@ The six Double, Bonus and Mirror wheel editors and live-control pages share a co
 
 Use Faith’s existing private editing link for shared presets across computers. A plain public editor link saves only in that browser. Actual live rounds and OBS connection keys remain browser-local. No production settings were changed while developing this update.
 
+The demo uses these same controls with its own Regular/High Roller library and local PNG saves. See DEMO-PRESETS.md for rehearsal controls and storage scope.
+
 ## Compatibility
 
 Optional `bonusEnabled` and `mirrorEnabled` booleans default to enabled when omitted. Saved slot arrays stay intact while disabled. Mirrored wheels require even spot counts only when the mirror is enabled. Re-enabling validates the existing geometry. The demo explicitly enables staged bonuses in its temporary copy; it never edits the saved preset.

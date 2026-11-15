@@ -1,4 +1,4 @@
-import {defaultBonus,validateBonus,startBonus,advanceBonus,publicBonus,bonusKey} from './bonus-game.js';
+import {defaultBonus,validateBonus,startBonus,continueBonus,advanceBonus,publicBonus,bonusKey} from './bonus-game.js';
 import {defaultMirror,validateMirror,mirrorKey} from './mirror-game.js';
 import {SHARED_API,sharedStorageKey} from './shared-settings-connection.js';
 
@@ -47,4 +47,12 @@ export function createWheelShowcase(source,scenario,now=Date.now()){
  const respin=scenario==='both'?config.bonusSlots[0]:safe>=0?safe:config.mirrorSlots[0];
  const remaining=round.pending.mirrorTriggered?[0,respin,0]:[0],choose=take(remaining);
  return {round,sampleTrigger,step(time=Date.now()){const changed=advanceBonus(round,time,choose);if(round.phase==='complete')round.hideAt=null;return changed;},snapshot(time=Date.now()){return {config,serverNow:time,round:publicBonus(round),volume:45};}};
+}
+
+// A normal demo turn uses the exact saved rules, including disabled bonuses,
+// line probabilities, timing and spin count. Its result never reaches a store.
+export function createWheelTrial(source,now=Date.now(),choose){
+ const config=(source.mirrorUnlock==='slot'?validateMirror:validateBonus)(structuredClone(source));
+ const round=startBonus(config,'',now,choose);round.demo=true;
+ return {round,step(time=Date.now()){const changed=advanceBonus(round,time,choose);if(round.phase==='complete')round.hideAt=null;return changed;},next(time=Date.now()){continueBonus(round,time,choose);},snapshot(time=Date.now()){return {config,serverNow:time,round:{...publicBonus(round),demoMode:'trial'},volume:45};}};
 }
