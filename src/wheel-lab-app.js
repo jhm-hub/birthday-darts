@@ -1,3 +1,4 @@
+import {readArtworkPlacement} from './centre-artwork.js';
 import {CONCEPTS,validateLab,startLab,spinLab,advanceLab,lockLab,cents,decimal,formatLab,specialName} from './wheel-lab-game.js';
 import {createLabStore} from './wheel-lab-store.js';
 import {createLabView} from './wheel-lab-view.js';
@@ -30,8 +31,8 @@ function fillSpots(){
  }));
 }
 function fill(){
- draft=structuredClone(current().config);preview=draft;dirty=false;valid=true;run=null;autoAt=0;activeWheel=0;
- for(const [id,key] of Object.entries({'preset-name':'name',duration:'duration',operation:'operation',spins:'spins','crown-target':'crownTarget',seed:'seed',contribution:'contribution',cap:'cap',font:'font',rim:'rim',pointer:'pointer','text-color':'text','special-color':'special',diameter:'diameter'}))$('#'+id).value=draft[key];$('#special-enabled').checked=draft.enabled;
+ draft=structuredClone(current().config);const placement=readArtworkPlacement(draft);preview=draft;dirty=false;valid=true;run=null;autoAt=0;activeWheel=0;
+ for(const [id,key] of Object.entries({'preset-name':'name',duration:'duration',operation:'operation',spins:'spins','crown-target':'crownTarget',seed:'seed',contribution:'contribution',cap:'cap',font:'font',rim:'rim',pointer:'pointer','text-color':'text','special-color':'special',diameter:'diameter','art-scale':'artworkScale','art-x':'artworkX','art-y':'artworkY'}))$('#'+id).value=draft[key]??placement[key];$('#special-enabled').checked=draft.enabled;
  $('#presets').replaceChildren(...state.presets.map(p=>new Option(p.config.name,p.config.id)));$('#presets').value=state.selected;$('#copy-name').value='';$('#save-copy').open=false;$('#art-status').textContent=artLabel();status('');fillWheel();render();
 }
 async function load(next){
@@ -42,7 +43,7 @@ async function load(next){
 function read(){
  const raw=structuredClone(draft),w=raw.wheels[activeWheel];w.values=[...$('#spots').querySelectorAll('[data-value]')].map(input=>input.value.trim()===''?NaN:Number(input.value));w.specials=[...$('#spots').querySelectorAll('[data-special]:checked')].map(input=>Number(input.dataset.special));w.colors=[$('#odd-color').value,$('#even-color').value];
  if(number('#spot-count')!==w.values.length)throw Error('Choose a whole number of spots from 2 to 24.');
- Object.assign(raw,{name:$('#preset-name').value,duration:number('#duration'),operation:$('#operation').value,spins:number('#spins'),crownTarget:number('#crown-target'),seed:number('#seed'),cap:number('#cap'),contribution:number('#contribution'),font:$('#font').value,rim:$('#rim').value,pointer:$('#pointer').value,text:$('#text-color').value,special:$('#special-color').value,diameter:number('#diameter'),enabled:$('#special-enabled').checked});return validateLab(raw);
+ Object.assign(raw,{name:$('#preset-name').value,duration:number('#duration'),operation:$('#operation').value,spins:number('#spins'),crownTarget:number('#crown-target'),seed:number('#seed'),cap:number('#cap'),contribution:number('#contribution'),font:$('#font').value,rim:$('#rim').value,pointer:$('#pointer').value,text:$('#text-color').value,special:$('#special-color').value,diameter:number('#diameter'),artworkScale:number('#art-scale'),artworkX:number('#art-x'),artworkY:number('#art-y'),enabled:$('#special-enabled').checked});return validateLab(raw);
 }
 function changed(event){
  if(busy||settling||active()||!draft||event?.target===$('#png'))return;dirty=true;run=null;autoAt=0;
@@ -51,6 +52,7 @@ function changed(event){
   draft=read();preview=draft;valid=true;status('Unsaved edits. Save or undo before playing or switching.');
  }catch(e){valid=false;status(e.message);}render();
 }
+$('#art-reset').onclick=()=>{$('#art-scale').value=100;$('#art-x').value=$('#art-y').value=0;changed();};
 form.oninput=changed;for(const id of ['copy-name','number-list'])$('#'+id).addEventListener('input',e=>e.stopPropagation());
 $('#apply-list').onclick=()=>{if(busy||active()||settling)return;try{const values=parseWheelNumbers($('#number-list').value);draft.wheels[activeWheel].values=values;draft.wheels[activeWheel].specials=[...$('#spots').querySelectorAll('[data-special]:checked')].map(i=>Number(i.dataset.special)).filter(i=>i<values.length);$('#spot-count').value=values.length;fillSpots();changed();}catch(e){status(e.message);}};
 async function save(copy=false){if(busy||active()||settling||!draft)return;busy=true;render();try{state=await store.save(read(),state.revision,copy?$('#copy-name').value:undefined);fill();status(copy?'New prototype saved. The original is still here.':'Prototype saved, including settings and PNG.');}catch(e){status(e.message);}finally{busy=false;render();}}

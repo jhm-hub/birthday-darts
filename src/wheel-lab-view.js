@@ -1,3 +1,4 @@
+import {artworkBox} from './centre-artwork.js';
 import {CONCEPTS,labAngles,specialName} from './wheel-lab-game.js';
 import {wheelLayout} from './double-wheel/model.js';
 import {labDiscs,labLabelMetrics} from './wheel-lab-style.js';
@@ -44,7 +45,7 @@ export function createLabView(host){
   svg.append(...pointers);
   svg.append(node('circle',{cx:300,cy:300,r:73,fill:'#271331',stroke:'#F3CDE8','stroke-width':3}),node('circle',{cx:300,cy:300,r:69,fill:'none',stroke:'#E9BD78','stroke-width':1,opacity:.75}));
   const art=c.artwork.kind==='sample'?'./demo-assets/faith-wheel-badge-v1.png':c.artwork.kind==='upload'?c.artwork.png:null;
-  if(art)svg.append(node('image',{'data-centre-art':'',href:art,x:300-c.diameter/2,y:300-c.diameter/2,width:c.diameter,height:c.diameter}));
+  if(art){const box=artworkBox(c.diameter,c);svg.append(node('image',{'data-centre-art':'',href:art,x:300+box.x-box.size/2,y:300+box.y-box.size/2,width:box.size,height:box.size}));}
   else svg.append(node('text',{x:300,y:304,'text-anchor':'middle','dominant-baseline':'central',fill:'#F6C9DE','font-size':22,'font-weight':650},'FAITH'));
   host.replaceChildren(svg);fitLabels();draw(run);
  }

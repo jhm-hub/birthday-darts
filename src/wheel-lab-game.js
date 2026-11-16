@@ -1,3 +1,4 @@
+import {savedArtworkPlacement} from './centre-artwork.js';
 import {hexColor,readWheelFont,DEFAULT_WHEEL_FONT,WHEEL_FONT_VERSION} from './double-appearance.js';
 import {targetRotation,randomIndex} from './double-wheel/model.js';
 import {validateDemoArtwork} from './demo-presets.js';
@@ -39,7 +40,7 @@ export function validateLab(raw){
  const seed=money(raw.seed,999999.99),cap=money(raw.cap,999999.99),contribution=money(raw.contribution);
  if(cap<seed)throw Error('The jackpot cap must be at least the starting pot.');
  const artwork=validateDemoArtwork(raw.artwork);if(artwork.kind==='saved')throw Error('Choose a sample or uploaded prototype PNG.');
- return {id:raw.id,kind,name:raw.name.trim(),operation:raw.operation,wheels,spins,crownTarget,seed,cap,contribution,enabled:raw.enabled,duration:bounded(raw.duration,1,15,'Choose a spin duration from 1 to 15 seconds.'),font:readWheelFont(raw.font,raw.wheelFontVersion),wheelFontVersion:WHEEL_FONT_VERSION,rim:hexColor(raw.rim),pointer:hexColor(raw.pointer),text:hexColor(raw.text),special:hexColor(raw.special),artwork,diameter:bounded(raw.diameter,60,130,'Choose a PNG diameter from 60 to 130.',true)};
+ return {...savedArtworkPlacement(raw),id:raw.id,kind,name:raw.name.trim(),operation:raw.operation,wheels,spins,crownTarget,seed,cap,contribution,enabled:raw.enabled,duration:bounded(raw.duration,1,15,'Choose a spin duration from 1 to 15 seconds.'),font:readWheelFont(raw.font,raw.wheelFontVersion),wheelFontVersion:WHEEL_FONT_VERSION,rim:hexColor(raw.rim),pointer:hexColor(raw.pointer),text:hexColor(raw.text),special:hexColor(raw.special),artwork,diameter:bounded(raw.diameter,60,130,'Choose a PNG diameter from 60 to 130.',true)};
 }
 export function specialName(kind){return kind==='crowns'?'CROWN':kind==='climb'?'ASCEND':'JACKPOT';}
 export function startLab(source,{staged=false,poolCents=cents(source.seed)}={}){

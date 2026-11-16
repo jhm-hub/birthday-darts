@@ -1,3 +1,4 @@
+import {readArtworkPlacement,savedArtworkPlacement,artworkBox} from './centre-artwork.js';
 import {SHARED_API,readSharedConnection} from './shared-settings-connection.js';
 import {prepareCentrePng,uploadCentrePng} from './centre-png-upload.js';
 // OBS coordinates are deliberately fixed while this layout is enabled, across
@@ -6,7 +7,7 @@ export function readCentrePng(raw){
  if(raw===undefined)return {enabled:false,diameter:120};
  if(!raw||typeof raw.enabled!=='boolean'||!Number.isInteger(raw.diameter)||raw.diameter<60||raw.diameter>150)throw Error('Choose a centre PNG diameter from 60 to 150 pixels.');
  if(raw.assetId!==undefined&&!/^[a-f0-9]{64}$/.test(raw.assetId))throw Error('Upload a valid centre PNG.');
- return {enabled:raw.enabled,diameter:raw.diameter,...(raw.assetId?{assetId:raw.assetId}:{})};
+ return {enabled:raw.enabled,diameter:raw.diameter,...savedArtworkPlacement(raw),...(raw.assetId?{assetId:raw.assetId}:{})};
 }
 export function wheelGeometry(config,bonus=false){
  const png=readCentrePng(config.centrePng);
@@ -24,7 +25,7 @@ export function reserveSvgCentre(svg,geometry){
 }
 export const centreImageURL=id=>SHARED_API+'/api/wheel-images/image/'+id+'.png';
 export function setCentreLayout(stage,config,{imageSource}={}){
- const png=readCentrePng(config.centrePng);stage.dataset.centrePng=String(png.enabled);stage.style.setProperty('--centre-png-size',png.diameter+'px');
+ const png=readCentrePng(config.centrePng);stage.dataset.centrePng=String(png.enabled);stage.style.setProperty('--centre-png-size',png.diameter+'px');const box=artworkBox(png.diameter,png);stage.style.setProperty('--centre-art-size',box.size+'px');stage.style.setProperty('--centre-art-x',box.x+'px');stage.style.setProperty('--centre-art-y',box.y+'px');
  const img=stage.querySelector('.dw-centre-image');
  // View-only overrides let the demo use local blob URLs without admitting
  // arbitrary image URLs into saved settings or OBS snapshots.
@@ -37,9 +38,9 @@ export function setCentreLayout(stage,config,{imageSource}={}){
 }
 export function createCentreEditor(form){
  const fieldset=document.createElement('fieldset');fieldset.className='dw-line-settings centre-png-settings';
- fieldset.innerHTML=`<legend>Static centre PNG</legend><label class="dw-toggle"><input type="checkbox" id="centre-png">Show centre PNG space</label><label class="field">Upload centre PNG<input id="centre-png-file" type="file" accept="image/png,.png"></label><p class="hint">Upload once, then save changes. Your PNG stays upright and centred, appears in OBS, and hides with the wheel. Transparent padding is trimmed and the artwork is fitted into the circle without cutting it off. PNG up to 10 MB.</p><div class="centre-png-upload-preview"><img id="centre-png-thumbnail" alt="Uploaded centre PNG" referrerpolicy="no-referrer" hidden><button type="button" id="centre-png-remove" hidden>Remove PNG</button></div><p class="hint" id="centre-png-upload-status" role="status"></p><label class="field">PNG diameter (pixels)<input id="centre-png-size" type="number" min="60" max="150" step="1" value="120" required></label><label class="dw-toggle"><input type="checkbox" id="centre-png-guide">Show alignment guide in this preview</label><p class="hint" id="centre-png-position"></p><p class="hint">The guide never appears in OBS. Save changes to update the next viewer; a current spin keeps its existing image.</p>`;
+ fieldset.innerHTML=`<legend>Static centre PNG</legend><label class="dw-toggle"><input type="checkbox" id="centre-png">Show centre PNG space</label><label class="field">Upload centre PNG<input id="centre-png-file" type="file" accept="image/png,.png"></label><p class="hint">Upload once, then save changes. Your PNG stays upright and centred, appears in OBS, and hides with the wheel. Transparent edges and protruding details are preserved. Increase Artwork size to let coins or decorations overlap the wheel. PNG up to 10 MB.</p><div class="centre-png-upload-preview"><img id="centre-png-thumbnail" alt="Uploaded centre PNG" referrerpolicy="no-referrer" hidden><button type="button" id="centre-png-remove" hidden>Remove PNG</button></div><p class="hint" id="centre-png-upload-status" role="status"></p><label class="field">Center space (pixels)<input id="centre-png-size" type="number" min="60" max="150" step="1" value="120" required></label><label class="field">Artwork size (%)<input id="centre-png-scale" type="number" min="50" max="200" step="1" value="100" required></label><p class="hint">100% fits the center space. Try 110–125% for a badge with coins extending over its edge. The full PNG stays upright above the spinning wheels.</p><details><summary>Fine-tune artwork position</summary><div class="wheel-quick"><label class="field">PNG left / right (pixels)<input id="centre-png-x" type="number" min="-60" max="60" step="1" value="0" required></label><label class="field">PNG up / down (pixels)<input id="centre-png-y" type="number" min="-60" max="60" step="1" value="0" required></label></div><p class="hint">Use small nudges to center the main badge when details stick out more on one side. Negative moves left or up.</p><button type="button" id="centre-png-placement-reset">Reset artwork placement</button></details><label class="dw-toggle"><input type="checkbox" id="centre-png-guide">Show alignment guide in this preview</label><p class="hint" id="centre-png-position"></p><p class="hint">The guide never appears in OBS. Save changes to update the next viewer; a current spin keeps its existing image.</p>`;
  if(form.querySelector('#centre-artwork'))form.querySelector('#centre-artwork').append(fieldset);else form.querySelector('#font-family').closest('label').before(fieldset);
- const $=q=>fieldset.querySelector(q),enabled=$('#centre-png'),diameter=$('#centre-png-size'),guide=$('#centre-png-guide'),position=$('#centre-png-position'),preview=form.ownerDocument.querySelector('#preview'),file=$('#centre-png-file'),remove=$('#centre-png-remove'),thumbnail=$('#centre-png-thumbnail'),status=$('#centre-png-upload-status');
+ const $=q=>fieldset.querySelector(q),enabled=$('#centre-png'),diameter=$('#centre-png-size'),scale=$('#centre-png-scale'),offsetX=$('#centre-png-x'),offsetY=$('#centre-png-y'),guide=$('#centre-png-guide'),position=$('#centre-png-position'),preview=form.ownerDocument.querySelector('#preview'),file=$('#centre-png-file'),remove=$('#centre-png-remove'),thumbnail=$('#centre-png-thumbnail'),status=$('#centre-png-upload-status');
  let assetId,uploading=false;
  function refresh(){
   position.textContent=assetId?'Your uploaded PNG is part of the game. Use only the existing 540 × 660 OBS Browser Source; remove any separate copy of this PNG from OBS to avoid doubling it.':enabled.checked?'You can also keep a separate OBS image over this space. Centre it at X 270, Y 275 within the 540 × 660 source; its visibility stays separate until you upload it here.':'Upload a PNG to turn on the centred layout automatically, or enable the space for a separate OBS image.';
@@ -60,6 +61,7 @@ export function createCentreEditor(form){
    const blob=await prepareCentrePng(selected),next=await uploadCentrePng(blob,{connection});assetId=next;enabled.checked=true;status.textContent='PNG uploaded. Save changes to use it on stream.';
   }catch(error){status.textContent=error.message;}finally{uploading=false;file.value='';changed();}
  });
+ $('#centre-png-placement-reset').onclick=()=>{scale.value=100;offsetX.value=offsetY.value=0;changed();};
  remove.addEventListener('click',()=>{if(uploading)return;assetId=undefined;status.textContent='PNG removed from this setup. Save changes to update the next viewer.';changed();});
- return {set(config){const png=readCentrePng(config.centrePng);enabled.checked=png.enabled;diameter.value=png.diameter;assetId=png.assetId;status.textContent=assetId?'PNG saved with this game.':'';refresh();},read(){if(uploading)throw Error('Wait for the PNG upload to finish, then save.');return readCentrePng({enabled:enabled.checked,diameter:Number(diameter.value),...(assetId?{assetId}:{})});}};
+ return {set(config){const png=readCentrePng(config.centrePng);enabled.checked=png.enabled;diameter.value=png.diameter;const p=readArtworkPlacement(png);scale.value=p.artworkScale;offsetX.value=p.artworkX;offsetY.value=p.artworkY;assetId=png.assetId;status.textContent=assetId?'PNG saved with this game.':'';refresh();},read(){if(uploading)throw Error('Wait for the PNG upload to finish, then save.');return readCentrePng({enabled:enabled.checked,diameter:Number(diameter.value),artworkScale:Number(scale.value),artworkX:offsetX.value.trim()===''?NaN:Number(offsetX.value),artworkY:offsetY.value.trim()===''?NaN:Number(offsetY.value),...(assetId?{assetId}:{})});}};
 }

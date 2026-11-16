@@ -4,7 +4,8 @@ Double, Bonus and Mirror wheels, in both Add and Multiply, support an uploaded
 PNG inside the game. In the private editor’s **Static centre PNG** section:
 
 1. Choose **Upload centre PNG** and select a still PNG (up to 10 MB).
-2. Adjust the diameter from 60–150 pixels; the initial size is 120.
+2. Adjust **Center space (pixels)** from 60–150; the initial size is 120.
+   Use **Artwork size (%)** and position nudges to extend decorations over the rings.
 3. Click **Save changes**. The image is saved with that version of the game and
    loads through the same private editing link on other computers.
 
@@ -16,8 +17,7 @@ source or link is needed. A current round keeps its captured image and settings;
 changes apply to the next viewer.
 
 Uploads preserve transparency. Uneven transparent padding is trimmed, then all
-visible artwork is centred and fitted into a circular 300 × 300 PNG, suitable
-for the largest supported centre size at 2× resolution. Artwork is scaled without
+visible artwork is centred and fitted into a circular 300 × 300 PNG, with the whole artwork preserved. Artwork is scaled without
 cutting off rectangular corners. Fully transparent, animated, malformed and
 excessively large PNGs show an error and preserve the previous image.
 
@@ -34,7 +34,7 @@ Roller examples. It can copy a live setup without writing to that setup. Upload
 a PNG directly on the demo page, then choose **Save demo wheel** to retain it
 across refreshes with that preset. No editing key or server upload is needed.
 Use **Use Faith sample**, **Remove preview**, or **Restore preset PNG** to compare
-artwork. Each saved demo wheel keeps its own PNG, diameter, values and toggles.
+artwork. Each saved demo wheel keeps its own PNG, size, position, values and toggles.
 Both bonus sequences use the selected image. The sample badge is downloadable.
 The `art=sample` query option selects the sample when initializing a new demo
 library; it never replaces artwork in an already-saved demo preset. The reserved
@@ -48,3 +48,21 @@ its own visibility. At 120 × 120 its top left is X 210, Y 215 relative to the
 540 × 660 browser source; at 150 × 150 use X 195, Y 200.
 
 [Multiply demonstration](https://jhm-hub.github.io/birthday-darts/wheel-demo.html?game=mirror-multiply&centre=1&art=sample)
+
+## Artwork with protruding details
+
+The PNG is a transparent layer above the wheel, independent of the reserved
+centre space. **Artwork size (%)** scales the whole image from 50–200% without
+changing the wheel’s rings or pointer locations. Keep **Center space (pixels)**
+for the main badge; raise artwork size to let coins, ribbons or other details
+overlap the wheel. **Fine-tune artwork position** provides horizontal/vertical
+nudges from −60 to 60 pixels, useful when one side has more decoration.
+**Reset artwork placement** restores 100% with zero nudges.
+
+Placement saves with each private preset, demo preset and Wheel Lab preset.
+Main-game images remain upright, travel through the same OBS source and hide
+with the wheel. Active viewers retain their captured placement. The existing
+uploader preserves all visible pixels; no new circular image crop is added.
+These controls accommodate irregular artwork without adopting another wheel’s
+colours, logo or aesthetic. The November 2 Loser Wheel VOD was inspected only
+as a reference for protruding PNG details.
