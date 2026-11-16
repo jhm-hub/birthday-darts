@@ -21,7 +21,7 @@ export function createDoubleView(root,{audio=null,onFontStatus=()=>{}}={}){
  function render(time){if(!snap)return;const r=snap.round,c=r?.config??snap.config,key=JSON.stringify(c);if(key!==configKey){configKey=key;setCentreLayout(stage,c);stage.dataset.palette=c.palette;stage.dataset.lineLandings=String(!!c.lineLandings);
   const a=readAppearance(c.appearance,c),vars={rim:'rim',divider:'divider',ring:'ring-light',hub:'hub',labelA:'label-a',labelB:'label-b',pointer:'pointer',title:'title-color',resultBackground:'result-background',resultText:'result-text'};
   for(const [key,variable] of Object.entries(vars))stage.style.setProperty('--'+variable,a.colors[key]);
-  stage.style.setProperty('--wheel-font','"'+a.fontFamily+'", Fredoka, system-ui, sans-serif');
+  stage.style.setProperty('--wheel-font','"'+a.fontFamily+'", Nunito, system-ui, sans-serif');
   if(font!==a.fontFamily){font=a.fontFamily;const family=font,ticket=++fontTicket;clearTimeout(fontTimer);onFontStatus('Loading '+font+'…');fontTimer=setTimeout(()=>{void loadWheelFont(family).then(()=>{if(ticket===fontTicket)onFontStatus(family+' is ready.');}).catch(()=>{if(ticket===fontTicket)onFontStatus('Could not load '+family+'. Check the font name or connection; the preview is using a fallback.');});},300);}
   wheel=renderWheel(disc,c);title.textContent=c.name;root.querySelector('.dw-hub strong').textContent=operator(c.operation);}
   if(roundId!==r?.id){roundId=r?.id;lastNow=0;}const now=Math.max(time,lastNow);lastNow=now;

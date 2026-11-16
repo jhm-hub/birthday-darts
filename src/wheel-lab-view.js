@@ -11,7 +11,7 @@ export function createLabView(host){
  function set(c,run){
   const key=JSON.stringify([c, c.kind==='climb'?(run?.tier??0):0]);if(key===signature){draw(run);return;}signature=key;config=c;rotors=[];
   svg=node('svg',{viewBox:'0 0 600 600',role:'img','aria-label':CONCEPTS[c.kind].name+' wheel. Landed numbers appear in the result below.'});
-  svg.style.fontFamily='"'+c.font+'", Fredoka, sans-serif';
+  svg.style.fontFamily='"'+c.font+'", Nunito, sans-serif';
   svg.append(node('circle',{cx:300,cy:300,r:285,fill:c.rim,stroke:'#F2C98E','stroke-width':2}));
   for(let i=0;i<48;i++){const [cx,cy]=point(281,i*7.5);svg.append(node('circle',{cx,cy,r:1.6,fill:'#FFE6AD',opacity:.75}));}
   const discs=labDiscs(c.kind,run?.tier??0);

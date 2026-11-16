@@ -1,4 +1,4 @@
-import {hexColor,fontName} from './double-appearance.js';
+import {hexColor,readWheelFont,DEFAULT_WHEEL_FONT,WHEEL_FONT_VERSION} from './double-appearance.js';
 import {targetRotation,randomIndex} from './double-wheel/model.js';
 import {validateDemoArtwork} from './demo-presets.js';
 
@@ -18,7 +18,7 @@ export function labDefaults(kind,high=false){
  if(!CONCEPTS[kind])throw Error('Choose a wheel prototype.');
  const arrays=kind==='stack'?[[10,20,30,15,40,25,50,5],[2,3,4,5,2,6],[1,2,3,2,4,5]]:kind==='climb'?[[10,15,20,25,30,40,50,75],[50,75,100,150,200,250,300,400],[200,300,400,500,750,1000]]:kind==='crowns'?[[10,20,25,30,40,50,60,75],[50,75,100,150,200,250]]:[[10,20,25,40,50,75,100,150]];
  const pairs=[['#AB4BB8','#D9A9E8'],['#C42D9A','#F4A6CF'],['#FFC86B','#FFE9AD']];
- return validateLab({kind,id:kind+(high?'-high':'-regular'),name:high?'High Roller':'Regular',operation:'multiply',duration:3.6,spins:kind==='crowns'?3:1,crownTarget:2,enabled:true,seed:high?500:100,contribution:high?50:10,cap:high?10000:2000,font:'Fredoka',rim:'#633375',pointer:'#FFE1AB',text:'#FFFFFF',special:'#FFC86B',artwork:{kind:'sample'},diameter:105,wheels:arrays.map((values,i)=>({values:values.map(n=>n*(high?(kind==='stack'?(i===0?5:1):5):1)),colors:pairs[i],specials:kind==='crowns'&&i===0?[0,4]:kind==='climb'&&i<2?[1,5]:kind==='jackpot'?[0]:[]}))});
+ return validateLab({kind,id:kind+(high?'-high':'-regular'),name:high?'High Roller':'Regular',operation:'multiply',duration:3.6,spins:kind==='crowns'?3:1,crownTarget:2,enabled:true,seed:high?500:100,contribution:high?50:10,cap:high?10000:2000,font:DEFAULT_WHEEL_FONT,wheelFontVersion:WHEEL_FONT_VERSION,rim:'#633375',pointer:'#FFE1AB',text:'#FFFFFF',special:'#FFC86B',artwork:{kind:'sample'},diameter:105,wheels:arrays.map((values,i)=>({values:values.map(n=>n*(high?(kind==='stack'?(i===0?5:1):5):1)),colors:pairs[i],specials:kind==='crowns'&&i===0?[0,4]:kind==='climb'&&i<2?[1,5]:kind==='jackpot'?[0]:[]}))});
 }
 export function validateLab(raw){
  if(!raw||!CONCEPTS[raw.kind])throw Error('Choose a wheel prototype.');
@@ -39,7 +39,7 @@ export function validateLab(raw){
  const seed=money(raw.seed,999999.99),cap=money(raw.cap,999999.99),contribution=money(raw.contribution);
  if(cap<seed)throw Error('The jackpot cap must be at least the starting pot.');
  const artwork=validateDemoArtwork(raw.artwork);if(artwork.kind==='saved')throw Error('Choose a sample or uploaded prototype PNG.');
- return {id:raw.id,kind,name:raw.name.trim(),operation:raw.operation,wheels,spins,crownTarget,seed,cap,contribution,enabled:raw.enabled,duration:bounded(raw.duration,1,15,'Choose a spin duration from 1 to 15 seconds.'),font:fontName(raw.font),rim:hexColor(raw.rim),pointer:hexColor(raw.pointer),text:hexColor(raw.text),special:hexColor(raw.special),artwork,diameter:bounded(raw.diameter,60,130,'Choose a PNG diameter from 60 to 130.',true)};
+ return {id:raw.id,kind,name:raw.name.trim(),operation:raw.operation,wheels,spins,crownTarget,seed,cap,contribution,enabled:raw.enabled,duration:bounded(raw.duration,1,15,'Choose a spin duration from 1 to 15 seconds.'),font:readWheelFont(raw.font,raw.wheelFontVersion),wheelFontVersion:WHEEL_FONT_VERSION,rim:hexColor(raw.rim),pointer:hexColor(raw.pointer),text:hexColor(raw.text),special:hexColor(raw.special),artwork,diameter:bounded(raw.diameter,60,130,'Choose a PNG diameter from 60 to 130.',true)};
 }
 export function specialName(kind){return kind==='crowns'?'CROWN':kind==='climb'?'ASCEND':'JACKPOT';}
 export function startLab(source,{staged=false,poolCents=cents(source.seed)}={}){

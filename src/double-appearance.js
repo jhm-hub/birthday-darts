@@ -1,3 +1,4 @@
+export const DEFAULT_WHEEL_FONT='Nunito', WHEEL_FONT_VERSION=1;
 export const COLOR_FIELDS = {
  rim:'Wheel rim', divider:'Spot dividers', ring:'Ring highlight', hub:'Centre',
  labelA:'Numbers · odd spots', labelB:'Numbers · even spots', pointer:'Pointer',
@@ -16,10 +17,14 @@ export function fontName(value){
  if(typeof value!=='string'||!value.trim()||value.trim().length>60||! /^[\p{L}\p{N} -]+$/u.test(value.trim()))throw Error('Enter a font family name, such as Nunito or Fredoka.');
  return value.trim();
 }
-export function presetAppearance(palette,outerCount,innerCount,fontFamily='Fredoka'){
+// Upgrade the former default once; explicit font choices made afterwards remain editable.
+export function readWheelFont(value,version){
+ const family=fontName(value);return version!==WHEEL_FONT_VERSION&&family.toLowerCase()==='fredoka'?DEFAULT_WHEEL_FONT:family;
+}
+export function presetAppearance(palette,outerCount,innerCount,fontFamily=DEFAULT_WHEEL_FONT){
  const p=themes[palette];if(!p)throw Error('Choose a valid colour preset.');
  const colors=Object.fromEntries(Object.keys(COLOR_FIELDS).map(key=>[key,hexColor(p[key]??({labelA:'#FFFFFF',pointer:'#E6C5FF',title:'#F8D7EE',resultBackground:'#2D1B38',resultText:'#FFE8F7'})[key])]));
- return {fontFamily:fontName(fontFamily),colors,outerColors:Array.from({length:outerCount},(_,i)=>hexColor(p.outer[i%2])),innerColors:Array.from({length:innerCount},(_,i)=>hexColor(p.inner[i%2]))};
+ return {fontFamily:fontName(fontFamily),wheelFontVersion:WHEEL_FONT_VERSION,colors,outerColors:Array.from({length:outerCount},(_,i)=>hexColor(p.outer[i%2])),innerColors:Array.from({length:innerCount},(_,i)=>hexColor(p.inner[i%2]))};
 }
 export function readAppearance(raw,config){
  const fallback=presetAppearance(config.palette,config.outer.length,config.inner.length);
@@ -27,7 +32,7 @@ export function readAppearance(raw,config){
  if(!raw||typeof raw!=='object'||!raw.colors)throw Error('The wheel colours could not be read.');
  const colors=Object.fromEntries(Object.keys(COLOR_FIELDS).map(key=>[key,hexColor(raw.colors[key])]));
  const list=(key,n)=>{if(!Array.isArray(raw[key])||raw[key].length!==n)throw Error('Every spot needs a hex colour.');return raw[key].map(hexColor);};
- return {fontFamily:fontName(raw.fontFamily),colors,outerColors:list('outerColors',config.outer.length),innerColors:list('innerColors',config.inner.length)};
+ return {fontFamily:readWheelFont(raw.fontFamily,raw.wheelFontVersion),wheelFontVersion:WHEEL_FONT_VERSION,colors,outerColors:list('outerColors',config.outer.length),innerColors:list('innerColors',config.inner.length)};
 }
 export function spotCount(value){const n=Number(value);if(!Number.isInteger(n)||n<2||n>24)throw Error('Choose 2–24 spots on each wheel.');return n;}
 export function resizeSpots(spots,count,pair){return Array.from({length:spotCount(count)},(_,i)=>spots[i]?{...spots[i]}:{value:'0',color:pair[i%2]});}

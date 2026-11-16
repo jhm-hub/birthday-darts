@@ -4,7 +4,7 @@ License: Fredoka-OFL.txt
 Source: https://github.com/google/fonts/tree/main/ofl/fredoka
 Downloaded October 12, 2026. No external font requests at runtime.
 
-Nunito — bundled for the Double Wheel's Landaire font option.
+Nunito — Faith’s standard font for every wheel game, adopted November 15, 2026.
 Copyright 2014 The Nunito Project Authors. SIL Open Font License 1.1.
 License: Nunito-OFL.txt
 Source: https://github.com/google/fonts/tree/main/ofl/nunito

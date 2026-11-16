@@ -11,7 +11,7 @@ function fixture(mode='add',storage=memory(),options={}){let tail=Promise.resolv
 const rolls=(...v)=>()=>{assert.ok(v.length,'unexpected draw');return v.shift();};
 const setup=mode=>({...defaultBonus(mode),outer:[2.25,3.5],inner:[4,5],bonus:[6.25,10],bonusColors:['#ABC','#DEF'],bonusSlots:[1],duration:2,bonusDuration:2,appearance:undefined});
 test('new bonus settings validate all three wheels, special slots and editable appearance',()=>{
- const c=validateBonus(defaultBonus('add'));assert.equal(c.lineChance,25);assert.equal(c.lineLandings,false);assert.deepEqual(c.bonusSlots,[5]);assert.equal(c.appearance.fontFamily,'Fredoka');
+ const c=validateBonus(defaultBonus('add'));assert.equal(c.lineChance,25);assert.equal(c.lineLandings,false);assert.deepEqual(c.bonusSlots,[5]);assert.equal(c.appearance.fontFamily,'Nunito');
  for(const bonusSlots of [[],[6],[-1],[1,1],[1.5],['1'],null])assert.throws(()=>validateBonus({...c,bonusSlots}));
  for(const bonus of [[1],[1,2.222],[1,10000],[NaN,1],Array(25).fill(0)])assert.throws(()=>validateBonus({...c,bonus}));
  for(const bonusDuration of [0,1,16,NaN,'4'])assert.throws(()=>validateBonus({...c,bonusDuration}));

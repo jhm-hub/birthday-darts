@@ -1,4 +1,4 @@
-import {COLOR_FIELDS,hexColor,presetAppearance,readAppearance,resizeSpots,spotCount} from './double-appearance.js';
+import {WHEEL_FONT_VERSION,COLOR_FIELDS,hexColor,presetAppearance,readAppearance,resizeSpots,spotCount} from './double-appearance.js';
 
 export function parseWheelNumbers(text){
  const tokens=text.trim().split(/[\s,;]+/).filter(Boolean);
@@ -43,7 +43,7 @@ export function createWheelEditor(form,{bonus=false,mirror=false,centre}={}){
   if(input.dataset.count){const side=input.dataset.count;capture(side);rows(side,spotCount(input.value));}
   else if(input.dataset.pair){const side=input.dataset.pair;capture(side);const color=hexColor(input.value);drafts[side].forEach((row,i)=>{if(i%2===Number(input.dataset.parity))row.color=color;});rows(side,spotCount($('#'+side+'-count').value));}
   else if(input.id==='palette'){for(const side of sides)capture(side);setColors({...presetAppearance(input.value,spotCount($('#outer-count').value),spotCount($('#inner-count').value),$('#font-family').value),...(bonus?{bonusColors:Array.from({length:spotCount($('#bonus-count').value)},(_,i)=>i%2?'#FFE9AD':'#FFC86B')}:{})});}refresh();
- },read(){const values={},appearance={fontFamily:$('#font-family').value,colors:{}};for(const side of sides){const count=spotCount($('#'+side+'-count').value),rows=[...$('#'+side+'-spots').children];if(rows.length!==count)throw Error('Choose the number of spots again.');values[side]=rows.map(row=>{const value=row.querySelector('[data-value]').value;if(!value.trim())throw Error('Enter a number for every spot.');return Number(value);});pair(side);appearance[side+'Colors']=rows.map(row=>hexColor(row.querySelector('[data-spot-color]').value));}
+ },read(){const values={},appearance={fontFamily:$('#font-family').value,wheelFontVersion:WHEEL_FONT_VERSION,colors:{}};for(const side of sides){const count=spotCount($('#'+side+'-count').value),rows=[...$('#'+side+'-spots').children];if(rows.length!==count)throw Error('Choose the number of spots again.');values[side]=rows.map(row=>{const value=row.querySelector('[data-value]').value;if(!value.trim())throw Error('Enter a number for every spot.');return Number(value);});pair(side);appearance[side+'Colors']=rows.map(row=>hexColor(row.querySelector('[data-spot-color]').value));}
   for(const input of form.querySelectorAll('[data-trim]'))appearance.colors[input.dataset.trim]=hexColor(input.value);
   const slots=kind=>[...$('#inner-spots').children].flatMap((row,i)=>row.querySelector('[data-slot-kind]').value===kind?[i]:[]);
   return {...values,centrePng:centre.read(),appearance,...(bonus?{bonusEnabled:$('#bonus-enabled').checked,bonusSlots:slots('bonus'),bonusColors:appearance.bonusColors,bonusTextColor:hexColor($('[data-bonus-text]').value)}:{}),...(mirror?{mirrorEnabled:$('#mirror-enabled').checked,mirrorMode:$('#mirror-mode').value,mirrorSlots:slots('mirror')}:{})};

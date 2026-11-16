@@ -72,7 +72,7 @@ test('display hides stale content, rejects older/wrong-mode snapshots, and never
 });
 test('hex colours, fonts and spot counts validate without changing older saved wheels',()=>{
  const legacy=defaultDouble('add');delete legacy.spins;const c=validateDouble(legacy);
- assert.equal(c.spins,1);assert.equal(c.appearance.fontFamily,'Fredoka');assert.equal(c.appearance.outerColors.length,8);
+ assert.equal(c.spins,1);assert.equal(c.appearance.fontFamily,'Nunito');assert.equal(c.appearance.outerColors.length,8);
  assert.equal(hexColor('abc'),'#AABBCC');assert.equal(hexColor('#e0AAf1'),'#E0AAF1');
  for(const value of ['red','#12','#12345678','url(x)'])assert.throws(()=>hexColor(value));
  assert.equal(fontName(' Nunito Sans '),'Nunito Sans');assert.throws(()=>fontName('x";color:red'));
