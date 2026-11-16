@@ -3,7 +3,7 @@ import {applyStoredLineCall,lineCallState} from './wheel-line-call.js';
 import {createSharedSettings} from './shared-settings.js';
 import {randomKey,validKey} from './protocol.js';
 import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
-import {defaultBonus,validateBonus,startBonus,continueBonus,advanceBonus,publicBonus,bonusResults,bonusKey,gameId,CLEAR_MS} from './bonus-game.js';
+import {defaultBonus,validateBonus,startBonus,continueBonus,advanceBonus,publicBonus,bonusResults,bonusKey,gameId} from './bonus-game.js';
 const emptyMetrics=()=>({total:0,spins:0,history:[]});
 export function createBonusStore(mode,storage,locks,sharedOptions={}){
  if(!['add','multiply'].includes(mode))throw Error('Unknown bonus wheel.');
@@ -17,7 +17,7 @@ export function createBonusStore(mode,storage,locks,sharedOptions={}){
   let changed=advanceBonus(w.round,now);
   if(w.round){const r=w.round,results=bonusResults(r),credited=r.creditedSpins??(r.credited?1:0);for(const result of results.slice(credited)){w.metrics??=emptyMetrics();w.metrics.total=Math.round((w.metrics.total+result.result)*10000)/10000;w.metrics.spins++;w.metrics.history=[{...result,viewer:r.viewer},...w.metrics.history].slice(0,8);changed=true;}if(results.length!==credited)r.creditedSpins=results.length;}
   changed=recordLastTurn(w)||changed;
-  if(w.round?.hideAt&&now>=w.round.hideAt+CLEAR_MS){w.round=null;changed=true;}return changed;
+  return changed;
  }
  function snapshot(id,now=Date.now()){const w=find(read(),id);return {kind:'faith-bonus-wheel',version:1,mode,serverNow:now,config:validate(w),volume:w.volume??45,round:publicBonus(w.round)};}
  function controlSnapshot(id,now=Date.now()){return {...snapshot(id,now),metrics:find(read(),id).metrics??emptyMetrics(),lineCalls:lineCallState(find(read(),id).round)};}
@@ -27,7 +27,7 @@ export function createBonusStore(mode,storage,locks,sharedOptions={}){
   list:()=>read().widgets.map(validate),snapshot,controlSnapshot,room:id=>find(read(),id).room,
   async save(raw){const config=validate(raw);await lock(()=>{const state=read(),w=state.widgets.find(w=>w.id===config.id);if(w){Object.assign(w,config);}else{if(state.widgets.length>=30)throw Error('Save up to 30 versions.');state.widgets.push({...config,room:randomKey(),round:null,volume:45,metrics:emptyMetrics()});}write(state);});return config;},
   async action(id,action,payload={},now=Date.now()){return lock(()=>{const state=read(),w=find(state,id);if(id!==state.stream.activeId)throw Error('Use the selected live version.');settle(w,now);
-   if(action==='spin'){if(w.round?.phase==='ready')continueBonus(w.round,now);else if(w.round)throw Error('Wait for the result to clear, or choose Next viewer.');else w.round=startBonus(validate(w),payload.viewer,now);}
+   if(action==='spin'){if(w.round?.phase==='ready')continueBonus(w.round,now);else if(w.round)throw Error('Wait for the spin to finish, then choose Next viewer / clear wheel.');else w.round=startBonus(validate(w),payload.viewer,now);}
    else if(action==='add-spin'){if(!w.round||payload.roundId!==w.round.id||payload.spins!==(w.round.config.spins??1))throw Error('This turn has changed. Use the current +1 spin button.');addWheelSpin(w.round);settle(w,now);}
    else if(action==='line-call'||action==='undo-lines'){applyStoredLineCall(w,action,payload,now);settle(w,now);}
    else if(action==='clear'){if(w.round&&w.round.phase!=='complete')throw Error('Finish all spins for this viewer first.');w.round=null;}

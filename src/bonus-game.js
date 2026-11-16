@@ -1,6 +1,6 @@
 import {readBonusDiameter,BONUS_REVEAL_MS} from './bonus-presentation.js';
 import {starterValues} from './wheel-starters.js';
-import {validateDouble,defaultDouble,formatDouble,operator,HOLD_MS,CLEAR_MS} from './double-game.js';
+import {validateDouble,defaultDouble,formatDouble,operator,CLEAR_MS} from './double-game.js';
 import {randomIndex,targetRotation,frameAt,indexAtPointer} from './double-wheel/model.js';
 import {hexColor,readAppearance} from './double-appearance.js';
 export {formatDouble as formatBonus,operator,indexAtPointer,CLEAR_MS};
@@ -64,10 +64,14 @@ export function continueBonus(round,now=Date.now(),choose){
 }
 function finish(round,landAt){
  round.result=round.pending;round.pending=null;round.results.push(round.result);round.total=bonusTotal(round);
- const complete=round.results.length>=round.config.spins;round.phase=complete?'complete':'ready';round.completedAt=complete?landAt:null;round.hideAt=complete?landAt+HOLD_MS:null;
+ const complete=round.results.length>=round.config.spins;round.phase=complete?'complete':'ready';round.completedAt=complete?landAt:null;round.hideAt=null;
 }
 export function advanceBonus(round,now=Date.now(),choose){
- if(!round)return false;let changed=false;
+ if(!round)return false;
+ // Preserve a completed viewer when reopening an older saved round that still
+ // carries the former auto-hide timer. Only an explicit clear ends the turn.
+ if(round.phase==='complete'&&round.hideAt!=null){round.hideAt=null;return true;}
+ let changed=false;
  const mainFinished=flight=>{
   if(!round.pending.unlocked){finish(round,flight.landAt);return;}
   round.base=round.pending;const c=round.config,effective=c.mirrorUnlock==='slot'&&!round.mirrorUnlocked?{...c,mirrorMode:'none'}:c;

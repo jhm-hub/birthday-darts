@@ -2,7 +2,7 @@ import {createTurnControls,addWheelSpin} from './wheel-turn-controls.js';
 import {createLineControls} from './wheel-line-controls.js';
 import {lineCallState,callNearestLine,undoLineCalls} from './wheel-line-call.js';
 import {applyStarter} from './wheel-starters.js';
-import {defaultBonus,validateBonus,startBonus,continueBonus,advanceBonus,publicBonus,formatBonus,resultEquation,CLEAR_MS} from './bonus-game.js';
+import {defaultBonus,validateBonus,startBonus,continueBonus,advanceBonus,publicBonus,formatBonus,resultEquation} from './bonus-game.js';
 import {createBonusEditor} from './bonus-editor.js';
 import {createBonusStore} from './bonus-store.js';
 import {createBonusView,createBonusAudio} from './bonus-view.js';
@@ -22,14 +22,14 @@ function render(){
  lineControls.update(live?snapshot?.lineCalls:lineCallState(demo),busy||!ready);
  const r=snap?.round,spinning=['spinning','mirror','bonus'].includes(r?.phase),waiting=r?.phase==='ready',spins=r?.config.spins??config.spins??1,taken=r?.results?.length??0;
  $('#action').disabled=busy||!ready||!live&&!validDraft||live&&!r&&dirty||!!r&&!waiting;$('#action').textContent=spinning?(r.phase==='bonus'?'Bonus wheel…':r.phase==='mirror'?'Mirror bonus…':'Spinning together…'):waiting?`Spin ${taken+1} of ${spins}`:r?'All spins complete':live?`Spin both${spins>1?' · 1 of '+spins:''}`:'Spin practice';
- $('#reset').disabled=busy||!ready||live&&!!r&&r.phase!=='complete';$('#reset').textContent=live?'Next viewer':'Reset practice';$('#viewer').disabled=!!r||busy||!ready;$('#volume').disabled=live&&!ready;
+ $('#reset').disabled=busy||!ready||live&&!!r&&r.phase!=='complete';$('#reset').textContent=live?'Next viewer / clear wheel':'Reset practice';$('#viewer').disabled=!!r||busy||!ready;$('#volume').disabled=live&&!ready;
  $('#reset-total').disabled=busy||!ready||!!r;
  if(live){const m=snapshot?.metrics;$('#total').textContent=formatBonus(m?.total??0);$('#spin-count').textContent=String(m?.spins??0);$('#history').replaceChildren(...(m?.history??[]).map(r=>{const li=document.createElement('li');li.textContent=resultEquation({...r,operation:r.operation??mode});return li;}));}
  $('#wheel-fields').disabled=busy||live&&!ready;$('#wheel-list').disabled=busy||dirty||live&&(!ready||!!r);$('#discard-wheel').disabled=busy||!dirty;$('#new-wheel').disabled=busy||live&&!!r;$('#create-wheel').disabled=busy||live&&!!r;
  $('#preset-note').textContent=live&&r?'Finish this viewer before switching saved wheels.':dirty?'Save or undo your edits before switching wheels.':'Choose Regular, High Roller, or any wheel you have saved. The OBS link stays the same.';
  $('#mode-note').textContent=live?(dirty?(r?'Edits are waiting for Save. This viewer keeps their starting setup.':'Unsaved preview · save before starting the next viewer.'):'Ready with '+config.name+'. Saved changes apply to the next viewer.'):'Practice stays here. Save your wheel when ready.';$('#mode-note').classList.toggle('wheel-preview-draft',dirty);
  if(live&&!dirty)list();
- if(!busy)status(live&&!ready?controlStatus:spinning?(r.phase==='bonus'?'Bonus unlocked · the third wheel spins automatically.':r.phase==='mirror'?'Mirror unlocked · both wheels re-spin with opposite pointers.':`Spin ${taken+1} of ${spins} · both wheels stop together.`):waiting?`Viewer total: ${formatBonus(r.total)} · ${spins-taken} ${spins-taken===1?'spin':'spins'} remaining.`:r?`Final viewer total: ${formatBonus(r.total)} · clears shortly`:(live?'Ready for the next viewer.':'Practice only. The stream is unaffected.'));
+ if(!busy)status(live&&!ready?controlStatus:spinning?(r.phase==='bonus'?'Bonus unlocked · the third wheel spins automatically.':r.phase==='mirror'?'Mirror unlocked · both wheels re-spin with opposite pointers.':`Spin ${taken+1} of ${spins} · both wheels stop together.`):waiting?`Viewer total: ${formatBonus(r.total)} · ${spins-taken} ${spins-taken===1?'spin':'spins'} remaining.`:r?`Final viewer total: ${formatBonus(r.total)} · stays visible until you clear the wheel`:(live?'Ready for the next viewer.':'Practice only. The stream is unaffected.'));
 }
 async function command(action,payload={}){if(busy||!ready)return;busy=true;render();try{
  if(sound)await audio.unlock();
@@ -70,7 +70,7 @@ async function init(){
  window.addEventListener('shared-settings-before-update',e=>{if(dirty)e.preventDefault();});
  window.addEventListener('shared-settings-discard',()=>{dirty=false;});
  if(live){session=await connectBonusControl(store,id,received,(enabled,text)=>{ready=enabled;controlStatus=text;$('#connection').textContent=text;render();});$('#display-url').value=session.displayURL;$('#open-display').href=session.displayURL;$('#copy-display').onclick=async()=>{try{await navigator.clipboard.writeText(session.displayURL);$('#copy-display').textContent='Copied';}catch{$('#display-url').select();}};session.start();}
- else{store.subscribe(()=>{if(dirty)return;list();const next=store.list().find(c=>c.id===id);if(next&&JSON.stringify(next)!==editorSignature){config=next;demo=null;fields();list();links();render();}});pulse=setInterval(()=>{if(advanceBonus(demo))render();if(demo?.hideAt&&Date.now()>=demo.hideAt+CLEAR_MS){demo=null;render();}},80);}
+ else{store.subscribe(()=>{if(dirty)return;list();const next=store.list().find(c=>c.id===id);if(next&&JSON.stringify(next)!==editorSignature){config=next;demo=null;fields();list();links();render();}});pulse=setInterval(()=>{if(advanceBonus(demo))render();},80);}
  window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});render();
 }
 document.addEventListener('keydown',e=>{if(overlay||e.code!=='Space'||e.repeat||e.altKey||e.ctrlKey||e.metaKey||e.target.closest('input,select,textarea,button,summary,a,[contenteditable]'))return;e.preventDefault();if(!$('#action').disabled)void command('spin');});

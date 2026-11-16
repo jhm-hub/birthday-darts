@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {defaultBonus,validateBonus,startBonus,continueBonus,advanceBonus,publicBonus,bonusAngles,bonusKey,drawLanding,landingText,resultEquation,REVEAL_MS,CLEAR_MS} from '../src/bonus-game.js';
-import {HOLD_MS} from '../src/double-game.js';
 import {indexAtPointer,targetRotation,normalize,wheelLayout} from '../src/double-wheel/model.js';
 import {createBonusStore} from '../src/bonus-store.js';
 import {createDoubleStore} from '../src/double-store.js';
@@ -22,7 +21,7 @@ test('ordinary landings complete normally without showing or drawing the third w
  for(const [mode,total] of [['add',6.25],['multiply',9]]){
   const r=startBonus(setup(mode),'Viewer',100,rolls(0,0));assert.equal(r.pending.result,total);assert.equal(r.bonusFlight,null);
   assert.equal(advanceBonus(r,r.flight.landAt-1,rolls()),false);assert.equal(advanceBonus(r,r.flight.landAt,rolls()),true);
-  assert.equal(r.phase,'complete');assert.equal(r.total,total);assert.equal(r.result.unlocked,false);assert.equal(r.bonusFlight,null);assert.equal(r.hideAt,r.flight.landAt+HOLD_MS);
+  assert.equal(r.phase,'complete');assert.equal(r.total,total);assert.equal(r.result.unlocked,false);assert.equal(r.bonusFlight,null);assert.equal(r.hideAt,null);
  }
 });
 test('a special slot reveals once, holds the first wheels, then substitutes the third result',()=>{
@@ -37,7 +36,7 @@ test('a special slot reveals once, holds the first wheels, then substitutes the 
   assert.deepEqual(bonusAngles(r,r.bonusFlight.landAt-1,true),r.bonusFlight.from);
   assert.equal(indexAtPointer(r.config.bonus,r.bonusFlight.to.bonus),0);
   assert.equal(advanceBonus(r,r.bonusFlight.landAt-1,rolls()),false);advanceBonus(r,r.bonusFlight.landAt,rolls());
-  assert.equal(r.result.bonus,6.25);assert.equal(r.result.inner,6.25);assert.equal(r.total,total);assert.equal(r.results.length,1);assert.equal(r.hideAt,r.bonusFlight.landAt+HOLD_MS);
+  assert.equal(r.result.bonus,6.25);assert.equal(r.result.inner,6.25);assert.equal(r.total,total);assert.equal(r.results.length,1);assert.equal(r.hideAt,null);
   assert.equal(advanceBonus(r,1e9,rolls()),false);assert.match(resultEquation(r.result),/Bonus 6.25/);
  }
 });
@@ -85,8 +84,8 @@ test('store reload through both stages, duplicate actions and next-viewer edits 
  }
  await reloaded.action(id,'clear',{},now);await reloaded.action(id,'spin',{},now+1);assert.deepEqual(reloaded.snapshot(id).round.config.bonus,[100,200]);assert.equal(reloaded.snapshot(id).round.config.spins,1);assert.equal(reloaded.displayKey(),room);
 });
-test('late reconnection resolves the whole bonus timeline once and clears only after its hold',()=>{
- const r=startBonus(setup('add'),'',0,rolls(0,1));advanceBonus(r,100000,rolls(0));assert.equal(r.phase,'complete');assert.equal(r.results.length,1);assert.equal(r.hideAt,2000+REVEAL_MS+2000+HOLD_MS);assert.equal(publicBonus(r).creditedSpins,undefined);
+test('late reconnection resolves the whole bonus timeline once and keeps the final result',()=>{
+ const r=startBonus(setup('add'),'',0,rolls(0,1));advanceBonus(r,100000,rolls(0));assert.equal(r.phase,'complete');assert.equal(r.results.length,1);assert.equal(r.hideAt,null);assert.equal(publicBonus(r).creditedSpins,undefined);
 });
 test('both new games and both original games retain separate permanent sources and settings',async()=>{
  const storage=memory(),a=fixture('add',storage),m=fixture('multiply',storage),d=createDoubleStore('add',storage,a.locks),dm=createDoubleStore('multiply',storage,a.locks);for(const s of [a.store,m.store,d,dm])await s.init();assert.equal(new Set([a.store,m.store,d,dm].map(s=>s.displayKey())).size,4);

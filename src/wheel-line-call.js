@@ -29,7 +29,7 @@ export function lineCallState(round){
 export function clearLineCalls(round){delete round.lineCallOriginal;delete round.lineCallSides;delete round.lineCallRevision;}
 function finalise(round,result,now){
  round.result=result;round.results[round.results.length-1]=result;round.total=total(round);
- if(round.phase==='complete'){round.completedAt=now;round.hideAt=now+HOLD_MS;}
+ if(round.phase==='complete'){round.completedAt=now;round.hideAt=round.config.bonus?null:now+HOLD_MS;}
 }
 // Changes only the current stopped spin. Physical wheel angles stay put;
 // a newly included special slot follows the same bonus engine as a normal hit.
@@ -61,7 +61,7 @@ export function undoLineCalls(round,now=Date.now()){
  if(!stopped(round)||!round.lineCallOriginal)throw Error('There is no stopped line call to undo.');
  const original=round.lineCallOriginal,revision=(round.lineCallRevision??0)+1;
  for(const key of Object.keys(round))delete round[key];Object.assign(round,structuredClone(original),{lineCallRevision:revision});
- if(round.phase==='complete'){round.completedAt=now;round.hideAt=now+HOLD_MS;}return round;
+ if(round.phase==='complete'){round.completedAt=now;round.hideAt=round.config.bonus?null:now+HOLD_MS;}return round;
 }
 export function applyStoredLineCall(widget,action,payload,now){
  const r=widget.round;
