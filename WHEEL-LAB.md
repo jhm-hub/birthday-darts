@@ -19,6 +19,12 @@ Drafts block starting turns or switching presets/concepts until saved or undone.
 
 Storage is isolated under `faith-wheel-lab-v1:<concept>`. No live settings, real game totals, private keys, OBS transport or pairing data are used. These prototypes do not yet have private shared hosting of presets or OBS display routes; the existing six production wheel games are unchanged. The public URL shares the prototype experience, not this browser’s saved presets or images. Clearing browser data removes the local lab library.
 
+## Host playbook and visual polish
+
+`wheel-guide.html` provides a shareable stream playbook for all four concepts: rules, host actions, spoken prompts, examples, pacing, editable settings and prototype limitations. The same source text powers the in-game “How Faith runs this wheel” disclosure. A print stylesheet supports the browser’s Print / save as PDF action.
+
+Every prototype has a visible centre PNG section with an artwork thumbnail, upload, sample/remove controls and size. Artwork is saved with its preset and remains outside the rotating SVG groups through locks, tier changes and bonus reveals. The largest allowed diameter (130) fits inside the fixed centre medallion. Crown spots display both CROWN and their base amount. Faceted gem pointers follow the existing wheel style; labels reserve pointer clearance and fit their actual font width after font loading. The explicit “Apply Faith’s wheel colours” button restores Landaire purple, pink and gold without changing values, font or artwork, and never silently migrates stored colours.
+
 ## Checks
 
-The full 933-test suite passes. Thirteen new tests cover configuration limits, exact stack decimals, held-ring state, crown base scoring and one-time unlocks, all climb exits, capped jackpot contributions/reset/idempotence, deterministic showcases, every landing across counts 2–24, saved preset/pot isolation, stale revisions, storage failures, corruption and credential stripping. Browser and release evidence lives in the Double-Wheel Review handoff.
+The full 935-test suite passes. Fifteen lab tests cover configuration limits, exact stack decimals, held-ring state, crown base scoring and one-time unlocks, all climb exits, capped jackpot contributions/reset/idempotence, deterministic showcases, every landing across counts 2–24, saved preset/pot isolation, stale revisions, storage failures, corruption, credential stripping, theme preservation and centre/label geometry. Browser and release evidence lives in the Double-Wheel Review handoff.

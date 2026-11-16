@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {CONCEPTS,labDefaults,validateLab,startLab,spinLab,advanceLab,lockLab,stackTotal,cents,decimal,labAngles} from '../src/wheel-lab-game.js';
 import {createLabStore,labKey} from '../src/wheel-lab-store.js';
 import {indexAtPointer} from '../src/double-wheel/model.js';
+import {faithLabTheme,labDiscs,labLabelMetrics} from '../src/wheel-lab-style.js';
 const land=(r,indices)=>{let now=(r.flight?.landAt??0)+1;const queue=[...indices];spinLab(r,now,limit=>{const n=queue.shift();assert.ok(n<limit);return n;});assert.equal(advanceLab(r,r.flight.landAt-1),false);advanceLab(r,r.flight.landAt);return r;};
 function memory(){const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v),data};}
 const locks={request:async(_key,fn)=>fn()};
@@ -57,4 +58,19 @@ test('storage rejects stale pot settlements, duplicate names and failed writes w
 });
 test('prototype storage preserves corruption and excludes runtime and private credentials',async()=>{
  const storage=memory(),s=createLabStore('stack',{storage,locks});let state=await s.init();state=await s.save({...state.presets[0].config,editKey:'secret',round:{total:99}},state.revision);assert.ok(!storage.getItem(s.key).includes('secret'));assert.ok(!storage.getItem(s.key).includes('round'));storage.setItem(s.key,'broken');await assert.rejects(s.init(),/not been overwritten/);assert.equal(storage.getItem(s.key),'broken');
+});
+test('Faith colour preset preserves custom rules, artwork, font and saved identities on all concepts',()=>{
+ for(const kind of Object.keys(CONCEPTS)){
+  const original=labDefaults(kind,true);original.font='Nunito';original.diameter=130;original.wheels[0].values[0]=123.45;original.artwork={kind:'none'};
+  const themed=faithLabTheme(original),withoutColours=c=>({...c,rim:null,pointer:null,text:null,special:null,wheels:c.wheels.map(w=>({...w,colors:null}))});
+  assert.deepEqual(withoutColours(themed),withoutColours(original));assert.equal(themed.wheels[0].colors[0],'#AB4BB8');assert.equal(original.wheels[0].values[0],123.45);
+ }
+});
+test('maximum centre artwork and radial text bounds clear every ring and pointer',()=>{
+ for(const kind of Object.keys(CONCEPTS))for(let tier=0;tier<3;tier++)for(const [,inner,outer] of labDiscs(kind,tier)){
+  assert.ok(130/2<73&&73<inner,'art stays inside the fixed centre medallion');
+  for(let count=2;count<=24;count++)for(const label of ['9999.99','CROWN','ASCEND','JACKPOT']){
+   const m=labLabelMetrics(inner,outer,count,label,label==='CROWN');assert.ok(m.radius-m.width/2>inner);assert.ok(m.radius+m.width/2<outer-9);assert.ok(m.size>0);
+  }
+ }
 });
