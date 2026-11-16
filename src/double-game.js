@@ -1,3 +1,4 @@
+import {starterValues} from './wheel-starters.js';
 import {DEFAULTS,DEFAULT_LINE_CHANCE,readConfig,planSpin,frameAt,parseValues,indexAtPointer} from './double-wheel/model.js';
 import {readCentrePng} from './centre-png.js';
 import {readAppearance} from './double-appearance.js';
@@ -7,7 +8,7 @@ export const doubleKey=mode=>'faith-double-wheel-live-'+mode+'-v1';
 export const gameId=mode=>'double-'+mode;
 export const formatDouble=n=>new Intl.NumberFormat('en-US',{maximumFractionDigits:4}).format(n);
 export const operator=mode=>mode==='add'?'+':'×';
-export function defaultDouble(mode){return {...structuredClone(DEFAULTS),operation:mode,spins:1,lineLandings:false,lineChance:DEFAULT_LINE_CHANCE,id:gameId(mode),name:'Double Wheel '+(mode==='add'?'Add':'Multiply')};}
+export function defaultDouble(mode){return {...structuredClone(DEFAULTS),operation:mode,...starterValues('double',mode),id:gameId(mode),name:'Double Wheel '+(mode==='add'?'Add':'Multiply')};}
 export function validateDouble(raw,mode=raw?.operation){
  if(!['add','multiply'].includes(mode)||raw?.operation!==mode)throw Error('Choose the correct Add or Multiply game.');
  if(!/^[-\w]{1,80}$/.test(raw.id??'')||typeof raw.name!=='string'||!raw.name.trim()||raw.name.length>40)throw Error('Use a saved game name from 1 to 40 characters.');

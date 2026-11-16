@@ -9,7 +9,7 @@ import {createDoubleStore} from '../src/double-store.js';
 const memory=()=>{const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),map};};
 function fixture(mode='add',storage=memory(),options={}){let tail=Promise.resolve();const locks={request:(_,fn)=>{const p=tail.then(fn);tail=p.catch(()=>{});return p;}};return {storage,locks,store:createBonusStore(mode,storage,locks,options)};}
 const rolls=(...v)=>()=>{assert.ok(v.length,'unexpected draw');return v.shift();};
-const setup=mode=>({...defaultBonus(mode),outer:[2.25,3.5],inner:[4,5],bonus:[6.25,10],bonusColors:['#ABC','#DEF'],bonusSlots:[1],duration:2,bonusDuration:2,appearance:undefined});
+const setup=mode=>({...defaultBonus(mode),outer:[2.25,3.5],inner:[4,5],bonus:[6.25,10],bonusColors:['#ABC','#DEF'],bonusSlots:[1],spins:1,duration:2,bonusDuration:2,appearance:undefined});
 test('new bonus settings validate all three wheels, special slots and editable appearance',()=>{
  const c=validateBonus(defaultBonus('add'));assert.equal(c.lineChance,25);assert.equal(c.lineLandings,false);assert.deepEqual(c.bonusSlots,[5]);assert.equal(c.appearance.fontFamily,'Nunito');
  for(const bonusSlots of [[],[6],[-1],[1,1],[1.5],['1'],null])assert.throws(()=>validateBonus({...c,bonusSlots}));

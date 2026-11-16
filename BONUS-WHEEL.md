@@ -82,3 +82,13 @@ Main spin and Inner bonus each accept 2–15 seconds. Mirror re-spins share the
 main duration, and both main wheels stop together. Timing saves per preset;
 current viewers keep their captured timing. Test spins and staged bonus demos
 both use the selected durations.
+
+Starting values now target an average total of75–200 over three spins. Each
+Add/Multiply Double/Bonus/Mirror variant has separate Regular/High Roller
+numbers; optional starter buttons are available in private controls and demos.
+For Mirror Multiply with both bonuses on, mirrored pointers on all three wheels
+and lines off: Regular averages120.17, exceeds200 on16.36% of turns and can
+reach714. High Roller averages188.83, exceeds200 on27.34% and can reach1122.
+The maximum occurs on1/5832 turns for either setup. These are three-spin totals,
+not a guaranteed range or cap. Changing numbers, bonus rules or line landings
+changes the distribution. Existing private saved games are not overwritten.

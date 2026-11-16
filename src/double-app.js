@@ -1,3 +1,4 @@
+import {applyStarter} from './wheel-starters.js';
 import {defaultDouble,validateDouble,startDouble,continueDouble,advanceDouble,publicDouble,formatDouble,resultEquation,CLEAR_MS} from './double-game.js';
 import {createDoubleEditor} from './double-editor.js';
 import {createDoubleStore} from './double-store.js';
@@ -49,6 +50,7 @@ async function init(){
  $('#create-wheel').onclick=()=>{$('#save-copy').open=true;$('#new-wheel-name').focus();};
  $('#new-wheel-name').addEventListener('input',e=>e.stopPropagation());
  $('#discard-wheel').onclick=()=>{const saved=store.list().find(c=>c.id===id);if(!saved)return;config=saved;dirty=false;demo=null;fields();list();links();window.dispatchEvent(new CustomEvent('shared-settings-clean'));$('#save-status').textContent='Edits undone. Saved wheel restored.';render();};
+ $('#settings').addEventListener('wheel-starter',e=>{if(busy||!config)return;try{config=validateDouble(applyStarter(config,e.detail.tier),mode);fields();dirty=true;demo=null;links();window.dispatchEvent(new CustomEvent('shared-settings-dirty'));$('#save-status').textContent='Starting numbers loaded. Save to use them for the next viewer.';render();}catch(error){$('#save-status').textContent=error.message;}});
  $('#settings').oninput=e=>{dirty=true;links();window.dispatchEvent(new CustomEvent('shared-settings-dirty'));try{editor.input(e);config=readFields();validDraft=true;demo=null;$('#save-status').textContent=live?'Unsaved edits · Save for next viewer.':'Unsaved edits · practice updated.';render();}catch(e){validDraft=false;$('#save-status').textContent=e.message;render();}};
  $('#wheel-list').onchange=async()=>{if(busy||dirty||live&&snapshot?.round){$('#wheel-list').value=id;return;}const selected=$('#wheel-list').value;busy=true;render();try{if(live)await session.selectVersion(selected);id=selected;config=store.list().find(c=>c.id===id);demo=null;fields();links();$('#save-status').textContent='Using '+config.name+'.';}catch(e){$('#save-status').textContent=e.message;list();}finally{busy=false;render();}};
  $('#sound').onclick=()=>{sound=!sound;audio.setEnabled(sound);$('#sound').textContent=sound?'Preview sound on':'Preview sound off';$('#sound').setAttribute('aria-pressed',String(sound));};

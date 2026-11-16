@@ -5,7 +5,7 @@ import {defaultBonus,startBonus,bonusAngles,publicBonus,resultEquation} from '..
 import {createMirrorStore} from '../src/mirror-store.js';
 import {createWheelShowcase,loadDemoConfig,DEMO_GAMES,demoDefaults} from '../src/wheel-demo.js';
 const rolls=(...queue)=>n=>{assert.ok(queue.length,'unexpected draw');const i=queue.shift();assert.ok(i<n);return i;};
-const setup=mode=>({...defaultMirror(mode),outer:[2,3,4,5],inner:[6,7,8,9],bonus:[10,20,30,40],bonusColors:Array(4).fill('#FFC86B'),bonusSlots:[3],mirrorSlots:[2],appearance:undefined,duration:2,bonusDuration:2});
+const setup=mode=>({...defaultMirror(mode),outer:[2,3,4,5],inner:[6,7,8,9],bonus:[10,20,30,40],bonusColors:Array(4).fill('#FFC86B'),bonusSlots:[3],mirrorSlots:[2],appearance:undefined,spins:1,duration:2,bonusDuration:2});
 const memory=()=>{const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),map};};
 test('mirror settings migrate trigger marks without replacing saved numbers, colours or old captured rules',()=>{
  const old=setup('add');delete old.mirrorUnlock;delete old.mirrorSlots;

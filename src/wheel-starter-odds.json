@@ -1,0 +1,694 @@
+{
+  "double-add:regular": {
+    "values": {
+      "outer": [
+        32,
+        33,
+        34,
+        35,
+        38,
+        37,
+        36,
+        35
+      ],
+      "inner": [
+        2,
+        4,
+        6,
+        8,
+        4,
+        6
+      ],
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 48,
+    "spin": {
+      "mean": 40,
+      "min": 34,
+      "max": 46,
+      "chanceMaximum": 0.020833333333333332,
+      "median": 40,
+      "p10": 36,
+      "p90": 44,
+      "chance75to200": 0,
+      "chanceBelow75": 1,
+      "chanceAbove200": 0
+    },
+    "threeSpins": {
+      "mean": 119.99999999999999,
+      "min": 102,
+      "max": 138,
+      "chanceMaximum": 0.00000904224537037037,
+      "median": 120,
+      "p10": 114,
+      "p90": 126,
+      "chance75to200": 0.9999999999999999,
+      "chanceBelow75": 0,
+      "chanceAbove200": 0
+    }
+  },
+  "double-add:high": {
+    "values": {
+      "outer": [
+        54,
+        55,
+        56,
+        57,
+        60,
+        59,
+        58,
+        57
+      ],
+      "inner": [
+        2,
+        4,
+        6,
+        8,
+        4,
+        6
+      ],
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 48,
+    "spin": {
+      "mean": 61.99999999999999,
+      "min": 56,
+      "max": 68,
+      "chanceMaximum": 0.020833333333333332,
+      "median": 62,
+      "p10": 58,
+      "p90": 66,
+      "chance75to200": 0,
+      "chanceBelow75": 1,
+      "chanceAbove200": 0
+    },
+    "threeSpins": {
+      "mean": 185.99999999999991,
+      "min": 168,
+      "max": 204,
+      "chanceMaximum": 0.00000904224537037037,
+      "median": 186,
+      "p10": 180,
+      "p90": 192,
+      "chance75to200": 0.9995750144675924,
+      "chanceBelow75": 0,
+      "chanceAbove200": 0.00042498553240740734
+    }
+  },
+  "double-multiply:regular": {
+    "values": {
+      "outer": [
+        8,
+        9,
+        10,
+        11,
+        14,
+        13,
+        12,
+        11
+      ],
+      "inner": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 48,
+    "spin": {
+      "mean": 38.50000000000001,
+      "min": 8,
+      "max": 84,
+      "chanceMaximum": 0.020833333333333332,
+      "median": 36,
+      "p10": 11,
+      "p90": 66,
+      "chance75to200": 0.041666666666666664,
+      "chanceBelow75": 0.9583333333333335,
+      "chanceAbove200": 0
+    },
+    "threeSpins": {
+      "mean": 115.49999999999999,
+      "min": 24,
+      "max": 252,
+      "chanceMaximum": 0.00000904224537037037,
+      "median": 114,
+      "p10": 71,
+      "p90": 162,
+      "chance75to200": 0.8679651331018522,
+      "chanceBelow75": 0.12383355034722221,
+      "chanceAbove200": 0.008201316550925925
+    }
+  },
+  "double-multiply:high": {
+    "values": {
+      "outer": [
+        15,
+        16,
+        17,
+        18,
+        21,
+        20,
+        19,
+        18
+      ],
+      "inner": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 48,
+    "spin": {
+      "mean": 63,
+      "min": 15,
+      "max": 126,
+      "chanceMaximum": 0.020833333333333332,
+      "median": 60,
+      "p10": 18,
+      "p90": 108,
+      "chance75to200": 0.39583333333333326,
+      "chanceBelow75": 0.6041666666666666,
+      "chanceAbove200": 0
+    },
+    "threeSpins": {
+      "mean": 188.9999999999998,
+      "min": 45,
+      "max": 378,
+      "chanceMaximum": 0.00000904224537037037,
+      "median": 188,
+      "p10": 117,
+      "p90": 261,
+      "chance75to200": 0.5688747829861112,
+      "chanceBelow75": 0.014259620949074072,
+      "chanceAbove200": 0.4168655960648147
+    }
+  },
+  "bonus-add:regular": {
+    "values": {
+      "outer": [
+        32,
+        33,
+        34,
+        35,
+        38,
+        37,
+        36,
+        35
+      ],
+      "inner": [
+        2,
+        4,
+        6,
+        8,
+        4,
+        0
+      ],
+      "bonus": [
+        4,
+        8,
+        12,
+        24,
+        20,
+        16
+      ],
+      "bonusSlots": [
+        5
+      ],
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 88,
+    "spin": {
+      "mean": 41.333333333333336,
+      "min": 34,
+      "max": 62,
+      "chanceMaximum": 0.003472222222222222,
+      "median": 40,
+      "p10": 36,
+      "p90": 47,
+      "chance75to200": 0,
+      "chanceBelow75": 0.9999999999999994,
+      "chanceAbove200": 0
+    },
+    "threeSpins": {
+      "mean": 123.99999999999993,
+      "min": 102,
+      "max": 186,
+      "chanceMaximum": 4.186224708504801e-8,
+      "median": 122,
+      "p10": 114,
+      "p90": 137,
+      "chance75to200": 0.9999999999999998,
+      "chanceBelow75": 0,
+      "chanceAbove200": 0
+    }
+  },
+  "bonus-add:high": {
+    "values": {
+      "outer": [
+        52,
+        53,
+        54,
+        55,
+        58,
+        57,
+        56,
+        55
+      ],
+      "inner": [
+        2,
+        4,
+        6,
+        8,
+        4,
+        0
+      ],
+      "bonus": [
+        4,
+        8,
+        12,
+        24,
+        20,
+        16
+      ],
+      "bonusSlots": [
+        5
+      ],
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 88,
+    "spin": {
+      "mean": 61.33333333333333,
+      "min": 54,
+      "max": 82,
+      "chanceMaximum": 0.003472222222222222,
+      "median": 60,
+      "p10": 56,
+      "p90": 67,
+      "chance75to200": 0.045138888888888895,
+      "chanceBelow75": 0.9548611111111107,
+      "chanceAbove200": 0
+    },
+    "threeSpins": {
+      "mean": 183.99999999999997,
+      "min": 162,
+      "max": 246,
+      "chanceMaximum": 4.186224708504801e-8,
+      "median": 182,
+      "p10": 174,
+      "p90": 197,
+      "chance75to200": 0.9438455631376454,
+      "chanceBelow75": 0,
+      "chanceAbove200": 0.05615443686235426
+    }
+  },
+  "bonus-multiply:regular": {
+    "values": {
+      "outer": [
+        9,
+        10,
+        11,
+        12,
+        15,
+        14,
+        13,
+        12
+      ],
+      "inner": [
+        1,
+        2,
+        3,
+        4,
+        2,
+        0
+      ],
+      "bonus": [
+        2,
+        4,
+        6,
+        12,
+        10,
+        8
+      ],
+      "bonusSlots": [
+        5
+      ],
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 88,
+    "spin": {
+      "mean": 38.00000000000001,
+      "min": 9,
+      "max": 180,
+      "chanceMaximum": 0.003472222222222222,
+      "median": 28,
+      "p10": 12,
+      "p90": 72,
+      "chance75to200": 0.09027777777777779,
+      "chanceBelow75": 0.9097222222222223,
+      "chanceAbove200": 0
+    },
+    "threeSpins": {
+      "mean": 114.00000000000007,
+      "min": 27,
+      "max": 540,
+      "chanceMaximum": 4.186224708504801e-8,
+      "median": 100,
+      "p10": 63,
+      "p90": 190,
+      "chance75to200": 0.7084613899471665,
+      "chanceBelow75": 0.21332737382383835,
+      "chanceAbove200": 0.0782112362289951
+    }
+  },
+  "bonus-multiply:high": {
+    "values": {
+      "outer": [
+        17,
+        18,
+        19,
+        20,
+        23,
+        22,
+        21,
+        20
+      ],
+      "inner": [
+        1,
+        2,
+        3,
+        4,
+        2,
+        0
+      ],
+      "bonus": [
+        2,
+        4,
+        6,
+        12,
+        10,
+        8
+      ],
+      "bonusSlots": [
+        5
+      ],
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 88,
+    "spin": {
+      "mean": 63.33333333333333,
+      "min": 17,
+      "max": 276,
+      "chanceMaximum": 0.003472222222222222,
+      "median": 46,
+      "p10": 20,
+      "p90": 120,
+      "chance75to200": 0.2187499999999998,
+      "chanceBelow75": 0.7430555555555558,
+      "chanceAbove200": 0.03819444444444445
+    },
+    "threeSpins": {
+      "mean": 190.00000000000006,
+      "min": 51,
+      "max": 828,
+      "chanceMaximum": 4.186224708504801e-8,
+      "median": 166,
+      "p10": 105,
+      "p90": 316,
+      "chance75to200": 0.6638748315463178,
+      "chanceBelow75": 0.008391203703703703,
+      "chanceAbove200": 0.32773396474997835
+    }
+  },
+  "mirror-add:regular": {
+    "values": {
+      "outer": [
+        22,
+        23,
+        24,
+        25,
+        28,
+        27,
+        26,
+        25
+      ],
+      "inner": [
+        2,
+        4,
+        6,
+        8,
+        4,
+        0
+      ],
+      "bonus": [
+        4,
+        8,
+        12,
+        24,
+        20,
+        16
+      ],
+      "bonusSlots": [
+        5
+      ],
+      "mirrorSlots": [
+        4
+      ],
+      "mirrorMode": "all",
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 1104,
+    "spin": {
+      "mean": 37.722222222222236,
+      "min": 24,
+      "max": 84,
+      "chanceMaximum": 0.05555555555555598,
+      "median": 32,
+      "p10": 27,
+      "p90": 60,
+      "chance75to200": 0.05555555555555598,
+      "chanceBelow75": 0.9444444444444439,
+      "chanceAbove200": 0
+    },
+    "threeSpins": {
+      "mean": 113.16666666666671,
+      "min": 72,
+      "max": 252,
+      "chanceMaximum": 0.00017146776406036062,
+      "median": 107,
+      "p10": 87,
+      "p90": 149,
+      "chance75to200": 0.9945945792073899,
+      "chanceBelow75": 0.00012207031249999999,
+      "chanceAbove200": 0.005283350480109801
+    }
+  },
+  "mirror-add:high": {
+    "values": {
+      "outer": [
+        42,
+        43,
+        44,
+        45,
+        48,
+        47,
+        46,
+        45
+      ],
+      "inner": [
+        2,
+        4,
+        6,
+        8,
+        4,
+        0
+      ],
+      "bonus": [
+        4,
+        8,
+        12,
+        24,
+        20,
+        16
+      ],
+      "bonusSlots": [
+        5
+      ],
+      "mirrorSlots": [
+        4
+      ],
+      "mirrorMode": "all",
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 1104,
+    "spin": {
+      "mean": 61.05555555555558,
+      "min": 44,
+      "max": 124,
+      "chanceMaximum": 0.05555555555555598,
+      "median": 52,
+      "p10": 47,
+      "p90": 100,
+      "chance75to200": 0.16666666666666682,
+      "chanceBelow75": 0.8333333333333329,
+      "chanceAbove200": 0
+    },
+    "threeSpins": {
+      "mean": 183.16666666666677,
+      "min": 132,
+      "max": 372,
+      "chanceMaximum": 0.00017146776406036062,
+      "median": 167,
+      "p10": 147,
+      "p90": 232,
+      "chance75to200": 0.6872931586371526,
+      "chanceBelow75": 0,
+      "chanceAbove200": 0.31270684136284776
+    }
+  },
+  "mirror-multiply:regular": {
+    "values": {
+      "outer": [
+        4,
+        5,
+        6,
+        7,
+        10,
+        9,
+        8,
+        7
+      ],
+      "inner": [
+        1,
+        2,
+        3,
+        4,
+        2,
+        0
+      ],
+      "bonus": [
+        2,
+        4,
+        6,
+        12,
+        10,
+        8
+      ],
+      "bonusSlots": [
+        5
+      ],
+      "mirrorSlots": [
+        4
+      ],
+      "mirrorMode": "all",
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 1104,
+    "spin": {
+      "mean": 40.055555555555635,
+      "min": 4,
+      "max": 238,
+      "chanceMaximum": 0.05555555555555598,
+      "median": 21,
+      "p10": 7,
+      "p90": 70,
+      "chance75to200": 0.03125000000000001,
+      "chanceBelow75": 0.9131944444444441,
+      "chanceAbove200": 0.05555555555555598
+    },
+    "threeSpins": {
+      "mean": 120.16666666666696,
+      "min": 12,
+      "max": 714,
+      "chanceMaximum": 0.00017146776406036062,
+      "median": 90,
+      "p10": 42,
+      "p90": 278,
+      "chance75to200": 0.45633662973411726,
+      "chanceBelow75": 0.38005712689686216,
+      "chanceAbove200": 0.16360624336902127
+    }
+  },
+  "mirror-multiply:high": {
+    "values": {
+      "outer": [
+        8,
+        9,
+        10,
+        11,
+        14,
+        13,
+        12,
+        11
+      ],
+      "inner": [
+        1,
+        2,
+        3,
+        4,
+        2,
+        0
+      ],
+      "bonus": [
+        2,
+        4,
+        6,
+        12,
+        10,
+        8
+      ],
+      "bonusSlots": [
+        5
+      ],
+      "mirrorSlots": [
+        4
+      ],
+      "mirrorMode": "all",
+      "spins": 3,
+      "lineLandings": false
+    },
+    "terminals": 1104,
+    "spin": {
+      "mean": 62.94444444444457,
+      "min": 8,
+      "max": 374,
+      "chanceMaximum": 0.05555555555555598,
+      "median": 36,
+      "p10": 11,
+      "p90": 110,
+      "chance75to200": 0.19444444444444411,
+      "chanceBelow75": 0.75,
+      "chanceAbove200": 0.05555555555555598
+    },
+    "threeSpins": {
+      "mean": 188.83333333333388,
+      "min": 24,
+      "max": 1122,
+      "chanceMaximum": 0.00017146776406036062,
+      "median": 144,
+      "p10": 68,
+      "p90": 438,
+      "chance75to200": 0.5905364027402684,
+      "chanceBelow75": 0.13603304639274688,
+      "chanceAbove200": 0.2734305508669845
+    }
+  }
+}

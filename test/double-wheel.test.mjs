@@ -16,7 +16,7 @@ test('all editable wheel sizes land accurately with opposite, monotonic directio
  assert.deepEqual(doubleAngles(r,r.flight.landAt-1,true),r.flight.from);assert.deepEqual(doubleAngles(r,r.flight.landAt,true),r.flight.to);
 });
 test('Add and Multiply retain exact decimal accounting and cannot change operation',()=>{
- for(const [mode,expected] of [['add',5.75],['multiply',7.875]]){const c={...defaultDouble(mode),outer:[2.25,2.25],inner:[3.5,3.5]},r=startDouble(c,'Viewer',0,()=>0);assert.equal(r.pending.result,expected);assert.equal(r.result,null);assert.equal(advanceDouble(r,r.flight.landAt-1),false);assert.equal(advanceDouble(r,r.flight.landAt),true);assert.equal(r.result.result,expected);assert.equal(advanceDouble(r,1e9),false);assert.equal(r.hideAt,r.flight.landAt+HOLD_MS);}
+ for(const [mode,expected] of [['add',5.75],['multiply',7.875]]){const c={...defaultDouble(mode),outer:[2.25,2.25],inner:[3.5,3.5],spins:1},r=startDouble(c,'Viewer',0,()=>0);assert.equal(r.pending.result,expected);assert.equal(r.result,null);assert.equal(advanceDouble(r,r.flight.landAt-1),false);assert.equal(advanceDouble(r,r.flight.landAt),true);assert.equal(r.result.result,expected);assert.equal(advanceDouble(r,1e9),false);assert.equal(r.hideAt,r.flight.landAt+HOLD_MS);}
  assert.throws(()=>validateDouble(defaultDouble('multiply'),'add'));
  assert.deepEqual(parseValues('0, 2.25, 9999.99'),[0,2.25,9999.99]);
  for(const value of [-1,NaN,Infinity,3.14159,10000])assert.throws(()=>validateDouble({...defaultDouble('add'),outer:[value,1]}));
@@ -24,7 +24,7 @@ test('Add and Multiply retain exact decimal accounting and cannot change operati
 test('public round has no pending outcome or credit marker and cannot mutate the authority',()=>{const r=startDouble(defaultDouble('add'),'Viewer',0,()=>0),p=publicDouble(r);assert.equal(p.pending,undefined);assert.equal(p.credited,undefined);assert.equal(p.result,null);p.config.outer[0]=123;assert.notEqual(r.config.outer[0],123);});
 test('live draws ignore attempts to force results through action payloads',async()=>{const f=fixture(),s=f.store;await s.init();const c=s.list()[0];await s.action(c.id,'spin',{viewer:'Test',forced:999,outer:999});assert.ok(s.snapshot(c.id).round.flight.to.outer<0);assert.equal(s.snapshot(c.id).round.result,null);});
 test('serialized duplicate actions award exactly once and preserve an unfinished spin on reload',async()=>{
- const f=fixture(),s=f.store;await s.init();const c=s.list()[0],now=Date.now();
+ const f=fixture(),s=f.store;await s.init();const c={...s.list()[0],spins:1};await s.save(c);const now=Date.now();
  const calls=await Promise.allSettled([s.action(c.id,'spin',{},now),s.action(c.id,'spin',{},now)]);assert.equal(calls.filter(c=>c.status==='fulfilled').length,1);
  await assert.rejects(s.action(c.id,'clear',{},now),/Finish/);await s.save({...c,spins:3});assert.equal(s.snapshot(c.id).round.config.spins,1);
  const before=s.snapshot(c.id).round,again=createDoubleStore('add',f.storage,f.locks);await again.init();assert.deepEqual(again.snapshot(c.id).round,before);

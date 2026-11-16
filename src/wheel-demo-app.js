@@ -1,3 +1,4 @@
+import {applyStarter} from './wheel-starters.js';
 import {readArtworkPlacement} from './centre-artwork.js';
 import {createDemoPresetStore,demoPngData} from './demo-presets.js';
 import {createWheelEditor} from './wheel-editor.js';
@@ -48,7 +49,7 @@ function links(){const edit=new URL('./'+game+'.html',location.href);if(sourceId
 async function load(){
  const mine=++ticket;loading=true;config=null;reset();$('#load-status').textContent='Loading demo wheels…';render();
  try{
-  store=createDemoPresetStore(game);state=store.read();
+  store=createDemoPresetStore(game);state=store.read();if(state)state=await store.init();
   if(!state){let result;try{result=await loadDemoConfig(game,sourceIds.get(game),{storage:localStorage,connection});}catch{result={config:demoDefaults(game),saved:false};}
    if(disposed||mine!==ticket)return;let source=result.config;if(result.saved)sourceIds.set(game,source.id);
    const artwork=params.get('art')==='sample'||!source.centrePng?.assetId?{kind:'sample'}:{kind:'saved'};
@@ -59,6 +60,7 @@ async function load(){
  }catch(e){$('#load-status').textContent=e.message;}finally{if(mine===ticket){loading=false;render();}}
 }
 function changed(e){if(loading||preparing||busy||turnActive())return;if(e.target===pngFile||e.target===guide)return;dirty=true;try{editor.input(e);config=readFields();valid=true;reset();$('#save-status').textContent='Unsaved demo edits.';}catch(error){valid=false;$('#save-status').textContent=error.message;}render();}
+form.addEventListener('wheel-starter',e=>{if(loading||busy||preparing||turnActive()||!config)return;try{config=validator()(applyStarter(config,e.detail.tier));dirty=true;valid=true;reset();$('#spins').value=config.spins;$('#line-landings').checked=config.lineLandings;$('#line-chance').value=config.lineChance;editor.set(config);$('#save-status').textContent='Starting numbers loaded. Save this demo wheel to keep them.';render();}catch(error){$('#save-status').textContent=error.message;}});
 form.oninput=changed;$('#new-wheel-name').addEventListener('input',e=>e.stopPropagation());guide.addEventListener('input',e=>e.stopPropagation());guide.onchange=render;
 form.onsubmit=e=>{e.preventDefault();void save();};$('#new-wheel').onclick=()=>void save(true);$('#create-wheel').onclick=()=>{$('#save-copy').open=true;$('#new-wheel-name').focus();};
 async function save(copy=false){if(loading||busy||preparing||turnActive()||!config)return;busy=true;render();try{const next={config:readFields(),artwork:art};state=await store.save(next,{...(copy?{copyName:$('#new-wheel-name').value}:{}),expectedRevision:state.revision});fill();$('#save-status').textContent=copy?'New demo wheel saved. Your original is still here.':'Demo wheel saved in this browser, including its PNG.';}catch(e){$('#save-status').textContent=e.message;}finally{busy=false;render();}}

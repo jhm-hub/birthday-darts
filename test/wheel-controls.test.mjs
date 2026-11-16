@@ -5,7 +5,7 @@ import {defaultMirror,validateMirror,startMirror,advanceMirror} from '../src/mir
 import {createMirrorStore} from '../src/mirror-store.js';
 import {createWheelShowcase} from '../src/wheel-demo.js';
 const rolls=(...v)=>()=>{assert.ok(v.length,'unexpected draw');return v.shift();};
-const setup=mode=>({...defaultMirror(mode),outer:[2,3,4,5],inner:[6,7,8,9],bonus:[10,20,30,40],bonusColors:Array(4).fill('#FFC86B'),bonusSlots:[3],mirrorSlots:[2],appearance:undefined,duration:2,bonusDuration:2});
+const setup=mode=>({...defaultMirror(mode),outer:[2,3,4,5],inner:[6,7,8,9],bonus:[10,20,30,40],bonusColors:Array(4).fill('#FFC86B'),bonusSlots:[3],mirrorSlots:[2],appearance:undefined,spins:1,duration:2,bonusDuration:2});
 const memory=()=>{const m=new Map();return {getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,v)};};
 const locks={request:(_,fn)=>fn()};
 test('bulk values accept normal pasted lists without accepting malformed or oversized amounts',()=>{

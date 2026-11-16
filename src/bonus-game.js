@@ -1,3 +1,4 @@
+import {starterValues} from './wheel-starters.js';
 import {validateDouble,defaultDouble,formatDouble,operator,HOLD_MS,CLEAR_MS} from './double-game.js';
 import {randomIndex,targetRotation,frameAt,indexAtPointer} from './double-wheel/model.js';
 import {hexColor,readAppearance} from './double-appearance.js';
@@ -7,7 +8,7 @@ export const bonusKey=mode=>'faith-bonus-wheel-live-'+mode+'-v1';
 export const gameId=mode=>'bonus-'+mode;
 export function defaultBonus(mode){
  const base=defaultDouble(mode);base.appearance=readAppearance(undefined,base);base.appearance.innerColors[5]='#FFC86B';
- return {...base,id:gameId(mode),mirrorMode:'none',name:'Bonus Wheel '+(mode==='add'?'Add':'Multiply'),bonus:[10,20,30,40,50,100],bonusSlots:[5],bonusDuration:4,bonusTextColor:'#492450',bonusColors:['#FFC86B','#FFE9AD','#FFC86B','#FFE9AD','#FFC86B','#FFE9AD']};
+ return {...base,id:gameId(mode),mirrorMode:'none',name:'Bonus Wheel '+(mode==='add'?'Add':'Multiply'),...starterValues('bonus',mode),bonusDuration:4,bonusTextColor:'#492450',bonusColors:['#FFC86B','#FFE9AD','#FFC86B','#FFE9AD','#FFC86B','#FFE9AD']};
 }
 export function validateBonus(raw,mode=raw?.operation){
  const base=validateDouble(raw,mode),bonus=raw.bonus;

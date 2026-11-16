@@ -9,7 +9,7 @@ import {targetRotation,indexAtPointer,normalize,wheelLayout} from '../src/double
 const memory=()=>{const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),map};};
 function fixture(mode='add',storage=memory(),options={}){let tail=Promise.resolve();const locks={request:(_,fn)=>{const p=tail.then(fn);tail=p.catch(()=>{});return p;}};return {storage,locks,store:createMirrorStore(mode,storage,locks,options)};}
 const rolls=(...v)=>()=>{assert.ok(v.length,'unexpected draw');return v.shift();};
-const setup=mode=>({...defaultMirror(mode),outer:[2,3,4,5],inner:[6,7,8,9],bonus:[10,20,30,40],bonusColors:Array(4).fill('#FFC86B'),bonusSlots:[3],mirrorSlots:[2],appearance:undefined,duration:2,bonusDuration:2});
+const setup=mode=>({...defaultMirror(mode),outer:[2,3,4,5],inner:[6,7,8,9],bonus:[10,20,30,40],bonusColors:Array(4).fill('#FFC86B'),bonusSlots:[3],mirrorSlots:[2],appearance:undefined,spins:1,duration:2,bonusDuration:2});
 const startLegacy=(config,...args)=>startBonus({...config,mirrorUnlock:undefined,mirrorSlots:undefined},...args);
 test('prototype defaults all mirrored and only mirrored wheels require even counts',()=>{
  assert.equal(defaultMirror('add').mirrorMode,'all');assert.deepEqual(mirroredSides({mirrorMode:'outer'}),['outer']);assert.deepEqual(mirroredSides({mirrorMode:'main'}),['outer','inner']);

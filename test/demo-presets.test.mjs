@@ -1,3 +1,4 @@
+import {starterValues} from '../src/wheel-starters.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createDemoPresetStore,demoPresetKey,validateDemoArtwork,demoPngData} from '../src/demo-presets.js';
@@ -8,7 +9,7 @@ const fixture=(game='mirror-multiply',storage=memory())=>{let n=0;return {storag
 const PNG='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==';
 test('demo libraries seed separate editable Regular and High Roller examples without touching live keys',async()=>{
  const f=fixture(),source=demoDefaults('mirror-multiply'),before=structuredClone(source);f.storage.setItem('faith-mirror-wheel-live-multiply-v1','live settings');const state=await f.store.init(source);
- assert.deepEqual(state.wheels.map(w=>w.config.name),['Regular','High Roller']);assert.deepEqual(state.wheels[0].config.outer,source.outer);assert.equal(state.wheels[1].config.outer[0],source.outer[0]*5);assert.deepEqual(source,before);assert.equal(f.storage.getItem('faith-mirror-wheel-live-multiply-v1'),'live settings');assert.deepEqual([...f.storage.map.keys()].sort(),['faith-mirror-wheel-live-multiply-v1',demoPresetKey('mirror-multiply')].sort());
+ assert.deepEqual(state.wheels.map(w=>w.config.name),['Regular','High Roller']);assert.deepEqual(state.wheels[0].config.outer,source.outer);assert.deepEqual(state.wheels[1].config.outer,starterValues('mirror','multiply','high').outer);assert.deepEqual(source,before);assert.equal(f.storage.getItem('faith-mirror-wheel-live-multiply-v1'),'live settings');assert.deepEqual([...f.storage.map.keys()].sort(),['faith-mirror-wheel-live-multiply-v1',demoPresetKey('mirror-multiply')].sort());
  const again=await f.store.init({...source,name:'Do not replace'});assert.deepEqual(again,state);
 });
 test('saving, copying and selecting a demo wheel persist independently across reloads',async()=>{
