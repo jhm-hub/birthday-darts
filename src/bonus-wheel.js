@@ -26,7 +26,11 @@ function renderWheel(host, config) {
     const labels = [],mirrorLabels=[];
     wheelLayout(values).forEach((slice, i) => {
       const a = slice.startTurn * 360, b = a + slice.sizeTurn * 360, middle = (a + b) / 2;
-      const wedge = node("path", { d: path(inner2, outer2, a, b), fill: appearance[name+'Colors'][i], stroke: "var(--divider)", "stroke-width": 1.5, "data-slice": i });
+      // Continue the inner colours under reveal artwork, keeping the label and
+      // pointer geometry unchanged. Transparent PNG edges meet coloured slices
+      // instead of exposing a second circular frame or a pale backing plate.
+      const artworkCover=name==='inner'&&geometry.png.enabled&&geometry.png.bonusCover!==false;
+      const wedge = node("path", { d: path(artworkCover?0:inner2, outer2, a, b), fill: appearance[name+'Colors'][i], stroke: "var(--divider)", "stroke-width": 1.5, "data-slice": i });
       group.append(wedge);
       const radial = (inner2 + outer2) / 2;
       const [x, y] = point(radial, middle).split(" ");
@@ -45,9 +49,10 @@ function renderWheel(host, config) {
   svg.append(node("circle", { cx: 300, cy: 300, r: geometry.innerRim, fill: "var(--rim)", stroke: "var(--ring-light)", "stroke-width": 3 }));
   const inner = rotor(config.inner, ...geometry.inner, "inner");
   svg.append(node("circle", { cx: 300, cy: 300, r: geometry.inner[1]+3, fill: "none", stroke: "var(--ring-light)", "stroke-width": 4 }));
-  svg.append(node("circle", {cx:300,cy:300,r:geometry.bonusRim,fill:"var(--rim)",stroke:"var(--ring-light)","stroke-width":3}));
+  svg.append(node("circle", {cx:300,cy:300,r:geometry.bonusRim,fill:"var(--rim)",stroke:"var(--ring-light)","stroke-width":3,class:"bw-bonus-rim"}));
   const bonus=rotor(config.bonus,...geometry.bonus,"bonus");
-  svg.append(node("circle",{cx:300,cy:300,r:geometry.bonus[1]+3,fill:"none",stroke:"var(--ring-light)","stroke-width":3}));
+  bonus.group.classList.add('bw-bonus-disc');
+  svg.append(node("circle",{cx:300,cy:300,r:geometry.bonus[1]+3,fill:"none",stroke:"var(--ring-light)","stroke-width":3,class:"bw-bonus-rim"}));
   const pointer = (x, scale, direction=1) => {
     const g = node("g", { transform: `translate(${x} 300) scale(${scale*direction} ${scale})`, class: "gem-pointer" });
     g.append(node("path", { d: "M -21 0 L 5 -15 L 24 -10 L 24 10 L 5 15 Z", fill: "var(--pointer)", stroke: "var(--rim)", "stroke-width": 2.5 }));

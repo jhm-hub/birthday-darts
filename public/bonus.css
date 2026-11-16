@@ -14,7 +14,11 @@
 
 .bw-stage[data-centre-png=true] .bw-cover.is-open{transform:none}
 
-.bw-stage[data-bonus-cover=true][data-centre-image=true] .bw-cover text{opacity:0}
+.bw-stage[data-bonus-cover=true][data-centre-image-ready=true] .bw-cover text{opacity:0}
+
+/* The PNG supplies its own edge. Hide the separate locked-wheel plate only
+   after artwork loads, and restore the third wheel when the bonus unlocks. */
+.bw-stage[data-bonus-cover=true][data-centre-image-ready=true][data-unlocked=false] :is(.bw-cover,.bw-bonus-rim,.bw-bonus-disc){visibility:hidden}
 
 .bw-stage[data-bonus-cover=true] .dw-centre-image{z-index:2}
 /* One timed reveal, independent of artwork size and game result. */

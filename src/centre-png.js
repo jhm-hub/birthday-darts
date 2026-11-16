@@ -44,8 +44,8 @@ export function setCentreLayout(stage,config,{imageSource}={}){
  // arbitrary image URLs into saved settings or OBS snapshots.
  const source=imageSource===undefined?savedCentreImage(png):imageSource;
  if(img&&img.dataset.imageSource!==(source??'')){
-  img.hidden=true;img.dataset.imageSource=source??'';
-  if(source){img.onload=()=>{if(img.dataset.imageSource===source)img.hidden=false;};img.onerror=()=>{if(img.dataset.imageSource===source)img.hidden=true;};img.src=source;}else{img.onload=null;img.onerror=null;img.removeAttribute('src');}
+  img.hidden=true;stage.dataset.centreImageReady='false';img.dataset.imageSource=source??'';
+  if(source){img.onload=()=>{if(img.dataset.imageSource===source){img.hidden=false;stage.dataset.centreImageReady='true';}};img.onerror=()=>{if(img.dataset.imageSource===source){img.hidden=true;stage.dataset.centreImageReady='false';}};img.src=source;}else{img.onload=null;img.onerror=null;img.removeAttribute('src');}
  }
  stage.dataset.centreImage=String(!!source);
 }
