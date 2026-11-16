@@ -7,7 +7,7 @@ import {createDemoPresetStore,demoPngData} from './demo-presets.js';
 import {createWheelEditor} from './wheel-editor.js';
 import {prepareCentrePng} from './centre-png-upload.js';
 import {readCentrePng,savedCentreImage,DOUBLE_DAMAGE_PNG} from './centre-png.js';
-import {validateBonus} from './bonus-game.js';
+import {validateBonus,endBonusTurn} from './bonus-game.js';
 import {validateMirror} from './mirror-game.js';
 import {createBonusView,createBonusAudio} from './bonus-view.js';
 import {readSharedConnection,sharedURL} from './shared-settings-connection.js';
@@ -17,7 +17,7 @@ let game=DEMO_GAMES.includes(params.get('game'))?params.get('game'):'bonus-multi
 const sourceIds=new Map([[game,params.get('id')]]),pngFile=$('#demo-png-file'),guide=$('#demo-centre-guide');guide.checked=params.get('guide')==='1';
 try{connection=readSharedConnection();}catch(e){$('#load-status').textContent=e.message;}
 const audio=createBonusAudio(),view=createBonusView($('#game'),{audio,onFontStatus:text=>{$('#font-status').textContent=text;}});
-const turnControls=createTurnControls($('#demo-status'),()=>{try{if(showcase&&scenario==='trial')addWheelSpin(showcase.round);render();}catch(e){$('#demo-status').textContent=e.message;}});
+const turnControls=createTurnControls($('#demo-status'),action=>{try{if(showcase&&scenario==='trial'){if(action==='end-game')endBonusTurn(showcase.round);else addWheelSpin(showcase.round);}render();}catch(e){$('#demo-status').textContent=e.message;}});
 const lineControls=createLineControls($('#demo-status'),(action,payload)=>{try{if(loading||busy||preparing||!showcase)return;if(action==='line-call')callNearestLine(showcase.round,payload.side);else undoLineCalls(showcase.round);render();}catch(e){$('#demo-status').textContent=e.message;}});
 const validator=()=>game.startsWith('mirror-')?validateMirror:validateBonus;
 const current=()=>state?.wheels.find(w=>w.config.id===state.selected);
@@ -37,21 +37,21 @@ function artworkPreview(){
  if(!preparing)$('#demo-png-status').textContent=art.kind==='upload'?art.label+' · '+(dirty?'Save this demo wheel to keep the PNG.':'Saved with this demo wheel in this browser.'):art.kind==='sample'?(game==='bonus-multiply'?'Faith’s Double Damage PNG · demo copy.':'Faith sample badge · demo only.'):art.kind==='none'?'No PNG on this demo wheel.':'Using the copied live PNG. The live setup is unchanged.';
 }
 function render(){
- turnControls.update(showcase?.round,null,{disabled:loading||busy||preparing||dirty,allowAdd:scenario==='trial'});
+ turnControls.update(showcase?.round,null,{disabled:loading||busy||preparing||dirty,allowAdd:scenario==='trial',manualEnd:true});
  lineControls.update(lineCallState(showcase?.round),loading||busy||preparing||dirty);
  const locked=loading||busy||preparing||turnActive(),ready=!!config;$('#demo-centre-size').disabled=$('#demo-bonus-cover').checked;
  if(ready)view.update(showcase?showcase.snapshot(Date.now()):{config,serverNow:Date.now(),round:null,volume:45},{centreImage:imageSource()});
  form.querySelector('#wheel-fields').disabled=locked||!ready;$('#demo-game').disabled=locked||dirty;$('#wheel-list').disabled=locked||dirty||!ready;$('#create-wheel').disabled=locked||!ready;$('#discard-wheel').disabled=locked||!dirty;$('#new-wheel').disabled=locked||!ready;
  $('#use-sample').disabled=$('#copy-live').disabled=locked||dirty||!ready;
  $('#test-wheel').disabled=loading||busy||preparing||dirty||!valid||turnActive()&&showcase.round.phase!=='ready';
- $('#test-wheel').textContent=showcase&&scenario==='trial'?(showcase.round.phase==='ready'?`Test spin ${showcase.round.results.length+1} of ${showcase.round.config.spins}`:turnActive()?'Testing wheel…':'Test wheel again'):'Test wheel';
+ $('#test-wheel').textContent=showcase&&scenario==='trial'?(showcase.round.phase==='ready'?`Test spin ${showcase.round.results.length+1}`:turnActive()?'Testing wheel…':'Test wheel again'):'Test wheel';
  $('#replay').disabled=locked||dirty||!valid||!showcase;$('#stop-demo').disabled=loading||busy||preparing;
  for(const b of document.querySelectorAll('button[data-demo]')){b.hidden=b.dataset.demo!=='inner'&&!game.startsWith('mirror-');b.disabled=locked||dirty||!valid;}
  $('#preset-note').textContent=turnActive()?'Finish this demo turn or choose Stop / reset before switching wheels.':dirty?'Save or undo your edits before switching demo wheels.':'Regular and High Roller are editable examples. These saves stay in this browser.';
  $('#demo-note').textContent=dirty?'Unsaved preview · save this demo wheel before testing.':scenario==='trial'&&showcase?'Test spins use this wheel’s saved settings. Nothing is sent to live controls or OBS.':'Bonus showcase = one staged spin with guaranteed bonuses. Test wheel = random play with this demo wheel’s saved settings. Saving here does not update the live wheel.';
  $('.demo-preview').dataset.centreGuide=String(guide.checked&&$('#demo-centre').checked);guide.disabled=locked||!$('#demo-centre').checked;
  if(ready)artworkPreview();
- if(showcase){const r=showcase.round;$('#demo-status').textContent=r.phase==='spinning'?(scenario==='trial'?'Demo test spin · using saved rules.':'Staged demo: landing on a special slot…'):r.phase==='mirror'?'Mirror unlocked: opposite pointers appear, then both wheels re-spin.':r.phase==='bonus'?'Inner bonus unlocked: the third wheel spins while the main wheels hold.':r.phase==='ready'?`Demo turn has ${r.config.spins-r.results.length} more spin(s).`:'Demo complete. Save, switch wheels or try another spin.';}
+ if(showcase){const r=showcase.round;$('#demo-status').textContent=r.phase==='spinning'?(scenario==='trial'?'Demo test spin · using saved rules.':'Staged demo: landing on a special slot…'):r.phase==='mirror'?'Mirror unlocked: opposite pointers appear, then both wheels re-spin.':r.phase==='bonus'?'Inner bonus unlocked: the third wheel spins while the main wheels hold.':r.phase==='ready'?'Spin again or choose End game to display the final total.':'Demo complete. Save, switch wheels or try another spin.';}
 }
 function links(){const edit=new URL('./'+game+'.html',location.href);if(sourceIds.get(game))edit.searchParams.set('id',sourceIds.get(game));$('#back-game').href=sharedURL(edit.href,connection);$('#all-games').href=sharedURL(new URL('./',location.href).href,connection);const url=new URL(location.href);url.searchParams.set('game',game);history.replaceState(null,'',url);}
 async function load(){

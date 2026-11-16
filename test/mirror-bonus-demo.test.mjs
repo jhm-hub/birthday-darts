@@ -54,11 +54,11 @@ test('mirror phase reload, duplicate actions and saved edits preserve the curren
  const storage=memory(),locks={request:async(_,fn)=>fn()},store=createMirrorStore('add',storage,locks);await store.init();const c=setup('add'),id=c.id,room=store.displayKey();await store.save(c);
  const start=Date.now()+30000,r=startMirror(c,'Test',start,rolls(0,2));advanceMirror(r,r.flight.landAt,rolls(0,1));
  const state=JSON.parse(storage.getItem(mirrorKey('add')));state.widgets[0].round=r;storage.setItem(mirrorKey('add'),JSON.stringify(state));
- const again=createMirrorStore('add',storage,locks);await again.init();assert.deepEqual(again.snapshot(id).round,publicBonus(r));assert.equal(again.controlSnapshot(id).metrics.spins,0);
+ const again=createMirrorStore('add',storage,locks);await again.init();assert.deepEqual(again.snapshot(id).round,{...publicBonus(r),manualEnd:true});assert.equal(again.controlSnapshot(id).metrics.spins,0);
  await assert.rejects(again.action(id,'spin',{},r.flight.landAt),/Wait/);await assert.rejects(again.action(id,'clear',{},r.flight.landAt),/Finish/);
  await again.save({...c,mirrorMode:'outer',mirrorSlots:[1]});assert.equal(again.snapshot(id).round.config.mirrorMode,'all');assert.deepEqual(again.snapshot(id).round.config.mirrorSlots,[2]);
  await again.advance(id,r.mirrorFlight.landAt);const end=again.snapshot(id).round.bonusFlight.landAt;await again.advance(id,end);await again.advance(id,end+1);assert.equal(again.controlSnapshot(id).metrics.spins,1);assert.equal(again.displayKey(),room);
- await again.action(id,'clear',{},end);await again.action(id,'spin',{demo:true,mirror:true,forced:2},end+1);const next=again.snapshot(id).round;assert.equal(next.demo,undefined);assert.deepEqual(next.config.mirrorSlots,[1]);assert.equal(next.config.mirrorMode,'outer');
+ await again.action(id,'end-game',{roundId:again.snapshot(id).round.id,completedSpins:1},end);await again.action(id,'clear',{},end);await again.action(id,'spin',{demo:true,mirror:true,forced:2},end+1);const next=again.snapshot(id).round;assert.equal(next.demo,undefined);assert.deepEqual(next.config.mirrorSlots,[1]);assert.equal(next.config.mirrorMode,'outer');
 });
 test('showcases guarantee each requested feature and hold a clearly marked result',()=>{
  for(const game of DEMO_GAMES)for(const scenario of game.startsWith('mirror-')?['inner','mirror','both']:['inner']){

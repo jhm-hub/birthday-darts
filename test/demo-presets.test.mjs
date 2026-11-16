@@ -1,3 +1,4 @@
+import {endBonusTurn} from '../src/bonus-game.js';
 import {starterValues} from '../src/wheel-starters.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -36,5 +37,5 @@ test('each demo game has its own saved selection and no runtime or connection fi
 });
 test('normal demo turns respect disabled bonuses, line chance, timing and multiple spins',()=>{
  const source={...demoDefaults('mirror-multiply'),outer:[2,3,4,5],inner:[6,7,8,9],bonus:[10,20,30,40],bonusColors:Array(4).fill('#FFC86B'),bonusSlots:[3],mirrorSlots:[2],appearance:undefined,bonusEnabled:false,mirrorEnabled:false,lineLandings:true,lineChance:100,duration:2,spins:2};const before=structuredClone(source),queue=[0,0,0,3,0,1,0,0],choose=()=>{assert.ok(queue.length);return queue.shift();},demo=createWheelTrial(source,0,choose);
- assert.equal(demo.round.flight.duration,2000);demo.step(2000);assert.equal(demo.round.phase,'ready');assert.equal(demo.round.total,119);assert.equal(demo.round.bonusFlight,null);assert.equal(demo.round.mirrorFlight,null);demo.next(2001);assert.throws(()=>demo.next(2001),/Wait/);demo.step(4001);assert.equal(demo.round.phase,'complete');assert.equal(demo.round.total,194);assert.equal(demo.round.hideAt,null);assert.equal(demo.snapshot().round.demoMode,'trial');assert.equal(demo.snapshot().round.demo,true);assert.deepEqual(source,before);assert.equal(queue.length,0);
+ assert.equal(demo.round.flight.duration,2000);demo.step(2000);assert.equal(demo.round.phase,'ready');assert.equal(demo.round.total,119);assert.equal(demo.round.bonusFlight,null);assert.equal(demo.round.mirrorFlight,null);demo.next(2001);assert.throws(()=>demo.next(2001),/Wait/);demo.step(4001);assert.equal(demo.round.phase,'ready');endBonusTurn(demo.round,4002);assert.equal(demo.round.phase,'complete');assert.equal(demo.round.total,194);assert.equal(demo.round.hideAt,null);assert.equal(demo.snapshot().round.demoMode,'trial');assert.equal(demo.snapshot().round.demo,true);assert.deepEqual(source,before);assert.equal(queue.length,0);
 });

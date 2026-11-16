@@ -50,9 +50,9 @@ export function createWheelShowcase(source,scenario,now=Date.now()){
 }
 
 // A normal demo turn uses the exact saved rules, including disabled bonuses,
-// line probabilities, timing and spin count. Its result never reaches a store.
+// line probabilities and timing. Faith ends the turn manually. Its result never reaches a store.
 export function createWheelTrial(source,now=Date.now(),choose){
  const config=(source.mirrorUnlock==='slot'?validateMirror:validateBonus)(structuredClone(source));
- const round=startBonus(config,'',now,choose);round.demo=true;
+ const round=startBonus(config,'',now,choose,{manualEnd:true});round.demo=true;
  return {round,step(time=Date.now()){const changed=advanceBonus(round,time,round.lineCallOriginal?undefined:choose);if(round.phase==='complete')round.hideAt=null;return changed;},next(time=Date.now()){continueBonus(round,time,choose);},snapshot(time=Date.now()){return {config,serverNow:time,round:{...publicBonus(round),demoMode:'trial'},volume:45};}};
 }

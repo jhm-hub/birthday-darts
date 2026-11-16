@@ -29,7 +29,7 @@ test('turning mirror off allows odd counts; restoring it validates saved geometr
 test('named regular and high roller wheels keep one OBS source, survive reload, and freeze current viewers',async()=>{
  const storage=memory(),s=createMirrorStore('multiply',storage,locks);await s.init();const room=s.displayKey(),regular={...setup('multiply'),name:'Regular',bonusEnabled:false,mirrorEnabled:false};await s.save(regular);await s.save({...regular,id:'high-roller',name:'High Roller',outer:[100,200,300,400],bonusEnabled:true,mirrorEnabled:true});
  await s.action(regular.id,'spin',{},Date.now());const captured=s.snapshot(regular.id).round.config;await s.save({...regular,outer:[9,9,9,9],bonusEnabled:true});assert.deepEqual(s.snapshot(regular.id).round.config,captured);await assert.rejects(s.selectVersion('high-roller'),/Finish/);
- await s.advance(regular.id,s.snapshot(regular.id).round.flight.landAt);await s.action(regular.id,'clear');await s.selectVersion('high-roller');assert.equal(s.displayKey(),room);
+ await s.advance(regular.id,s.snapshot(regular.id).round.flight.landAt);await s.action(regular.id,'end-game',{roundId:s.snapshot(regular.id).round.id,completedSpins:1});await s.action(regular.id,'clear');await s.selectVersion('high-roller');assert.equal(s.displayKey(),room);
  const again=createMirrorStore('multiply',storage,locks);await again.init();assert.equal(again.selectedId(),'high-roller');assert.equal(again.displayKey(),room);assert.equal(again.list().length,2);assert.deepEqual(again.list().find(c=>c.id===regular.id).outer,[9,9,9,9]);assert.deepEqual(again.list().find(c=>c.id==='high-roller').outer,[100,200,300,400]);
 });
 test('shared saved wheels carry toggles and all values to another browser without sharing OBS credentials',async()=>{

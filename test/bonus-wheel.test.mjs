@@ -82,7 +82,7 @@ test('store reload through both stages, duplicate actions and next-viewer edits 
   now=reloaded.snapshot(id).round.bonusFlight.landAt;await reloaded.advance(id,now);await reloaded.advance(id,now+1);assert.equal(reloaded.controlSnapshot(id).metrics.spins,n);assert.equal(reloaded.snapshot(id).round.total,14.0625*n);
   if(n===1)await reloaded.action(id,'spin',{},now+1);
  }
- await reloaded.action(id,'clear',{},now);await reloaded.action(id,'spin',{},now+1);assert.deepEqual(reloaded.snapshot(id).round.config.bonus,[100,200]);assert.equal(reloaded.snapshot(id).round.config.spins,1);assert.equal(reloaded.displayKey(),room);
+ await reloaded.action(id,'end-game',{roundId:reloaded.snapshot(id).round.id,completedSpins:2},now);await reloaded.action(id,'clear',{},now);await reloaded.action(id,'spin',{},now+1);assert.deepEqual(reloaded.snapshot(id).round.config.bonus,[100,200]);assert.equal(reloaded.snapshot(id).round.config.spins,1);assert.equal(reloaded.displayKey(),room);
 });
 test('late reconnection resolves the whole bonus timeline once and keeps the final result',()=>{
  const r=startBonus(setup('add'),'',0,rolls(0,1));advanceBonus(r,100000,rolls(0));assert.equal(r.phase,'complete');assert.equal(r.results.length,1);assert.equal(r.hideAt,null);assert.equal(publicBonus(r).creditedSpins,undefined);

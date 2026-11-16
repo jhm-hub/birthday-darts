@@ -29,7 +29,7 @@ test('Bonus Multiply keeps its final viewer total after OBS clears, adds spins o
  const storage=memory(),store=createBonusStore('multiply',storage,locks);await store.init();const c={...store.list()[0],spins:1,duration:2,bonusEnabled:false};await store.save(c);const now=Date.now();await store.action(c.id,'spin',{viewer:'QA'},now);
  const r=store.snapshot(c.id).round,payload={roundId:r.id,spins:1};await store.action(c.id,'add-spin',payload,now+100);await assert.rejects(store.action(c.id,'add-spin',payload,now+101),/changed/);
  assert.equal(store.list()[0].spins,1);assert.equal(store.snapshot(c.id).round.config.spins,2);await store.advance(c.id,now+2000);assert.equal(store.snapshot(c.id).round.phase,'ready');
- await store.action(c.id,'spin',{},now+2100);await store.advance(c.id,now+4100);let s=store.controlSnapshot(c.id);const final=s.round.total;
+ await store.action(c.id,'spin',{},now+2100);await store.advance(c.id,now+4100);let s=store.controlSnapshot(c.id);const final=s.round.total;await store.action(c.id,'end-game',{roundId:s.round.id,completedSpins:2},now+4101);s=store.controlSnapshot(c.id);
  assert.equal(s.metrics.lastTurn.total,final);assert.equal(s.metrics.lastTurn.spins,2);assert.equal(s.metrics.spins,2);assert.ok(!JSON.stringify(store.snapshot(c.id)).includes('lastTurn'));
  await store.advance(c.id,now+12000);assert.equal(store.snapshot(c.id).round.phase,'complete');await store.action(c.id,'clear',{},now+12001);s=store.controlSnapshot(c.id);assert.equal(s.round,null);assert.equal(s.metrics.lastTurn.total,final);
  const reload=createBonusStore('multiply',storage,locks);await reload.init();assert.equal(reload.controlSnapshot(c.id).metrics.lastTurn.total,final);

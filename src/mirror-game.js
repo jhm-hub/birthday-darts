@@ -12,4 +12,4 @@ export function validateMirror(raw,mode=raw?.operation){
  const mirrorSlots=raw.mirrorSlots===undefined?(candidate>=0?[candidate]:[]):raw.mirrorSlots;
  return validateBonus({...raw,mirrorUnlock:'slot',mirrorSlots},mode);
 }
-export function startMirror(config,viewer='',now=Date.now(),choose){return startBonus(validateMirror(config),viewer,now,choose);}
+export function startMirror(config,viewer='',now=Date.now(),choose,options){return startBonus(validateMirror(config),viewer,now,choose,options);}

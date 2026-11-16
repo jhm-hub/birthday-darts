@@ -26,7 +26,7 @@ export function createBonusView(root,{audio=null,onFontStatus=()=>{}}={}){
 
   const spins=c.spins,taken=r?.results.length??0,number=['spinning','mirror','bonus'].includes(r?.phase)?taken+1:taken;
   const bonusPhase=r?.phase==='bonus',mirrorPhase=r?.phase==='mirror',opening=bonusPhase&&now<r.bonusFlight.startAt;
-  const phaseText=mirrorPhase?(now<r.mirrorFlight.startAt?'MIRROR BONUS UNLOCKED':'MIRRORED WHEELS SPINNING'):bonusPhase?(opening?'BONUS UNLOCKED':'BONUS WHEEL SPINNING'):r?(r.phase==='complete'?`${taken} ${taken===1?'SPIN':'SPINS'} COMPLETE`:`SPIN ${number} OF ${spins}`):`${spins} ${spins===1?'SPIN':'SPINS'} PER VIEWER`;
+  const phaseText=mirrorPhase?(now<r.mirrorFlight.startAt?'MIRROR BONUS UNLOCKED':'MIRRORED WHEELS SPINNING'):bonusPhase?(opening?'BONUS UNLOCKED':'BONUS WHEEL SPINNING'):r?(r.phase==='complete'?`${taken} ${taken===1?'SPIN':'SPINS'} COMPLETE`:(r.manualEnd?`SPIN ${number}`:`SPIN ${number} OF ${spins}`)):`${spins} ${spins===1?'SPIN':'SPINS'} PER VIEWER`;
   caption.textContent=[r?.demo?'DEMO':r?.viewer,phaseText].filter(Boolean).join(' · ');
   const breakdown=root.querySelector('.dw-line-breakdown');let any=false;
   for(const side of ['outer','inner','bonus']){const landing=shown?.[side+'Landing'],text=landing&&(landing.type==='line'||landing.mirrored)?landingText(shown,side):'',el=breakdown.querySelector('[data-line="'+side+'"]');el.hidden=!text;el.textContent=text?(side==='outer'?'Outer':side==='inner'?'Inner':'Bonus')+': '+text:'';any ||= !!text;}

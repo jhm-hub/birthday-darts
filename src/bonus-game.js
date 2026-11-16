@@ -50,21 +50,29 @@ export function initialPlan(config,from,choose,mirrorActive=config.mirrorUnlock!
  return {from:{...from},to:{outer:targetRotation(from.outer,config.outer,outerLanding.index,-1,5,outerLanding.type==='line'),inner:targetRotation(from.inner,config.inner,innerLanding.index,1,6,innerLanding.type==='line'),bonus:from.bonus},duration:config.duration*1000,round:{outer:outerLanding.total,inner:innerLanding.total,outerLanding,innerLanding,unlocked,mirrorTriggered,mirrorUnlocked:config.mirrorUnlock==='slot'&&mirrorActive,carriedBonus:carryBonus,operation:config.operation,result:unlocked||mirrorTriggered?null:combine(outerLanding.total,innerLanding.total,config.operation)}};
 }
 export function restingBonus(config){return {outer:-180/config.outer.length,inner:-180/config.inner.length,bonus:-180/config.bonus.length};}
-export function startBonus(config,viewer='',now=Date.now(),choose){
+export function startBonus(config,viewer='',now=Date.now(),choose,{manualEnd=false}={}){
  const c=validateBonus(config),p=initialPlan(c,restingBonus(c),choose);
- return {id:crypto.randomUUID(),config:c,viewer:String(viewer).trim().slice(0,40),phase:'spinning',flight:{from:p.from,to:p.to,duration:p.duration,startAt:now,landAt:now+p.duration},mirrorFlight:null,mirrorUnlocked:false,bonusFlight:null,base:null,pending:p.round,result:null,results:[],total:0,completedAt:null,hideAt:null,creditedSpins:0};
+ return {id:crypto.randomUUID(),config:c,...(manualEnd?{manualEnd:true}:{}),viewer:String(viewer).trim().slice(0,40),phase:'spinning',flight:{from:p.from,to:p.to,duration:p.duration,startAt:now,landAt:now+p.duration},mirrorFlight:null,mirrorUnlocked:false,bonusFlight:null,base:null,pending:p.round,result:null,results:[],total:0,completedAt:null,hideAt:null,creditedSpins:0};
 }
 export const bonusResults=round=>round?.results??[];
 export const bonusTotal=round=>bonusResults(round).reduce((s,r)=>s+Math.round(r.result*10000),0)/10000;
 export function continueBonus(round,now=Date.now(),choose){
- if(round?.phase!=='ready'||round.results.length>=round.config.spins)throw Error('Wait for the current spin and bonus to finish.');
+ if(round?.phase!=='ready'||!round.manualEnd&&round.results.length>=round.config.spins)throw Error('Wait for the current spin and bonus to finish.');
  delete round.lineCallOriginal;delete round.lineCallSides;delete round.lineCallRevision;
  const from={...(round.mirrorFlight??round.flight).to,bonus:round.bonusFlight?.to.bonus??round.flight.to.bonus},p=initialPlan(round.config,from,choose);
  Object.assign(round,{phase:'spinning',flight:{from:p.from,to:p.to,duration:p.duration,startAt:now,landAt:now+p.duration},mirrorFlight:null,mirrorUnlocked:false,bonusFlight:null,base:null,pending:p.round,result:null});return round;
 }
 function finish(round,landAt){
  round.result=round.pending;round.pending=null;round.results.push(round.result);round.total=bonusTotal(round);
- const complete=round.results.length>=round.config.spins;round.phase=complete?'complete':'ready';round.completedAt=complete?landAt:null;round.hideAt=null;
+ const complete=round.manualEnd?!!round.endRequested:round.results.length>=round.config.spins;round.phase=complete?'complete':'ready';round.completedAt=complete?landAt:null;round.hideAt=null;
+}
+export function endBonusTurn(round,now=Date.now()){
+ if(round?.phase!=='ready'||!round.results?.length)throw Error('Wait for the current spin and all bonuses to finish before ending the game.');
+ const end=r=>{r.endRequested=true;r.phase='complete';r.completedAt=now;r.hideAt=null;};
+ end(round);
+ // A later Undo must keep Faith's decision to end this viewer's game.
+ if(round.lineCallOriginal)end(round.lineCallOriginal);
+ return round;
 }
 export function advanceBonus(round,now=Date.now(),choose){
  if(!round)return false;
@@ -98,8 +106,8 @@ export function bonusAngles(round,now,reduced=false){
 }
 export function publicBonus(round){
  if(!round)return null;
- const {id,config,viewer,phase,flight,mirrorFlight,mirrorUnlocked,bonusFlight,base,result,results,total,completedAt,hideAt,demo}=round;
- return structuredClone({id,config,viewer,phase,flight,mirrorFlight,mirrorUnlocked,bonusFlight,base,result,results,total,completedAt,hideAt,...(demo?{demo:true}:{})});
+ const {id,config,viewer,phase,flight,mirrorFlight,mirrorUnlocked,bonusFlight,base,result,results,total,completedAt,hideAt,demo,manualEnd,endRequested}=round;
+ return structuredClone({id,config,viewer,phase,flight,mirrorFlight,mirrorUnlocked,bonusFlight,base,result,results,total,completedAt,hideAt,...(demo?{demo:true}:{}),...(manualEnd?{manualEnd:true}:{}),...(endRequested?{endRequested:true}:{})});
 }
 export function resultEquation(r){
  const term=l=>l.values.map(v=>v===null?'BONUS':formatDouble(v)).join(' + '),outer=(r.outerLanding.type==='line'||r.outerLanding.mirrored)?'('+term(r.outerLanding)+')':formatDouble(r.outer);
