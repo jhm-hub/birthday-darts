@@ -73,6 +73,12 @@ verification is not a physical OBS/audio test.
 or use **Open bonus demo** at the top of the editor/live controls. Choose the
 Bonus Add or Multiply game, then **Show inner-wheel bonus** to guarantee the
 reveal. The same page offers Mirror games and a combined-bonus demonstration.
-It uses your saved look and numbers, stages one shorter centre-landing spin,
+It uses your saved look, numbers and spin times, stages one centre-landing spin,
 labels the wheel DEMO, and holds the result for replay. Saved settings, session
 totals/history and OBS are unaffected. Sound starts muted.
+
+Spin time is visible near the top of all private wheel controls and the demo.
+Main spin and Inner bonus each accept 2–15 seconds. Mirror re-spins share the
+main duration, and both main wheels stop together. Timing saves per preset;
+current viewers keep their captured timing. Test spins and staged bonus demos
+both use the selected durations.

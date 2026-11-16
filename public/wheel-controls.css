@@ -5,3 +5,5 @@
 .shared-mode .wheel-settings-panel #save-copy{display:block!important}.shared-mode .wheel-settings-panel #new-wheel{display:inline-block!important}
 @media(max-width:800px){.dw-editor #settings-panel{grid-row:1}.dw-editor .preview-panel{grid-row:2}}
 @media(min-width:801px){.dw-live .preview-panel,.dw-editor .preview-panel{grid-row:auto}}
+
+.wheel-timing{margin:20px 0;padding:16px;border:1px solid #80618a;border-radius:14px;background:#21132b}.wheel-timing h3{margin:0 0 12px;font-size:18px}.wheel-timing-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px}.wheel-timing .field{margin:0}.wheel-timing input{width:100%;min-width:0}.wheel-timing .hint{margin:10px 0 0}

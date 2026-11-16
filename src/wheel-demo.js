@@ -31,7 +31,7 @@ export function createWheelShowcase(source,scenario,now=Date.now()){
  const mirrored=source.mirrorUnlock==='slot',validate=mirrored?validateMirror:validateBonus;
  if(!mirrored&&scenario!=='inner')throw Error('Choose a Mirror Wheel to demonstrate mirrored pointers.');
  let config=validate(structuredClone(source));
- config={...config,bonusEnabled:true,mirrorEnabled:true,spins:1,lineLandings:false,duration:3,bonusDuration:3};
+ config={...config,bonusEnabled:true,mirrorEnabled:true,spins:1,lineLandings:false};
  let sampleTrigger=false;
  if(!config.bonusSlots.length){const slot=config.inner.findIndex((_,i)=>!config.mirrorSlots?.includes(i));if(slot<0){config.bonusSlots=[0];config.mirrorSlots=config.mirrorSlots.filter(i=>i!==0);}else config.bonusSlots=[slot];sampleTrigger=true;}
  if(scenario!=='inner'&&!config.mirrorSlots.length){

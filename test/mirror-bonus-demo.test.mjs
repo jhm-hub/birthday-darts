@@ -83,3 +83,14 @@ test('demo missing settings uses a sample while invalid settings and failed auth
  const storage=memory();storage.setItem(mirrorKey('add'),'{bad');await assert.rejects(loadDemoConfig('mirror-add',null,{storage}));assert.equal(storage.getItem(mirrorKey('add')),'{bad');
  assert.throws(()=>createWheelShowcase(defaultBonus('add'),'both'),/Mirror/);
 });
+
+test('showcases honor saved main and bonus timing through mirror re-spins without changing results',()=>{
+ for(const operation of ['add','multiply']){
+  const source={...setup(operation),duration:7.5,bonusDuration:4.2},before=structuredClone(source),show=createWheelShowcase(source,'both',0),fast=createWheelShowcase({...source,duration:2,bonusDuration:2},'both',0);
+  assert.equal(show.round.flight.landAt,7500);show.step(7499);assert.equal(show.round.phase,'spinning');
+  show.step(7500);assert.equal(show.round.phase,'mirror');assert.equal(show.round.mirrorFlight.duration,7500);
+  const mirrorEnd=show.round.mirrorFlight.landAt;show.step(mirrorEnd-1);assert.equal(show.round.phase,'mirror');show.step(mirrorEnd);assert.equal(show.round.phase,'bonus');assert.equal(show.round.bonusFlight.duration,4200);
+  const bonusEnd=show.round.bonusFlight.landAt;show.step(bonusEnd-1);assert.equal(show.round.phase,'bonus');show.step(bonusEnd);assert.equal(show.round.phase,'complete');
+  fast.step(100000);assert.deepEqual(show.round.result,fast.round.result);assert.deepEqual(source,before);
+ }
+});
