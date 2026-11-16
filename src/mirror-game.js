@@ -3,7 +3,7 @@ import {defaultBonus,validateBonus,startBonus} from './bonus-game.js';
 export {continueBonus as continueMirror,advanceBonus as advanceMirror,publicBonus as publicMirror,bonusResults as mirrorResults,formatBonus as formatMirror,resultEquation,CLEAR_MS} from './bonus-game.js';
 export const mirrorKey=mode=>'faith-mirror-wheel-live-'+mode+'-v1';
 export const gameId=mode=>'mirror-'+mode;
-export function defaultMirror(mode){return {...defaultBonus(mode),id:gameId(mode),name:'Mirror Wheel '+(mode==='add'?'Add':'Multiply'),...starterValues('mirror',mode)};}
+export function defaultMirror(mode){return {...defaultBonus(mode),centrePng:{enabled:false,diameter:120},id:gameId(mode),name:'Mirror Wheel '+(mode==='add'?'Add':'Multiply'),...starterValues('mirror',mode)};}
 export function validateMirror(raw,mode=raw?.operation){
  if(!['outer','main','all'].includes(raw?.mirrorMode))throw Error('Choose outer, main or all wheels for the mirrored pointers.');
  // Older prototype setups gain one trigger without changing their numbers or

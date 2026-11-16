@@ -8,7 +8,7 @@ export const bonusKey=mode=>'faith-bonus-wheel-live-'+mode+'-v1';
 export const gameId=mode=>'bonus-'+mode;
 export function defaultBonus(mode){
  const base=defaultDouble(mode);base.appearance=readAppearance(undefined,base);base.appearance.innerColors[5]='#FFC86B';
- return {...base,id:gameId(mode),mirrorMode:'none',name:'Bonus Wheel '+(mode==='add'?'Add':'Multiply'),...starterValues('bonus',mode),bonusDuration:4,bonusTextColor:'#492450',bonusColors:['#FFC86B','#FFE9AD','#FFC86B','#FFE9AD','#FFC86B','#FFE9AD']};
+ return {...base,...(mode==='multiply'?{centrePng:{enabled:true,diameter:120,builtin:'money-multiplier',artworkScale:106}}:{}),id:gameId(mode),mirrorMode:'none',name:'Bonus Wheel '+(mode==='add'?'Add':'Multiply'),...starterValues('bonus',mode),bonusDuration:4,bonusTextColor:'#492450',bonusColors:['#FFC86B','#FFE9AD','#FFC86B','#FFE9AD','#FFC86B','#FFE9AD']};
 }
 export function validateBonus(raw,mode=raw?.operation){
  const base=validateDouble(raw,mode),bonus=raw.bonus;

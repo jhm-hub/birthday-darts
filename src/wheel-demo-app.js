@@ -6,7 +6,7 @@ import {readArtworkPlacement} from './centre-artwork.js';
 import {createDemoPresetStore,demoPngData} from './demo-presets.js';
 import {createWheelEditor} from './wheel-editor.js';
 import {prepareCentrePng} from './centre-png-upload.js';
-import {readCentrePng,centreImageURL} from './centre-png.js';
+import {readCentrePng,savedCentreImage,MONEY_MULTIPLIER_PNG} from './centre-png.js';
 import {validateBonus} from './bonus-game.js';
 import {validateMirror} from './mirror-game.js';
 import {createBonusView,createBonusAudio} from './bonus-view.js';
@@ -22,7 +22,7 @@ const lineControls=createLineControls($('#demo-status'),(action,payload)=>{try{i
 const validator=()=>game.startsWith('mirror-')?validateMirror:validateBonus;
 const current=()=>state?.wheels.find(w=>w.config.id===state.selected);
 const turnActive=()=>!!showcase&&showcase.round.phase!=='complete';
-const imageSource=(choice=art,c=config)=>choice.kind==='saved'?undefined:choice.kind==='none'?null:choice.kind==='upload'?choice.png:'./demo-assets/faith-wheel-badge-v1.png';
+const imageSource=(choice=art,c=config)=>choice.kind==='saved'?undefined:choice.kind==='none'?null:choice.kind==='upload'?choice.png:(c?.operation==='multiply'&&c?.mirrorUnlock!=='slot'?MONEY_MULTIPLIER_PNG:'./demo-assets/faith-wheel-badge-v1.png');
 function reset(){showcase=null;audio.stop();$('#demo-status').textContent='';}
 const centre={set(c){const png=readCentrePng(c.centrePng);$('#demo-centre').checked=png.enabled;$('#demo-bonus-cover').checked=png.bonusCover!==false;$('#demo-centre-size').value=png.diameter;const p=readArtworkPlacement(png);$('#demo-art-scale').value=p.artworkScale;$('#demo-art-x').value=p.artworkX;$('#demo-art-y').value=p.artworkY;},read(){return readCentrePng({...config.centrePng,enabled:$('#demo-centre').checked,bonusCover:$('#demo-bonus-cover').checked,diameter:Number($('#demo-centre-size').value),artworkScale:Number($('#demo-art-scale').value),artworkX:$('#demo-art-x').value.trim()===''?NaN:Number($('#demo-art-x').value),artworkY:$('#demo-art-y').value.trim()===''?NaN:Number($('#demo-art-y').value)});}};
 function makeEditor(){editor=createWheelEditor(form,{bonus:true,mirror:game.startsWith('mirror-'),centre});$('#mirror-enabled').closest('label').hidden=!game.startsWith('mirror-');const label=$('#mirror-mode').closest('label');label.closest('details').hidden=!game.startsWith('mirror-');label.hidden=!game.startsWith('mirror-');label.nextElementSibling.hidden=!game.startsWith('mirror-');}
@@ -30,10 +30,11 @@ function fill(){const record=current();config=structuredClone(record.config);art
 function readFields(){return validator()({id:config.id,name:$('#game-name').value,operation:config.operation,...editor.read(),spins:Number($('#spins').value),duration:Number($('#duration').value),bonusDuration:Number($('#bonus-duration').value),lineLandings:$('#line-landings').checked,lineChance:$('#line-chance').value.trim()===''?NaN:Number($('#line-chance').value),palette:$('#palette').value});}
 function list(){const select=$('#wheel-list');select.replaceChildren(...state.wheels.map(w=>new Option(w.config.name,w.config.id)));select.value=state.selected;}
 function artworkPreview(){
- const source=imageSource(),thumbnail=$('#demo-png-thumbnail'),resolved=source===undefined?(config?.centrePng?.assetId?centreImageURL(config.centrePng.assetId):null):source;
+ const source=imageSource(),thumbnail=$('#demo-png-thumbnail'),resolved=source===undefined?(config?.centrePng?savedCentreImage(config.centrePng):null):source;
  if(thumbnail.dataset.source!==(resolved??'')){thumbnail.dataset.source=resolved??'';thumbnail.hidden=!resolved;if(resolved)thumbnail.src=resolved;else thumbnail.removeAttribute('src');}
+ const buttonLabel=game==='bonus-multiply'?'Use Money Multiplier PNG':'Use Faith sample';if($('#demo-png-sample').textContent!==buttonLabel)$('#demo-png-sample').textContent=buttonLabel;const download=$('#demo-png-download');download.href=game==='bonus-multiply'?MONEY_MULTIPLIER_PNG:'./demo-assets/faith-wheel-badge-v1.png';download.download=game==='bonus-multiply'?'money-multiplier-wheel.png':'faith-wheel-demo-badge.png';
  $('#demo-png-sample').setAttribute('aria-pressed',String(art.kind==='sample'));
- if(!preparing)$('#demo-png-status').textContent=art.kind==='upload'?art.label+' · '+(dirty?'Save this demo wheel to keep the PNG.':'Saved with this demo wheel in this browser.'):art.kind==='sample'?'Faith sample badge · demo only.':art.kind==='none'?'No PNG on this demo wheel.':'Using the copied live PNG. The live setup is unchanged.';
+ if(!preparing)$('#demo-png-status').textContent=art.kind==='upload'?art.label+' · '+(dirty?'Save this demo wheel to keep the PNG.':'Saved with this demo wheel in this browser.'):art.kind==='sample'?(game==='bonus-multiply'?'Faith’s Money Multiplier PNG · demo copy.':'Faith sample badge · demo only.'):art.kind==='none'?'No PNG on this demo wheel.':'Using the copied live PNG. The live setup is unchanged.';
 }
 function render(){
  turnControls.update(showcase?.round,null,{disabled:loading||busy||preparing||dirty,allowAdd:scenario==='trial'});
@@ -77,7 +78,7 @@ $('#demo-game').value=game;$('#demo-game').onchange=()=>{if(loading||busy||dirty
 function setArtwork(next){art=next;$('#demo-centre').checked=true;changed({target:form});}
 pngFile.onchange=async()=>{const file=pngFile.files?.[0];if(!file||loading||busy||preparing||turnActive())return;preparing=true;$('#demo-png-status').textContent='Preparing your PNG…';render();try{const png=await demoPngData(await prepareCentrePng(file));if(disposed)return;preparing=false;setArtwork({kind:'upload',png,label:file.name.slice(0,100)});}catch(e){$('#save-status').textContent=e.message;}finally{preparing=false;pngFile.value='';if(!disposed)render();}};
 $('#demo-art-reset').onclick=()=>{$('#demo-art-scale').value=100;$('#demo-art-x').value=$('#demo-art-y').value=0;changed({target:form});};
-$('#demo-png-sample').onclick=()=>setArtwork({kind:'sample'});$('#demo-png-remove').onclick=()=>{art={kind:'none'};changed({target:form});};$('#demo-png-saved').onclick=()=>setArtwork(structuredClone(current().artwork));
+$('#demo-png-sample').onclick=()=>{if(game==='bonus-multiply'){$('#demo-art-scale').value=106;$('#demo-art-x').value=$('#demo-art-y').value=0;$('#demo-bonus-cover').checked=true;}setArtwork({kind:'sample'});};$('#demo-png-remove').onclick=()=>{art={kind:'none'};changed({target:form});};$('#demo-png-saved').onclick=()=>setArtwork(structuredClone(current().artwork));
 async function play(next){if(loading||busy||preparing||dirty||!valid||turnActive()&&!(next==='trial'&&scenario==='trial'&&showcase.round.phase==='ready'))return;busy=true;render();try{if(sound)await audio.unlock();if(next==='trial'&&scenario==='trial'&&showcase?.round.phase==='ready')showcase.next();else showcase=next==='trial'?createWheelTrial(config):createWheelShowcase(config,next);scenario=next;}catch(e){showcase=null;audio.stop();$('#demo-status').textContent=e.message;}finally{busy=false;render();}}
 $('#test-wheel').onclick=()=>void play('trial');for(const b of document.querySelectorAll('button[data-demo]'))b.onclick=()=>void play(b.dataset.demo);$('#replay').onclick=()=>void play(scenario);$('#stop-demo').onclick=()=>{reset();render();$('#demo-status').textContent='Demo stopped. Choose a saved wheel or test again.';};
 $('#sound').onclick=()=>{sound=!sound;audio.setEnabled(sound);$('#sound').setAttribute('aria-pressed',String(sound));$('#sound').textContent=sound?'Demo sound on':'Demo sound off';};

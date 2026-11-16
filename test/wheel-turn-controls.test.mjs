@@ -6,7 +6,7 @@ import {defaultMirror,startMirror,advanceMirror} from '../src/mirror-game.js';
 import {createBonusStore} from '../src/bonus-store.js';
 import {callNearestLine,undoLineCalls} from '../src/wheel-line-call.js';
 import {targetRotation} from '../src/double-wheel/model.js';
-import {readCentrePng,wheelGeometry,setCentreLayout} from '../src/centre-png.js';
+import {readCentrePng,wheelGeometry,setCentreLayout,savedCentreImage,MONEY_MULTIPLIER_PNG} from '../src/centre-png.js';
 
 const memory=()=>{const m=new Map();return {getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,v)};};
 const locks={request:(_,fn)=>fn()};
@@ -40,4 +40,11 @@ test('PNG cover fills the locked bonus area, leaves a full third wheel on reveal
  const styles={},image={dataset:{},hidden:false,removeAttribute(){}},stage={dataset:{},style:{setProperty:(k,v)=>styles[k]=v},querySelector:()=>image};setCentreLayout(stage,c,{imageSource:'./sample.png'});assert.equal(stage.dataset.bonusCover,'true');assert.equal(styles['--centre-art-size'],'292.5px');assert.equal(styles['--centre-art-x'],'8px');
  c.centrePng.bonusCover=false;assert.equal(wheelGeometry(c,true).cutout,80);setCentreLayout(stage,c,{imageSource:'./sample.png'});assert.equal(stage.dataset.bonusCover,'false');assert.equal(styles['--centre-art-size'],'150px');assert.equal(readCentrePng(c.centrePng).bonusCover,false);
  assert.throws(()=>readCentrePng({...c.centrePng,bonusCover:'yes'}));
+});
+test('the approved Money Multiplier PNG is a saved primary-game default and uploaded PNGs remain usable',async()=>{
+ const c=defaultBonus('multiply');assert.equal(c.centrePng.enabled,true);assert.equal(c.centrePng.builtin,'money-multiplier');assert.equal(c.centrePng.artworkScale,106);assert.equal(savedCentreImage(c.centrePng),MONEY_MULTIPLIER_PNG);
+ assert.equal(defaultMirror('multiply').centrePng.enabled,false);assert.throws(()=>readCentrePng({...c.centrePng,builtin:'https://invalid.test/image.png'}));
+ const storage=memory(),s=createBonusStore('multiply',storage,locks);await s.init();const config=s.list()[0];await s.action(config.id,'spin',{},Date.now());assert.equal(s.snapshot(config.id).round.config.centrePng.builtin,'money-multiplier');
+ await s.save({...config,centrePng:{...config.centrePng,assetId:'a'.repeat(64)}});assert.ok(savedCentreImage(s.list()[0].centrePng).endsWith('a'.repeat(64)+'.png'));assert.equal(s.snapshot(config.id).round.config.centrePng.assetId,undefined);
+ const again=createBonusStore('multiply',storage,locks);await again.init();assert.equal(again.list()[0].centrePng.assetId,'a'.repeat(64));
 });

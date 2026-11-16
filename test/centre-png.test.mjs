@@ -14,7 +14,7 @@ test('legacy wheels retain their layout; invalid PNG sizes cannot enter shared s
 test('PNG space survives save/reload in all six games and never moves a captured round or changes its OBS key',async()=>{
  for(const create of [createDoubleStore,createBonusStore,createMirrorStore])for(const mode of ['add','multiply']){
   const storage=memory(),locks={request:async(_,fn)=>fn()},s=create(mode,storage,locks);await s.init();const c=s.list()[0],key=s.displayKey();
-  assert.equal(c.centrePng.enabled,false);
+  assert.equal(c.centrePng.enabled,c.id==='bonus-multiply');
   await s.save({...c,centrePng:{enabled:true,diameter:150,assetId:'a'.repeat(64)}});
   await s.action(c.id,'spin',{},Date.now());
   await s.save({...c,centrePng:{enabled:false,diameter:60}});
