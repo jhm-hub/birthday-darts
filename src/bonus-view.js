@@ -1,22 +1,15 @@
+import {bonusReveal} from './bonus-presentation.js';
 import {setCentreLayout} from './centre-png.js';
 import {renderWheel} from './bonus-wheel.js';
-import {bonusAngles,restingBonus,operator,formatBonus,indexAtPointer,landingText,CLEAR_MS} from './bonus-game.js';
+import {bonusAngles,restingBonus,operator,formatBonus,landingText,CLEAR_MS} from './bonus-game.js';
 import {readAppearance,loadWheelFont} from './double-appearance.js';
-export function createBonusAudio(){
- let ctx,enabled=false,volume=.45,lastTick=0,lastIndices='',roundId='',landed=false;const playing=new Set();
- async function unlock(){ctx??=new (window.AudioContext||window.webkitAudioContext)();await ctx.resume().catch(()=>{});}
- function tone(frequency,duration,gain){if(!ctx||!enabled||ctx.state!=='running')return;const osc=ctx.createOscillator(),g=ctx.createGain();osc.frequency.value=frequency;g.gain.setValueAtTime(gain*volume,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+duration);osc.connect(g);g.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+duration);playing.add(osc);osc.onended=()=>{playing.delete(osc);osc.disconnect();g.disconnect();};}
- function stop(){for(const osc of playing)try{osc.stop();}catch{}playing.clear();}
- return {unlock,stop,setEnabled(value){enabled=value;if(value)void unlock().catch(()=>{});else stop();},setVolume(value){volume=value/100;},sync(r,now,angles){
-  const f=r?.bonusFlight??r?.mirrorFlight??r?.flight,spin=r?r.id+':'+f.startAt:'';if(spin!==roundId){roundId=spin;lastIndices='';landed=false;stop();}if(!r)return;
-  if(now>=f.startAt&&now<f.landAt){const indices=r.bonusFlight?'bonus:'+indexAtPointer(r.config.bonus,angles.bonus):indexAtPointer(r.config.outer,angles.outer)+':'+indexAtPointer(r.config.inner,angles.inner);if(indices!==lastIndices&&now-lastTick>60){tone(560,.025,.04);lastTick=now;}lastIndices=indices;}
-  else if((r.result||r.base)&&now>=f.landAt&&!landed){landed=true;if(now-f.landAt<250)tone(880,.22,.08);}
- },dispose(){stop();void ctx?.close();}};
-}
+export {createBonusAudio} from './bonus-audio.js';
 export function createBonusView(root,{audio=null,onFontStatus=()=>{}}={}){
- root.innerHTML='<div class="dw-stage bw-stage"><header><h2></h2><p class="dw-viewer"></p></header><div class="dw-wheel"><div class="dw-disc"></div><img class="dw-centre-image" alt="" referrerpolicy="no-referrer" hidden><div class="dw-centre-guide" aria-hidden="true"><span>PNG</span></div><div class="dw-hub"><span>BONUS</span><strong>+</strong></div></div><div class="dw-result"><small></small><div class="dw-line-breakdown" hidden><p data-line="outer" hidden></p><p data-line="inner" hidden></p><p data-line="bonus" hidden></p></div><strong></strong><p class="dw-viewer-total" hidden></p></div></div>';
+ root.innerHTML='<div class="dw-stage bw-stage"><header><h2></h2><p class="dw-viewer"></p></header><div class="dw-wheel"><div class="dw-disc"></div><img class="dw-centre-image" alt="" referrerpolicy="no-referrer" hidden><div class="dw-centre-guide" aria-hidden="true"><span>PNG</span></div><div class="bw-celebration" aria-hidden="true"><div class="bw-shockwave"></div><div class="bw-rays"></div><div class="bw-sparks"></div><div class="bw-unlocked"><span>✦ BONUS ✦</span><strong>UNLOCKED</strong></div></div><div class="dw-hub"><span>BONUS</span><strong>+</strong></div></div><div class="dw-result"><small></small><div class="dw-line-breakdown" hidden><p data-line="outer" hidden></p><p data-line="inner" hidden></p><p data-line="bonus" hidden></p></div><strong></strong><p class="dw-viewer-total" hidden></p></div></div>';
  const stage=root.querySelector('.dw-stage'),disc=root.querySelector('.dw-disc'),title=root.querySelector('h2'),viewer=root.querySelector('.dw-viewer'),equation=root.querySelector('.dw-result strong'),caption=root.querySelector('.dw-result small');
  let snap=null,wheel,configKey='',visible=false,offset=0,frame,roundId=null,lastNow=0,font='',fontTimer,fontTicket=0,imageSource;
+ let revealKey='';
+ const sparks=root.querySelector('.bw-sparks');for(let i=0;i<14;i++){const el=document.createElement('i'),angle=(i*360/14-90)*Math.PI/180,radius=92+(i%3)*23;el.className=i%3?'bw-spark':'bw-coin';el.textContent=i%3?'✦':'$';el.style.setProperty('--spark-x',Math.cos(angle)*radius+'px');el.style.setProperty('--spark-y',Math.sin(angle)*radius+'px');el.style.setProperty('--spark-turn',(i%2?210:-210)+'deg');el.style.setProperty('--spark-delay',(i%4)*.025+'s');sparks.append(el);}
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');stage.style.opacity='0';
  function render(time){if(!snap)return;const r=snap.round,c=r?.config??snap.config,key=JSON.stringify([c,imageSource===undefined?'saved':imageSource]);if(key!==configKey){configKey=key;setCentreLayout(stage,c,{imageSource});stage.dataset.palette=c.palette;stage.dataset.lineLandings=String(!!c.lineLandings);
   const a=readAppearance(c.appearance,c),vars={rim:'rim',divider:'divider',ring:'ring-light',hub:'hub',labelA:'label-a',labelB:'label-b',pointer:'pointer',title:'title-color',resultBackground:'result-background',resultText:'result-text'};
@@ -28,6 +21,7 @@ export function createBonusView(root,{audio=null,onFontStatus=()=>{}}={}){
   const a=r?bonusAngles(r,now,reduced.matches):restingBonus(c),shown=r?.result??r?.base,unlocked=!!r?.bonusFlight;
   root.querySelector('.dw-hub span').textContent=c.bonusEnabled===false?'SPIN':'BONUS';
   const mirrorActive=c.mirrorEnabled!==false&&(c.mirrorUnlock!=='slot'||!!r?.mirrorUnlocked);stage.dataset.unlocked=String(unlocked);stage.dataset.mirrorActive=String(mirrorActive);stage.dataset.demo=String(!!r?.demo);wheel.draw(a,unlocked,mirrorActive);
+  const reveal=bonusReveal(r,now);if(reveal?.active&&reveal.key!==revealKey){revealKey=reveal.key;stage.style.setProperty('--bonus-reveal-delay',-reveal.age+'ms');}stage.dataset.revealing=String(!!reveal?.active);
   const done=!!r?.result;
   viewer.textContent=r?.demo?(r.demoMode==='trial'?'DEMO · TEST SPIN':'DEMO · STAGED BONUS'):r?.viewer||(unlocked?'BONUS WHEEL UNLOCKED':c.bonusEnabled===false?(c.mirrorUnlock==='slot'&&c.mirrorEnabled!==false?'LAND MIRROR TO UNLOCK':'SPIN BOTH WHEELS'):c.mirrorUnlock==='slot'&&c.mirrorEnabled!==false?'LAND BONUS OR MIRROR TO UNLOCK':'HIT BONUS TO UNLOCK THE INNER WHEEL');
   const spins=c.spins,taken=r?.results.length??0,number=['spinning','mirror','bonus'].includes(r?.phase)?taken+1:taken;

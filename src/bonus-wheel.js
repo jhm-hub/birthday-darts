@@ -32,7 +32,7 @@ function renderWheel(host, config) {
       const [x, y] = point(radial, middle).split(" ");
       const mirrorSlot=name==='inner'&&config.mirrorEnabled!==false&&config.mirrorUnlock==='slot'&&config.mirrorSlots?.includes(i);
       const label=name==='inner'&&config.bonusEnabled!==false&&config.bonusSlots.includes(i)?'BONUS':mirrorSlot?'MIRROR':String(values[i]);
-      const sizeFor=value=>Math.min(name === "outer" ? 34 : 30, (outer2 - inner2) * 0.9 / Math.max(1, String(value).length * 0.65), 2 * radial * Math.sin(Math.PI / values.length) * 0.7),size=sizeFor(label);
+      const sizeFor=value=>Math.min(name === "outer" ? 40 : name === "inner" ? 36 : 30, (outer2 - inner2) * 0.9 / Math.max(1, String(value).length * 0.65), 2 * radial * Math.sin(Math.PI / values.length) * 0.7),size=sizeFor(label);
       const text = node("text", { x, y, transform: `rotate(${middle} ${x} ${y})`, "font-size": size, class: "slice-label",style:name==='bonus'?'fill:'+appearance.bonusTextColor:'' });
       text.textContent = label;if(mirrorSlot)mirrorLabels.push({text,value:String(values[i]),size,numericSize:sizeFor(values[i])});
       group.append(text);
@@ -69,9 +69,9 @@ function renderWheel(host, config) {
    const radial=(geometry.bonus[0]+geometry.bonus[1])/2;
    for(const [text,y] of [["BONUS",300-radial],["LOCKED",300+radial]]){const label=node("text",{x:300,y,"text-anchor":"middle","dominant-baseline":"central",fill:"var(--rim)","font-size":15,"font-weight":700});label.textContent=config.bonusEnabled===false?'':text;cover.append(label);}
   }else{
-  cover.append(node("circle",{cx:300,cy:300,r:115,fill:"var(--hub)",stroke:"var(--rim)","stroke-width":5}));
-  const lock=node("path",{d:"M285 284v-12a15 15 0 0 1 30 0v12 M279 284h42v32h-42Z",fill:"none",stroke:"var(--rim)","stroke-width":5,"stroke-linejoin":"round"});if(config.bonusEnabled!==false)cover.append(lock);
-  for(const [text,y,size] of [["BONUS",340,21],["LOCKED",361,12]]){const label=node("text",{x:300,y,"text-anchor":"middle",fill:"var(--rim)","font-size":size,"font-weight":700});label.textContent=config.bonusEnabled===false?'':text;cover.append(label);}
+  cover.append(node("circle",{cx:300,cy:300,r:geometry.bonusRim-1,fill:"var(--hub)",stroke:"var(--rim)","stroke-width":5}));
+  const lock=node("path",{transform:`translate(300 300) scale(${geometry.bonusRim/116}) translate(-300 -300)`,d:"M285 284v-12a15 15 0 0 1 30 0v12 M279 284h42v32h-42Z",fill:"none",stroke:"var(--rim)","stroke-width":5,"stroke-linejoin":"round"});if(config.bonusEnabled!==false)cover.append(lock);
+  for(const [text,y,size] of [["BONUS",300+geometry.bonusRim*.35,21],["LOCKED",300+geometry.bonusRim*.53,12]]){const label=node("text",{x:300,y,"text-anchor":"middle",fill:"var(--rim)","font-size":size,"font-weight":700});label.textContent=config.bonusEnabled===false?'':text;cover.append(label);}
   }
   svg.append(cover);
   reserveSvgCentre(svg,geometry);

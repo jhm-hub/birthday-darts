@@ -6,7 +6,7 @@ import {readArtworkPlacement} from './centre-artwork.js';
 import {createDemoPresetStore,demoPngData} from './demo-presets.js';
 import {createWheelEditor} from './wheel-editor.js';
 import {prepareCentrePng} from './centre-png-upload.js';
-import {readCentrePng,savedCentreImage,MONEY_MULTIPLIER_PNG} from './centre-png.js';
+import {readCentrePng,savedCentreImage,DOUBLE_DAMAGE_PNG} from './centre-png.js';
 import {validateBonus} from './bonus-game.js';
 import {validateMirror} from './mirror-game.js';
 import {createBonusView,createBonusAudio} from './bonus-view.js';
@@ -22,7 +22,7 @@ const lineControls=createLineControls($('#demo-status'),(action,payload)=>{try{i
 const validator=()=>game.startsWith('mirror-')?validateMirror:validateBonus;
 const current=()=>state?.wheels.find(w=>w.config.id===state.selected);
 const turnActive=()=>!!showcase&&showcase.round.phase!=='complete';
-const imageSource=(choice=art,c=config)=>choice.kind==='saved'?undefined:choice.kind==='none'?null:choice.kind==='upload'?choice.png:(c?.operation==='multiply'&&c?.mirrorUnlock!=='slot'?MONEY_MULTIPLIER_PNG:'./demo-assets/faith-wheel-badge-v1.png');
+const imageSource=(choice=art,c=config)=>choice.kind==='saved'?undefined:choice.kind==='none'?null:choice.kind==='upload'?choice.png:(c?.operation==='multiply'&&c?.mirrorUnlock!=='slot'?DOUBLE_DAMAGE_PNG:'./demo-assets/faith-wheel-badge-v1.png');
 function reset(){showcase=null;audio.stop();$('#demo-status').textContent='';}
 const centre={set(c){const png=readCentrePng(c.centrePng);$('#demo-centre').checked=png.enabled;$('#demo-bonus-cover').checked=png.bonusCover!==false;$('#demo-centre-size').value=png.diameter;const p=readArtworkPlacement(png);$('#demo-art-scale').value=p.artworkScale;$('#demo-art-x').value=p.artworkX;$('#demo-art-y').value=p.artworkY;},read(){return readCentrePng({...config.centrePng,enabled:$('#demo-centre').checked,bonusCover:$('#demo-bonus-cover').checked,diameter:Number($('#demo-centre-size').value),artworkScale:Number($('#demo-art-scale').value),artworkX:$('#demo-art-x').value.trim()===''?NaN:Number($('#demo-art-x').value),artworkY:$('#demo-art-y').value.trim()===''?NaN:Number($('#demo-art-y').value)});}};
 function makeEditor(){editor=createWheelEditor(form,{bonus:true,mirror:game.startsWith('mirror-'),centre});$('#mirror-enabled').closest('label').hidden=!game.startsWith('mirror-');const label=$('#mirror-mode').closest('label');label.closest('details').hidden=!game.startsWith('mirror-');label.hidden=!game.startsWith('mirror-');label.nextElementSibling.hidden=!game.startsWith('mirror-');}
@@ -32,9 +32,9 @@ function list(){const select=$('#wheel-list');select.replaceChildren(...state.wh
 function artworkPreview(){
  const source=imageSource(),thumbnail=$('#demo-png-thumbnail'),resolved=source===undefined?(config?.centrePng?savedCentreImage(config.centrePng):null):source;
  if(thumbnail.dataset.source!==(resolved??'')){thumbnail.dataset.source=resolved??'';thumbnail.hidden=!resolved;if(resolved)thumbnail.src=resolved;else thumbnail.removeAttribute('src');}
- const buttonLabel=game==='bonus-multiply'?'Use Money Multiplier PNG':'Use Faith sample';if($('#demo-png-sample').textContent!==buttonLabel)$('#demo-png-sample').textContent=buttonLabel;const download=$('#demo-png-download');download.href=game==='bonus-multiply'?MONEY_MULTIPLIER_PNG:'./demo-assets/faith-wheel-badge-v1.png';download.download=game==='bonus-multiply'?'money-multiplier-wheel.png':'faith-wheel-demo-badge.png';
+ const buttonLabel=game==='bonus-multiply'?'Use Double Damage PNG':'Use Faith sample';if($('#demo-png-sample').textContent!==buttonLabel)$('#demo-png-sample').textContent=buttonLabel;const download=$('#demo-png-download');download.href=game==='bonus-multiply'?DOUBLE_DAMAGE_PNG:'./demo-assets/faith-wheel-badge-v1.png';download.download=game==='bonus-multiply'?'double-damage-wheel.png':'faith-wheel-demo-badge.png';
  $('#demo-png-sample').setAttribute('aria-pressed',String(art.kind==='sample'));
- if(!preparing)$('#demo-png-status').textContent=art.kind==='upload'?art.label+' · '+(dirty?'Save this demo wheel to keep the PNG.':'Saved with this demo wheel in this browser.'):art.kind==='sample'?(game==='bonus-multiply'?'Faith’s Money Multiplier PNG · demo copy.':'Faith sample badge · demo only.'):art.kind==='none'?'No PNG on this demo wheel.':'Using the copied live PNG. The live setup is unchanged.';
+ if(!preparing)$('#demo-png-status').textContent=art.kind==='upload'?art.label+' · '+(dirty?'Save this demo wheel to keep the PNG.':'Saved with this demo wheel in this browser.'):art.kind==='sample'?(game==='bonus-multiply'?'Faith’s Double Damage PNG · demo copy.':'Faith sample badge · demo only.'):art.kind==='none'?'No PNG on this demo wheel.':'Using the copied live PNG. The live setup is unchanged.';
 }
 function render(){
  turnControls.update(showcase?.round,null,{disabled:loading||busy||preparing||dirty,allowAdd:scenario==='trial'});
@@ -60,7 +60,7 @@ async function load(){
   store=createDemoPresetStore(game);state=store.read();if(state)state=await store.init();
   if(!state){let result;try{result=await loadDemoConfig(game,sourceIds.get(game),{storage:localStorage,connection});}catch{result={config:demoDefaults(game),saved:false};}
    if(disposed||mine!==ticket)return;let source=result.config;if(result.saved)sourceIds.set(game,source.id);
-   const artwork=params.get('art')==='sample'||!source.centrePng?.assetId?{kind:'sample'}:{kind:'saved'};
+   const artwork=params.get('art')==='sample'||!savedCentreImage(source.centrePng??{})?{kind:'sample'}:{kind:'saved'};
    source={...source,centrePng:{...readCentrePng(source.centrePng),enabled:params.get('centre')==='1'||artwork.kind==='sample'||source.centrePng?.enabled===true}};
    state=await store.init(source,artwork);
   }
@@ -83,7 +83,7 @@ async function play(next){if(loading||busy||preparing||dirty||!valid||turnActive
 $('#test-wheel').onclick=()=>void play('trial');for(const b of document.querySelectorAll('button[data-demo]'))b.onclick=()=>void play(b.dataset.demo);$('#replay').onclick=()=>void play(scenario);$('#stop-demo').onclick=()=>{reset();render();$('#demo-status').textContent='Demo stopped. Choose a saved wheel or test again.';};
 $('#sound').onclick=()=>{sound=!sound;audio.setEnabled(sound);$('#sound').setAttribute('aria-pressed',String(sound));$('#sound').textContent=sound?'Demo sound on':'Demo sound off';};
 function uniqueName(base){let name=base.slice(0,35),n=2;while(state.wheels.some(w=>w.config.name.toLowerCase()===name.toLowerCase()))name=base.slice(0,30)+' '+n++;return name;}
-async function addSource(live){if(loading||busy||dirty||preparing||turnActive())return;busy=true;render();try{const result=live?await loadDemoConfig(game,sourceIds.get(game),{storage:localStorage,connection}):{config:demoDefaults(game),saved:false};if(live&&!result.saved)throw Error('No saved live setup was found. You can add a sample wheel instead.');if(result.saved)sourceIds.set(game,result.config.id);const source={...result.config,centrePng:{...readCentrePng(result.config.centrePng),enabled:true}};state=await store.save({config:source,artwork:source.centrePng.assetId?{kind:'saved'}:{kind:'sample'}},{copyName:uniqueName(live?'Live setup copy':'Sample wheel'),expectedRevision:state.revision});fill();links();$('#save-status').textContent=live?'Live setup copied into a separate demo wheel.':'Sample added as a new demo wheel.';}catch(e){$('#save-status').textContent=e.message;}finally{busy=false;render();}}
+async function addSource(live){if(loading||busy||dirty||preparing||turnActive())return;busy=true;render();try{const result=live?await loadDemoConfig(game,sourceIds.get(game),{storage:localStorage,connection}):{config:demoDefaults(game),saved:false};if(live&&!result.saved)throw Error('No saved live setup was found. You can add a sample wheel instead.');if(result.saved)sourceIds.set(game,result.config.id);const source={...result.config,centrePng:{...readCentrePng(result.config.centrePng),enabled:true}};state=await store.save({config:source,artwork:savedCentreImage(source.centrePng)?{kind:'saved'}:{kind:'sample'}},{copyName:uniqueName(live?'Live setup copy':'Sample wheel'),expectedRevision:state.revision});fill();links();$('#save-status').textContent=live?'Live setup copied into a separate demo wheel.':'Sample added as a new demo wheel.';}catch(e){$('#save-status').textContent=e.message;}finally{busy=false;render();}}
 $('#use-sample').onclick=()=>void addSource(false);$('#copy-live').onclick=()=>void addSource(true);
 window.addEventListener('storage',e=>{if(e.key!==store?.key||loading||busy||preparing)return;if(dirty||turnActive()){$('#save-status').textContent='Demo wheels changed in another tab. Reload before saving.';return;}try{state=store.read();fill();}catch(error){$('#save-status').textContent=error.message;}});
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});

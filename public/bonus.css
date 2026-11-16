@@ -15,11 +15,30 @@
 .bw-stage[data-centre-png=true] .bw-cover.is-open{transform:none}
 
 .bw-stage[data-bonus-cover=true][data-centre-image=true] .bw-cover text{opacity:0}
-.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-centre-image{animation:bonus-badge-reveal .85s cubic-bezier(.2,.7,.2,1) both}
-.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-hub{display:flex}
-.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-wheel:after{content:'';position:absolute;left:50%;top:50%;width:234px;height:234px;border:3px solid #ffe9ad;border-radius:50%;pointer-events:none;animation:bonus-badge-halo .85s ease-out both;box-sizing:border-box}
-@keyframes bonus-badge-reveal{0%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:drop-shadow(0 0 0 #ffe9ad00)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.07);filter:drop-shadow(0 0 18px #ffe9ad)}100%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-12deg);filter:blur(5px) drop-shadow(0 0 24px #ffe9ad00)}}
-@keyframes bonus-badge-halo{0%{opacity:0;transform:translate(-50%,-50%) scale(.9)}25%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}}
-@media(prefers-reduced-motion:reduce){.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-centre-image{animation:none;opacity:0}.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-wheel:after{animation:none;display:none}}
-.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-hub{transition-delay:.65s}
-@media(prefers-reduced-motion:reduce){.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-hub{transition-delay:0s}}
+
+.bw-stage[data-bonus-cover=true] .dw-centre-image{z-index:2}
+/* One timed reveal, independent of artwork size and game result. */
+.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-centre-image{opacity:0}
+.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-hub{display:flex;transition-delay:.65s}
+.bw-stage[data-bonus-cover=true][data-revealing=true] .dw-centre-image{animation:bonus-badge-reveal 1.8s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--bonus-reveal-delay,0ms)}
+.bw-celebration{position:absolute;inset:0;pointer-events:none;display:none;z-index:3}
+.bw-stage[data-revealing=true] .bw-celebration{display:block}
+.bw-shockwave,.bw-rays{position:absolute;left:50%;top:50%;width:var(--bonus-diameter,150px);height:var(--bonus-diameter,150px);border-radius:50%;box-sizing:border-box}
+.bw-shockwave{border:4px solid #fff4b4;box-shadow:0 0 18px #ffdf5d,inset 0 0 14px #dcff35;animation:bonus-shockwave 1.8s ease-out both;animation-delay:var(--bonus-reveal-delay,0ms)}
+.bw-rays{background:repeating-conic-gradient(from 8deg,#ffe77d00 0deg 12deg,#ffe77db3 13deg 15deg,#ffe77d00 17deg 30deg);mask-image:radial-gradient(circle,transparent 32%,#000 43%,transparent 72%);animation:bonus-rays 1.8s ease-out both;animation-delay:var(--bonus-reveal-delay,0ms)}
+.bw-spark,.bw-coin{position:absolute;left:50%;top:50%;font-style:normal;display:grid;place-items:center;animation:bonus-particle 1.8s ease-out both;animation-delay:calc(var(--bonus-reveal-delay,0ms) + var(--spark-delay));opacity:0}
+.bw-spark{font-size:25px;color:#f3ff7c;text-shadow:0 0 7px #ffce47}
+.bw-coin{width:25px;height:25px;border:2px solid #ffef8a;border-radius:50%;background:linear-gradient(135deg,#fff5ae,#ffc800 55%,#d48408);box-shadow:0 2px 0 #8f540c,0 0 12px #ffd74699;color:#8a4c03;font:900 18px Nunito,sans-serif}
+.bw-unlocked{position:absolute;left:50%;top:50%;min-width:190px;box-sizing:border-box;text-align:center;border:2px solid #faff8a;border-radius:14px;background:linear-gradient(130deg,#850b59,#de217d);padding:9px 20px;color:#fff8df;box-shadow:0 4px 0 #49093b,0 0 28px #ffc80077;animation:bonus-banner 1.8s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--bonus-reveal-delay,0ms)}
+.bw-unlocked span{display:block;font:900 15px Nunito,sans-serif;letter-spacing:3px;color:#eeff76}.bw-unlocked strong{display:block;font:1000 26px Nunito,sans-serif;letter-spacing:1px;text-shadow:0 2px 0 #70064c}
+@keyframes bonus-badge-reveal{0%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:drop-shadow(0 0 0 #ffe9ad00)}12%{opacity:1;transform:translate(-50%,-50%) scale(.94) rotate(-4deg)}28%{opacity:1;transform:translate(-50%,-50%) scale(1.13) rotate(4deg);filter:brightness(1.3) drop-shadow(0 0 20px #f4ff6a)}48%,100%{opacity:0;transform:translate(-50%,-50%) scale(.12) rotate(-22deg);filter:blur(4px) drop-shadow(0 0 24px #ffe9ad00)}}
+@keyframes bonus-shockwave{0%,20%{opacity:0;transform:translate(-50%,-50%) scale(.8)}30%{opacity:1}75%,100%{opacity:0;transform:translate(-50%,-50%) scale(2)}}
+@keyframes bonus-rays{0%,20%{opacity:0;transform:translate(-50%,-50%) scale(.9) rotate(-15deg)}38%{opacity:.85}90%,100%{opacity:0;transform:translate(-50%,-50%) scale(3.3) rotate(20deg)}}
+@keyframes bonus-particle{0%,24%{opacity:0;transform:translate(-50%,-50%) scale(.2)}32%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--spark-x)),calc(-50% + var(--spark-y))) scale(.6) rotate(var(--spark-turn))}}
+@keyframes bonus-banner{0%,34%{opacity:0;transform:translate(-50%,-50%) scale(.55)}49%,77%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-75%) scale(1.04)}}
+@media(prefers-reduced-motion:reduce){
+ .bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-centre-image{animation:none;opacity:0}
+ .bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-hub{transition-delay:0s}
+ .bw-shockwave,.bw-rays,.bw-sparks{display:none}
+ .bw-unlocked{animation:none;transform:translate(-50%,-50%)}
+}

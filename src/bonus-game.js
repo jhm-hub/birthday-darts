@@ -1,14 +1,16 @@
+import {readBonusDiameter,BONUS_REVEAL_MS} from './bonus-presentation.js';
 import {starterValues} from './wheel-starters.js';
 import {validateDouble,defaultDouble,formatDouble,operator,HOLD_MS,CLEAR_MS} from './double-game.js';
 import {randomIndex,targetRotation,frameAt,indexAtPointer} from './double-wheel/model.js';
 import {hexColor,readAppearance} from './double-appearance.js';
 export {formatDouble as formatBonus,operator,indexAtPointer,CLEAR_MS};
-export const REVEAL_MS=1000;
+export const REVEAL_MS=BONUS_REVEAL_MS;
+export const MIRROR_REVEAL_MS=1000;
 export const bonusKey=mode=>'faith-bonus-wheel-live-'+mode+'-v1';
 export const gameId=mode=>'bonus-'+mode;
 export function defaultBonus(mode){
  const base=defaultDouble(mode);base.appearance=readAppearance(undefined,base);base.appearance.innerColors[5]='#FFC86B';
- return {...base,...(mode==='multiply'?{centrePng:{enabled:true,diameter:120,builtin:'money-multiplier',artworkScale:106}}:{}),id:gameId(mode),mirrorMode:'none',name:'Bonus Wheel '+(mode==='add'?'Add':'Multiply'),...starterValues('bonus',mode),bonusDuration:4,bonusTextColor:'#492450',bonusColors:['#FFC86B','#FFE9AD','#FFC86B','#FFE9AD','#FFC86B','#FFE9AD']};
+ return {...base,...(mode==='multiply'?{centrePng:{enabled:true,diameter:120,builtin:'double-damage',artworkScale:106}}:{}),id:gameId(mode),mirrorMode:'none',name:'Bonus Wheel '+(mode==='add'?'Add':'Multiply'),...starterValues('bonus',mode),bonusDuration:4,bonusTextColor:'#492450',bonusColors:['#FFC86B','#FFE9AD','#FFC86B','#FFE9AD','#FFC86B','#FFE9AD']};
 }
 export function validateBonus(raw,mode=raw?.operation){
  const base=validateDouble(raw,mode),bonus=raw.bonus;
@@ -27,7 +29,9 @@ export function validateBonus(raw,mode=raw?.operation){
   if(!Array.isArray(marks)||new Set(marks).size!==marks.length||marks.some(i=>!Number.isInteger(i)||i<0||i>=base.inner.length||slots.includes(i)))throw Error('Choose valid Mirror slots, separate from the Bonus slots.');
   mirror={mirrorUnlock:'slot',mirrorSlots:[...marks].sort((a,b)=>a-b)};
  }
- return {...base,mirrorMode,...mirror,...(raw.bonusEnabled!==undefined?{bonusEnabled}:{}),...(raw.mirrorEnabled!==undefined?{mirrorEnabled}:{}),bonus:[...bonus],bonusSlots:[...slots].sort((a,b)=>a-b),bonusDuration:raw.bonusDuration,bonusTextColor:hexColor(raw.bonusTextColor??'#492450'),bonusColors:raw.bonusColors.map(hexColor)};
+ const bonusDiameter=readBonusDiameter(raw.bonusDiameter);
+ if(raw.bonusSound!==undefined&&typeof raw.bonusSound!=='boolean')throw Error('Choose on or off for the bonus sound.');
+ return {...base,bonusDiameter,bonusSound:raw.bonusSound!==false,mirrorMode,...mirror,...(raw.bonusEnabled!==undefined?{bonusEnabled}:{}),...(raw.mirrorEnabled!==undefined?{mirrorEnabled}:{}),bonus:[...bonus],bonusSlots:[...slots].sort((a,b)=>a-b),bonusDuration:raw.bonusDuration,bonusTextColor:hexColor(raw.bonusTextColor??'#492450'),bonusColors:raw.bonusColors.map(hexColor)};
 }
 export function readBonusAppearance(config){return {...readAppearance(config.appearance,config),bonusColors:config.bonusColors,bonusTextColor:config.bonusTextColor??'#492450'};}
 export const mirroredSides=config=>config.mirrorEnabled===false?[]:config.mirrorMode==='all'?['outer','inner','bonus']:config.mirrorMode==='main'?['outer','inner']:config.mirrorMode==='outer'?['outer']:[];
@@ -75,7 +79,7 @@ export function advanceBonus(round,now=Date.now(),choose){
  if(round.phase==='spinning'&&now>=round.flight.landAt){
   changed=true;
   if(round.pending.mirrorTriggered){
-   const startAt=round.flight.landAt+REVEAL_MS,p=initialPlan(round.config,round.flight.to,choose,true,round.pending.unlocked);
+   const startAt=round.flight.landAt+MIRROR_REVEAL_MS,p=initialPlan(round.config,round.flight.to,choose,true,round.pending.unlocked);
    round.mirrorFlight={from:p.from,to:p.to,duration:p.duration,startAt,landAt:startAt+p.duration};round.pending=p.round;round.mirrorUnlocked=true;round.phase='mirror';
   }else mainFinished(round.flight);
  }
