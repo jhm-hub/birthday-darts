@@ -85,13 +85,6 @@ function renderWheel(host, config) {
       bonus.group.setAttribute("transform",`rotate(${angles.bonus} 300 300)`);
       outer.group.setAttribute("transform", `rotate(${angles.outer} 300 300)`);
       inner.group.setAttribute("transform", `rotate(${angles.inner} 300 300)`);
-    },
-    highlight(oi, ii, bi) {
-      const bonusIndices=Array.isArray(bi)?bi:bi===undefined?[]:[bi];
-      const outerIndices=Array.isArray(oi)?oi:oi===undefined?[]:[oi],innerIndices=Array.isArray(ii)?ii:ii===undefined?[]:[ii];
-      outer.labels.forEach((el, i) => el.classList.toggle("winner", outerIndices.includes(i)));
-      bonus.labels.forEach((el,i)=>el.classList.toggle("winner",bonusIndices.includes(i)));
-      inner.labels.forEach((el, i) => el.classList.toggle("winner", innerIndices.includes(i)));
     }
   };
 }

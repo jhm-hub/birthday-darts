@@ -54,6 +54,7 @@ export const bonusResults=round=>round?.results??[];
 export const bonusTotal=round=>bonusResults(round).reduce((s,r)=>s+Math.round(r.result*10000),0)/10000;
 export function continueBonus(round,now=Date.now(),choose){
  if(round?.phase!=='ready'||round.results.length>=round.config.spins)throw Error('Wait for the current spin and bonus to finish.');
+ delete round.lineCallOriginal;delete round.lineCallSides;delete round.lineCallRevision;
  const from={...(round.mirrorFlight??round.flight).to,bonus:round.bonusFlight?.to.bonus??round.flight.to.bonus},p=initialPlan(round.config,from,choose);
  Object.assign(round,{phase:'spinning',flight:{from:p.from,to:p.to,duration:p.duration,startAt:now,landAt:now+p.duration},mirrorFlight:null,mirrorUnlocked:false,bonusFlight:null,base:null,pending:p.round,result:null});return round;
 }

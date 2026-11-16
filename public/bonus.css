@@ -13,3 +13,13 @@
 @media(prefers-reduced-motion:reduce){.mirror-pointer{transition:none}}
 
 .bw-stage[data-centre-png=true] .bw-cover.is-open{transform:none}
+
+.bw-stage[data-bonus-cover=true][data-centre-image=true] .bw-cover text{opacity:0}
+.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-centre-image{animation:bonus-badge-reveal .85s cubic-bezier(.2,.7,.2,1) both}
+.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-hub{display:flex}
+.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-wheel:after{content:'';position:absolute;left:50%;top:50%;width:234px;height:234px;border:3px solid #ffe9ad;border-radius:50%;pointer-events:none;animation:bonus-badge-halo .85s ease-out both;box-sizing:border-box}
+@keyframes bonus-badge-reveal{0%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:drop-shadow(0 0 0 #ffe9ad00)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.07);filter:drop-shadow(0 0 18px #ffe9ad)}100%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-12deg);filter:blur(5px) drop-shadow(0 0 24px #ffe9ad00)}}
+@keyframes bonus-badge-halo{0%{opacity:0;transform:translate(-50%,-50%) scale(.9)}25%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}}
+@media(prefers-reduced-motion:reduce){.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-centre-image{animation:none;opacity:0}.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-wheel:after{animation:none;display:none}}
+.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-hub{transition-delay:.65s}
+@media(prefers-reduced-motion:reduce){.bw-stage[data-bonus-cover=true][data-unlocked=true] .dw-hub{transition-delay:0s}}

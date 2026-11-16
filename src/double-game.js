@@ -31,6 +31,7 @@ export const doubleResults=round=>round?.results??(round?.result?[round.result]:
 export const doubleTotal=round=>doubleResults(round).reduce((sum,r)=>sum+Math.round(r.result*10000),0)/10000;
 export function continueDouble(round,now=Date.now(),choose){
  if(round?.phase!=='ready'||doubleResults(round).length>=(round.config.spins??1))throw Error('Wait for the current spin to finish.');
+ delete round.lineCallOriginal;delete round.lineCallSides;delete round.lineCallRevision;
  const plan=planSpin(round.config,round.flight.to,choose);
  Object.assign(round,{phase:'spinning',flight:{from:plan.from,to:plan.to,duration:plan.duration,startAt:now,landAt:now+plan.duration},pending:plan.round,result:null});
  return round;

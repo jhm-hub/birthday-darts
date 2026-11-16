@@ -1,4 +1,4 @@
-import { layout, sliceCenterDeg, sliceAtAngle } from "./vendor/model/geometry.js";
+import { layout, sliceAtAngle } from "./vendor/model/geometry.js";
 import { deg, normalizeDeg, sliceIndex, weight } from "./vendor/model/units.js";
 const DEFAULTS = { outer: [5, 4, 9, 5, 6, 7, 8, 10], inner: [6, 7, 4, 3, 4, 5], duration: 6.2, operation: "add", palette: "landaire" };
 const DEFAULT_LINE_CHANCE = 25;
@@ -23,9 +23,12 @@ function readConfig(value) {
 function indexAtPointer(values, rotation) {
   return sliceAtAngle(wheelLayout(values), deg(normalize(-rotation)));
 }
-function targetRotation(current, values, index, direction, turns, line = false) {
+// This separate draw only chooses a position inside the already chosen spot.
+// It cannot change the section odds or consume the outcome chooser's draws.
+function landingFraction(choose = randomIndex) { return .08 + .84 * choose(1000000) / 999999; }
+function targetRotation(current, values, index, direction, turns, line = false, fraction = line ? 0 : landingFraction()) {
   const slice = wheelLayout(values)[index];
-  const angle = line ? slice.startTurn * 360 : sliceCenterDeg(slice);
+  const angle = (slice.startTurn + (line ? 0 : fraction) * slice.sizeTurn) * 360;
   const target = normalize(-angle);
   const travel = direction === 1 ? normalize(target - current) : normalize(current - target);
   return current + direction * (turns * 360 + travel);
@@ -79,5 +82,6 @@ export {
   randomIndex,
   readConfig,
   targetRotation,
+  landingFraction,
   wheelLayout
 };

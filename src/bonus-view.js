@@ -1,6 +1,6 @@
 import {setCentreLayout} from './centre-png.js';
 import {renderWheel} from './bonus-wheel.js';
-import {bonusAngles,restingBonus,operator,formatBonus,indexAtPointer,landingText,landingIndices,CLEAR_MS} from './bonus-game.js';
+import {bonusAngles,restingBonus,operator,formatBonus,indexAtPointer,landingText,CLEAR_MS} from './bonus-game.js';
 import {readAppearance,loadWheelFont} from './double-appearance.js';
 export function createBonusAudio(){
  let ctx,enabled=false,volume=.45,lastTick=0,lastIndices='',roundId='',landed=false;const playing=new Set();
@@ -29,7 +29,6 @@ export function createBonusView(root,{audio=null,onFontStatus=()=>{}}={}){
   root.querySelector('.dw-hub span').textContent=c.bonusEnabled===false?'SPIN':'BONUS';
   const mirrorActive=c.mirrorEnabled!==false&&(c.mirrorUnlock!=='slot'||!!r?.mirrorUnlocked);stage.dataset.unlocked=String(unlocked);stage.dataset.mirrorActive=String(mirrorActive);stage.dataset.demo=String(!!r?.demo);wheel.draw(a,unlocked,mirrorActive);
   const done=!!r?.result;
-  wheel.highlight(shown?landingIndices(shown,'outer',c.outer,a.outer):undefined,shown?landingIndices(shown,'inner',c.inner,a.inner):undefined,done&&unlocked?landingIndices(r.result,'bonus',c.bonus,a.bonus):undefined);
   viewer.textContent=r?.demo?(r.demoMode==='trial'?'DEMO · TEST SPIN':'DEMO · STAGED BONUS'):r?.viewer||(unlocked?'BONUS WHEEL UNLOCKED':c.bonusEnabled===false?(c.mirrorUnlock==='slot'&&c.mirrorEnabled!==false?'LAND MIRROR TO UNLOCK':'SPIN BOTH WHEELS'):c.mirrorUnlock==='slot'&&c.mirrorEnabled!==false?'LAND BONUS OR MIRROR TO UNLOCK':'HIT BONUS TO UNLOCK THE INNER WHEEL');
   const spins=c.spins,taken=r?.results.length??0,number=['spinning','mirror','bonus'].includes(r?.phase)?taken+1:taken;
   const bonusPhase=r?.phase==='bonus',mirrorPhase=r?.phase==='mirror',opening=bonusPhase&&now<r.bonusFlight.startAt;
@@ -39,7 +38,7 @@ export function createBonusView(root,{audio=null,onFontStatus=()=>{}}={}){
   breakdown.hidden=!any;
   equation.textContent=mirrorPhase?'MIRROR BONUS · RESPIN':done?`${formatBonus(r.result.outer)} ${operator(c.operation)} ${formatBonus(r.result.inner)} = ${formatBonus(r.result.result)}`:bonusPhase?`${formatBonus(r.base.outer)} ${operator(c.operation)} BONUS = …`:`— ${operator(c.operation)} — = —`;
   const length=equation.textContent.length;equation.style.fontSize=length>36?'16px':length>26?'20px':length>16?'26px':'34px';
-  const total=root.querySelector('.dw-viewer-total');total.hidden=spins===1;total.textContent=`${r?.phase==='complete'?'FINAL':'VIEWER'} TOTAL · ${formatBonus(r?.total??0)}`;
+  const total=root.querySelector('.dw-viewer-total');total.hidden=!r;root.querySelector('.dw-result').dataset.final=String(r?.phase==='complete');total.textContent=`${r?.phase==='complete'?'FINAL':'VIEWER'} TOTAL · ${formatBonus(r?.total??0)}`;
   const alpha=r?.hideAt?Math.max(0,Math.min(1,1-(now-r.hideAt)/CLEAR_MS)):1;
   stage.style.opacity=visible?String(alpha):'0';if(audio&&visible&&alpha>0)audio.sync(r,now,a);
  }

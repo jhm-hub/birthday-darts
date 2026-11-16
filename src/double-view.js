@@ -1,6 +1,6 @@
 import {setCentreLayout} from './centre-png.js';
 import {renderWheel} from './double-wheel/render.js';
-import {doubleAngles,restingDouble,operator,formatDouble,indexAtPointer,landingText,landingIndices,CLEAR_MS} from './double-game.js';
+import {doubleAngles,restingDouble,operator,formatDouble,indexAtPointer,landingText,CLEAR_MS} from './double-game.js';
 import {readAppearance,loadWheelFont} from './double-appearance.js';
 export function createDoubleAudio(){
  let ctx,enabled=false,volume=.45,lastTick=0,lastIndices='',roundId='',landed=false;const playing=new Set();
@@ -27,7 +27,6 @@ export function createDoubleView(root,{audio=null,onFontStatus=()=>{}}={}){
   if(roundId!==r?.id){roundId=r?.id;lastNow=0;}const now=Math.max(time,lastNow);lastNow=now;
   const a=r?doubleAngles(r,now,reduced.matches):restingDouble(c);wheel.draw(a);
   const done=!!r?.result&&now>=r.flight.landAt;
-  wheel.highlight(done?landingIndices(r.result,'outer',c.outer,a.outer):undefined,done?landingIndices(r.result,'inner',c.inner,a.inner):undefined);
   viewer.textContent=r?.viewer||'OUTER ↶  ·  INNER ↷';
   const spins=c.spins??1,taken=r?.results?.length??(r?.result?1:0),number=r?.phase==='spinning'?taken+1:taken;
   const line=done&&(r.result.outerLanding?.type==='line'||r.result.innerLanding?.type==='line');
@@ -36,7 +35,7 @@ export function createDoubleView(root,{audio=null,onFontStatus=()=>{}}={}){
   for(const side of ['outer','inner']){const text=done?landingText(r.result,side):'',el=breakdown.querySelector('[data-line="'+side+'"]');el.hidden=!text;el.textContent=text?(side==='outer'?'Outer':'Inner')+' line: '+text:'';}
   equation.textContent=done?`${formatDouble(r.result.outer)} ${operator(c.operation)} ${formatDouble(r.result.inner)} = ${formatDouble(r.result.result)}`:`— ${operator(c.operation)} — = —`;
   const length=equation.textContent.length;equation.style.fontSize=done&&length>36?'16px':done&&length>26?'20px':done&&length>16?'26px':'34px';
-  const total=root.querySelector('.dw-viewer-total');total.hidden=spins===1;total.textContent=`${r?.phase==='complete'?'FINAL':'VIEWER'} TOTAL · ${formatDouble(r?.total??0)}`;
+  const total=root.querySelector('.dw-viewer-total');total.hidden=!r;root.querySelector('.dw-result').dataset.final=String(r?.phase==='complete');total.textContent=`${r?.phase==='complete'?'FINAL':'VIEWER'} TOTAL · ${formatDouble(r?.total??0)}`;
   const alpha=r?.hideAt?Math.max(0,Math.min(1,1-(now-r.hideAt)/CLEAR_MS)):1;
   stage.style.opacity=visible?String(alpha):'0';if(audio&&visible&&alpha>0)audio.sync(r,now,a);
  }

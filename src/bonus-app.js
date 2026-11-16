@@ -1,3 +1,6 @@
+import {createTurnControls,addWheelSpin} from './wheel-turn-controls.js';
+import {createLineControls} from './wheel-line-controls.js';
+import {lineCallState,callNearestLine,undoLineCalls} from './wheel-line-call.js';
 import {applyStarter} from './wheel-starters.js';
 import {defaultBonus,validateBonus,startBonus,continueBonus,advanceBonus,publicBonus,formatBonus,resultEquation,CLEAR_MS} from './bonus-game.js';
 import {createBonusEditor} from './bonus-editor.js';
@@ -8,11 +11,15 @@ import {connectBonusControl,connectBonusDisplay} from './bonus-session.js';
 const $=s=>document.querySelector(s),mode=document.documentElement.dataset.mode,overlay=document.documentElement.classList.contains('dw-overlay'),live=document.documentElement.classList.contains('dw-live');
 const audio=createBonusAudio(),view=createBonusView($('#game'),{audio,onFontStatus:text=>{if($('#font-status'))$('#font-status').textContent=text;}}),editor=overlay?null:createBonusEditor($('#settings'));
 let config=defaultBonus(mode),id=new URLSearchParams(location.search).get('id')??config.id,store,session,snapshot,demo=null,pulse,observer,busy=false,ready=!live,sound=false,dirty=false,validDraft=true,connected=false,editorSignature='',controlStatus='Connecting live controls…';
+const turnControls=overlay?null:createTurnControls($('#play-status'),(action,payload)=>void command(action,payload));
+const lineControls=overlay?null:createLineControls($('#play-status'),(action,payload)=>void command(action,payload));
 function status(text,error=false){if(overlay)return;$('#play-status').textContent=text;$('#play-status').classList.toggle('error',error);}
 function received(next){const old=snapshot?.round;snapshot=next;if(live){if(!dirty){id=next.config.id;config=next.config;if(JSON.stringify(config)!==editorSignature){fields();list();links();}}if(old&&!next.round)$('#viewer').value='';if(next.round)$('#viewer').value=next.round.viewer;}audio.setVolume(next.volume);if(!overlay){$('#volume').value=String(next.volume);$('#volume-value').textContent=next.volume+'%';}render();}
 function render(){
  const snap=live||overlay?snapshot:{kind:'faith-bonus-wheel',version:1,mode,serverNow:Date.now(),config,volume:Number($('#volume').value),round:publicBonus(demo)};
  if(snap)view.update(live&&!snap.round&&dirty&&validDraft?{...snap,config}:snap,{show:!overlay||connected&&!!snap.round});if(overlay)return;
+ turnControls.update(snap?.round,snapshot?.metrics?.lastTurn,{disabled:busy||!ready});
+ lineControls.update(live?snapshot?.lineCalls:lineCallState(demo),busy||!ready);
  const r=snap?.round,spinning=['spinning','mirror','bonus'].includes(r?.phase),waiting=r?.phase==='ready',spins=r?.config.spins??config.spins??1,taken=r?.results?.length??0;
  $('#action').disabled=busy||!ready||!live&&!validDraft||live&&!r&&dirty||!!r&&!waiting;$('#action').textContent=spinning?(r.phase==='bonus'?'Bonus wheel…':r.phase==='mirror'?'Mirror bonus…':'Spinning together…'):waiting?`Spin ${taken+1} of ${spins}`:r?'All spins complete':live?`Spin both${spins>1?' · 1 of '+spins:''}`:'Spin practice';
  $('#reset').disabled=busy||!ready||live&&!!r&&r.phase!=='complete';$('#reset').textContent=live?'Next viewer':'Reset practice';$('#viewer').disabled=!!r||busy||!ready;$('#volume').disabled=live&&!ready;
@@ -24,9 +31,11 @@ function render(){
  if(live&&!dirty)list();
  if(!busy)status(live&&!ready?controlStatus:spinning?(r.phase==='bonus'?'Bonus unlocked · the third wheel spins automatically.':r.phase==='mirror'?'Mirror unlocked · both wheels re-spin with opposite pointers.':`Spin ${taken+1} of ${spins} · both wheels stop together.`):waiting?`Viewer total: ${formatBonus(r.total)} · ${spins-taken} ${spins-taken===1?'spin':'spins'} remaining.`:r?`Final viewer total: ${formatBonus(r.total)} · clears shortly`:(live?'Ready for the next viewer.':'Practice only. The stream is unaffected.'));
 }
-async function command(action){if(busy||!ready)return;busy=true;render();try{
+async function command(action,payload={}){if(busy||!ready)return;busy=true;render();try{
  if(sound)await audio.unlock();
- if(live)received(await session.action(action,{viewer:$('#viewer').value}));
+ if(live)received(await session.action(action,{viewer:$('#viewer').value,...payload}));
+ else if(action==='add-spin')addWheelSpin(demo);
+ else if(action==='line-call')callNearestLine(demo,payload.side);else if(action==='undo-lines')undoLineCalls(demo);
  else if(action==='spin'){config=readFields();if(demo?.phase==='ready')continueBonus(demo);else demo=startBonus(config,$('#viewer').value);}else demo=null;
  busy=false;render();
  }catch(e){busy=false;render();status(e.message,true);}}

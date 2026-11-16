@@ -26,7 +26,7 @@ test('PNG space survives save/reload in all six games and never moves a captured
 });
 test('every supported PNG size leaves real clearance around the inner and third rings',()=>{
  for(let diameter=60;diameter<=150;diameter++)for(const bonus of [false,true]){
-  const g=wheelGeometry({centrePng:{enabled:true,diameter}},bonus);
+  const g=wheelGeometry({centrePng:{enabled:true,diameter,bonusCover:false}},bonus);
   assert.ok(Math.abs(g.cutout*2*450/600-diameter)<1e-9);
   assert.ok(g.inner[0]>g.cutout);assert.ok(g.inner[1]<g.outer[0]);
   if(bonus){assert.ok(g.bonus[0]>=g.cutout+10);assert.ok(g.bonus[1]<g.inner[0]);assert.ok(g.bonus[1]-g.bonus[0]>=43);}
