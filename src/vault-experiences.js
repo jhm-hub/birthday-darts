@@ -9,11 +9,15 @@ export const VAULT_EXPERIENCES=Object.freeze([
  {id:'high',name:'High',min:1500,max:4000,opening:[300,600],cash:[75,100,150,250],special:[150,250,400,600],fallbackIndex:2},
  {id:'extreme',name:'Extreme',min:2500,max:10000,opening:[500,1000],cash:[100,200,300,500],special:[250,500,750,1000],fallbackIndex:2}
 ].map(Object.freeze));
+// An additional fixed range, not a replacement or migration of Faith's four
+// editable slots. It reuses the existing game and has no public presentation.
+export const VAULT_AZOME=Object.freeze({...VAULT_EXPERIENCES[3],id:'azome',name:'Azome',min:8000,max:10000});
+export const VAULT_START_CHOICES=Object.freeze([...VAULT_EXPERIENCES,VAULT_AZOME]);
 export function validateVaultExperience(value='custom'){
- if(value!=='custom'&&!VAULT_EXPERIENCES.some(x=>x.id===value))throw Error('Choose Low, Medium, High, Extreme or custom settings.');
+ if(value!=='custom'&&!VAULT_START_CHOICES.some(x=>x.id===value))throw Error('Choose a saved range game, Azome or custom settings.');
  return value;
 }
-export const vaultExperienceInfo=(id,ranges)=>{const e=VAULT_EXPERIENCES.find(x=>x.id===id);return e?{...e,...validateVaultGameRanges(ranges).find(r=>r.id===id)}:null;};
+export const vaultExperienceInfo=(id,ranges)=>{if(id===VAULT_AZOME.id)return {...VAULT_AZOME};const e=VAULT_EXPERIENCES.find(x=>x.id===id);return e?{...e,...validateVaultGameRanges(ranges).find(r=>r.id===id)}:null;};
 export function vaultExperiencePreset(widget,id='custom'){
  validateVaultExperience(id);const base=validateVault(widget),experience=vaultExperienceInfo(id);
  if(!experience)return base;

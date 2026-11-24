@@ -5,7 +5,7 @@ import {vaultLivePhase} from './vault-live-phase.js';
 import {connectVaultControl,connectVaultDisplay} from './vault-session.js';
 import {createVaultLiveAudio as createVaultAudio} from './vault-live-audio.js';
 import {bindGiftVolume} from './gift-mixer.js';
-import {VAULT_EXPERIENCES,vaultExperienceInfo,vaultExperienceRange} from './vault-experiences.js';
+import {VAULT_START_CHOICES,vaultExperienceInfo,vaultExperienceRange} from './vault-experiences.js';
 import {bindVaultGameRanges} from './vault-game-range-controls.js';
 import {bindVaultViewerRanges} from './vault-target-controls.js';
 import {findVaultViewerRange,vaultViewerRangeText} from './vault-targets.js';
@@ -22,7 +22,7 @@ function render(){
  const activeRule=snapshot?.control?.activeViewerRange,matched=activeRule??(!r?findVaultViewerRange(snapshot?.control?.viewerRanges,$('#viewer').value):null);
  ranges.update(snapshot?.control?.viewerRanges,connected&&!pending);
  gameRanges.update(snapshot?.control?.gameRanges,connected&&!pending&&!r,snapshot?.widget.id);
- $('#viewer-range-match').textContent=matched?'@'+matched.username+' · '+vaultViewerRangeText(matched)+' final total'+(r?' · locked for this round.':' · automatically replaces the preset for this viewer.') : '';
+ $('#viewer-range-match').textContent=matched?'@'+matched.username+' · '+vaultViewerRangeText(matched)+' final total'+(r?' · locked for this round.':' · applies to saved games; Azome always uses $8,000–$10,000.') : '';
  const chosen=activeRule?'viewer':snapshot?.control?.activeExperience??snapshot?.control?.experience??'custom',locked=!connected||pending||!!r;
  for(const button of document.querySelectorAll('[data-experience]')){button.disabled=locked;button.setAttribute('aria-pressed',String(button.dataset.experience===chosen));if(button.dataset.experience!=='custom'){const info=vaultExperienceInfo(button.dataset.experience,snapshot?.control?.gameRanges);button.querySelector('strong').textContent='Start '+info.name;button.querySelector('span').textContent=vaultExperienceRange(button.dataset.experience,snapshot?.control?.gameRanges);}}
  $('#finale-mode').value=snapshot?.control?.finaleMode??'original';$('#finale-mode').disabled=locked;$('#mode-status').textContent=r?'Mode locked for this round. End game & reset to switch.':'Saved automatically · applies to the next viewer.';
@@ -73,7 +73,7 @@ async function init(){if(overlay)session=connectVaultDisplay(receive,value=>{con
 if(!overlay){
  $('#finale-mode').onchange=async()=>{if(!connected||pending||snapshot?.round)return;const value=$('#finale-mode').value,operation=++operationVersion;pending=true;error='';render();try{const next=await session.setFinaleMode(value);if(operation===operationVersion)receive(next);}catch(e){if(operation===operationVersion)error=e.message;}finally{if(operation===operationVersion){pending=false;render();}}};
  $('#viewer').addEventListener('input',render);
- for(const e of VAULT_EXPERIENCES){const button=document.createElement('button');button.type='button';button.className='experience-card';button.dataset.experience=e.id;button.innerHTML='<strong>Start '+e.name+'</strong><span>'+vaultExperienceRange(e.id)+'</span>';button.setAttribute('aria-pressed','false');$('#experience-options').append(button);}
+ for(const e of VAULT_START_CHOICES){const button=document.createElement('button');button.type='button';button.className='experience-card';button.dataset.experience=e.id;button.innerHTML='<strong>Start '+e.name+'</strong><span>'+vaultExperienceRange(e.id)+'</span>';button.setAttribute('aria-pressed','false');$('#experience-options').append(button);}
  for(const button of document.querySelectorAll('[data-experience]'))button.onclick=async()=>{if(!connected||pending||snapshot?.round)return;if(button.dataset.experience!=='custom'){void startGame(button.dataset.experience);return;}pending=true;error='';notice='';const operation=++operationVersion;render();try{const next=await session.setExperience(button.dataset.experience);if(operation===operationVersion)receive(next);}catch(e){if(operation===operationVersion)error=e.message;}finally{if(operation===operationVersion){pending=false;render();}}};
  $('#live-hold')?.addEventListener('click',()=>void holdGame());
  $('#live-skip')?.addEventListener('click',()=>void finishAnimation());

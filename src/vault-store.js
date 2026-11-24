@@ -4,7 +4,7 @@ import {prepareVaultPlay} from './vault-playback.js';
 import {createSharedSettings} from './shared-settings.js';
 import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
 import {DEFAULT_VAULT,validateVault,unlockVault,advanceVault,cleanVaultRound,vaultTotal} from './vault-game.js';
-import {startVaultExperience,validateVaultExperience} from './vault-experiences.js';
+import {startVaultExperience,validateVaultExperience,VAULT_AZOME} from './vault-experiences.js';
 import {validateVaultViewerRanges,validateVaultViewerRange,normalizeVaultUsername,findVaultViewerRange,startVaultViewerRange} from './vault-targets.js';
 import {validateVaultGameRanges} from './vault-game-ranges.js';
 import {randomKey,validKey} from './protocol.js';
@@ -32,7 +32,7 @@ export function createVaultStore(storage,locks,sharedOptions={}){
   list:()=>read().widgets.map(settings),snapshot,controlSnapshot,roomKey:id=>find(read(),id).room,
   async save(input){const p=validateVault(input);if(input.experience!==undefined)p.experience=validateVaultExperience(input.experience);if(input.gameRanges!==undefined)p.gameRanges=validateVaultGameRanges(input.gameRanges);if(input.viewerRanges!==undefined)p.viewerRanges=validateVaultViewerRanges(input.viewerRanges);return lock(()=>{const s=read(),w=s.widgets.find(w=>w.id===p.id);if(w){if(input.finaleMode===undefined)p.finaleMode=w.finaleMode??'original';if(w.round&&p.finaleMode!==(w.finaleMode??'original'))throw Error('End the current game before changing its mode.');if(w.round&&p.experience!==undefined&&p.experience!==validateVaultExperience(w.experience))throw Error('Choose the experience before starting the next viewer.');if(w.round&&p.gameRanges&&JSON.stringify(p.gameRanges)!==JSON.stringify(validateVaultGameRanges(w.gameRanges)))throw Error('Edit game ranges before starting the next viewer.');Object.assign(w,p);}else{if(s.widgets.length>=30)throw Error('Save up to 30 vaults.');s.widgets.push({...p,room:randomKey(),round:null,lastResult:null});}write(s);return settings(find(s,p.id));});},
   async import(presets){return lock(()=>{const s=read();if(s.widgets.length+presets.length>30)throw Error('This backup would exceed 30 vaults.');for(const p of presets)s.widgets.push({...settings(p),room:randomKey(),round:null,lastResult:null});write(s);});},
-  async action(id,viewer,now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);settle(s,now);if(!w.round){const rule=findVaultViewerRange(validateVaultViewerRanges(w.viewerRanges),viewer);w.round=prepareVaultPlay(rule?startVaultViewerRange(w,rule,viewer,now):startVaultExperience(w,validateVaultExperience(w.experience),viewer,now));}else unlockVault(w.round,now);write(s);return snapshot(id,now);});},
+  async action(id,viewer,now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);settle(s,now);if(!w.round){const experience=validateVaultExperience(w.experience),rule=experience===VAULT_AZOME.id?null:findVaultViewerRange(validateVaultViewerRanges(w.viewerRanges),viewer);w.round=prepareVaultPlay(rule?startVaultViewerRange(w,rule,viewer,now):startVaultExperience(w,experience,viewer,now));}else unlockVault(w.round,now);write(s);return snapshot(id,now);});},
   // Cancel, rather than settle, an unfinished round. No new result is awarded.
   // Use the same transaction as unlock/advance so queued animations cannot restore it.
   async reset(id){return lock(()=>{const s=read(),w=find(s,id);w.round=null;write(s);return controlSnapshot(id);});},
@@ -51,9 +51,9 @@ export function createVaultStore(storage,locks,sharedOptions={}){
   async setFinaleMode(id,value,now=Date.now()){if(!['original','tokens'].includes(value))throw Error('Choose Original Vault or Token Machine.');return lock(()=>{const s=read();settle(s,now);const w=find(s,id);if(w.round)throw Error('End the current game before changing its mode.');w.finaleMode=value;write(s);return controlSnapshot(id,now);});},
   async setGameRanges(id,input,now=Date.now()){const ranges=validateVaultGameRanges(input);return lock(()=>{const s=read();settle(s,now);const w=find(s,id);if(w.round)throw Error('Edit game ranges before starting the next viewer.');w.gameRanges=ranges;write(s);return controlSnapshot(id,now);});},
   async startExperience(id,value,viewer='',now=Date.now()){
-   const experience=validateVaultExperience(value);if(experience==='custom')throw Error('Choose one of the four range games.');
+   const experience=validateVaultExperience(value);if(experience==='custom')throw Error('Choose a saved range game or Azome.');
    return lock(()=>{const s=read();settle(s,now);const w=find(s,id);if(w.round)throw Error('Finish the current game before starting another.');
-    const rule=findVaultViewerRange(validateVaultViewerRanges(w.viewerRanges),viewer);
+    const rule=experience===VAULT_AZOME.id?null:findVaultViewerRange(validateVaultViewerRanges(w.viewerRanges),viewer);
     const round=rule?startVaultViewerRange(w,rule,viewer,now):startVaultExperience(w,experience,viewer,now);
     w.experience=experience;w.round=prepareVaultPlay(round);write(s);return controlSnapshot(id,now);
    });

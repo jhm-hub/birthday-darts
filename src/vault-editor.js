@@ -3,7 +3,7 @@ import {finishVaultAnimation} from './vault-fast-forward.js';
 import {prepareVaultPlay} from './vault-playback.js';
 import {vaultStore,exportVaultSettings,importVaultSettings} from './vault-store.js';
 import {DEFAULT_VAULT,validateVault,unlockVault,advanceVault,vaultTotal,vaultBonuses,vaultBonusDue,vaultCashPrizes,money,sampleVaultFinale} from './vault-game.js';
-import {VAULT_EXPERIENCES,vaultExperienceInfo,vaultExperienceRange,vaultExperiencePreset,startVaultExperience} from './vault-experiences.js';
+import {VAULT_START_CHOICES,vaultExperienceInfo,vaultExperienceRange,vaultExperiencePreset,startVaultExperience} from './vault-experiences.js';
 import {validateVaultGameRanges} from './vault-game-ranges.js';
 import {bindVaultGameRanges} from './vault-game-range-controls.js';
 import {findVaultViewerRange,startVaultViewerRange,startVaultTotalRange,vaultViewerRangeText} from './vault-targets.js';
@@ -17,15 +17,15 @@ const $=s=>document.querySelector(s),audio=createVaultAudio(),view=createVaultVi
 bindGiftVolume($('#vault-mixer'),audio,()=>{});
 let savedGameRanges=validateVaultGameRanges();
 let widgets=[],selected=null,draft=null,draftError='',dirty=false,saving=false,demo=null,demoExample=false,auto=false,nextAuto=0,timer,demoCashKey='';
-for(const e of VAULT_EXPERIENCES)$('#demo-experience').add(new Option(e.name+' · '+vaultExperienceRange(e.id),e.id));
+for(const e of VAULT_START_CHOICES)$('#demo-experience').add(new Option(e.name+' · '+vaultExperienceRange(e.id),e.id));
 const gameRanges=bindVaultGameRanges($('#game-ranges'),{embedded:true,onChange:changed});
-const rangeButtons=VAULT_EXPERIENCES.map(e=>{
+const rangeButtons=VAULT_START_CHOICES.map(e=>{
  const b=document.createElement('button');b.type='button';b.className='experience-card';b.dataset.experience=e.id;b.innerHTML='<strong></strong><span></span>';
  b.onclick=()=>{if(draftError||!draft)return;resetDemo(false);$('#demo-experience').value=e.id;pick();};$('#demo-ranges').append(b);return b;
 });
 function renderRangeChoices(){
  const ranges=draft?.gameRanges??savedGameRanges;
- for(const e of VAULT_EXPERIENCES){const option=[...$('#demo-experience').options].find(o=>o.value===e.id);option.textContent=vaultExperienceInfo(e.id,ranges).name+' · '+vaultExperienceRange(e.id,ranges);}
+ for(const e of VAULT_START_CHOICES){const option=[...$('#demo-experience').options].find(o=>o.value===e.id);option.textContent=vaultExperienceInfo(e.id,ranges).name+' · '+vaultExperienceRange(e.id,ranges);}
  for(const b of rangeButtons){const name=vaultExperienceInfo(b.dataset.experience,ranges).name,range=vaultExperienceRange(b.dataset.experience,ranges);
   if(b.firstElementChild.textContent!==name)b.firstElementChild.textContent=name;
   if(b.lastElementChild.textContent!==range)b.lastElementChild.textContent=range;
@@ -65,11 +65,11 @@ function renderDemoCash(){
  prizes.forEach((o,i)=>{if(o.weight>0)select.add(new Option(money(Math.round(o.value*100)),String(i)));});
  $('#demo-cash-label').textContent=special?'Next demo cash · special vault':'Next demo cash · starting chamber';
 }
-function demoRule(){return demoExample?null:demo?(demo.privateViewerRange??null):findVaultViewerRange(vaultStore.list().find(w=>w.id===selected)?.viewerRanges,$('#demo-viewer').value);}
+function demoRule(){return demoExample||$('#demo-experience').value==='azome'?null:demo?(demo.privateViewerRange??null):findVaultViewerRange(vaultStore.list().find(w=>w.id===selected)?.viewerRanges,$('#demo-viewer').value);}
 function render(){
  renderRangeChoices();renderDemoCash();
  const experience=$('#demo-experience').value,rule=demoRule(),presetMode=demoExample||!!rule||experience!=='custom';
- $('#demo-viewer-rule').textContent=rule?'@'+rule.username+' · '+vaultViewerRangeText(rule)+' final total. This username range takes priority.':'Try a saved username to preview their range. Manage names in Faith’s controls.';
+ $('#demo-viewer-rule').textContent=rule?'@'+rule.username+' · '+vaultViewerRangeText(rule)+' final total. This username range takes priority.':experience==='azome'?'Azome uses $8,000–$10,000 for every viewer. Your saved username ranges are kept for other games.':'Try a saved username to preview their range. Manage names in Faith’s controls.';
  $('#demo-experience-note').textContent=draft?.finaleMode==='tokens'?'Token Machine mode · cash is banked, then earned spins multiply the whole total. Change modes in live controls. '+vaultExperienceRange(experience,draft.gameRanges)+' final total.':demoExample?'Sample round · small cash prizes, multipliers and bonus vaults. Your saved settings stay the same.':rule?'This sample uses the saved username range, including all bonuses.':presetMode?vaultExperienceRange(experience,demo?.privateExperience?(draft?.gameRanges??savedGameRanges).map(r=>r.id===experience?{...r,min:demo.privateExperience.min,max:demo.privateExperience.max}:r):(draft?.gameRanges??savedGameRanges))+' final total, including bonuses. This preview uses the settings you’re editing.':'Uses the cash amounts and odds in this editor.';
  $('#demo-luck-run').disabled=!!draftError||!draft;$('#demo-payoff').disabled=!!draftError||!draft||draft.finaleMode==='tokens';
  $('#demo-cash').disabled=$('#demo-bonus').disabled=$('#demo-finale').disabled=presetMode;
