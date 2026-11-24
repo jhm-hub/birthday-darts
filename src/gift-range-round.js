@@ -1,6 +1,6 @@
 import {startLongGiftRange} from './gift-long-range.js';
 import {startGiftRound,eligibleGiftOutcomes,unwrapGift,advanceGiftRound,availableGiftCells,giftTotal} from './gift-game.js';
-import {validateGiftRanges} from './gift-ranges.js';
+import {validateGiftRanges,GIFT_90_150} from './gift-ranges.js';
 import {chooseOutcome} from './game.js';
 import {randomInt} from './random.js';
 import {lowerWeightedRange} from './range-weighting.js';
@@ -9,10 +9,12 @@ import {lowerWeightedRange} from './range-weighting.js';
 // cash picks; board bonuses and stacked multipliers run through the usual engine.
 // No final clamp or hidden deduction is needed. The plan stays in local storage.
 export function startGiftRange(widget,rangeId,viewer='',now=Date.now(),draw=randomInt){
- const range=validateGiftRanges(widget.gameRanges).find(r=>r.id===rangeId);
+ const fixed=rangeId===GIFT_90_150.id,range=fixed?GIFT_90_150:validateGiftRanges(widget.gameRanges).find(r=>r.id===rangeId);
  if(!range||range.min===null)throw Error('Set and save this game’s minimum and maximum first.');
  const pick=n=>{const v=draw(n);if(!Number.isInteger(v)||v<0||v>=n)throw Error('Invalid range draw.');return v;};
- if(range.id!=='range1')return startLongGiftRange(widget,range,viewer,now,pick);
+ // The fixed mode uses the regular board, picks, odds and bonuses. Only its
+ // final-total interval differs; no longer-round or presentation variant.
+ if(!fixed&&range.id!=='range1')return startLongGiftRange(widget,range,viewer,now,pick);
  const min=range.min*100,max=range.max*100,round=startGiftRound(widget,viewer,now),trial=structuredClone(round),plan=[];
  let cashCount=0,time=now;
  while(trial.remaining){

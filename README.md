@@ -162,6 +162,11 @@ the pink presents. Colors stay fixed through picks, bonus expansions and reloads
 the controller and OBS display always use the same layout. Colors do not affect prizes.
 The gifts match the birthday game’s pixel style: stepped outlines, pastel wrappers,
 satin ribbon highlights, separate lids and paper rustle / celesta sounds.
+The additional private **90-150** button guarantees a **$90–$150 final total**, after
+all multipliers and bonus picks. It uses the regular saved board, pick limits and
+bonus settings, with the same visuals, pacing, sounds and amount-based celebrations.
+The mode name and limits never appear on the stream display. It is available in
+both live controls and the editor demo, and does not replace or rename saved ranges.
 The grid and final-total plaque share one 420 × 460 frame, including expanded
 boards. There is no character in this game, and no character artwork to download.
 

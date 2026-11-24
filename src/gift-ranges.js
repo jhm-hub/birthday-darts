@@ -1,4 +1,6 @@
 export const GIFT_RANGE_IDS=Object.freeze(['range1','range2','range3','range4']);
+// An additional private start option; never replaces an existing saved range.
+export const GIFT_90_150=Object.freeze({id:'mode-90-150',name:'90-150',min:90,max:150});
 export const emptyGiftRanges=()=>GIFT_RANGE_IDS.map((id,i)=>({id,name:'Game '+(i+1),min:null,max:null}));
 export const defaultGiftRanges=()=>emptyGiftRanges().map((r,i)=>({...r,min:[10,100,1000,2500][i],max:[100,1000,2500,10000][i]}));
 export function validateGiftRanges(input=defaultGiftRanges()){

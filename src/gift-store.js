@@ -49,7 +49,7 @@ export function createGiftStore(storage,locks,sharedOptions={}){
   async endRound(id,now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);if(w.round)w.reset=createGiftReset(w.round,now);w.round=null;write(s);return snapshot(id,now);});},
   // Keep the classic API compatible with older saved widgets; current controls
   // require a range button before unwrapping whenever configured ranges appear.
-  async unwrap(id,viewer,cell=null,now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);settle(s,now);if(!w.round){if(w.gameRanges!==undefined&&configuredGiftRanges(w).length)throw Error('Choose one of the four game buttons to start this viewer’s round.');w.round=prepareGiftPlay(startGiftRound(w,viewer,now));delete w.reset;}unwrapGift(w.round,now,{cell});write(s);return snapshot(id,now);});},
+  async unwrap(id,viewer,cell=null,now=Date.now()){return lock(()=>{const s=read(),w=find(s,id);settle(s,now);if(!w.round){if(w.gameRanges!==undefined&&configuredGiftRanges(w).length)throw Error('Choose one of the game buttons to start this viewer’s round.');w.round=prepareGiftPlay(startGiftRound(w,viewer,now));delete w.reset;}unwrapGift(w.round,now,{cell});write(s);return snapshot(id,now);});},
   async advance(now=Date.now()){return lock(()=>{const s=read();if(settle(s,now))write(s);});},
   subscribe(fn){listeners.add(fn);return ()=>listeners.delete(fn);},
   storageChanged(key){shared.changed(key,()=>{for(const fn of listeners)fn();});}

@@ -1,4 +1,4 @@
-import {validateGiftRanges,giftRangeText} from './gift-ranges.js';
+import {validateGiftRanges,giftRangeText,GIFT_90_150} from './gift-ranges.js';
 
 export function bindGiftRangeFields(container,onChange){
  function set(ranges){
@@ -23,7 +23,7 @@ export function bindGiftRangeFields(container,onChange){
 }
 
 export function renderGiftRangeButtons(container,ranges,{disabled=false,alwaysEnabled=false,activeId=null,onStart}){
- const clean=validateGiftRanges(ranges),signature=JSON.stringify(clean);
+ const clean=[...validateGiftRanges(ranges),GIFT_90_150],signature=JSON.stringify(clean);
  if(container.dataset.ranges!==signature){
   container.dataset.ranges=signature;container.replaceChildren();
   for(const r of clean){
