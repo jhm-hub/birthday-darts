@@ -1,6 +1,6 @@
 import {GAMES,savedSummary} from './home-catalog.js';
 import {readSharedConnection,sharedURL,sharedStorageKey} from './shared-settings-connection.js';
-const $=s=>document.querySelector(s),frames=new Map(),states=new Map(),icons={gifts:'✦',vault:'♛',darts:'➶',pinata:'♧',brokie:'◉','double-add':'⊕','double-multiply':'⊗','bonus-add':'✧','bonus-multiply':'✧','mirror-add':'↔','mirror-multiply':'↔','birthday-scam':'✿',scam:'♠'};
+const $=s=>document.querySelector(s),frames=new Map(),states=new Map(),icons={roulette:'◉',gifts:'✦',vault:'♛',darts:'➶',pinata:'♧',brokie:'◉','double-add':'⊕','double-multiply':'⊗','bonus-add':'✧','bonus-multiply':'✧','mirror-add':'↔','mirror-multiply':'↔','birthday-scam':'✿',scam:'♠'};
 let connection,game='gifts',view='play';
 try{connection=readSharedConnection();if(!connection)throw Error('Open the complete private editing link to use Faith’s shared game desk.');}catch(e){$('#desk-error').hidden=false;$('#desk-error').textContent=e.message;$('#desk-save').textContent='Private link needed';$('#copy-desk').disabled=true;}
 const setStatus=(state,message)=>{const el=$('#desk-save');el.dataset.state=state;el.textContent=message;};
@@ -8,7 +8,7 @@ function embed(frame,item,mode){
  const win=frame.contentWindow,doc=win.document;if(!doc.body)return false;
  const ready=item.id==='birthday-scam'?'.saved-versions select option':item.id==='scam'?(mode==='play'?'select[aria-label="Saved version"] option':'.settings-form input'):mode==='play'?(item.id==='gifts'||item.id==='vault'?'#live-display-url':'#display-url'):(item.id==='darts'?'#widget-name':item.id==='brokie'?'#wheel-name':'#game-name');
  if(['error','conflict'].includes(win.__faithSharedSettingsStatus?.state)){frame.dataset.loaded='true';if(game===item.id&&view===mode)setStatus(win.__faithSharedSettingsStatus.state,win.__faithSharedSettingsStatus.message);return false;}
- const control=doc.querySelector(ready);if(!control||win.__faithSharedSettingsStatus?.state!=='ready'||'value' in control&&!control.value)return false;
+ const control=doc.querySelector(ready);if(!control||(item.local?!win.__faithRouletteReady:win.__faithSharedSettingsStatus?.state!=='ready')||'value' in control&&!control.value)return false;
  doc.documentElement.classList.add('faith-desk-embedded');doc.documentElement.dataset.deskGame=item.id;doc.documentElement.dataset.deskView=mode;
  const style=doc.createElement('link');style.rel='stylesheet';style.href=new URL('./desk-embedded.css',location.href).href;style.onload=()=>{frame.dataset.loaded='true';};doc.head.append(style);
  const advanced=(selector,label)=>{const nodes=[...doc.querySelectorAll(selector)].filter(n=>!n.closest('.desk-advanced'));if(!nodes.length)return;const details=doc.createElement('details');details.className='desk-advanced';const summary=doc.createElement('summary');summary.textContent=label;details.append(summary);nodes[0].before(details);for(const node of nodes)details.append(node);};
@@ -30,7 +30,8 @@ function embed(frame,item,mode){
  }
  const frameKey=item.id+':'+mode;
  const show=(state,message)=>{states.set(frameKey,{state,message});if(game===item.id&&view===mode)setStatus(state,message);};
- const status=()=>{const s=win.__faithSharedSettingsStatus;if(s)show(s.state,s.state==='ready'?'Saved to your private link':s.state==='saving'?'Saving changes…':s.state==='loading'?'Loading shared settings…':s.message);};
+ const status=()=>{if(item.local){show('ready','Saved in this browser');return;}const s=win.__faithSharedSettingsStatus;if(s)show(s.state,s.state==='ready'?'Saved to your private link':s.state==='saving'?'Saving changes…':s.state==='loading'?'Loading shared settings…':s.message);};
+ win.addEventListener('roulette-settings-status',event=>{if(item.local)show(event.detail.state,event.detail.message);});
  win.addEventListener('shared-settings-dirty',()=>show('dirty','Unsaved changes'));
  win.addEventListener('shared-settings-clean',status);
  win.addEventListener('shared-settings-status',status);status();
@@ -43,6 +44,7 @@ function select(id,mode=view){
  $('#desk-title').textContent=item.name;$('#desk-category').textContent=item.category==='wheels'?'FAITH’S WHEELS':'BIRTHDAY GAMES';
  $('#tab-play').textContent=item.id==='gifts'?'Play live':'Play';
  $('#desk-note').textContent=mode==='settings'?(item.id==='gifts'?'Settings includes a private demo. Use Play live to show Presents on stream.':'Edit, save, and reuse. Changes apply to the next viewer.'):item.id==='gifts'?'Enter a viewer, choose a range, then open one present at a time.':'Enter a viewer and play. These controls stay off stream.';
+ if(item.local)$('#desk-note').textContent='Roulette settings stay in this browser. Its private controls run the connected OBS display.';
  for(const b of $('#desk-games').children)b.setAttribute('aria-current',String(b.dataset.game===id));for(const v of ['play','settings'])$('#tab-'+v).setAttribute('aria-selected',String(mode===v));
  const key=id+':'+mode;for(const [k,f]of frames)f.hidden=k!==key;
  if(!frames.has(key)){const frame=document.createElement('iframe');frame.className='game-frame';frame.dataset.loaded='false';frame.title=item.name+' · '+(mode==='play'?'private controls':'settings');frame.allow='autoplay; clipboard-write';frame.referrerPolicy='no-referrer';const url=new URL(mode==='play'?item.controls:item.editor,location.href);if(mode==='settings'){const summary=savedSummary({getItem:k=>localStorage.getItem(sharedStorageKey(k,connection))??localStorage.getItem(k)},item);if(summary.id)url.searchParams.set('id',summary.id);}url.searchParams.set('desk','1');frame.src=sharedURL(url.href,connection);frame.onload=()=>{let tries=0;const timer=setInterval(()=>{if(embed(frame,item,mode)||++tries>450)clearInterval(timer);},100);};frames.set(key,frame);$('#desk-frames').append(frame);setStatus('loading','Loading '+item.name+'…');}else{const s=states.get(key);setStatus(s?.state??'loading',s?.message??'Loading shared settings…');}

@@ -18,6 +18,7 @@ function doubleArt(id){
 }
 function art(id){
  if(id.startsWith('double-')||id.startsWith('bonus-')||id.startsWith('mirror-'))return doubleArt(id);
+ if(id==='roulette')return wheelArt(id).replace('</svg>','<circle cx="80" cy="22" r="7" fill="#fff9df" stroke="#9e7a4d" stroke-width="2"/></svg>');
  if(id==='vault')return '<img src="./assets/vault/crown-v3-closed.png" width="1254" height="1254" alt="" fetchpriority="high">';
  if(id==='pinata')return '<img src="./assets/pinata/birthday-royalty-v4.png" width="1280" height="1280" alt="" loading="lazy">';
  if(id==='gifts')return '<div class="gift-cluster">'+[1,0,2].map(i=>activeGiftSVG(i)).join('')+'</div>';

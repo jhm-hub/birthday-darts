@@ -1,4 +1,5 @@
 export const GAMES = [
+ {id:'roulette',name:'Velvet Roulette',category:'wheels',tag:'One spin. One amount.',description:'Follow the ball around the velvet wheel and into its final pocket.',detail:'Whole dollars · private OBS display',editor:'./roulette.html',controls:'./roulette-play.html',key:'faith-velvet-roulette-v1',local:true},
  {id:'vault',name:'Crown Vault',category:'prizes',tag:'Birthday Bankroll',description:'Unlock the chambers. Build the bankroll. Finish with a royal reveal.',detail:'Cash · multipliers · bonus vaults',editor:'./vault.html',controls:'./vault-play.html',key:'faith-birthday-vault-v1'},
  {id:'gifts',name:'Presents',category:'prizes',tag:'Candy Confetti',description:'Pick a present and unwrap cash, multipliers and a bigger board.',detail:'One click per present',editor:'./gifts.html',controls:'./gift-play.html',key:'faith-gift-pile-v1'},
  {id:'darts',name:'Darts',category:'prizes',tag:'Balloons & classic',description:'Faith takes the shot. Balloons pop, bonuses land and the total climbs.',detail:'One click per dart',editor:'./darts.html',controls:'./play.html',key:'birthday-darts-library-v1'},
@@ -21,7 +22,7 @@ export function savedSummary(storage,game){
    const legacy=game.legacy&&(storage.getItem(game.legacy)||(game.id==='scam'&&storage.getItem('faith-scam-wheel/native/v1:/scam-wheel/scam.html')));
    return legacy?{count:1,name:'My saved settings'}:{count:0};
   }
-  const data=JSON.parse(text),items=game.id==='brokie'?data.wheels?.map(w=>w.config):game.legacy?data.versions:data.widgets;
+  const data=JSON.parse(text),items=game.id==='roulette'?(data.config?[data.config]:null):game.id==='brokie'?data.wheels?.map(w=>w.config):game.legacy?data.versions:data.widgets;
   if(!Array.isArray(items)||!items.length||items.some(w=>!w||typeof w.id!=='string'||typeof w.name!=='string'))return {unavailable:true};
   const selected=items.find(w=>w.id===(data.stream?.activeId??data.selected))??items[0];
   return {count:items.length,name:selected.name,id:game.legacy?undefined:selected.id};

@@ -1360,6 +1360,8 @@ uses the exact frozen bundle/styles from `5133868`, also tagged
 Vault remain unchanged. QA/source archive: `Vault-Token-Jackpot-QA-2026-11-08`.
 
 
-## Community game demos — November 26
+## Velvet Roulette — November 26
 
-[Community Lab](https://jhm-hub.github.io/birthday-darts/community-lab.html) adds Orbit Lock, Crown Drop, Vault Circuit and Velvet Roulette. All support multiple participants and entries, whole-dollar results, separate simulated entry fees, and 24–28 second default rounds. Game results average about $33 per entry ($30 for roulette); individual results may be higher or lower. These are browser-local demos with manual entry, separate from live games. See [COMMUNITY-LAB.md](COMMUNITY-LAB.md) for concepts, rules and exact outcome lists.
+[Practice and settings](https://jhm-hub.github.io/birthday-darts/roulette.html) · [Live controls](https://jhm-hub.github.io/birthday-darts/roulette-play.html)
+
+One spin, one whole-dollar amount. Standalone roulette replaces the community demo collection at Joshua’s request. Save pocket amounts and timing in this browser, then use the persistent transparent OBS display from Live controls. Default 26-second spins average about $33. No color bets, multipliers, rosters or entry fees. See [ROULETTE.md](ROULETTE.md) for rules and setup.
