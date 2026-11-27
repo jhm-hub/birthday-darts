@@ -11,7 +11,7 @@ export const swingSide=index=>Math.abs(Math.trunc(index??0))%2===0?1:-1;
 
 function tokenFlight(after){
  const travel=smooth((after-430)/(extraCatch-430));
- return {travel,x:210-156*travel-24*Math.sin(travel*Math.PI),y:244+188*travel-46*Math.sin(travel*Math.PI)};
+ return {travel,x:210-57.5*travel-12*Math.sin(travel*Math.PI),y:244+188*travel-46*Math.sin(travel*Math.PI)};
 }
 // The original prize and authoritative hit clock drive every accent. No new
 // draws, timers or delayed state updates are introduced by the celebration.
@@ -83,7 +83,7 @@ export function bonusParticlePose(i,kind,after,quiet=false){
   const row=Math.floor((i-28)/2);start=extraCatch+row*7;life=190;
   const p=out((after-start)/life);
   const theta=(15+row*22)*Math.PI/180,radius=12+8*p;
-  cx=54+side*Math.cos(theta)*radius;cy=432-Math.sin(theta)*radius;angle=side*(row*15+p*80);
+  cx=152.5+side*Math.cos(theta)*radius;cy=432-Math.sin(theta)*radius;angle=side*(row*15+p*80);
  }
  const t=after-start;if(t<=0||t>=life)return off;
  const opacity=smooth(t/32)*(1-smooth((t/life-.58)/.42));

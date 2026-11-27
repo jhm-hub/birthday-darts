@@ -16,7 +16,7 @@ test('reward accents meet the cash chord, multiplier lift and payoff, and Encore
  const at=rewardBeat(MULTIPLIER_RESOLVE_SECONDS),m=bonusPose('multiply',at);
  assert.ok(m.bankScale>bonusPose('multiply',at-60).bankScale&&m.bankScale>bonusPose('multiply',at+60).bankScale);
  const e=bonusPose('extra',rewardBeat(ENCORE_CATCH_SECONDS));
- assert.equal(e.tokenX,54);assert.equal(e.tokenY,432);assert.equal(e.tokenAngle,0);assert.ok(e.countScale>1.13);
+ assert.equal(e.tokenX,152.5);assert.equal(e.tokenY,432);assert.equal(e.tokenAngle,0);assert.ok(e.countScale>1.13);
  for(const [kind,seconds] of [['cash',CASH_RESOLVE_SECONDS],['multiply',MULTIPLIER_RESOLVE_SECONDS],['extra',ENCORE_CATCH_SECONDS]])assert.ok(rewardLabelPose(kind,rewardBeat(seconds)).scale>1.04);
 });
 test('bonus art and rotated traveling token stay inside the transparent stage and clear the labels',()=>{

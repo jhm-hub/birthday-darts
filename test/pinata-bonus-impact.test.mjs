@@ -48,8 +48,8 @@ test('multiplier and Encore celebrations have distinct emphasis and clear before
  assert.equal(bonusPose('multiply',149).opacity,0);
  const mult=bonusPose('multiply',650),extra=bonusPose('extra',650);
  assert.ok(mult.opacity>0);assert.ok(mult.bankScale>1);assert.equal(mult.tokenOpacity,0);
- assert.ok(extra.tokenOpacity>0);assert.equal(extra.bankScale,1);assert.ok(extra.tokenX>54&&extra.tokenX<210);assert.ok(extra.tokenY>244&&extra.tokenY<432);
- const arrived=bonusPose('extra',830);assert.equal(arrived.tokenX,54);assert.equal(arrived.tokenY,432);assert.ok(arrived.countScale>1);
+ assert.ok(extra.tokenOpacity>0);assert.equal(extra.bankScale,1);assert.ok(extra.tokenX>152.5&&extra.tokenX<210);assert.ok(extra.tokenY>244&&extra.tokenY<432);
+ const arrived=bonusPose('extra',830);assert.equal(arrived.tokenX,152.5);assert.equal(arrived.tokenY,432);assert.ok(arrived.countScale>1);
  for(const kind of ['multiply','extra']){const done=bonusPose(kind,SWING_MS-HIT_MS+40);assert.equal(done.opacity,0);assert.equal(done.tokenOpacity,0);assert.equal(done.bankScale,1);}
 });
 test('bonus confetti stays compact and Encore catch sparks settle above the footer counter',()=>{
