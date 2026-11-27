@@ -1,6 +1,6 @@
-import {randomInt} from './random.js';
 import {lowerWeightedRange} from './range-weighting.js';
-import {chooseOutcome} from './game.js';
+import {randomInt} from './random.js';
+import {selectPinataOutcome} from './pinata-bonus-rules.js';
 import {startPinata,swingPinata,advancePinata,pinataTotal} from './pinata-game.js';
 
 export const normalizePinataUsername=value=>typeof value==='string'?value.trim().replace(/^@/,'').toLowerCase():'';
@@ -30,22 +30,29 @@ export function startPinataTotalRange(widget,input,viewer='',now=Date.now(),draw
  const rule=validatePinataTotalRange(input);
  const pick=bound=>{const n=draw(bound);if(!Number.isInteger(n)||n<0||n>=bound)throw Error('Invalid prize-range draw.');return n;};
  const fresh=startPinata(widget,viewer.trim().replace(/^@/,''),now),target=lowerWeightedRange(rule.min,rule.max,pick)*100;
- let plan,multiplier;
- for(let attempt=0;attempt<48&&!plan;attempt++){
-  const candidate=[];let left=fresh.remaining,allocated=fresh.allocated,m=1;
-  while(left>0){
-   const rewards=fresh.preset.outcomes.map(o=>({...o,weight:(!candidate.length&&o.kind!=='cash')||(o.kind==='extra'&&allocated>=fresh.preset.maxSwings)?0:o.weight}));
-   const o=rewards[chooseOutcome(rewards,pick)],prize={kind:o.kind,value:o.value};left--;
-   if(o.kind==='extra'){prize.granted=Math.min(o.value,fresh.preset.maxSwings-allocated);left+=prize.granted;allocated+=prize.granted;}
-   if(o.kind==='multiply')m*=o.value;
-   candidate.push(prize);
-  }
-  const cashCount=candidate.filter(p=>p.kind==='cash').length;
-  if(Number.isSafeInteger(m)&&target%m===0&&target/m>=cashCount){plan=candidate;multiplier=m;}
+ const plan=[];let left=fresh.remaining,allocated=fresh.allocated,multiplier=1,cashCount=0;
+ while(left>0){
+  // Reserve one cent for every remaining cash hit. Any selected prefix can
+  // therefore finish truthfully, without rejecting bonuses or redrawing totals.
+  const rewards=fresh.preset.outcomes.map(o=>{
+   let eligible=!!plan.length||o.kind==='cash';
+   if(o.kind==='multiply'){
+    const next=multiplier*o.value;
+    eligible=eligible&&Number.isSafeInteger(next)&&target%next===0&&target/next>=cashCount+left-1;
+   }
+   if(o.kind==='extra'){
+    const granted=Math.min(o.value,fresh.preset.maxSwings-allocated);
+    eligible=eligible&&granted>0&&target/multiplier>=cashCount+left-1+granted;
+   }
+   return {...o,weight:eligible?o.weight:0};
+  });
+  const index=selectPinataOutcome(rewards,{rules:fresh.preset.bonusRules,hitCount:plan.length,hasBonus:plan.some(p=>p.kind!=='cash'),startingSwings:fresh.preset.swings},pick);
+  const o=rewards[index],prize={kind:o.kind,value:o.value};left--;
+  if(o.kind==='extra'){prize.granted=Math.min(o.value,fresh.preset.maxSwings-allocated);left+=prize.granted;allocated+=prize.granted;}
+  if(o.kind==='multiply')multiplier*=o.value;
+  if(o.kind==='cash')cashCount++;
+  plan.push(prize);
  }
- // A bounded cash-only fallback also supports very small ranges and extreme
- // multiplier settings, without an unbounded search or a stalled live game.
- if(!plan){plan=Array.from({length:fresh.preset.swings},()=>({kind:'cash',value:1}));multiplier=1;}
  const count=plan.filter(p=>p.kind==='cash').length,budget=target/multiplier;
  const unit=budget%100===0&&budget>=count*100?100:1,units=budget/unit;
  const weights=Array.from({length:count},()=>60+pick(121)),sum=weights.reduce((a,b)=>a+b,0);

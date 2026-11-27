@@ -51,15 +51,15 @@ test('concurrent launch buttons start exactly one game and explicit range overri
 test('schema 2 games migrate intact, while invalid new range settings never overwrite storage',async()=>{
  const f=fixture(),id=DEFAULT_PINATA.id;await f.store.init();await f.store.setViewerRange(id,{username:'vip',min:10,max:10});await f.store.swing(id,'vip',Date.now());
  const old=JSON.parse(f.data.get(PINATA_KEY));old.schema=2;f.data.set(PINATA_KEY,JSON.stringify(old));await f.store.init();const next=JSON.parse(f.data.get(PINATA_KEY));
- assert.equal(next.schema,3);assert.deepEqual(next.widgets[0].round,old.widgets[0].round);assert.equal(next.widgets[0].room,old.widgets[0].room);
+ assert.equal(next.schema,4);assert.deepEqual(next.widgets[0].round,old.widgets[0].round);assert.equal(next.widgets[0].room,old.widgets[0].room);
  next.widgets[0].gameRanges=[];const bad=JSON.stringify(next);f.data.set(PINATA_KEY,bad);await assert.rejects(f.store.init(),/Nothing has been overwritten/);assert.equal(f.data.get(PINATA_KEY),bad);
 });
 test('actual control publisher keeps all range settings and future prizes off the transparent display',async()=>{
  const f=fixture();await f.store.init();const wire=[];let room;
  const source=(await readFile(new URL('../src/pinata-session.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replaceAll('export ','');
  const connect=new Function('pinataStore','connectRoom','validKey','navigator','window','location','setInterval','clearInterval','setTimeout','clearTimeout',source+'\nreturn connectPinataControl;')(f.store,o=>{room=o;return {send:m=>wire.push(structuredClone(m)),dispose(){}};},()=>true,{locks:{request:(_key,_options,fn)=>fn({})}},{addEventListener(){}},{href:'https://example.test/pinata-play.html'},()=>1,()=>{},()=>1,()=>{});
- const session=await connect(DEFAULT_PINATA.id,()=>{},()=>{});await assert.rejects(session.startGameRange('range-1','VIP'),/active control/);session.start();await new Promise(setImmediate);await session.setGameRanges(settings());const result=await session.startGameRange('range-4','VIP');room.ready();
+ const session=await connect(DEFAULT_PINATA.id,()=>{},()=>{});await assert.rejects(session.startGameRange('range-1','VIP'),/active control/);session.start();await new Promise(setImmediate);await session.setGameRanges(settings());await session.setBonusSettings({bonusRules:{chance:75,guaranteeEarly:true},maxSwings:10});const result=await session.startGameRange('range-4','VIP');room.ready();
  assert.equal(result.control.activeGameRange.id,'range-4');assert.ok(wire.length>=3);
- for(const packet of wire){const json=JSON.stringify(packet);for(const key of ['privateTotalRange','privateGameRange','prizePlan','gameRanges','activeGameRange'])assert.ok(!json.includes(key),key);assert.equal(packet.snapshot.control,undefined);}
+ for(const packet of wire){const json=JSON.stringify(packet);for(const key of ['privateTotalRange','privateGameRange','prizePlan','gameRanges','activeGameRange','bonusRules','bonusSettings'])assert.ok(!json.includes(key),key);assert.equal(packet.snapshot.control,undefined);}
  const publicRound=cleanPinata(JSON.parse(f.data.get(PINATA_KEY)).widgets[0].round);assert.equal(publicRound.privateTotalRange,undefined);assert.equal(publicRound.privateGameRange,undefined);session.dispose();
 });

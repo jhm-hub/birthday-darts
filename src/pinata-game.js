@@ -1,9 +1,9 @@
 import {randomInt,randomUUID} from './random.js';
-import {chooseOutcome} from './game.js';
 import {validatePinataCelebration} from './pinata-celebration.js';
+import {DEFAULT_PINATA_BONUS_RULES,validatePinataBonusRules,selectPinataOutcome} from './pinata-bonus-rules.js';
 export {money} from './gift-game.js';
 export const HIT_MS=480,SWING_MS=1500,HOLD_MS=6500,CLEAR_MS=450;
-export const DEFAULT_PINATA={id:'pinata-party',name:'Birthday Piñata Party',swings:3,maxSwings:8,outcomes:[
+export const DEFAULT_PINATA={id:'pinata-party',name:'Birthday Piñata Party',swings:3,maxSwings:8,bonusRules:{...DEFAULT_PINATA_BONUS_RULES},outcomes:[
  {kind:'cash',value:25,weight:35},{kind:'cash',value:50,weight:25},{kind:'cash',value:100,weight:10},
  {kind:'multiply',value:2,weight:20},{kind:'extra',value:1,weight:10}
 ]};
@@ -23,7 +23,7 @@ export function validatePinata(input){
  });
  if(!outcomes.some(o=>o.kind==='cash'&&o.weight>0))throw Error('Keep at least one cash reward with a weight above zero.');
  const id=input.id??randomUUID();if(!/^[\w-]{1,80}$/.test(id))throw Error('Invalid game ID.');
- return {id,name:input.name.trim(),swings:input.swings,maxSwings:input.maxSwings,outcomes,celebration:validatePinataCelebration(input.celebration)};
+ return {id,name:input.name.trim(),swings:input.swings,maxSwings:input.maxSwings,outcomes,bonusRules:validatePinataBonusRules(input.bonusRules),celebration:validatePinataCelebration(input.celebration)};
 }
 export function startPinata(preset,viewer='',now=Date.now()){
  if(typeof viewer!=='string'||viewer.trim().length>32)throw Error('Keep viewer names to 32 characters.');
@@ -46,7 +46,7 @@ export function swingPinata(r,now=Date.now(),{draw=randomInt,forcedIndex=null}={
     (prize.kind==='extra'&&prize.granted!==Math.min(prize.value,r.preset.maxSwings-r.allocated)))throw Error('Invalid planned bonus reward.');
   r.flight={id:randomUUID(),index:r.hits.length,prize,startAt:now,hitAt:now+HIT_MS,finishAt:now+SWING_MS};return r.flight;
  }
- const index=forcedIndex===null?chooseOutcome(rewards,draw):forcedIndex,o=rewards[index];
+ const index=forcedIndex===null?selectPinataOutcome(rewards,{rules:r.preset.bonusRules,hitCount:r.hits.length,hasBonus:r.hits.some(h=>h.prize.kind!=='cash'),startingSwings:r.preset.swings},draw):forcedIndex,o=rewards[index];
  if(!Number.isInteger(index)||!o||o.weight<=0)throw Error(!r.hits.length?'The first swing is always cash.':'That reward is unavailable in this round.');
  const prize={kind:o.kind,value:o.value};
  if(o.kind==='extra')prize.granted=Math.min(o.value,r.preset.maxSwings-r.allocated);
@@ -65,5 +65,5 @@ export function advancePinata(r,now=Date.now()){
  const shot=r.flight;award(r,shot);r.flight=null;
  if(r.remaining===0){r.completedAt=shot.finishAt;r.hideAt=shot.finishAt+HOLD_MS;}return true;
 }
-export function cleanPinata(r){if(!r)return null;const p=structuredClone(r);delete p.privateViewerRange;delete p.privateTotalRange;delete p.privateGameRange;delete p.prizePlan;p.preset.outcomes=p.preset.outcomes.map(({kind,value})=>({kind,value}));return p;}
+export function cleanPinata(r){if(!r)return null;const p=structuredClone(r);delete p.privateViewerRange;delete p.privateTotalRange;delete p.privateGameRange;delete p.prizePlan;delete p.preset.bonusRules;p.preset.outcomes=p.preset.outcomes.map(({kind,value})=>({kind,value}));return p;}
 export const rewardCopy=p=>p.kind==='cash'?{main:'$'+p.value,detail:'BIRTHDAY TAX COLLECTED'}:p.kind==='multiply'?{main:'×'+p.value,detail:'ON THE FINAL TOTAL'}:{main:'+'+(p.granted??p.value),detail:(p.granted??p.value)===1?'ENCORE SWING':'ENCORE SWINGS'};

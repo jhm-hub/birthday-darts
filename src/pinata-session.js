@@ -14,6 +14,7 @@ export async function connectPinataControl(id,onSnapshot,onStatus){
  window.addEventListener('pagehide',dispose,{once:true});
  return {get id(){return id;},versions:()=>pinataStore.versions(),async selectVersion(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');await pinataStore.selectVersion(value);publish();return id;},displayURL:url.href,start:claim,dispose,
   async swing(viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');await pinataStore.swing(id,viewer);return pinataStore.controlSnapshot(id);},
+  async setBonusSettings(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return pinataStore.setBonusSettings(id,value);},
   async setGameRanges(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return pinataStore.setGameRanges(id,value);},
   async startGameRange(rangeId,viewer){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return pinataStore.startGameRange(id,rangeId,viewer);},
   async setViewerRange(value){if(!ready||peerStatus==='duplicate')throw Error('Use the active control tab.');return pinataStore.setViewerRange(id,value);},
