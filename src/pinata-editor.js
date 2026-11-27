@@ -9,7 +9,7 @@ const $=s=>document.querySelector(s),audio=createPinataAudio(),view=createPinata
 let selected=null,draft=structuredClone(DEFAULT_PINATA),draftError='',demo=null,dirty=false,auto=false,autoAt=0,ready=false,pendingSample=false,pendingTier=null;
 const isClearing=()=>Number.isFinite(demo?.manualClearAt);
 function cancelPractice(){auto=false;pendingSample=false;pendingTier=null;demo=null;}
-let rangeGameId=null,rangeKey='';
+let rangeGameId=null,rangeKey='',savingCopy=false;
 function rangeOptions(){
  if(!ready)return;
  const ranges=(pinataStore.list().find(w=>w.id===selected)?.gameRanges??[]).filter(r=>r.min!==null),key=JSON.stringify(ranges),select=$('#demo-range');
@@ -58,7 +58,7 @@ for(const id of ['game-name','start-swings','max-swings','royal-threshold','gran
 $('#add-reward').onclick=()=>{if($('#reward-rows').children.length>=10)return message('Use up to 10 rewards.',true);row({kind:'cash',value:25,weight:10});changed();};
 $('#saved-games').onchange=e=>{if(dirty&&!confirm('Discard unsaved settings for this game?')){e.target.value=selected;return;}edit(pinataStore.list().find(w=>w.id===e.target.value));};
 $('#pinata-settings').onsubmit=async e=>{e.preventDefault();try{const w=await pinataStore.save(readDraft());edit(w);message('Saved. Open Faith’s controls to use this game on stream.');}catch(e){message(e.message,true);}};
-$('#save-copy').onclick=async()=>{try{const w=await pinataStore.save({...readDraft(),id:undefined});edit(w);message('Saved another version. It uses the same permanent Piñata display link.');}catch(e){message(e.message,true);}};
+$('#save-copy').onclick=async()=>{if(savingCopy)return;savingCopy=true;$('#save-copy').disabled=true;try{const w=await pinataStore.saveCopy(readDraft());edit(w);message('Saved a separate version with the same ranges and permanent Piñata display link.');}catch(e){message(e.message,true);}finally{savingCopy=false;$('#save-copy').disabled=false;}};
 const timer=setInterval(()=>{if(!demo)return;const now=Date.now();if(isClearing()){if(now>=demo.hideAt+CLEAR_MS){demo=null;syncSavedDraft();render();if(pendingTier!==null){const tier=pendingTier;pendingTier=null;startCelebrationSample(tier);render();}else if(pendingSample){pendingSample=false;startSample();render();}}return;}if(advancePinata(demo,now)){if(demo.completedAt!==null){demo.hideAt=null;auto=false;}else autoAt=now+350;render();}if(auto&&!demo.flight&&demo.completedAt===null&&now>=autoAt){swingPinata(demo,now);render();}},50);
 document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&!e.target.closest('input,select,textarea,button,a,summary')){e.preventDefault();if(!auto)void swing();}});
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
