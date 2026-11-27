@@ -1,5 +1,6 @@
 import {validatePinataTotalRange,startPinataTotalRange} from './pinata-targets.js';
 export const emptyPinataGameRanges=()=>Array.from({length:4},(_,i)=>({id:'range-'+(i+1),name:'Piñata '+(i+1),min:null,max:null}));
+export const defaultPinataGameRanges=()=>emptyPinataGameRanges().map((r,i)=>i?r:{...r,min:90,max:150});
 export function validatePinataGameRanges(input){
  if(input===undefined)return emptyPinataGameRanges();
  if(!Array.isArray(input)||input.length!==4)throw Error('Keep all four piñata range buttons.');

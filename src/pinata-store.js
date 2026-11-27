@@ -2,13 +2,14 @@ import {createSharedSettings} from './shared-settings.js';
 import {ensurePermanentDisplay,permanentDisplayStore} from './permanent-display.js';
 import {DEFAULT_PINATA,validatePinata,startPinata,swingPinata,advancePinata,pinataTotal,cleanPinata,CLEAR_MS} from './pinata-game.js';
 import {validatePinataViewerRanges,validatePinataViewerRange,normalizePinataUsername,findPinataViewerRange,startPinataViewerRange} from './pinata-targets.js';
-import {validatePinataGameRanges,startPinataGameRange} from './pinata-game-ranges.js';
+import {validatePinataGameRanges,defaultPinataGameRanges,startPinataGameRange} from './pinata-game-ranges.js';
+import {validateSavedPinata,MAIN_PINATA_CELEBRATION} from './pinata-saved-settings.js';
 import {randomKey,validKey} from './protocol.js';
 import {validatePinataBonusRules} from './pinata-bonus-rules.js';
 export const PINATA_KEY='faith-pinata-party-v1';
 const volume=v=>Number.isFinite(Number(v))?Math.max(0,Math.min(1,Number(v))):.45;
 export function createPinataStore(storage,locks,sharedOptions={}){
- const shared=createSharedSettings({storage,locks,key:PINATA_KEY,game:'pinata',validate:w=>({...validatePinata(w),viewerRanges:validatePinataViewerRanges(w.viewerRanges),gameRanges:validatePinataGameRanges(w.gameRanges)}),...sharedOptions});storage=shared.storage;locks=shared.locks;
+ const shared=createSharedSettings({storage,locks,key:PINATA_KEY,game:'pinata',validate:validateSavedPinata,...sharedOptions});storage=shared.storage;locks=shared.locks;
  const listeners=new Set(),lock=fn=>locks.request('faith-pinata-library',fn);
  function read(){const raw=storage.getItem(PINATA_KEY);if(!raw)return null;try{const s=JSON.parse(raw);if(![1,2,3,4].includes(s.schema)||!Array.isArray(s.widgets)||!s.widgets.length)throw Error();for(const w of s.widgets){validatePinata(w);validatePinataViewerRanges(w.viewerRanges);validatePinataGameRanges(w.gameRanges);}return s;}catch{throw Error('Saved piñata games could not be read. Nothing has been overwritten.');}}
  function write(s){storage.setItem(PINATA_KEY,JSON.stringify(s));shared.notify(()=>{for(const fn of listeners)fn();});}
@@ -18,11 +19,11 @@ export function createPinataStore(storage,locks,sharedOptions={}){
  function controlSnapshot(id,now=Date.now()){const w=find(read(),id);return {...snapshot(id,now),control:{viewerRanges:validatePinataViewerRanges(w.viewerRanges),activeViewerRange:w.round?.privateViewerRange??null,gameRanges:validatePinataGameRanges(w.gameRanges),activeGameRange:w.round?.privateGameRange??null,bonusSettings:{bonusRules:validatePinataBonusRules(w.bonusRules),swings:w.swings,maxSwings:w.maxSwings,hasBonuses:w.outcomes.some(o=>o.kind!=='cash'&&o.weight>0)}}};}
  return {
   ...permanentDisplayStore({read,write,lock}),
-  async init(){return lock(()=>{const s=read()??{schema:4,widgets:[{...structuredClone(DEFAULT_PINATA),room:randomKey(),volume:.45,round:null,lastResult:null}]};s.schema=4;for(const w of s.widgets)if(!validKey(w.room))w.room=randomKey();ensurePermanentDisplay(s);settle(s,Date.now());write(s);});},
+  async init(){return lock(()=>{const s=read()??{schema:4,widgets:[{...structuredClone(DEFAULT_PINATA),celebration:{...MAIN_PINATA_CELEBRATION},gameRanges:defaultPinataGameRanges(),room:randomKey(),volume:.45,round:null,lastResult:null}]};s.schema=4;for(const w of s.widgets){Object.assign(w,validateSavedPinata(w));if(!validKey(w.room))w.room=randomKey();}ensurePermanentDisplay(s);settle(s,Date.now());write(s);});},
   list:()=>read().widgets.map(w=>({...validatePinata(w),viewerRanges:validatePinataViewerRanges(w.viewerRanges),gameRanges:validatePinataGameRanges(w.gameRanges)})),snapshot,controlSnapshot,roomKey:id=>find(read(),id).room,
   async save(input){const p=validatePinata(input);return lock(()=>{const s=read(),w=s.widgets.find(x=>x.id===p.id);if(w)Object.assign(w,p);else{if(s.widgets.length>=30)throw Error('Save up to 30 piñata games.');s.widgets.push({...p,room:randomKey(),round:null,volume:.45,lastResult:null});}write(s);return p;});},
   async swing(id,viewer,now=Date.now()){return lock(()=>{const s=read();settle(s,now);const w=find(s,id);if(!w.round){const rule=findPinataViewerRange(validatePinataViewerRanges(w.viewerRanges),viewer);w.round=rule?startPinataViewerRange(w,rule,viewer,now):startPinata(w,viewer,now);}swingPinata(w.round,now);write(s);return snapshot(id,now);});},
-  async setBonusSettings(id,input){const bonusRules=validatePinataBonusRules(input?.bonusRules);return lock(()=>{const s=read(),w=find(s,id),next=validatePinata({...w,bonusRules,maxSwings:input?.maxSwings});w.bonusRules=next.bonusRules;w.maxSwings=next.maxSwings;write(s);return controlSnapshot(id);});},
+  async setBonusSettings(id,input){const bonusRules=validatePinataBonusRules(input?.bonusRules);return lock(()=>{const s=read(),w=find(s,id),next=validatePinata({...w,bonusRules,swings:input?.swings??w.swings,maxSwings:input?.maxSwings});w.bonusRules=next.bonusRules;w.swings=next.swings;w.maxSwings=next.maxSwings;write(s);return controlSnapshot(id);});},
   async setGameRanges(id,input){const ranges=validatePinataGameRanges(input);return lock(()=>{const s=read(),w=find(s,id);w.gameRanges=ranges;write(s);return controlSnapshot(id);});},
   async startGameRange(id,rangeId,viewer,now=Date.now()){return lock(()=>{const s=read();settle(s,now);const w=find(s,id);if(w.round)throw Error('Let the current game finish and clear before choosing another range.');w.round=startPinataGameRange(w,w.gameRanges,rangeId,viewer,now);swingPinata(w.round,now);write(s);return controlSnapshot(id,now);});},
   async setViewerRange(id,input){const rule=validatePinataViewerRange(input);return lock(()=>{const s=read(),w=find(s,id),rules=validatePinataViewerRanges(w.viewerRanges),index=rules.findIndex(r=>r.username===rule.username);if(index<0)rules.push(rule);else rules[index]=rule;w.viewerRanges=validatePinataViewerRanges(rules);write(s);return controlSnapshot(id);});},

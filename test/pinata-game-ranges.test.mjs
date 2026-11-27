@@ -22,7 +22,7 @@ test('every range produces a truthful complete game inside its inclusive bounds,
   assert.ok(total>=BigInt(slot.min*100)&&total<=BigInt(slot.max*100));assert.deepEqual(round.privateGameRange,slot);
   const cash=round.hits.filter(h=>h.prize.kind==='cash').reduce((n,h)=>n+Math.round(h.prize.value*100),0);
   const mult=round.hits.filter(h=>h.prize.kind==='multiply').reduce((n,h)=>n*BigInt(h.prize.value),1n);
-  assert.equal(total,BigInt(cash)*mult);assert.equal(round.hits.length,3+round.hits.filter(h=>h.prize.kind==='extra').reduce((n,h)=>n+h.prize.granted,0));
+  assert.equal(total,BigInt(cash)*mult);assert.equal(round.hits.length,DEFAULT_PINATA.swings+round.hits.filter(h=>h.prize.kind==='extra').reduce((n,h)=>n+h.prize.granted,0));
   assert.ok(round.hits.length<=8);extras+=round.hits.some(h=>h.prize.kind==='extra');multiplied+=mult>1n;
  }
  assert.ok(extras>0&&multiplied>0);

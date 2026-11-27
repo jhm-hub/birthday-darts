@@ -1,4 +1,4 @@
-import {lowerWeightedRange} from './range-weighting.js';
+import {centerWeightedPinataTotal,pinataCashWeights} from './pinata-run-variety.js';
 import {randomInt} from './random.js';
 import {selectPinataOutcome} from './pinata-bonus-rules.js';
 import {startPinata,swingPinata,advancePinata,pinataTotal} from './pinata-game.js';
@@ -29,7 +29,7 @@ export const pinataViewerRangeText=r=>'$'+r.min.toLocaleString('en-US')+'–$'+r
 export function startPinataTotalRange(widget,input,viewer='',now=Date.now(),draw=randomInt){
  const rule=validatePinataTotalRange(input);
  const pick=bound=>{const n=draw(bound);if(!Number.isInteger(n)||n<0||n>=bound)throw Error('Invalid prize-range draw.');return n;};
- const fresh=startPinata(widget,viewer.trim().replace(/^@/,''),now),target=lowerWeightedRange(rule.min,rule.max,pick)*100;
+ const fresh=startPinata(widget,viewer.trim().replace(/^@/,''),now),target=centerWeightedPinataTotal(rule.min,rule.max,pick)*100;
  const plan=[];let left=fresh.remaining,allocated=fresh.allocated,multiplier=1,cashCount=0;
  while(left>0){
   // Reserve one cent for every remaining cash hit. Any selected prefix can
@@ -54,8 +54,8 @@ export function startPinataTotalRange(widget,input,viewer='',now=Date.now(),draw
   plan.push(prize);
  }
  const count=plan.filter(p=>p.kind==='cash').length,budget=target/multiplier;
- const unit=budget%100===0&&budget>=count*100?100:1,units=budget/unit;
- const weights=Array.from({length:count},()=>60+pick(121)),sum=weights.reduce((a,b)=>a+b,0);
+ const unit=[100,50,25,10,5,1].find(n=>budget%n===0&&budget>=count*n),units=budget/unit;
+ const weights=pinataCashWeights(count,pick),sum=weights.reduce((a,b)=>a+b,0);
  const amounts=weights.map(w=>1+Math.floor((units-count)*w/sum));let remainder=units-amounts.reduce((a,b)=>a+b,0),cursor=pick(count);
  while(remainder-->0)amounts[cursor++%count]++;
  let cashIndex=0;for(const prize of plan)if(prize.kind==='cash')prize.value=amounts[cashIndex++]*unit/100;

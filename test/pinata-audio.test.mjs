@@ -10,7 +10,7 @@ import {bonusPose} from '../src/pinata-bonus.js';
 import {royalExitPose,beginPreviewClear} from '../src/pinata-exit.js';
 const peak=data=>data.reduce((m,n)=>Math.max(m,Math.abs(n)),0);
 function round(final=false,kind=0){
- const r=startPinata(DEFAULT_PINATA,'Audio test',0);
+ const r=startPinata({...DEFAULT_PINATA,swings:3},'Audio test',0);
  if(final){swingPinata(r,-4000,{forcedIndex:0});advancePinata(r,-2500);swingPinata(r,-2000,{forcedIndex:3});advancePinata(r,-500);}
  swingPinata(r,0,{forcedIndex:kind});return r;
 }

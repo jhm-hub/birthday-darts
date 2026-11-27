@@ -7,7 +7,7 @@ import {particlePose,PARTICLE_COUNT,breakPose} from '../src/pinata-motion.js';
 import {pinataAudioCues} from '../src/pinata-sound-design.js';
 
 function lastShot(kind=0){
- const r=startPinata(DEFAULT_PINATA,'Birthday VIP',-4000);
+ const r=startPinata({...DEFAULT_PINATA,swings:3},'Birthday VIP',-4000);
  swingPinata(r,-4000,{forcedIndex:0});advancePinata(r,-2500);
  swingPinata(r,-2000,{forcedIndex:1});advancePinata(r,-500);
  swingPinata(r,0,{forcedIndex:kind});return r;

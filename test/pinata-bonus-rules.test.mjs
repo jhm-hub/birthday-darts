@@ -7,7 +7,7 @@ const rules=(chance=55,guaranteeEarly=true)=>({chance,guaranteeEarly});
 function rng(seed){let n=seed;return bound=>{n=(Math.imul(n,1664525)+1013904223)>>>0;return n%bound;};}
 function finish(round,draw=rng(42)){let now=round.startedAt;while(round.remaining){const shot=swingPinata(round,now,{draw});advancePinata(round,shot.finishAt);now=shot.finishAt;}return round;}
 const kinds=r=>r.hits.map(h=>h.prize.kind);
-const preset=patch=>({...structuredClone(DEFAULT_PINATA),...patch});
+const preset=patch=>({...structuredClone(DEFAULT_PINATA),swings:3,...patch});
 
 test('bonus settings validate strictly and new games freeze the 55% early-bonus defaults',()=>{
  assert.deepEqual(validatePinataBonusRules(),rules());
@@ -51,7 +51,7 @@ test('an early bonus arrives by hit three or the last starting hit, while first 
 });
 
 test('100% bonuses can chain extras and stack multipliers without exceeding the configured swing cap',()=>{
- const round=finish(startPinata(preset({bonusRules:rules(100),maxSwings:8})),n=>n-1);
+ const round=finish(startPinata(preset({bonusRules:rules(100),maxSwings:8,outcomes:DEFAULT_PINATA.outcomes.slice(0,5)})),n=>n-1);
  assert.equal(round.hits.length,8);assert.equal(round.allocated,8);assert.equal(round.remaining,0);
  assert.equal(kinds(round).filter(k=>k==='extra').length,5);assert.equal(kinds(round).filter(k=>k==='multiply').length,2);
  assert.equal(round.multiplier,'4');assert.equal(pinataTotal(round),String(round.cashCents*4));
@@ -64,7 +64,7 @@ test('range games keep exact inclusive totals while guaranteeing available bonus
   const total=BigInt(pinataTotal(round)),prizes=round.hits.map(h=>h.prize),cash=prizes.filter(p=>p.kind==='cash');
   assert.ok(total>=BigInt(min*100)&&total<=BigInt(max*100));assert.equal(total%100n,0n);
   assert.equal(prizes[0].kind,'cash');assert.ok(prizes.slice(0,3).some(p=>p.kind!=='cash'));
-  assert.ok(cash.every(p=>p.value>=.01));assert.equal(round.hits.length,3+prizes.filter(p=>p.kind==='extra').reduce((n,p)=>n+p.granted,0));assert.ok(round.hits.length<=8);
+  assert.ok(cash.every(p=>p.value>=.01));assert.equal(round.hits.length,DEFAULT_PINATA.swings+prizes.filter(p=>p.kind==='extra').reduce((n,p)=>n+p.granted,0));assert.ok(round.hits.length<=8);
   const sum=cash.reduce((n,p)=>n+Math.round(p.value*100),0),mult=prizes.filter(p=>p.kind==='multiply').reduce((n,p)=>n*BigInt(p.value),1n);assert.equal(total,BigInt(sum)*mult);
   extras+=prizes.some(p=>p.kind==='extra');stacked+=prizes.filter(p=>p.kind==='multiply').length>1;chains+=prizes.some((p,i)=>i&&p.kind!=='cash'&&prizes[i-1].kind!=='cash');
  }
@@ -89,7 +89,7 @@ test('tiny exact ranges, incompatible multipliers, disabled bonuses and patholog
 });
 
 test('already-started legacy games retain their original weighted behavior',()=>{
- const round=startPinata(DEFAULT_PINATA);delete round.preset.bonusRules;finish(round,()=>0);
+ const round=startPinata(preset());delete round.preset.bonusRules;finish(round,()=>0);
  assert.deepEqual(kinds(round),['cash','cash','cash']);
  const oldRules=validatePinataBonusRules();oldRules.chance=100;assert.deepEqual(validatePinataBonusRules(),rules());
 });

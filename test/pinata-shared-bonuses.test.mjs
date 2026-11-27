@@ -33,7 +33,7 @@ test('shared bonus settings reach another browser while live games keep their or
  const puts=service.puts;let now=Date.now()+10000;
  await a.startGameRange(id,'range-1','Private bonus viewer',now);assert.equal(service.puts,puts,'starting a local game must not upload its state');
  const active=structuredClone(round(storageA)),displayKey=a.displayKey();
- await b.setBonusSettings(id,{bonusRules:{chance:0,guaranteeEarly:false},maxSwings:3});
+ await b.setBonusSettings(id,{bonusRules:{chance:0,guaranteeEarly:false},swings:3,maxSwings:3});
  // Reopening the first browser loads the newer settings without rewriting its
  // current viewer, frozen bonus rules, future prize plan or OBS pairing.
  const resumed=createPinataStore(storageA,locks(),options(service));await resumed.init();
@@ -60,7 +60,22 @@ test('failed or stale shared bonus saves roll back both the chance and swing lim
  service.fail=true;await assert.rejects(a.setBonusSettings(id,{bonusRules:{chance:90,guaranteeEarly:false},maxSwings:12}),/Network/);service.fail=false;
  assert.equal(storageA.getItem(sharedStorageKey(PINATA_KEY,connection)),original);
  await b.setBonusSettings(id,{bonusRules:{chance:75,guaranteeEarly:true},maxSwings:10});
- await assert.rejects(a.setBonusSettings(id,{bonusRules:{chance:20,guaranteeEarly:false},maxSwings:4}),/Newer settings/);
+ await assert.rejects(a.setBonusSettings(id,{bonusRules:{chance:20,guaranteeEarly:false},swings:4,maxSwings:4}),/Newer settings/);
  assert.equal(storageA.getItem(sharedStorageKey(PINATA_KEY,connection)),original);
  const c=createPinataStore(memory(),locks(),options(service));await c.init();assert.deepEqual(c.list()[0].bonusRules,{chance:75,guaranteeEarly:true});assert.equal(c.list()[0].maxSwings,10);
+});
+
+test('the original shared template upgrades once to five hits, the main90–150 range and matching celebration tiers',async()=>{
+ const service=server(),legacy={...structuredClone(DEFAULT_PINATA),swings:3,maxSwings:8,gameRanges:emptyPinataGameRanges(),viewerRanges:[],celebration:{royal:1500,grand:5000},outcomes:[
+  {kind:'cash',value:25,weight:35},{kind:'cash',value:50,weight:25},{kind:'cash',value:100,weight:10},
+  {kind:'multiply',value:2,weight:20},{kind:'extra',value:1,weight:10}
+ ]};delete legacy.tuningVersion;
+ await service.fetcher('https://example.test/api/settings',{method:'PUT',headers:{Authorization:'Bearer '+connection.key,'If-Match':'0'},body:JSON.stringify({schema:1,widgets:[{config:legacy}]})});
+ const seededPuts=service.puts,storageA=memory(),a=createPinataStore(storageA,locks(),options(service));await a.init();
+ const upgraded=a.list()[0];assert.equal(upgraded.id,legacy.id);assert.equal(upgraded.name,legacy.name);assert.equal(upgraded.swings,5);assert.equal(upgraded.maxSwings,8);assert.equal(upgraded.tuningVersion,1);
+ assert.deepEqual(upgraded.gameRanges[0],{id:'range-1',name:'Piñata 1',min:90,max:150});assert.ok(upgraded.gameRanges.slice(1).every(r=>r.min===null&&r.max===null));
+ assert.deepEqual(upgraded.outcomes.filter(o=>o.kind==='extra'),[{kind:'extra',value:1,weight:14},{kind:'extra',value:2,weight:6}]);assert.deepEqual(upgraded.celebration,{royal:120,grand:140});
+ assert.equal(service.puts,seededPuts+1);assert.equal(saved(storageA).schema,4);
+ const remote=structuredClone(service.record.settings),revision=service.record.revision,b=createPinataStore(memory(),locks(),options(service));await b.init();
+ assert.deepEqual(b.list()[0],upgraded);assert.deepEqual(service.record.settings,remote);assert.equal(service.record.revision,revision);assert.equal(service.puts,seededPuts+1,'a second browser must not repeat the template upgrade');
 });

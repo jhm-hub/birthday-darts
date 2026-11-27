@@ -3,9 +3,9 @@ import {validatePinataCelebration} from './pinata-celebration.js';
 import {DEFAULT_PINATA_BONUS_RULES,validatePinataBonusRules,selectPinataOutcome} from './pinata-bonus-rules.js';
 export {money} from './gift-game.js';
 export const HIT_MS=480,SWING_MS=1500,HOLD_MS=6500,CLEAR_MS=450;
-export const DEFAULT_PINATA={id:'pinata-party',name:'Birthday Piñata Party',swings:3,maxSwings:8,bonusRules:{...DEFAULT_PINATA_BONUS_RULES},outcomes:[
+export const DEFAULT_PINATA={id:'pinata-party',name:'Birthday Piñata Party',tuningVersion:1,swings:5,maxSwings:8,bonusRules:{...DEFAULT_PINATA_BONUS_RULES},outcomes:[
  {kind:'cash',value:25,weight:35},{kind:'cash',value:50,weight:25},{kind:'cash',value:100,weight:10},
- {kind:'multiply',value:2,weight:20},{kind:'extra',value:1,weight:10}
+ {kind:'multiply',value:2,weight:20},{kind:'extra',value:1,weight:14},{kind:'extra',value:2,weight:6}
 ]};
 export function validatePinata(input){
  if(!input||typeof input.name!=='string'||!input.name.trim()||input.name.trim().length>40)throw Error('Give the game a name of 1–40 characters.');
@@ -23,7 +23,7 @@ export function validatePinata(input){
  });
  if(!outcomes.some(o=>o.kind==='cash'&&o.weight>0))throw Error('Keep at least one cash reward with a weight above zero.');
  const id=input.id??randomUUID();if(!/^[\w-]{1,80}$/.test(id))throw Error('Invalid game ID.');
- return {id,name:input.name.trim(),swings:input.swings,maxSwings:input.maxSwings,outcomes,bonusRules:validatePinataBonusRules(input.bonusRules),celebration:validatePinataCelebration(input.celebration)};
+ return {id,name:input.name.trim(),tuningVersion:1,swings:input.swings,maxSwings:input.maxSwings,outcomes,bonusRules:validatePinataBonusRules(input.bonusRules),celebration:validatePinataCelebration(input.celebration)};
 }
 export function startPinata(preset,viewer='',now=Date.now()){
  if(typeof viewer!=='string'||viewer.trim().length>32)throw Error('Keep viewer names to 32 characters.');

@@ -17,7 +17,7 @@ test('bonus settings persist per version, remain private, and cannot alter an ac
  await f.store.startGameRange(id,'range-1','VIP',Date.now());
  const before=JSON.parse(f.data.get(PINATA_KEY)).widgets[0].round;
  assert.deepEqual(before.preset.bonusRules,rules);assert.equal(before.preset.maxSwings,10);
- await f.store.setBonusSettings(id,{bonusRules:{chance:0,guaranteeEarly:false},maxSwings:3});
+ await f.store.setBonusSettings(id,{bonusRules:{chance:0,guaranteeEarly:false},swings:3,maxSwings:3});
  assert.deepEqual(JSON.parse(f.data.get(PINATA_KEY)).widgets[0].round,before);
  const reopened=createPinataStore(f.storage,f.locks),settings=reopened.controlSnapshot(id).control.bonusSettings;
  assert.equal(settings.bonusRules.chance,0);assert.equal(settings.maxSwings,3);

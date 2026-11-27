@@ -18,11 +18,11 @@ test('2,400 complete games land within the saved range with honest cash, multipl
  for(const [min,max] of [[1,1],[2,7],[7,7],[15,16],[500,1500],[1500,4000],[2500,10000],[20000,30000],[999999,1000000],[1000000,1000000],[1234,1234],[1,1000000]]){
   const totals=new Set();let multipliers=0,extras=0;
   for(let seed=1;seed<=200;seed++){
-   const r=startPinataViewerRange(DEFAULT_PINATA,{username:'tester',min,max},'@TeStEr',1000,rng(seed*97));assert.equal(r.viewer,'TeStEr');assert.equal(r.remaining,3);
+   const r=startPinataViewerRange(DEFAULT_PINATA,{username:'tester',min,max},'@TeStEr',1000,rng(seed*97));assert.equal(r.viewer,'TeStEr');assert.equal(r.remaining,DEFAULT_PINATA.swings);
    const plan=structuredClone(r.prizePlan);finish(r);assert.deepEqual(r.prizePlan,plan);const total=BigInt(pinataTotal(r));totals.add(total.toString());
    assert.ok(total>=BigInt(min*100)&&total<=BigInt(max*100));assert.equal(total%100n,0n);
    assert.equal(r.hits[0].prize.kind,'cash');assert.ok(r.hits.filter(s=>s.prize.kind==='cash').every(s=>s.prize.value>0));
-   const extra=r.hits.filter(s=>s.prize.kind==='extra').reduce((n,s)=>n+s.prize.granted,0);assert.equal(r.hits.length,3+extra);assert.ok(r.hits.length<=8);extras+=extra;
+   const extra=r.hits.filter(s=>s.prize.kind==='extra').reduce((n,s)=>n+s.prize.granted,0);assert.equal(r.hits.length,DEFAULT_PINATA.swings+extra);assert.ok(r.hits.length<=8);extras+=extra;
    assert.equal(r.cashCents,r.hits.filter(s=>s.prize.kind==='cash').reduce((n,s)=>n+Math.round(s.prize.value*100),0));assert.equal(BigInt(r.multiplier),2n**BigInt(r.hits.filter(s=>s.prize.kind==='multiply').length));multipliers+=Number(BigInt(r.multiplier)>1n);
   }
   if(max-min>20)assert.ok(totals.size>30);if(min>=500){assert.ok(multipliers>0);assert.ok(extras>0);}

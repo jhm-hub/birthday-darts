@@ -42,13 +42,30 @@ function distribution(name,range,finish){
   assert.ok(stats.meanPosition>.28&&stats.meanPosition<.39,JSON.stringify(stats));
  });
 }
+function centeredDistribution(name,range,finish){
+ test(name+' favors the middle while keeping both lower and higher totals possible',t=>{
+  const draw=rng(0xCB17A+range.min),samples=3000;let lower=0,middle=0,lowTail=0,highTail=0,position=0;
+  for(let i=0;i<samples;i++){
+   const total=finish(draw),p=(total-range.min)/(range.max-range.min);
+   assert.ok(total>=range.min&&total<=range.max,name+' total '+total+' in '+range.min+'–'+range.max);
+   lower+=p<=.5;middle+=p>=.25&&p<=.75;lowTail+=p<=.1;highTail+=p>=.9;position+=p;
+  }
+  const stats={lowerHalf:lower/samples,middleHalf:middle/samples,lowTail:lowTail/samples,highTail:highTail/samples,meanPosition:position/samples};
+  t.diagnostic(JSON.stringify(stats));
+  assert.ok(stats.lowerHalf>.46&&stats.lowerHalf<.54,JSON.stringify(stats));
+  assert.ok(stats.middleHalf>.70&&stats.middleHalf<.80,JSON.stringify(stats));
+  assert.ok(stats.meanPosition>.47&&stats.meanPosition<.53,JSON.stringify(stats));
+  assert.ok(stats.lowTail>.005&&stats.lowTail<.06,JSON.stringify(stats));
+  assert.ok(stats.highTail>.005&&stats.highTail<.06,JSON.stringify(stats));
+ });
+}
 for(const r of defaultGiftRanges())distribution('Presents '+r.id,r,draw=>giftEnd(startGiftRange(DEFAULT_GIFTS,r.id,'Test',1000,draw)));
 for(const r of DEFAULT_VAULT_GAME_RANGES)distribution('Vault '+r.id,r,draw=>vaultEnd(startVaultExperience(DEFAULT_VAULT,r.id,'Test',1000,draw)));
 for(const r of DEFAULT_DARTS_GAME_RANGES)distribution('Darts '+r.id,r,draw=>dartsEnd(r,draw));
 const pinataRanges=emptyPinataGameRanges().map((r,i)=>({...r,min:defaultGiftRanges()[i].min,max:defaultGiftRanges()[i].max}));
-for(const r of pinataRanges)distribution('Piñata '+r.id,r,draw=>pinataEnd(startPinataGameRange(DEFAULT_PINATA,pinataRanges,r.id,'Test',1000,draw)));
+for(const r of pinataRanges)centeredDistribution('Piñata '+r.id,r,draw=>pinataEnd(startPinataGameRange(DEFAULT_PINATA,pinataRanges,r.id,'Test',1000,draw)));
 const override={username:'vip',id:'low',name:'Test range',min:900,max:1900};
 distribution('Vault username',override,draw=>vaultEnd(startVaultViewerRange(DEFAULT_VAULT,override,'vip',1000,draw)));
-distribution('Piñata username',override,draw=>pinataEnd(startPinataViewerRange(DEFAULT_PINATA,override,'vip',1000,draw)));
+centeredDistribution('Piñata username',override,draw=>pinataEnd(startPinataViewerRange(DEFAULT_PINATA,override,'vip',1000,draw)));
 distribution('Darts username',override,draw=>dartsEnd(override,draw,{username:true}));
 distribution('Classic darts range',override,draw=>dartsEnd(override,draw,{theme:'dartboard'}));

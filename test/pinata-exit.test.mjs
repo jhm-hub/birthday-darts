@@ -8,7 +8,7 @@ import {finalePose} from '../src/pinata-finale.js';
 import {finalHitAge} from '../src/pinata-handoff.js';
 
 function finished(kind=0){
- const r=startPinata(DEFAULT_PINATA,'Birthday VIP',0);
+ const r=startPinata({...DEFAULT_PINATA,swings:3},'Birthday VIP',0);
  for(const [i,k] of [0,1,kind].entries()){swingPinata(r,i*2000,{forcedIndex:k});advancePinata(r,i*2000+1500);}
  return r;
 }
