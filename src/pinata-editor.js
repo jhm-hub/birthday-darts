@@ -51,3 +51,4 @@ pinataStore.init().then(()=>{ready=true;edit(pinataStore.list().find(w=>w.id===n
 
 window.addEventListener('shared-settings-updated',()=>{syncSavedDraft();render();});
 window.addEventListener('shared-settings-before-update',event=>{if(dirty)event.preventDefault();});
+window.addEventListener('shared-settings-discard',()=>{const latest=pinataStore.list().find(w=>w.id===selected);if(latest)edit(latest);});
