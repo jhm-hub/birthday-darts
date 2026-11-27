@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {DEFAULT_PINATA,swingPinata,advancePinata,pinataTotal,cleanPinata,CLEAR_MS} from '../src/pinata-game.js';
+import {DEFAULT_PINATA,startPinata,swingPinata,advancePinata,pinataTotal,cleanPinata,CLEAR_MS} from '../src/pinata-game.js';
 import {validatePinataViewerRange,validatePinataViewerRanges,findPinataViewerRange,startPinataViewerRange} from '../src/pinata-targets.js';
 import {createPinataStore,PINATA_KEY} from '../src/pinata-store.js';
 function rng(seed){let n=seed>>>0;return bound=>{n=(Math.imul(1664525,n)+1013904223)>>>0;return n%bound;};}
@@ -15,13 +15,13 @@ test('username rules normalize exact matches and reject invalid, duplicate or ex
  assert.throws(()=>validatePinataViewerRanges(Array.from({length:101},(_,i)=>({...rule,username:'user'+i}))),/100/);
 });
 test('2,400 complete games land within the saved range with honest cash, multipliers and extra swings',()=>{
- for(const [min,max] of [[1,1],[2,7],[7,7],[15,16],[500,1500],[1500,4000],[2500,10000],[20000,30000],[999999,1000000],[1000000,1000000],[1234,1234],[1,1000000]]){
+ for(const [min,max] of [[5,5],[2,7],[7,7],[15,16],[500,1500],[1500,4000],[2500,10000],[20000,30000],[999999,1000000],[1000000,1000000],[1234,1234],[1,1000000]]){
   const totals=new Set();let multipliers=0,extras=0;
   for(let seed=1;seed<=200;seed++){
    const r=startPinataViewerRange(DEFAULT_PINATA,{username:'tester',min,max},'@TeStEr',1000,rng(seed*97));assert.equal(r.viewer,'TeStEr');assert.equal(r.remaining,DEFAULT_PINATA.swings);
    const plan=structuredClone(r.prizePlan);finish(r);assert.deepEqual(r.prizePlan,plan);const total=BigInt(pinataTotal(r));totals.add(total.toString());
    assert.ok(total>=BigInt(min*100)&&total<=BigInt(max*100));assert.equal(total%100n,0n);
-   assert.equal(r.hits[0].prize.kind,'cash');assert.ok(r.hits.filter(s=>s.prize.kind==='cash').every(s=>s.prize.value>0));
+   assert.equal(r.hits[0].prize.kind,'cash');assert.ok(r.hits.filter(s=>s.prize.kind==='cash').every(s=>Number.isInteger(s.prize.value)&&s.prize.value>=1));
    const extra=r.hits.filter(s=>s.prize.kind==='extra').reduce((n,s)=>n+s.prize.granted,0);assert.equal(r.hits.length,DEFAULT_PINATA.swings+extra);assert.ok(r.hits.length<=8);extras+=extra;
    assert.equal(r.cashCents,r.hits.filter(s=>s.prize.kind==='cash').reduce((n,s)=>n+Math.round(s.prize.value*100),0));assert.equal(BigInt(r.multiplier),2n**BigInt(r.hits.filter(s=>s.prize.kind==='multiply').length));multipliers+=Number(BigInt(r.multiplier)>1n);
   }
@@ -31,7 +31,11 @@ test('2,400 complete games land within the saved range with honest cash, multipl
 test('custom counts, disabled bonuses, narrow ranges and pathological draws always terminate correctly',()=>{
  for(const swings of [1,3,6])for(const maxSwings of [swings,12])for(const draw of [()=>0,n=>n-1,rng(42)]){
   const preset={...DEFAULT_PINATA,swings,maxSwings,outcomes:[{kind:'cash',value:25,weight:.01},{kind:'multiply',value:5,weight:1000},{kind:'extra',value:3,weight:1000}]};
-  for(const target of [1,17,1000000]){const r=startPinataViewerRange(preset,{username:'test',min:target,max:target},'',0,draw);finish(r);assert.equal(pinataTotal(r),String(target*100));assert.ok(r.hits.length>=swings&&r.hits.length<=maxSwings);}
+  for(const target of [1,17,1000000]){
+   if(target<swings){assert.throws(()=>startPinataViewerRange(preset,{username:'test',min:target,max:target},'',0,draw),/needs a maximum total of at least/);continue;}
+   const r=startPinataViewerRange(preset,{username:'test',min:target,max:target},'',0,draw);finish(r);assert.equal(pinataTotal(r),String(target*100));assert.ok(r.hits.length>=swings&&r.hits.length<=maxSwings);
+   assert.ok(r.hits.filter(h=>h.prize.kind==='cash').every(h=>Number.isInteger(h.prize.value)&&h.prize.value>=1));
+  }
  }
  const p={...DEFAULT_PINATA,outcomes:DEFAULT_PINATA.outcomes.map(o=>({...o,weight:o.kind==='cash'?1:0}))};const r=startPinataViewerRange(p,{username:'test',min:100,max:200},'',0,rng(45));finish(r);assert.ok(r.hits.every(s=>s.prize.kind==='cash'));
  assert.throws(()=>startPinataViewerRange(p,{username:'test',min:100,max:500},'',0,n=>n),/Invalid/);
@@ -73,4 +77,15 @@ test('legacy saved games migrate without losing a round, and old controllers can
  assert.equal(migrated.schema,4);assert.deepEqual(migrated.widgets[0].round,r);assert.equal(migrated.widgets[0].room,key);
  // The old release rejects any schema other than 1 before writing or swinging.
  assert.notEqual(migrated.schema,1);
+});
+test('an already-started cent-based plan resumes unchanged and keeps its exact promised total',async()=>{
+ const f=fixture();await f.store.init();const id=DEFAULT_PINATA.id,round=startPinata({...DEFAULT_PINATA,maxSwings:5},'Legacy viewer',1000);
+ round.preset.outcomes[0].value=.25;round.privateTotalRange={min:131,max:131,version:1};
+ round.prizePlan=[{kind:'cash',value:.25},{kind:'cash',value:.25},{kind:'cash',value:64.5},{kind:'multiply',value:2},{kind:'cash',value:.5}];
+ const first=swingPinata(round,1000);advancePinata(round,first.finishAt);
+ const saved=JSON.parse(f.data.get(PINATA_KEY));saved.widgets[0].round=round;f.data.set(PINATA_KEY,JSON.stringify(saved));
+ const resumed=createPinataStore(f.storage,f.locks);await resumed.init();const raw=()=>JSON.parse(f.data.get(PINATA_KEY)).widgets[0].round;
+ assert.deepEqual(raw(),round);let now=first.finishAt;
+ while(raw().remaining){await resumed.swing(id,'Ignored',now);now=raw().flight.finishAt;await resumed.advance(now);}
+ assert.deepEqual(raw().prizePlan,round.prizePlan);assert.equal(raw().preset.outcomes[0].value,.25);assert.equal(pinataTotal(raw()),'13100');
 });

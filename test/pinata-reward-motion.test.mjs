@@ -16,7 +16,7 @@ test('reward accents meet the cash chord, multiplier lift and payoff, and Encore
  const at=rewardBeat(MULTIPLIER_RESOLVE_SECONDS),m=bonusPose('multiply',at);
  assert.ok(m.bankScale>bonusPose('multiply',at-60).bankScale&&m.bankScale>bonusPose('multiply',at+60).bankScale);
  const e=bonusPose('extra',rewardBeat(ENCORE_CATCH_SECONDS));
- assert.equal(e.tokenX,352);assert.equal(e.tokenY,90);assert.equal(e.tokenAngle,0);assert.ok(e.countScale>1.13);
+ assert.equal(e.tokenX,54);assert.equal(e.tokenY,432);assert.equal(e.tokenAngle,0);assert.ok(e.countScale>1.13);
  for(const [kind,seconds] of [['cash',CASH_RESOLVE_SECONDS],['multiply',MULTIPLIER_RESOLVE_SECONDS],['extra',ENCORE_CATCH_SECONDS]])assert.ok(rewardLabelPose(kind,rewardBeat(seconds)).scale>1.04);
 });
 test('bonus art and rotated traveling token stay inside the transparent stage and clear the labels',()=>{
@@ -29,7 +29,7 @@ test('bonus art and rotated traveling token stay inside the transparent stage an
   }
   if(p.tokenOpacity>0){
    const a=p.tokenAngle*Math.PI/180,edge=18*p.tokenScale*(Math.abs(Math.cos(a))+Math.abs(Math.sin(a)));
-   assert.ok(p.tokenX-edge>24&&p.tokenX+edge<396);assert.ok(p.tokenY-edge>=75&&p.tokenY+edge<305);
+   assert.ok(p.tokenX-edge>24&&p.tokenX+edge<396);assert.ok(p.tokenY-edge>=220&&p.tokenY+edge<450);
   }
  }
 });

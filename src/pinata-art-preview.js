@@ -13,9 +13,10 @@ function scene(){
  const mode=$('#scene').value,preset=structuredClone(DEFAULT_PINATA),finish=['tier-0','tier-1','tier-2','break','last-multiply','large',...exitScenes].includes(mode);
  maxTime=exitScenes.includes(mode)&&!resetScenes.includes(mode)?9200:4800;$('#time').max=maxTime;
  for(const b of document.querySelectorAll('[data-exit]'))b.disabled=!exitScenes.includes(mode)||(Number(b.dataset.exit)>450&&!resetScenes.includes(mode));
- if(mode==='large'||mode==='large-exit'){preset.outcomes[0].value=999999.99;preset.outcomes[1].value=999999.99;preset.outcomes[3].value=5;}
+ if(mode==='large'||mode==='large-exit'){preset.outcomes[0].value=1000000;preset.outcomes[1].value=1000000;preset.outcomes[3].value=5;}
  if(mode.startsWith('tier-')||['exit','royal-exit','grand-exit',...resetScenes].includes(mode)){const tier=mode.startsWith('tier-')?Number(mode.at(-1)):mode.startsWith('grand')?2:mode.startsWith('royal')?1:0,amount=[75,750,2500][tier];preset.outcomes[0].value=amount;preset.outcomes[1].value=amount;}
  if(mode==='worn'){preset.outcomes[4].value=3;preset.maxSwings=12;}
+ if(finish)preset.swings=3;
  base=startPinata(preset,'Birthday VIP',0);
  if(finish){
   swingPinata(base,-4000,{forcedIndex:0});advancePinata(base,-2500);

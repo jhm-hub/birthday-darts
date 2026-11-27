@@ -12,5 +12,5 @@ export function pinataCelebrationTier(totalCents,settings){
 }
 export function celebrationSampleAmount(tier,settings){
  const {royal,grand}=validatePinataCelebration(settings);
- return tier===2?grand:tier===1?royal:Math.min(150,royal/2);
+ return tier===2?grand:tier===1?royal:Math.min(150,Math.floor(royal/2));
 }

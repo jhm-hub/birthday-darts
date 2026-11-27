@@ -23,26 +23,28 @@ export function validatePinataViewerRanges(input=[]){
 export const findPinataViewerRange=(rules,viewer)=>(rules??[]).find(r=>r.username===normalizePinataUsername(viewer))??null;
 export const pinataViewerRangeText=r=>'$'+r.min.toLocaleString('en-US')+'–$'+r.max.toLocaleString('en-US');
 
-// Select the complete game's target first, then build its prizes. Every cash
-// hit is positive, every multiplier applies in full, and extras really extend
-// the game. We never clamp or replace the final total after the reveals.
+// Prepare the bonus sequence first, keeping a feasible whole-dollar cash
+// budget at every step. Then choose a centered total that those multipliers
+// can produce exactly. No reveal is rounded and no final total is clamped.
 export function startPinataTotalRange(widget,input,viewer='',now=Date.now(),draw=randomInt){
  const rule=validatePinataTotalRange(input);
  const pick=bound=>{const n=draw(bound);if(!Number.isInteger(n)||n<0||n>=bound)throw Error('Invalid prize-range draw.');return n;};
- const fresh=startPinata(widget,viewer.trim().replace(/^@/,''),now),target=centerWeightedPinataTotal(rule.min,rule.max,pick)*100;
+ const fresh=startPinata(widget,viewer.trim().replace(/^@/,''),now);
+ if(rule.max<fresh.remaining)throw Error('This '+fresh.remaining+'-swing game needs a maximum total of at least $'+fresh.remaining+' for positive whole-dollar rewards. No game was started.');
+ const fits=(multiplier,cashSlots)=>Math.floor(rule.max/multiplier)>=Math.max(Math.ceil(rule.min/multiplier),cashSlots);
  const plan=[];let left=fresh.remaining,allocated=fresh.allocated,multiplier=1,cashCount=0;
  while(left>0){
-  // Reserve one cent for every remaining cash hit. Any selected prefix can
-  // therefore finish truthfully, without rejecting bonuses or redrawing totals.
+  // Reserve $1 for every cash hit and every remaining swing. Completing the
+  // rest with cash is always possible; later eligible bonuses can still chain.
   const rewards=fresh.preset.outcomes.map(o=>{
    let eligible=!!plan.length||o.kind==='cash';
    if(o.kind==='multiply'){
     const next=multiplier*o.value;
-    eligible=eligible&&Number.isSafeInteger(next)&&target%next===0&&target/next>=cashCount+left-1;
+    eligible=eligible&&Number.isSafeInteger(next)&&fits(next,cashCount+left-1);
    }
    if(o.kind==='extra'){
     const granted=Math.min(o.value,fresh.preset.maxSwings-allocated);
-    eligible=eligible&&granted>0&&target/multiplier>=cashCount+left-1+granted;
+    eligible=eligible&&granted>0&&fits(multiplier,cashCount+left-1+granted);
    }
    return {...o,weight:eligible?o.weight:0};
   });
@@ -53,13 +55,12 @@ export function startPinataTotalRange(widget,input,viewer='',now=Date.now(),draw
   if(o.kind==='cash')cashCount++;
   plan.push(prize);
  }
- const count=plan.filter(p=>p.kind==='cash').length,budget=target/multiplier;
- const unit=[100,50,25,10,5,1].find(n=>budget%n===0&&budget>=count*n),units=budget/unit;
+ const count=cashCount,budget=centerWeightedPinataTotal(Math.max(Math.ceil(rule.min/multiplier),count),Math.floor(rule.max/multiplier),pick),target=budget*multiplier*100;
  const weights=pinataCashWeights(count,pick),sum=weights.reduce((a,b)=>a+b,0);
- const amounts=weights.map(w=>1+Math.floor((units-count)*w/sum));let remainder=units-amounts.reduce((a,b)=>a+b,0),cursor=pick(count);
+ const amounts=weights.map(w=>1+Math.floor((budget-count)*w/sum));let remainder=budget-amounts.reduce((a,b)=>a+b,0),cursor=pick(count);
  while(remainder-->0)amounts[cursor++%count]++;
- let cashIndex=0;for(const prize of plan)if(prize.kind==='cash')prize.value=amounts[cashIndex++]*unit/100;
- fresh.privateTotalRange={...rule,version:1};fresh.prizePlan=plan;
+ let cashIndex=0;for(const prize of plan)if(prize.kind==='cash')prize.value=amounts[cashIndex++];
+ fresh.privateTotalRange={...rule,version:2};fresh.prizePlan=plan;
  const check=structuredClone(fresh);let time=now;
  while(check.remaining){const shot=swingPinata(check,time);advancePinata(check,shot.finishAt);time=shot.finishAt;}
  if(pinataTotal(check)!==String(target)||check.hits.length!==plan.length)throw Error('Could not prepare this prize range. No game was started.');
@@ -68,5 +69,5 @@ export function startPinataTotalRange(widget,input,viewer='',now=Date.now(),draw
 
 export function startPinataViewerRange(widget,input,viewer='',now=Date.now(),draw=randomInt){
  const rule=validatePinataViewerRange(input),round=startPinataTotalRange(widget,rule,viewer,now,draw);
- delete round.privateTotalRange;round.privateViewerRange={...rule,version:1};return round;
+ delete round.privateTotalRange;round.privateViewerRange={...rule,version:2};return round;
 }

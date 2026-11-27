@@ -48,16 +48,17 @@ test('multiplier and Encore celebrations have distinct emphasis and clear before
  assert.equal(bonusPose('multiply',149).opacity,0);
  const mult=bonusPose('multiply',650),extra=bonusPose('extra',650);
  assert.ok(mult.opacity>0);assert.ok(mult.bankScale>1);assert.equal(mult.tokenOpacity,0);
- assert.ok(extra.tokenOpacity>0);assert.equal(extra.bankScale,1);assert.ok(extra.tokenX>210&&extra.tokenX<352);assert.ok(extra.tokenY<244);
- const arrived=bonusPose('extra',830);assert.equal(arrived.tokenX,352);assert.equal(arrived.tokenY,90);assert.ok(arrived.countScale>1);
+ assert.ok(extra.tokenOpacity>0);assert.equal(extra.bankScale,1);assert.ok(extra.tokenX>54&&extra.tokenX<210);assert.ok(extra.tokenY>244&&extra.tokenY<432);
+ const arrived=bonusPose('extra',830);assert.equal(arrived.tokenX,54);assert.equal(arrived.tokenY,432);assert.ok(arrived.countScale>1);
  for(const kind of ['multiply','extra']){const done=bonusPose(kind,SWING_MS-HIT_MS+40);assert.equal(done.opacity,0);assert.equal(done.tokenOpacity,0);assert.equal(done.bankScale,1);}
 });
-test('bonus confetti avoids labels, header and footer at all times',()=>{
+test('bonus confetti stays compact and Encore catch sparks settle above the footer counter',()=>{
  for(const kind of ['cash','multiply','extra'])for(let t=0;t<1500;t+=10)for(let i=0;i<BONUS_PARTICLES;i++){
   const p=bonusParticlePose(i,kind,t);if(p.opacity<=0)continue;
   const size=bonusParticleSpec(i,kind).size,edge=size*Math.SQRT2/2+1,cx=p.x+size/2,cy=p.y+size/2;
   assert.ok(cx-edge>=24&&cx+edge<=401);
-  assert.ok(cy-edge>=(kind==='extra'&&i>=12?78:105)&&cy+edge<=305,'particles clear the header and reward labels');
+  if(kind==='extra'&&i>=12){assert.ok(cy-edge>=210&&cy+edge<445,'Encore travel and catch stay inside the footer');if(i>=28)assert.ok(cy<432,'catch sparks rise above the swing count');}
+  else assert.ok(cy-edge>=105&&cy+edge<=305,'reward bursts clear the prize labels');
  }
  for(const kind of ['multiply','extra'])for(let i=0;i<BONUS_PARTICLES;i++)assert.equal(bonusParticlePose(i,kind,1060).opacity,0);
 });

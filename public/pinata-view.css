@@ -2,11 +2,6 @@
 .pinata-screen{position:relative;width:100%;aspect-ratio:21/23;overflow:hidden}
 .pinata-stage{position:absolute;left:50%;top:50%;width:420px;height:460px;transform-origin:center;opacity:0;overflow:hidden;font-family:Fredoka,Arial,sans-serif;color:#fff1de;--ink:#38213e}
 .pinata-stage *{box-sizing:border-box}.pinata-stage svg{display:block;width:100%;height:100%;image-rendering:pixelated}
-.pina-heading{position:absolute;top:9px;left:10px;right:10px;text-align:center;z-index:6;line-height:1.1}
-.pina-kicker{display:block;font-size:11px;letter-spacing:2.2px;font-weight:600;color:#fff1d8;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill}
-.pina-heading>strong{font-size:29px;letter-spacing:1px;color:#ffd0e7;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 2px var(--ink)}
-.pina-meta{position:absolute;top:60px;left:19px;right:19px;display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:6;font-size:14px;font-weight:600;-webkit-text-stroke:2.6px var(--ink);paint-order:stroke fill}
-.pina-viewer{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:225px}.pina-count{white-space:nowrap;font-size:12px;color:#b1f1df}
 .pina-hanging{position:absolute;left:100px;top:79px;width:220px;height:238px;transform-origin:50% 0;z-index:2;filter:drop-shadow(0 3px 0 #39213555)}
 .pina-hanging>svg{overflow:visible}
 .pina-half{transform-origin:70px 90px}.pina-paper{transform-origin:70px 100px}.pina-tassels{transform-origin:70px 145px}.pina-seam,.pina-gleam{opacity:0}.pina-bat{position:absolute;left:18px;top:196px;width:164px;height:50px;transform-origin:12px 26px;z-index:4;opacity:0;filter:drop-shadow(0 2px 0 #39213566)}
@@ -34,9 +29,8 @@
 .pina-bonus-token{position:absolute;left:-18px;top:-18px;width:36px;height:36px;z-index:7;opacity:0;pointer-events:none;background:#345647;clip-path:polygon(9px 0,27px 0,27px 4px,32px 4px,32px 9px,36px 9px,36px 27px,32px 27px,32px 32px,27px 32px,27px 36px,9px 36px,9px 32px,4px 32px,4px 27px,0 27px,0 9px,4px 9px,4px 4px,9px 4px);box-shadow:inset 0 3px #e9ffe7,inset 0 -3px #8ddcbd;display:grid;place-items:center}
 .pina-bonus-token span{font-size:21px;font-weight:700;color:#d5ffe9;text-shadow:0 2px #27382c}
 .pina-bonus-particles{position:absolute;inset:0;z-index:5;overflow:hidden;pointer-events:none}.pina-bonus-particles i{position:absolute;left:0;top:0;width:15px;height:15px;opacity:0;filter:drop-shadow(0 1px 0 #49233d55)}.pina-bonus-particles i:nth-child(3n){width:10px;height:10px}
-.pina-count,.pina-bank{transform-origin:100% 50%}.pina-mult{transform-origin:50% 50%}
-.pina-idle{position:absolute;left:10px;right:10px;top:337px;text-align:center;font-size:12px;font-weight:600;letter-spacing:.4px;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill}
-.pina-footer{position:absolute;left:17px;right:17px;bottom:10px;display:grid;grid-template-columns:100px 82px 1fr;align-items:end;gap:12px;z-index:6}.pina-footer>div:nth-child(2){text-align:center}.pina-footer>div:last-child{text-align:right}
+.pina-bank{transform-origin:100% 50%}.pina-count,.pina-mult{transform-origin:50% 50%}.pina-count{color:#b1f1df}
+.pina-footer{position:absolute;left:17px;right:17px;bottom:10px;display:grid;grid-template-columns:74px 90px 60px 1fr;align-items:end;gap:8px;z-index:6}.pina-footer>div{text-align:center}.pina-footer>div:last-child{text-align:right}
 .pina-footer small{display:block;font-size:11px;letter-spacing:.2px;font-weight:600;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;white-space:nowrap}
 .pina-footer strong{display:block;font-weight:700;line-height:1.15;white-space:nowrap;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 2px var(--ink)}
 .pina-cash{color:#ffd39d}.pina-mult{color:#dab8ff}.pina-bank{color:#aaf4df}
@@ -59,7 +53,6 @@
 .pina-particles .star{background:none;clip-path:none;box-shadow:none}
 .pina-particles svg,.pina-finale-particles svg{overflow:hidden}
 .pina-finale-particles .candy,.pina-finale-particles .star{filter:drop-shadow(0 1px 0 #49233d55)}
-.pina-heading>strong{color:#ffd2e6;text-shadow:0 1px #9b536e,0 3px var(--ink)}
 .pina-cash{color:#ffe1a3}.pina-mult{color:#e0c3ff}.pina-bank{color:#b9f2de}
 html.pinata-overlay,html.pinata-overlay body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent!important}
 .pinata-overlay .pinata-screen{width:100vw;height:100vh;aspect-ratio:auto}.pinata-overlay #display-help{position:absolute;z-index:10;background:#38213e;color:#fff;padding:12px;font:16px Arial}
@@ -137,3 +130,5 @@ html.pinata-overlay,html.pinata-overlay body{margin:0;width:100%;height:100%;ove
 .pina-jackpot-particles[data-kind=multiply] i:nth-child(4n) path:nth-child(2){fill:#d7b4ff}
 .pina-reward[data-kind=cash] .pina-reward-kicker{color:#ffe6aa}
 @media(prefers-reduced-motion:reduce){.pina-jackpot-frame,.pina-jackpot-particles{display:none}}
+
+.pina-reward small:empty{display:none}

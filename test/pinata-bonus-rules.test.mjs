@@ -59,26 +59,28 @@ test('100% bonuses can chain extras and stack multipliers without exceeding the 
 
 test('range games keep exact inclusive totals while guaranteeing available bonuses and allowing repeated bonus chains',()=>{
  let extras=0,stacked=0,chains=0;
- for(const [min,max] of [[1,1],[7,7],[500,1500],[999999,1000000]])for(let seed=1;seed<=150;seed++){
+ for(const [min,max] of [[5,5],[7,7],[500,1500],[999999,1000000]])for(let seed=1;seed<=150;seed++){
   const round=finish(startPinataTotalRange(DEFAULT_PINATA,{min,max},'viewer',0,rng(seed*97)));
   const total=BigInt(pinataTotal(round)),prizes=round.hits.map(h=>h.prize),cash=prizes.filter(p=>p.kind==='cash');
   assert.ok(total>=BigInt(min*100)&&total<=BigInt(max*100));assert.equal(total%100n,0n);
   assert.equal(prizes[0].kind,'cash');assert.ok(prizes.slice(0,3).some(p=>p.kind!=='cash'));
-  assert.ok(cash.every(p=>p.value>=.01));assert.equal(round.hits.length,DEFAULT_PINATA.swings+prizes.filter(p=>p.kind==='extra').reduce((n,p)=>n+p.granted,0));assert.ok(round.hits.length<=8);
+  assert.ok(cash.every(p=>Number.isInteger(p.value)&&p.value>=1));assert.equal(round.hits.length,DEFAULT_PINATA.swings+prizes.filter(p=>p.kind==='extra').reduce((n,p)=>n+p.granted,0));assert.ok(round.hits.length<=8);
   const sum=cash.reduce((n,p)=>n+Math.round(p.value*100),0),mult=prizes.filter(p=>p.kind==='multiply').reduce((n,p)=>n*BigInt(p.value),1n);assert.equal(total,BigInt(sum)*mult);
   extras+=prizes.some(p=>p.kind==='extra');stacked+=prizes.filter(p=>p.kind==='multiply').length>1;chains+=prizes.some((p,i)=>i&&p.kind!=='cash'&&prizes[i-1].kind!=='cash');
  }
  assert.ok(extras>0&&stacked>0&&chains>0);
- for(const draw of [()=>0,n=>n-1]){const round=finish(startPinataTotalRange(DEFAULT_PINATA,{min:100,max:200},'',0,draw));assert.equal(pinataTotal(round),String((draw(101)?200:100)*100));}
+ for(const draw of [()=>0,n=>n-1]){const round=finish(startPinataTotalRange(DEFAULT_PINATA,{min:100,max:200},'',0,draw));assert.ok(BigInt(pinataTotal(round))>=10000n&&BigInt(pinataTotal(round))<=20000n);}
 });
 
 test('tiny exact ranges, incompatible multipliers, disabled bonuses and pathological draws finish without dropping feasible guarantees',()=>{
  for(const chance of [0,55,100])for(const swings of [1,2,6])for(const maxSwings of [swings,12])for(const draw of [()=>0,n=>n-1]){
   const p=preset({swings,maxSwings,bonusRules:rules(chance),outcomes:[{kind:'cash',value:25,weight:.01},{kind:'multiply',value:5,weight:1000},{kind:'extra',value:3,weight:1000}]});
   for(const target of [1,17,1000000]){
+   if(target<swings){assert.throws(()=>startPinataTotalRange(p,{min:target,max:target},'',0,draw),/needs a maximum total of at least/);continue;}
    const round=finish(startPinataTotalRange(p,{min:target,max:target},'',0,draw));assert.equal(pinataTotal(round),String(target*100));assert.ok(round.hits.length<=maxSwings);
    if(chance===0||swings===1)assert.ok(kinds(round).every(k=>k==='cash'));
-   else assert.ok(kinds(round).slice(0,Math.min(swings,3)).some(k=>k!=='cash'));
+   else if(target%5===0||maxSwings>swings&&target>=swings+2)assert.ok(kinds(round).slice(0,Math.min(swings,3)).some(k=>k!=='cash'));
+   assert.ok(round.hits.filter(h=>h.prize.kind==='cash').every(h=>Number.isInteger(h.prize.value)&&h.prize.value>=1));
   }
  }
  const p=preset({bonusRules:rules(100),outcomes:[{kind:'cash',value:1,weight:1},{kind:'multiply',value:3,weight:1},{kind:'extra',value:1,weight:0}]});

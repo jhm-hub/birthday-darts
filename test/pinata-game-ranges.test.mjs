@@ -34,11 +34,16 @@ test('saved buttons survive reload and ordinary edits, remain separate per game,
  let store=createPinataStore(f.storage,f.locks);assert.deepEqual(store.controlSnapshot(id).control.gameRanges,ranges);
  const active=await store.startGameRange(id,'range-3','FaithFan',1000);assert.equal(active.round.flight.index,0);assert.equal(active.control.activeGameRange.min,1234);
  const raw=()=>JSON.parse(f.data.get(PINATA_KEY)).widgets[0].round;const frozen=structuredClone(raw());
- ranges[2].min=ranges[2].max=2;await store.setGameRanges(id,ranges);assert.deepEqual(raw(),frozen);
+ ranges[2].min=ranges[2].max=5;await store.setGameRanges(id,ranges);assert.deepEqual(raw(),frozen);
  await assert.rejects(store.startGameRange(id,'range-1','Different viewer',2501),/current game/);assert.deepEqual(raw(),frozen);
  let now=1000;while(raw().remaining){const shot=raw().flight;await store.advance(shot.finishAt);now=shot.finishAt;store=createPinataStore(f.storage,f.locks);if(raw().remaining)await store.swing(id,'ignored',now);}
  assert.equal(pinataTotal(raw()),'123400');assert.equal(raw().viewer,'FaithFan');await store.advance(raw().hideAt+CLEAR_MS);
- await store.startGameRange(id,'range-3','Next',now+10000);assert.equal(raw().privateGameRange.min,2);
+ await store.startGameRange(id,'range-3','Next',now+10000);assert.equal(raw().privateGameRange.min,5);
+});
+test('an impossible whole-dollar game reports the needed minimum without starting or changing storage',async()=>{
+ const f=fixture(),id=DEFAULT_PINATA.id;await f.store.init();const ranges=settings();ranges[0].min=1;ranges[0].max=4;await f.store.setGameRanges(id,ranges);
+ const before=f.data.get(PINATA_KEY);await assert.rejects(f.store.startGameRange(id,'range-1','Viewer',1000),/5-swing game needs a maximum total of at least \$5/);
+ assert.equal(f.data.get(PINATA_KEY),before);assert.equal(f.store.snapshot(id).round,null);
 });
 test('concurrent launch buttons start exactly one game and explicit range overrides a username rule',async()=>{
  const f=fixture(),id=DEFAULT_PINATA.id;await f.store.init();await f.store.setGameRanges(id,settings());await f.store.setViewerRange(id,{username:'vip',min:999,max:999});

@@ -139,7 +139,7 @@ test('distinct bonus textures resolve on the visible bank pulse and token catch'
  for(const score of [multiplier,extra])assert.ok(score.every(c=>['chip','coin','reel','fanfare','body','victorySnap','victoryShimmer','payout'].includes(c.voice)));
  const bankAt=160+MULTIPLIER_RESOLVE_SECONDS*1000,catchAt=160+ENCORE_CATCH_SECONDS*1000;
  assert.ok(bonusPose('multiply',bankAt).bankScale>1.11);
- const token=bonusPose('extra',catchAt);assert.equal(token.tokenX,352);assert.equal(token.tokenY,90);assert.ok(token.countScale>1);
+ const token=bonusPose('extra',catchAt);assert.equal(token.tokenX,54);assert.equal(token.tokenY,432);assert.ok(token.countScale>1);
  assert.ok(extra.some(c=>c.at===ENCORE_CATCH_SECONDS&&c.voice==='coin'));
  assert.ok(multiplier.some(c=>c.at===MULTIPLIER_RESOLVE_SECONDS));
  assert.ok(renderPinataSound('multiply').length/48000<(1500+ROYAL_BUILDUP_MS-HIT_MS-160)/1000,'bonus tail clears the finale build-up');

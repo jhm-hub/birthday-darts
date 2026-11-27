@@ -19,7 +19,8 @@ export function validatePinata(input){
   if(o.kind==='multiply'&&(!Number.isInteger(o.value)||o.value<2||o.value>5))throw Error('Choose a whole-number multiplier from ×2 to ×5.');
   if(o.kind==='extra'&&(!Number.isInteger(o.value)||o.value<1||o.value>3))throw Error('Extra rewards add 1–3 swings.');
   if(!Number.isFinite(o.weight)||o.weight<0||o.weight>1000||Math.abs(o.weight*100-Math.round(o.weight*100))>1e-5)throw Error('Weights must be 0–1,000, with up to two decimal places.');
-  return {kind:o.kind,value:o.value,weight:o.weight};
+  // Accept legacy saved cents, but normalize new settings and games to whole dollars.
+  return {kind:o.kind,value:o.kind==='cash'?Math.max(1,Math.round(o.value)):o.value,weight:o.weight};
  });
  if(!outcomes.some(o=>o.kind==='cash'&&o.weight>0))throw Error('Keep at least one cash reward with a weight above zero.');
  const id=input.id??randomUUID();if(!/^[\w-]{1,80}$/.test(id))throw Error('Invalid game ID.');
@@ -66,4 +67,4 @@ export function advancePinata(r,now=Date.now()){
  if(r.remaining===0){r.completedAt=shot.finishAt;r.hideAt=shot.finishAt+HOLD_MS;}return true;
 }
 export function cleanPinata(r){if(!r)return null;const p=structuredClone(r);delete p.privateViewerRange;delete p.privateTotalRange;delete p.privateGameRange;delete p.prizePlan;delete p.preset.bonusRules;p.preset.outcomes=p.preset.outcomes.map(({kind,value})=>({kind,value}));return p;}
-export const rewardCopy=p=>p.kind==='cash'?{main:'$'+p.value,detail:'BIRTHDAY TAX COLLECTED'}:p.kind==='multiply'?{main:'×'+p.value,detail:'ON THE FINAL TOTAL'}:{main:'+'+(p.granted??p.value),detail:(p.granted??p.value)===1?'ENCORE SWING':'ENCORE SWINGS'};
+export const rewardCopy=p=>p.kind==='cash'?{main:'$'+p.value,detail:''}:p.kind==='multiply'?{main:'×'+p.value,detail:'ON THE FINAL TOTAL'}:{main:'+'+(p.granted??p.value),detail:(p.granted??p.value)===1?'ENCORE SWING':'ENCORE SWINGS'};
