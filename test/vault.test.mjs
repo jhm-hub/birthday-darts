@@ -14,10 +14,10 @@ test('start is separate from five chamber unlocks; opening and overlapping click
  const r=startVaultRound(DEFAULT_VAULT,'',0,()=>0);assert.throws(()=>unlockVault(r,VAULT_INTRO_MS-1));unlockVault(r,VAULT_INTRO_MS);assert.throws(()=>unlockVault(r,VAULT_INTRO_MS+1));assert.equal(r.opened.length,0);
 });
 test('every chamber adds cash; total multipliers cover opening, current and future cash and stack exactly',()=>{
- const r=startVaultRound(preset({outcomes:[{value:.11,weight:1}]}),'',0,()=>0);
- finish(r,{forcedCash:0,forcedBonus:'multiply'});assert.equal(vaultTotal(r),'20022');
- finish(r,{forcedCash:0,forcedBonus:null});assert.equal(vaultTotal(r),'20044');
- finish(r,{forcedCash:0,forcedBonus:'multiply'});assert.equal(vaultTotal(r),'40132');assert.equal(r.multiplier,'4');
+ const r=startVaultRound(preset({outcomes:[{value:1,weight:1}]}),'',0,()=>0);
+ finish(r,{forcedCash:0,forcedBonus:'multiply'});assert.equal(vaultTotal(r),'20200');
+ finish(r,{forcedCash:0,forcedBonus:null});assert.equal(vaultTotal(r),'20400');
+ finish(r,{forcedCash:0,forcedBonus:'multiply'});assert.equal(vaultTotal(r),'41200');assert.equal(r.multiplier,'4');
 });
 test('bonus is additive to the cash, +1 consumes this chamber and grants one new chamber',()=>{
  const r=startVaultRound(DEFAULT_VAULT,'',0,()=>0),before=r.cashCents;
@@ -58,7 +58,7 @@ test('display snapshots omit weights/ranges and backups omit viewer, round and p
 test('invalid ranges, zero/negative cash and empty bonus pools are rejected',()=>{
  for(const patch of [{openingMin:500,openingMax:300},{openingMin:1.5},{outcomes:[{value:0,weight:1}]},{outcomes:[{value:-1,weight:1}]},{maxChambers:4},{multiplyWeight:0,extraWeight:0},{outcomes:[{value:10,weight:0}]}])assert.throws(()=>validateVault(preset(patch)));
 });
-test('sample tier previews match configurable thresholds, including one-cent boundaries',()=>{for(const p of [DEFAULT_VAULT,preset({celebration:{big:.01,royal:.02}})])for(let i=0;i<3;i++)assert.equal(vaultLevel(sampleVaultFinale(p,i,1000)),i);});
+test('sample tier previews match configurable thresholds, including migrated decimal thresholds',()=>{for(const p of [DEFAULT_VAULT,preset({celebration:{big:.01,royal:.02}})])for(let i=0;i<3;i++)assert.equal(vaultLevel(sampleVaultFinale(p,i,1000)),i);});
 function fixture(){const data=new Map();let tail=Promise.resolve();const storage={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};const locks={request:(_,fn)=>{const next=tail.then(fn);tail=next.catch(()=>{});return next;}};return {data,storage,locks,store:createVaultStore(storage,locks)};}
 test('saved games freeze active settings and persist one committed result across reloads',async()=>{
  const f=fixture();await f.store.init();const id=DEFAULT_VAULT.id;
@@ -93,8 +93,9 @@ test('special prizes use their own exact weighted draw, skip disabled entries an
   assert.equal(bound,400);assert.equal(shot.cashCents,cash);
  }
 });
-test('special cash remains exact with stacked total multipliers and a round reload',()=>{
+test('legacy fractional cash remains exact with stacked multipliers and a round reload',()=>{
  let r=startVaultRound(preset({openingMin:1,openingMax:1,chambers:2,guarantee:false,outcomes:[{value:.11,weight:1}],specialOutcomes:[{value:25.25,weight:1}]}),'',0,()=>0);
+ r.preset.outcomes[0].value=.11;r.preset.specialOutcomes[0].value=25.25; // Existing frozen round from before whole-dollar prizes.
  finish(r,{forcedCash:0,forcedBonus:'extra'});finish(r,{forcedCash:0,forcedBonus:'multiply'});
  r=JSON.parse(JSON.stringify(r));const shot=unlockVault(r,r.opened.at(-1).finishAt,{forcedCash:0,forcedBonus:'multiply'});
  assert.equal(vaultTotal(projectedVault(r,shot.revealAt)),'10588');
@@ -103,15 +104,15 @@ test('special cash remains exact with stacked total multipliers and a round relo
 test('both prize lists validate independently and survive backup, without leaking to the overlay',()=>{
  for(const specialOutcomes of [null,[],Array(11).fill({value:1,weight:1}),[{value:0,weight:1}],[{value:1000001,weight:1}],[{value:1.001,weight:1}],[{value:25,weight:-1}],[{value:25,weight:0}]])assert.throws(()=>validateVault(preset({specialOutcomes})),/Special vault cash/);
  const p=preset({specialOutcomes:[{value:333.33,weight:2},{value:500,weight:3}]});
- const imported=importVaultSettings(exportVaultSettings([p]))[0];assert.deepEqual(imported.specialOutcomes,p.specialOutcomes);
+ const imported=importVaultSettings(exportVaultSettings([p]))[0];assert.deepEqual(imported.specialOutcomes,[{value:333,weight:2},{value:500,weight:3}]);
  const clean=cleanVaultRound(startVaultRound(p,'',0,()=>0));assert.equal(clean.preset.specialOutcomes,undefined);assert.equal(clean.preset.outcomes,undefined);
 });
-test('older settings gain richer prizes without modifying their base amounts, weights or source object',()=>{
+test('older decimal settings round for future games, preserving weights and the source object',()=>{
  const legacy=preset();delete legacy.specialOutcomes;const before=structuredClone(legacy);
  assert.deepEqual(validateVault(legacy).specialOutcomes,DEFAULT_VAULT.specialOutcomes);assert.deepEqual(legacy,before);
  const custom={...legacy,outcomes:[{value:12.35,weight:3.21},{value:999999,weight:0},{value:900,weight:4}]};
  const migrated=importVaultSettings({format:'faith-birthday-vault',version:1,widgets:[custom]})[0];
- assert.deepEqual(migrated.outcomes,custom.outcomes);assert.deepEqual(migrated.specialOutcomes,[{value:24.7,weight:3.21},{value:1000000,weight:0},{value:1800,weight:4}]);
+ assert.deepEqual(migrated.outcomes,[{value:12,weight:3.21},{value:999999,weight:0},{value:900,weight:4}]);assert.deepEqual(migrated.specialOutcomes,[{value:24,weight:3.21},{value:1000000,weight:0},{value:1800,weight:4}]);
 });
 test('saving richer special prizes preserves active and legacy rounds; only a new round uses the saved pool',async()=>{
  const f=fixture();await f.store.init();const id=DEFAULT_VAULT.id;

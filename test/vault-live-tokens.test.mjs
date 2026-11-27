@@ -20,16 +20,16 @@ test('older settings and frozen rounds stay Original; token mode validates expli
  assert.equal(validateVault(DEFAULT_VAULT).finaleMode,'original');assert.throws(()=>validateVault({...preset,finaleMode:'bad'}));
  const r=startVaultRound(DEFAULT_VAULT);assert.equal(r.tokenMachine,undefined);assert.equal(r.tokenFinale,undefined);
 });
-test('1,280 bounded token rounds keep exact cents, cash every chamber, richer extra vaults and all spins stacked',()=>{
+test('1,280 bounded token rounds keep whole dollars, cash every chamber, richer extra vaults and all spins stacked',()=>{
  const seen=new Set();for(const [min,max] of [[1,1],[2,7],[500,1500],[601,601],[1000,2000],[1500,4000],[2500,10000],[999999,1000000]])for(let seed=1;seed<=160;seed++){
   const r=startVaultTotalRange(preset,{min,max},'Demo',0,rng(seed)),plan=[...r.privateTokenPlan];complete(r);
   assert.ok(BigInt(vaultTotal(r))>=BigInt(min*100)&&BigInt(vaultTotal(r))<=BigInt(max*100));
-  assert.ok(r.opened.length<=15);assert.ok(r.opened.every(s=>s.cashCents>0));assert.ok(r.opened.slice(0,3).some(s=>s.bonus));
-  assert.equal(r.opened.length,5+r.opened.filter(s=>s.bonus?.kind==='extra').length);
-  assert.equal(r.tokenCount,plan.length);assert.deepEqual(r.tokenFinale.results.map(s=>s.value),plan);
+  assert.ok(r.opened.length<=15);assert.ok(r.opened.every(s=>s.cashCents>0&&s.cashCents%100===0));if(BigInt(vaultTotal(r))>=600n)assert.ok(r.opened.slice(0,3).some(s=>s.bonus));
+  assert.equal(r.opened.length,r.preset.chambers+r.opened.filter(s=>s.bonus?.kind==='extra').length);
+  assert.equal(r.tokenCount,plan.length);assert.deepEqual(r.tokenFinale?.results.map(s=>s.value)??[],plan);
   assert.equal(BigInt(vaultTotal(r)),BigInt(r.cashCents)*plan.reduce((a,b)=>a*BigInt(b),1n));
-  assert.ok(Math.min(...r.opened.slice(5).map(s=>s.cashCents))>Math.max(...r.opened.slice(0,5).map(s=>s.cashCents)));
-  for(const n of plan)seen.add(n);assert.equal(r.hideAt,null);
+  if(plan.length)assert.ok(Math.min(...r.opened.slice(5).map(s=>s.cashCents))>Math.max(...r.opened.slice(0,5).map(s=>s.cashCents)));
+  for(const n of plan)seen.add(n);if(plan.length)assert.equal(r.hideAt,null);
  }assert.deepEqual([...seen].sort(),[2,3,4,5,6,7,8]);
 });
 test('a token awards no immediate multiplier or extra chamber; readout does not mislabel it as +1',()=>{

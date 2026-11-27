@@ -18,7 +18,9 @@ function validateCashPrizes(prizes,label){
  const outcomes=prizes.map(o=>{
   if(!o||!Number.isFinite(o.value)||o.value<.01||o.value>1000000||Math.abs(o.value*100-Math.round(o.value*100))>.00001)throw Error(`${label}: use $0.01–$1,000,000, with up to two decimals.`);
   if(!Number.isFinite(o.weight)||o.weight<0||o.weight>1000||Math.abs(o.weight*100-Math.round(o.weight*100))>.00001)throw Error(`${label}: weights must be 0–1,000, with up to two decimals.`);
-  return {value:o.value,weight:o.weight};
+  // Normalize older decimal settings for future rounds only. Frozen rounds
+  // keep their original amounts so reloading never changes an awarded prize.
+  return {value:Math.max(1,Math.round(o.value)),weight:o.weight};
  });
  if(!outcomes.some(o=>o.weight>0))throw Error(`${label}: give at least one prize a weight above zero.`);
  return outcomes;
@@ -40,8 +42,10 @@ export function validateVault(input){
  if(input.bonusChance>0&&input.multiplyWeight+input.extraWeight<=0)throw Error('Give at least one bonus a weight above zero.');
  const outcomes=validateCashPrizes(input.outcomes,'Starting chamber cash');
  const specialOutcomes=validateCashPrizes(input.specialOutcomes===undefined?initialSpecialPrizes(outcomes):input.specialOutcomes,'Special vault cash');
+ const oldLevels=validateGiftCelebration(input.celebration),big=Math.min(999999999,Math.max(1,Math.round(oldLevels.big)));
+ const celebration={big,royal:Math.max(big+1,Math.round(oldLevels.royal))};
  const id=input.id??randomUUID();if(!/^[\w-]{1,80}$/.test(id))throw Error('Invalid vault identifier.');
- return {id,finaleMode,name:input.name.trim(),openingMin:input.openingMin,openingMax:input.openingMax,chambers:input.chambers,maxChambers:input.maxChambers,bonusChance:input.bonusChance,multiplyValue:input.multiplyValue,multiplyWeight:input.multiplyWeight,extraWeight:input.extraWeight,guarantee:input.guarantee!==false,celebration:validateGiftCelebration(input.celebration),outcomes,specialOutcomes};
+ return {id,finaleMode,name:input.name.trim(),openingMin:input.openingMin,openingMax:input.openingMax,chambers:input.chambers,maxChambers:input.maxChambers,bonusChance:input.bonusChance,multiplyValue:input.multiplyValue,multiplyWeight:input.multiplyWeight,extraWeight:input.extraWeight,guarantee:input.guarantee!==false,celebration,outcomes,specialOutcomes};
 }
 // A saved round from before separate pools keeps its original prizes until it
 // finishes. Never migrate the frozen round preset while selecting an award.
@@ -129,6 +133,6 @@ export function cleanVaultRound(r){
 export function sampleVaultFinale(widget,level=2,now=Date.now()){
  const r=startVaultRound(widget,'Demo viewer',now-20000,()=>0);
  const bigCents=Math.round(r.preset.celebration.big*100);
- const total=level===2?Math.round(r.preset.celebration.royal*100):level===1?bigCents:Math.min(Math.floor(bigCents/2),10000);
+ const total=level===2?Math.round(r.preset.celebration.royal*100):level===1?bigCents:Math.min(Math.floor(bigCents/200)*100,10000);
  r.cashCents=Math.max(0,total);r.multiplier=1;r.remaining=0;r.completedAt=now;r.hideAt=now+VAULT_HOLD_MS;r.celebrationPreview=true;return r;
 }

@@ -24,7 +24,7 @@ export const findVaultViewerRange=(ranges,viewer)=>(ranges??[]).find(r=>r.userna
 export const vaultViewerRangeText=range=>'$'+range.min.toLocaleString('en-US')+'–$'+range.max.toLocaleString('en-US');
 
 // A username range replaces the ordinary prize draw for this round. Build a
-// varied, exact-cent sequence before displaying its opening balance. No amount
+// varied, whole-dollar sequence before displaying its opening balance. No amount
 // is removed or clamped at the end, and every chamber pays positive cash.
 export function startVaultViewerRange(widget,input,viewer='',now=Date.now(),draw=randomInt){
  const rule=validateVaultViewerRange(input);
@@ -37,7 +37,7 @@ export function startVaultViewerRange(widget,input,viewer='',now=Date.now(),draw
 // a late boost for a special vault; each key appears before its chamber is needed.
 function luckBonuses(extras,multiplier,pick){
  const count=5+extras,bonuses=Array(count).fill(null),lastBoost=count-1-pick(2);
- bonuses[lastBoost]='multiply';
+ if(multiplier>1)bonuses[lastBoost]='multiply';
  bonuses[1+pick(2)]='extra';
  bonuses[3+pick(2)]='extra';
  // Special vaults can earn the next key, keeping the longer run unfolding
@@ -58,19 +58,23 @@ export function startVaultTotalRange(widget,input,viewer='',now=Date.now(),draw=
  const target=lowerWeightedRange(rule.min,rule.max,pick),luck=target>=1500,longRun=target>=7500;
  // Game 1 keeps its existing draw sequence. Higher games, larger username
  // ranges and unlabelled previews use the longer, smaller-cash bonus journey.
- if(widget.finaleMode==='tokens'||input.id!=='low'&&(['medium','high','extreme'].includes(input.id)||luck))return startVaultBoostRound(widget,target,viewer,now,pick);
- const extras=longRun?4+pick(2):luck?2+pick(2):1+pick(3),count=5+extras;
- const powers=[1,2,4,8].filter(m=>target%m===0&&target/m>=count);
- // Every whole-dollar target supports ×4 to the cent, including odd totals.
- // ×8 adds a third boost where exact-cent arithmetic permits it.
- const multiplier=luck?(target>=5000&&target*100%8===0?8:4):powers.length?powers[pick(powers.length)]:1,baseCents=target*100/multiplier;
+ if(widget.finaleMode==='tokens'||input.id!=='low'&&(['medium','high','extreme'].includes(input.id)||luck)){
+  const boosted=startVaultBoostRound(widget,target,viewer,now,pick,rule);
+  if(boosted)return boosted;
+ }
+ const desiredExtras=longRun?4+pick(2):luck?2+pick(2):1+pick(3),desiredCount=5+desiredExtras;
+ const powers=[1,2,4,8].filter(m=>target%m===0&&target/m>=Math.min(target,desiredCount));
+ // Narrow, indivisible totals use only boosts that preserve whole dollars.
+ // Tiny custom ranges reduce the chamber count instead of inventing pennies.
+ const multiplier=widget.finaleMode==='tokens'?1:luck?powers.at(-1):powers[pick(powers.length)],baseCents=target*100/multiplier;
+ const count=Math.min(desiredCount,baseCents/100),chambers=Math.min(5,count),extras=count-chambers;
  const openingUnit=luck&&baseCents>=50000?25:1;
- const opening=luck?Math.max(1,Math.floor(baseCents/100*(.08+pick(5)/100)/openingUnit)*openingUnit):Math.floor(baseCents/100*(.18+pick(15)/100));
- const cashBudget=baseCents-opening*100,unit=luck?(baseCents>=(longRun?150000:100000)?2500:500):cashBudget>=count*100?100:1,units=Math.floor(cashBudget/unit);
+ const opening=Math.min(baseCents/100-count,luck?Math.max(1,Math.floor(baseCents/100*(.08+pick(5)/100)/openingUnit)*openingUnit):Math.floor(baseCents/100*(.18+pick(15)/100)));
+ const cashBudget=baseCents-opening*100,unit=luck?(baseCents>=(longRun?150000:100000)?2500:500):100,units=Math.floor(cashBudget/unit);
  const weights=Array.from({length:count},(_,i)=>luck?(i<5?60+pick(41):240+pick(121)):(i<5?80+pick(81):180+pick(141))),sum=weights.reduce((a,b)=>a+b,0);
  const cash=weights.map(w=>1+Math.floor((units-count)*w/sum));let remainder=units-cash.reduce((a,b)=>a+b,0),cursor=pick(count);
  while(remainder-->0){cash[cursor%count]++;cursor++;}
- const bonuses=luck?luckBonuses(extras,multiplier,pick):Array(count).fill(null);let allocated=5;
+ const bonuses=luck?luckBonuses(extras,multiplier,pick):Array(count).fill(null);let allocated=chambers;
  for(let i=0;!luck&&i<extras;i++){
   const slots=Array.from({length:allocated},(_,j)=>j).filter(j=>bonuses[j]===null);
   bonuses[slots[pick(slots.length)]]='extra';allocated++;
@@ -78,14 +82,15 @@ export function startVaultTotalRange(widget,input,viewer='',now=Date.now(),draw=
  for(let i=0;!luck&&i<Math.log2(multiplier);i++){
   const slots=bonuses.map((b,j)=>b===null?j:-1).filter(j=>j>=0);bonuses[slots[pick(slots.length)]]='multiply';
  }
- if(!bonuses.slice(0,3).some(Boolean)){const from=bonuses.findIndex(Boolean),to=pick(3);bonuses[to]=bonuses[from];bonuses[from]=null;}
+ if(bonuses.some(Boolean)&&!bonuses.slice(0,3).some(Boolean)){const from=bonuses.findIndex(Boolean),to=pick(Math.min(3,count));bonuses[to]=bonuses[from];bonuses[from]=null;}
  const makePool=values=>[...new Set(values)].map(cents=>({value:cents/100,weight:1}));
  const amounts=cash.map(n=>n*unit);
  amounts[count-1]+=cashBudget-units*unit;
- const outcomes=makePool(amounts.slice(0,5)),specialOutcomes=makePool(amounts.slice(5));
- const preset={...widget,openingMin:opening,openingMax:opening,chambers:5,maxChambers:longRun?10:8,bonusChance:35,multiplyValue:2,multiplyWeight:1,extraWeight:1,guarantee:true,outcomes,specialOutcomes};
+ const outcomes=makePool(amounts.slice(0,chambers)),specialOutcomes=extras?makePool(amounts.slice(chambers)):outcomes;
+ const preset={...widget,openingMin:opening,openingMax:opening,chambers,maxChambers:longRun?10:8,bonusChance:bonuses.some(Boolean)?35:0,multiplyValue:2,multiplyWeight:1,extraWeight:1,guarantee:bonuses.some(Boolean),outcomes,specialOutcomes};
  const fresh=startVaultRound(preset,viewer.trim().replace(/^@/,''),now,()=>0);
- fresh.prizePlan=amounts.map((cents,index)=>({cashIndex:(index<5?outcomes:specialOutcomes).findIndex(p=>Math.round(p.value*100)===cents),bonus:bonuses[index]}));
+ fresh.prizePlan=amounts.map((cents,index)=>({cashIndex:(index<chambers?outcomes:specialOutcomes).findIndex(p=>Math.round(p.value*100)===cents),bonus:bonuses[index]}));
+ if(widget.finaleMode==='tokens')fresh.privateTokenPlan=[];
  // Validate the actual engine path, including extra-chamber eligibility and
  // the early bonus guarantee, before the store writes or announces a round.
  const check=structuredClone(fresh);let time=check.readyAt;

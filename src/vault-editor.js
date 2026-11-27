@@ -40,7 +40,7 @@ function readDraft(){
 }
 function cashRow(o={value:25,weight:10},pool='cash'){
  const container=$('#'+pool+'-rows');
- const row=document.createElement('div');row.className='cash-row';row.innerHTML='<input class="cash-value" aria-label="Cash amount" type="number" min=".01" max="1000000" step=".01" required><input class="cash-weight" aria-label="Cash relative weight" type="number" min="0" max="1000" step=".01" required><output aria-label="Cash chance"></output><button type="button" aria-label="Remove cash amount">×</button>';
+ const row=document.createElement('div');row.className='cash-row';row.innerHTML='<input class="cash-value" aria-label="Cash amount" type="number" min="1" max="1000000" step="1" required><input class="cash-weight" aria-label="Cash relative weight" type="number" min="0" max="1000" step=".01" required><output aria-label="Cash chance"></output><button type="button" aria-label="Remove cash amount">×</button>';
  if(pool==='special-cash')row.querySelectorAll('[aria-label]').forEach(el=>el.setAttribute('aria-label','Special vault '+el.getAttribute('aria-label').toLowerCase()));
  row.querySelector('.cash-value').value=o.value;row.querySelector('.cash-weight').value=o.weight;row.querySelectorAll('input').forEach(x=>x.addEventListener('input',changed));row.querySelector('button').onclick=()=>{if(container.children.length===1)return message('Keep at least one cash amount.',true);row.remove();changed();};container.append(row);
 }

@@ -43,26 +43,26 @@ test('Games 2–4 and username ranges use all three final boost values while kee
  }
  for(let seed=1;seed<=100;seed++)journey(startVaultViewerRange(DEFAULT_VAULT,{username:'demo',min:9000,max:10000},'Demo',0,rng(seed)));
 });
-test('odd, exact, tiny and unusually large edited totals keep real cent arithmetic and finish within 15',()=>{
+test('odd, exact, tiny and unusually large edited totals keep whole-dollar arithmetic and finish within 15',()=>{
  for(const target of [1,2,7,1500,1501,1999,4001,5000,5001,7499,7500,7501,9997,9999,10000,10001,999999,1000000])for(const draw of [()=>0,b=>b-1,rng(target)]){
-  const r=journey(startVaultTotalRange(DEFAULT_VAULT,{id:'extreme',min:target,max:target},'Demo',0,draw));assert.equal(vaultTotal(r),String(target*100));
+  const r=finish(startVaultTotalRange(DEFAULT_VAULT,{id:'extreme',min:target,max:target},'Demo',0,draw));assert.equal(vaultTotal(r),String(target*100));assert.ok(r.opened.length<=15);assert.ok(r.opened.every(s=>s.cashCents>=100&&s.cashCents%100===0));
  }
 });
 test('every bonus vault is earned before it is opened, including ten successive extensions',()=>{
  for(const target of [1500,7499,7500,10000])for(let seed=1;seed<=100;seed++){
   const r=startVaultTotalRange(DEFAULT_VAULT,{min:target,max:target},'Demo',0,rng(seed));let unlocked=5;
   while(r.remaining){assert.ok(r.opened.length<unlocked);const s=unlockVault(r,r.opened.at(-1)?.finishAt??r.readyAt);if(s.bonus?.kind==='extra')unlocked++;advanceVault(r,s.finishAt);}
-  assert.equal(r.opened.length,unlocked);assert.equal(r.opened.at(-1).bonus.kind,'multiply');
+  assert.equal(r.opened.length,unlocked);if(target!==7499)assert.equal(r.opened.at(-1).bonus.kind,'multiply');
  }
  assert.equal(new Set(Array.from({length:10},(_,i)=>vaultChapter({preset:{chambers:5}},i+5).title)).size,10);
 });
 test('final ×2, ×4 and ×6 land on the whole bank once and stay withheld until their reveal',()=>{
  const seen=new Set();for(let seed=1;seed<=200&&seen.size<3;seed++){
-  const r=startVaultTotalRange(DEFAULT_VAULT,{min:9996,max:9996},'Demo',0,rng(seed));
+  const r=startVaultTotalRange(DEFAULT_VAULT,{min:9984,max:9984},'Demo',0,rng(seed));
   while(r.opened.length<r.prizePlan.length-1){const s=unlockVault(r,r.opened.at(-1)?.finishAt??r.readyAt);advanceVault(r,s.finishAt);}
   const s=unlockVault(r,r.opened.at(-1).finishAt),value=s.bonus.value,at=vaultBonusAt(s)+VAULT_BONUS_LAND_MS,prior=structuredClone(r),before=vaultBonusReadout(r,projectedVault(r,at-1),at-1),after=vaultBonusReadout(r,projectedVault(r,at),at);
   assert.equal(BigInt(after.total),BigInt(before.total)*BigInt(value));assert.deepEqual(r,prior);assert.deepEqual(vaultBonusReadout(cleanVaultRound(r),projectedVault(cleanVaultRound(r),at),at),after);
-  advanceVault(r,s.finishAt);assert.equal(vaultTotal(r),'999600');assert.equal(advanceVault(r,s.finishAt+100),false);seen.add(value);
+  advanceVault(r,s.finishAt);assert.equal(vaultTotal(r),'998400');assert.equal(advanceVault(r,s.finishAt+100),false);seen.add(value);
  }
  assert.deepEqual([...seen].sort((a,b)=>a-b),[2,4,6]);
 });

@@ -510,6 +510,15 @@ are sample settings, editable alongside all cash values and odds.
 
 ### Faith’s quick Vault setup
 
+New Vault rounds use whole dollars for starting treasure, chamber cash,
+bankrolls and final payouts, in both Original Vault and Token Machine.
+Saved ranges still include every multiplier. The planner selects totals and
+stacks that divide into whole-dollar prizes; it never rounds a displayed total
+away from the actual math. Old decimal custom prizes round to the nearest dollar
+(minimum $1) for future rounds. An already active round keeps its frozen prizes.
+An exact or very narrow range that cannot support a whole-dollar stack uses
+cash and extra vaults instead; a target below $5 uses fewer starting chambers.
+
 1. Open **Crown Vault → Settings** in Faith’s game desk, or **vault.html**.
    Choose a **Saved setup**, edit the four game names and ranges, and click
    **Save settings**. The same button also saves the setup name and optional
